@@ -1,0 +1,67 @@
+{
+  "project": "leab-tui-3d",
+  "projectVersion": "1.0.0",
+  "version": "1.0.0",
+  "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
+  "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 from a pinned CDN.",
+  "repository": "https://github.com/somphol/leab-tui-3d",
+  "liveDemo": "https://somphol.github.io/leab-tui-3d/",
+  "build": {
+    "sessionStartedAt": "2026-11-04T00:16:43Z",
+    "startedAt": "2026-11-04T00:16:43Z",
+    "packagedAt": "2026-11-04T01:03:16Z",
+    "durationSeconds": 2793,
+    "durationHuman": "46m 33s",
+    "timezone": "UTC",
+    "note": "Snapshot taken from the OpenCode session record while the release documentation was being written. The final packagedAt and token counts are updated at the end of the session.",
+    "includes": "Rules research and interpretation; pure rules engine; heuristic AI; four-seat game flow; undo snapshots; 3D table with 32 carved tiles and procedural textures; OrbitControls; responsive portrait camera; bilingual EN/TH copy; coach, inspector and hint; synthesised Web Audio; localStorage autosave; JSON export; self-test; CDP verification harness; screenshots; release documentation."
+  },
+  "tokens": {
+    "input": 229660,
+    "output": 79621,
+    "reasoning": 75745,
+    "cacheRead": 10768256,
+    "cacheWrite": 1639,
+    "total": 385026,
+    "totalWithCache": 11163282,
+    "cost": 0.0,
+    "note": "Snapshot from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T01:03:16Z. total = input + output + reasoning. Cache reads are context usage and are reported separately."
+  },
+  "cost": {
+    "usd": 0.0,
+    "note": "As reported by the OpenCode session record."
+  },
+  "sessionId": "ses_e5a5e419dffedJGEsMy3mKV3ey",
+  "sessionTitle": "Leab-Tui 3D Xiangqi Studio",
+  "model": {
+    "name": "DeepSeek V4.1 Flash",
+    "providerID": "opencode-go",
+    "modelID": "deepseek-v4.1-flash"
+  },
+  "harness": {
+    "name": "OpenCode",
+    "version": "2.2.5",
+    "url": "https://opencode.ai"
+  },
+  "stack": {
+    "runtime": ["HTML5", "CSS3", "ES2022 JavaScript"],
+    "graphics": ["Three.js r160", "OrbitControls r160", "CanvasTexture"],
+    "audio": ["Web Audio API synthesis"],
+    "storage": ["localStorage", "Blob JSON export"]
+  },
+  "verification": {
+    "selfTest": "25/25",
+    "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
+    "undo": "restored pre-trick position, 32 tiles, stats reverted",
+    "nextRound": "round 2 dealt, scores preserved",
+    "reload": "mid-trick state resumed from localStorage",
+    "staticCheck": "scripts/check.mjs",
+    "browserCheck": "scripts/verify.mjs"
+  },
+  "credits": {
+    "design": "OpenCode + DeepSeek V4.1 Flash",
+    "rules": "Navee Angsuputiphant (2016), กฏกติกาการเล่น เลี๊ยบตุ่ย",
+    "engine": "Three.js r160, MIT",
+    "fonts": "system fonts only"
+  }
+}

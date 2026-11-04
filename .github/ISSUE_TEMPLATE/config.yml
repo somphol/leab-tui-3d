@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Rules and FAQ
+    url: https://github.com/somphol/leab-tui-3d/blob/main/docs/RULES.md
+    about: Read the rule contract and the interpretation notes first.
+  - name: Security
+    url: https://github.com/somphol/leab-tui-3d/blob/main/SECURITY.md
+    about: Report a vulnerability privately.

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<defs><radialGradient id="g" cx="35%" cy="28%" r="80%"><stop offset="0" stop-color="#a6404e"/><stop offset=".6" stop-color="#6b1c2a"/><stop offset="1" stop-color="#3a0c14"/></radialGradient></defs>
+<circle cx="32" cy="32" r="30" fill="url(#g)" stroke="#e7c98d" stroke-width="2"/>
+<circle cx="32" cy="32" r="25" fill="none" stroke="#e7c98d" stroke-opacity=".45" stroke-width="1"/>
+<text x="32" y="44" text-anchor="middle" font-family="Songti SC, STSong, serif" font-size="32" fill="#f7ddb1">帥</text>
+</svg>

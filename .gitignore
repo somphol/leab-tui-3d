@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+node_modules/
+dist/
+build/
+.env
+.env.*
+*.log
+*.local
+.vscode/
+.idea/
+screenshots/*.png
+leab_tui_3d_game.json
+/tmp/

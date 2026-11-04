@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: "Leab-Tui 3D: Traditional Xiangqi Trick-Taking Studio"
+message: "If you use this software or its rules implementation, please cite the repository and the rule source."
+type: software
+authors:
+  - family-names: Boonjing
+    given-names: Somphol
+repository-code: "https://github.com/somphol/leab-tui-3d"
+url: "https://somphol.github.io/leab-tui-3d/"
+license: MIT
+version: 1.0.0
+date-released: 2026-11-04
+keywords:
+  - leab-tui
+  - xiangqi
+  - trick-taking
+  - three.js
+  - thai
+  - game
+abstract: "A bilingual, interactive 3D teaching table for the Thai trick-taking game เลี๊ยบตุ่ย (Leab-Tui), played with the 32 tiles of a Chinese chess set."
+references:
+  - type: article
+    title: "กฏกติกาการเล่น เลี๊ยบตุ่ย"
+    authors:
+      - family-names: Angsuputiphant
+        given-names: Navee
+    year: 2016
+    url: "http://naveea.blogspot.com/2016/03/blog-post.html"

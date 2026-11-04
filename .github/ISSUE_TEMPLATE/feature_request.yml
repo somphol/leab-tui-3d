@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a rule, UX or accessibility improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is hard, missing or misleading?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should change? If it is a rule, cite the source.
+    validations:
+      required: true
+  - type: textarea
+    id: consequences
+    attributes:
+      label: Consequences
+      description: Which files, tests, copy and docs would change?
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: I have read docs/ROADMAP.md and this is not a deliberate non-goal.
+          required: true

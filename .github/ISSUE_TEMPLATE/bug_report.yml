@@ -1,0 +1,45 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Please do not include tokens, private data or security vulnerabilities. See SECURITY.md for those."
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Chrome 130 / Safari 17.2 / Firefox 132
+    validations:
+      required: true
+  - type: input
+    id: viewport
+    attributes:
+      label: Viewport
+      placeholder: 1440x900, 390x844
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Open ?demo=1\n2. Click ...\n3. ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      render: shell

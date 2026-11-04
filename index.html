@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio</title>
+  <meta name="description" content="A bilingual, offline-friendly 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with 32 Chinese chess tiles. Vanilla HTML, CSS and Three.js." />
+  <meta name="theme-color" content="#180c0e" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio" />
+  <meta property="og:description" content="Learn and play เลี๊ยบตุ่ย with carved 3D Xiangqi tiles, bilingual coaching, synthesis audio and a full trick-taking rules engine." />
+  <meta property="og:image" content="screenshots/hero.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; font-src 'self' data:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app" class="app">
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#main" aria-label="Leab-Tui 3D home">
+        <span class="brand-seal" aria-hidden="true">帥</span>
+        <span class="brand-copy">
+          <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
+          <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
+        </span>
+      </a>
+      <nav class="top-actions" aria-label="Application controls">
+        <button id="langToggle" class="pill" type="button" aria-label="Switch language" title="Switch language">
+          <span class="pill-icon" aria-hidden="true">文</span><span id="langLabel">ไทย</span>
+        </button>
+        <button id="soundToggle" class="icon-btn" type="button" aria-pressed="true" aria-label="Sound on" title="Sound">
+          <span id="soundIcon" aria-hidden="true">♪</span>
+        </button>
+        <button id="rulesBtn" class="icon-btn" type="button" aria-label="Rules" title="Rules">
+          <span aria-hidden="true">?</span>
+        </button>
+        <button id="aboutBtn" class="icon-btn" type="button" aria-label="About and credits" title="About">
+          <span aria-hidden="true">i</span>
+        </button>
+      </nav>
+    </header>
+
+    <main id="main" class="layout">
+      <section class="stage-wrap" aria-label="Game table">
+        <canvas id="scene" aria-label="3D Leab-Tui table" role="img"></canvas>
+        <div class="stage-hint" data-i18n="camera.hint">Drag to orbit · scroll to zoom · right-drag to pan</div>
+        <div class="hud-strip" role="status" aria-live="polite">
+          <span class="hud-chip"><span class="hud-label" data-i18n="hud.round">Round</span><strong id="roundChip">1</strong></span>
+          <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Trick</span><strong id="trickChip">0</strong></span>
+          <span class="hud-chip"><span class="hud-label" data-i18n="hud.target">Target</span><strong id="targetChip">20</strong></span>
+          <span class="hud-chip hud-turn"><span class="hud-label" data-i18n="hud.turn">Turn</span><strong id="turnChip">You</strong></span>
+        </div>
+
+        <div class="stage-tools" aria-label="Camera controls">
+          <button id="resetViewBtn" class="tool-btn" type="button" title="Reset camera" aria-label="Reset camera">⤾</button>
+          <button id="topViewBtn" class="tool-btn" type="button" title="Top view" aria-label="Top view">⌖</button>
+          <button id="cinemaBtn" class="tool-btn" type="button" title="Cinematic orbit" aria-label="Cinematic orbit" aria-pressed="false">◉</button>
+        </div>
+
+        <div id="toastLayer" class="toast-layer" aria-live="polite" aria-atomic="false"></div>
+
+        <div class="hand-dock" id="handDock">
+          <div class="dock-status">
+            <div class="dock-kicker" id="selectionKicker" data-i18n="dock.select">Select your tiles</div>
+            <div class="dock-title" id="selectionTitle">Choose a combination to lead</div>
+            <div class="dock-detail" id="selectionDetail">Click carved tiles on the table. Tap Hint if you want a suggestion.</div>
+            <div id="selectionPips" class="pips" aria-hidden="true"></div>
+          </div>
+          <div class="dock-actions">
+            <button id="hintBtn" class="btn btn-ghost" type="button" data-i18n="actions.hint">Hint</button>
+            <button id="clearBtn" class="btn btn-ghost" type="button" data-i18n="actions.clear">Clear</button>
+            <button id="leadBtn" class="btn btn-gold" type="button" disabled data-i18n="actions.lead">Lead</button>
+            <button id="revealBtn" class="btn btn-jade" type="button" hidden data-i18n="actions.reveal">Reveal &amp; challenge</button>
+            <button id="facedownBtn" class="btn btn-wine" type="button" hidden data-i18n="actions.facedown">Play face-down</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar" aria-label="Studio panels">
+        <section class="panel coach-panel">
+          <div class="panel-head">
+            <h2 data-i18n="coach.title">Coach</h2>
+            <span id="coachBadge" class="badge" data-i18n="coach.live">live</span>
+          </div>
+          <p id="coachText" class="coach-text" aria-live="polite">Welcome to the felt. The holder of the red General leads first.</p>
+          <p id="coachMeta" class="coach-meta"></p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="score.title">Match</h2>
+            <span id="streakChip" class="badge badge-gold">×0</span>
+          </div>
+          <div id="scoreboard" class="scoreboard"></div>
+          <div class="score-foot">
+            <span data-i18n="score.target">First to</span>
+            <strong id="scoreTarget">20</strong>
+            <span data-i18n="score.points">points</span>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><h2 data-i18n="actions.title">Actions</h2></div>
+          <div class="action-grid">
+            <button id="newMatchBtn" class="btn btn-ghost" type="button" data-i18n="actions.newMatch">New match</button>
+            <button id="nextRoundBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.nextRound">Next round</button>
+            <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo trick</button>
+            <button id="exportBtn" class="btn btn-ghost" type="button" data-i18n="actions.export">Export JSON</button>
+          </div>
+        </section>
+
+        <section class="panel inspector-panel" id="inspectorCard">
+          <div class="panel-head">
+            <h2 data-i18n="inspector.title">Tile inspector</h2>
+            <span class="badge" data-i18n="inspector.hover">hover</span>
+          </div>
+          <div id="inspectorBody" class="inspector-body">
+            <div class="inspector-empty">
+              <span class="ghost-tile" aria-hidden="true">兵</span>
+              <p data-i18n="inspector.empty">Hover or click a carved tile to see its Thai name, English name and rank.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="handList.title">Your hand</h2>
+            <button id="tileListToggle" class="mini-btn" type="button" aria-expanded="true">hide</button>
+          </div>
+          <div id="tileList" class="tile-list" aria-label="Accessible tile list"></div>
+        </section>
+
+        <section class="panel log-panel">
+          <div class="panel-head">
+            <h2 data-i18n="log.title">Trick log</h2>
+            <span class="badge" data-i18n="log.live">live</span>
+          </div>
+          <ol id="logList" class="log-list"></ol>
+        </section>
+
+        <footer class="sidebar-foot">
+          <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
+          <span class="dot">·</span>
+          <a href="https://github.com/somphol/leab-tui-3d" target="_blank" rel="noopener">GitHub</a>
+        </footer>
+      </aside>
+    </main>
+
+    <div id="bootError" class="boot-error" hidden>
+      <h2 data-i18n="error.webglTitle">The 3D table could not start</h2>
+      <p data-i18n="error.webglBody">Three.js needs WebGL 2 and a network connection to the CDN. The rules, score and coaching panels still work.</p>
+      <button class="btn btn-gold" type="button" data-close-boot data-i18n="actions.continue">Continue</button>
+    </div>
+
+    <div id="rulesModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+      <div class="modal-card modal-wide">
+        <button class="modal-close" type="button" data-close="rulesModal" aria-label="Close">×</button>
+        <h2 id="rulesTitle" data-i18n="rules.title">Rules of เลี๊ยบตุ่ย</h2>
+        <div id="rulesBody" class="rules-body"></div>
+      </div>
+    </div>
+
+    <div id="summaryModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="summaryTitle">
+      <div class="modal-card">
+        <button class="modal-close" type="button" data-close="summaryModal" aria-label="Close">×</button>
+        <div id="summarySeal" class="summary-seal" aria-hidden="true">帥</div>
+        <h2 id="summaryTitle">Round complete</h2>
+        <div id="summaryBody" class="summary-body"></div>
+        <div class="modal-actions">
+          <button id="summaryPrimary" class="btn btn-gold" type="button">Next round</button>
+          <button id="summarySecondary" class="btn btn-ghost" type="button">New match</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="undoModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="undoTitle">
+      <div class="modal-card">
+        <button class="modal-close" type="button" data-close="undoModal" aria-label="Close">×</button>
+        <h2 id="undoTitle" data-i18n="undo.title">Why did that trick go wrong?</h2>
+        <div id="undoBody" class="undo-body"></div>
+        <div class="modal-actions">
+          <button id="undoConfirm" class="btn btn-gold" type="button" data-i18n="actions.undo">Undo trick</button>
+          <button id="undoCancel" class="btn btn-ghost" type="button" data-i18n="actions.keep">Keep playing</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="aboutModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+      <div class="modal-card modal-wide">
+        <button class="modal-close" type="button" data-close="aboutModal" aria-label="Close">×</button>
+        <h2 id="aboutTitle" data-i18n="about.title">About this studio</h2>
+        <div id="aboutBody" class="about-body"></div>
+      </div>
+    </div>
+
+    <div id="confirmModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal-card modal-small">
+        <h2 id="confirmTitle" data-i18n="confirm.title">Start a new match?</h2>
+        <p id="confirmBody" data-i18n="confirm.body">The current scores and round history will be cleared. Saved statistics stay.</p>
+        <div class="modal-actions">
+          <button id="confirmYes" class="btn btn-gold" type="button" data-i18n="confirm.yes">Start match</button>
+          <button id="confirmNo" class="btn btn-ghost" type="button" data-i18n="confirm.no">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <noscript>
+    <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
+  </noscript>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
