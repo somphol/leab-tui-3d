@@ -44,6 +44,7 @@ const chrome = spawn(chromePath, [
   `--window-size=${width},${height}`,
   `--user-data-dir=${profile}`,
   `--remote-debugging-port=${port}`,
+  ...(process.env.AUDIO_TEST ? ["--autoplay-policy=no-user-gesture-required"] : []),
   "about:blank"
 ], { stdio: ["ignore", "ignore", "pipe"] });
 
@@ -138,7 +139,8 @@ async function main() {
       canvas: { w: document.querySelector('#scene')?.clientWidth, h: document.querySelector('#scene')?.clientHeight }
     })`,
     awaitPromise: true,
-    returnByValue: true
+    returnByValue: true,
+    userGesture: true
   });
 
   let value = result.result?.value;
@@ -166,7 +168,8 @@ async function main() {
     const second = await send("Runtime.evaluate", {
       expression: evalExpr2 || "JSON.stringify({state: window.LeabTui?.getState(), stored: JSON.parse(localStorage.getItem('leabtui.match.v1') || 'null'), title: document.title})",
       awaitPromise: true,
-      returnByValue: true
+      returnByValue: true,
+      userGesture: true
     });
     let secondValue = second.result?.value;
     try { secondValue = JSON.parse(secondValue); } catch { /* raw */ }

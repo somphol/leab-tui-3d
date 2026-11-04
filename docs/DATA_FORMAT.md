@@ -13,13 +13,29 @@ There are two JSON files with different jobs:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "savedAt": "2026-11-04T01:03:16.000Z",
   "game": { "...": "see Game" }
 }
 ```
 
-Key: `leabtui.match.v1`. Preferences live at `leabtui.prefs.v1`, statistics at `leabtui.stats.v1`. The three are independent so a new match does not wipe language, sound or lifetime stats.
+Key: `leabtui.match.v1`. Preferences live at `leabtui.prefs.v1`, statistics at `leabtui.stats.v1`. The three are independent so a new match does not wipe language, sound, display or lifetime stats.
+
+Preferences shape:
+
+```json
+{
+  "lang": "en",
+  "sound": true,
+  "coach": true,
+  "cinema": false,
+  "tileList": true,
+  "theme": "mahogany",
+  "fontSize": "md"
+}
+```
+
+`theme` is `mahogany`, `jade` or `midnight`; `fontSize` is `sm`, `md`, `lg` or `xl`. Invalid values fall back to `mahogany` and `md`. The 1.0.0 → 1.1.0 update adds these two fields but does not change the match or export schema.
 
 The autosave is written after every action, on `visibilitychange` when hidden, and on `beforeunload`.
 ## Export
@@ -27,11 +43,11 @@ The autosave is written after every action, on `visibilitychange` when hidden, a
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "exportedAt": "2026-11-04T01:10:00.000Z",
   "app": {
     "name": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "repository": "https://github.com/somphol/leab-tui-3d",
     "live": "https://somphol.github.io/leab-tui-3d/",
     "license": "MIT"
@@ -161,4 +177,4 @@ Undo snapshots are **not** persisted. A reload can resume the live game but cann
 
 ## Versioning
 
-`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code in 1.0.0; the loader is strict and falls back to a new match.
+`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code in 1.1.0; the loader is strict and falls back to a new match. New preference fields are additive and validated on load.

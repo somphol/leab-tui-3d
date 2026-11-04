@@ -54,7 +54,7 @@ node scripts/verify.mjs
 | 21 | deal gives four hands of eight | 4 × 8, 32 unique |
 | 22 | scoring table | `-2,-1,0,1,2,3,4,5,16` |
 | 23 | simulated round conserves tiles | captures = 32 |
-| 24 | i18n keys symmetrical | EN and TH both 211 keys |
+| 24 | i18n keys symmetrical | EN and TH both 232 keys |
 | 25 | export payload shape | app + credits + 4 scores |
 
 Latest result: **SELFTEST PASS 25/25** (Chrome headless, 2026-11-04).
@@ -95,6 +95,28 @@ end:  roundEnd, scores [2,-2,2,-2]
 next: round 2, hands [8,8,8,8], scores preserved, total tiles 32
 ```
 
+### Audio
+
+```text
+pointerdown → AudioContext running, unlocked true
+playSound("clack") → analyser peak ≈ 0.04 RMS (master 0.8 + compressor)
+playCount increments; no autoplay warning
+```
+
+The graph is `source → filter → gain → panner → master → compressor → analyser → destination`. The analyser tap is used by the harness; it does not change the output. The first `play` retries after `resume()` if the context was still suspended, which covers the first-gesture race.
+
+### Display settings
+
+```text
+applyFontSize("xl")  → html[data-font-size="xl"], --fs-scale 1.24
+applyTheme("jade")   → html[data-theme="jade"], scene.theme "jade"
+prefs                → { fontSize: "xl", theme: "jade" }
+reload               → fontSize "xl", theme "jade", scene "jade"
+panel                → 4 font buttons, 3 theme buttons
+```
+
+The browser harness also asserts that **Jade reaches the 3D scene**, not just the CSS. The scene updates felt, wood, rim, inlay, floor, lights and tile side/edge/back; old textures are disposed.
+
 ### Reload resume
 
 Played to a mid-trick state, reloaded the page in the same profile:
@@ -120,8 +142,12 @@ The saved game survived the reload and the scene re-synced. A saved `roundEnd` o
 - [ ] Header, HUD, coach, scoreboard, actions, inspector and hand list all render.
 - [ ] Eight face-down tiles deal to each seat; the human hand flips face-up.
 - [ ] The holder of the red General is the leader.
+- [ ] **Display** (`Aa`) opens; Small/Default/Large/XL change the interface text and persist.
+- [ ] Mahogany/Jade Court/Midnight Lacquer change the panels **and** the felt/wood/light palette.
+- [ ] The 3D table does not scale with text size (by design).
 - [ ] The table can be orbited, zoomed and panned; reset returns home.
 - [ ] No console error. No network request except `cdn.jsdelivr.net/npm/three@0.160.0/...`.
+- [ ] Click once, then lead a tile: the wooden clack is clearly audible. Toggle sound off/on. The toggle does not lie about the state.
 
 ### Turn loop
 

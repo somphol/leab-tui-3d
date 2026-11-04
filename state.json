@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.0.0",
-  "version": "1.0.0",
+  "projectVersion": "1.1.0",
+  "version": "1.1.0",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 from a pinned CDN.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-04T00:16:43-08:00",
     "startedAt": "2026-11-04T00:16:43-08:00",
-    "packagedAt": "2026-11-04T01:24:23-08:00",
-    "durationSeconds": 4060,
-    "durationHuman": "1h 7m 40s",
-    "timezone": "UTC",
-    "note": "Handoff snapshot from the OpenCode session record at 2026-11-04T01:24:23-08:00, after the project and skill were published. The final state-file commit and Pages rebuild add a small amount; re-measure from the session ID if exact final numbers are needed.",
+    "packagedAt": "2026-11-04T08:31:38-08:00",
+    "durationSeconds": 5800,
+    "durationHuman": "1h 36m 40s",
+    "timezone": "UTC-08:00",
+    "note": "Initial build source freeze 2026-11-04T01:24:23-08:00 (1h 7m 40s, 551,625 tokens). The 1.1.0 display/audio update ran 08:02:38–08:31:38 (29m 0s, +191,664 tokens). Active build total 1h 36m 40s; session wall clock includes an overnight idle gap. The final state-file commit adds a small amount.",
     "includes": "Rules research and interpretation; pure rules engine; heuristic AI; four-seat game flow; undo snapshots; 3D table with 32 carved tiles and procedural textures; OrbitControls; responsive portrait camera; bilingual EN/TH copy; coach, inspector and hint; synthesised Web Audio; localStorage autosave; JSON export; self-test; CDP verification harness; screenshots; release documentation.",
     "publishedAt": "2026-11-04T01:23:25Z"
   },
   "tokens": {
-    "input": 322458,
-    "output": 142357,
-    "reasoning": 86810,
-    "cacheRead": 31036288,
+    "input": 433865,
+    "output": 180500,
+    "reasoning": 128924,
+    "cacheRead": 56907776,
     "cacheWrite": 1639,
-    "total": 551625,
-    "totalWithCache": 31589552,
+    "total": 743289,
+    "totalWithCache": 57652704,
     "cost": 0.0,
-    "note": "Handoff snapshot from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T01:24:23-08:00. total = input + output + reasoning. Cache reads/writes are context usage and are reported separately. The final state-file commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T08:31:38-08:00, including the 1.1.0 display/audio update. total = input + output + reasoning. Cache reads/writes are context usage and are reported separately. The final state-file commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -73,12 +73,37 @@
     "browserCheck": "scripts/verify.mjs",
     "liveSelfTest": "25/25 at https://somphol.github.io/leab-tui-3d/?selftest=1",
     "liveTiles": "32 visible, no console exceptions",
-    "pages": "published"
+    "pages": "published",
+    "displaySettings": "XL scale 1.24, Jade theme reaches UI + scene, preferences persist, 4 sizes + 3 themes exposed"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
     "rules": "Navee Angsuputiphant (2016), กฏกติกาการเล่น เลี๊ยบตุ่ย",
     "engine": "Three.js r160, MIT",
     "fonts": "system fonts only"
-  }
+  },
+  "releaseHistory": [
+    {
+      "version": "1.0.0",
+      "date": "2026-11-04",
+      "summary": "Initial release: rules engine, four-seat 3D table, AI, bilingual coach, inspector, undo, audio, persistence and documentation."
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-11-04",
+      "summary": "Display settings: four interface text sizes and three themes (Mahogany, Jade Court, Midnight Lacquer) with matching UI and 3D table palettes."
+    }
+  ],
+  "releaseNotes": "1.1.0 adds a Display panel with Small/Default/Large/Extra large text and Mahogany/Jade Court/Midnight Lacquer themes. Theme changes recolor the panels, felt, wood, inlay and lighting; text size scales the interface only.",
+  "updates": [
+    {
+      "version": "1.1.0",
+      "startedAt": "2026-11-04T08:02:38-08:00",
+      "completedAt": "2026-11-04T08:31:38-08:00",
+      "durationSeconds": 1740,
+      "durationHuman": "29m 0s",
+      "tokensAdded": 191664,
+      "summary": "Display panel (four text sizes, three themes with matching 3D palettes), audio audibility/compressor/first-gesture retry, mobile XL layout, docs and verification."
+    }
+  ]
 }

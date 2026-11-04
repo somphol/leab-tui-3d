@@ -20,8 +20,10 @@ index.html
   └─ script.js type="module"
 
 boot()
-  loadPrefs()              localStorage prefs + language
+  loadPrefs()              localStorage prefs + language + display
   loadStats()              localStorage statistics + history
+  applyFontSize()          html[data-font-size] + --fs-scale
+  applyTheme()             html[data-theme] (scene reads prefs.theme at creation)
   applyLanguage(LANG)      translate static DOM, rules, about, empty panels
   bindEvents()             buttons, modals, keyboard, visibility
   loadMatch()              validate saved game or return false
@@ -138,7 +140,7 @@ The saved payload is:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "savedAt": "2026-11-04T...",
   "game": { "phase": "...", "hands": [["r-general-0"], ...], ... }
 }
@@ -146,9 +148,19 @@ The saved payload is:
 
 `loadMatch` validates the format, four hands of ≤8 valid IDs, four scores, and a known phase; then rebuilds tile objects and centre combos with `detectCombo`. A saved `roundEnd`/`matchEnd` keeps its phase and reopens the summary. Undo snapshots are intentionally not persisted.
 
+## Display and themes
+
+`prefs` carries `fontSize` (`sm|md|lg|xl`) and `theme` (`mahogany|jade|midnight`).
+
+- `applyFontSize(id)` sets `html[data-font-size]` and `--fs-scale`. Every CSS type size uses `calc(Npx * var(--fs-scale))`; the 3D table does not scale.
+- `applyTheme(id)` sets `html[data-theme]` and calls `scene.setTheme(id)`. `SCENE_THEMES` supplies felt/wood/back palettes, rim/inlay/floor colours and light colours.
+- `scene.setTheme` regenerates the felt, wood and tile-back CanvasTextures, recolours the materials and lights, updates the scene background/fog, and disposes the replaced textures. It is the only part of the scene that allocates per interaction.
+- The Display modal (`#displayModal`) contains the four font buttons and three theme cards. `renderDisplay()` keeps `aria-pressed` and `.active` in sync after a language switch or reload.
+- The modal is opened from the `Aa` stage tool, not the top bar, to keep the mobile header uncluttered.
+
 ## Audio
 
-`StudioAudio` owns a lazily created `AudioContext`, a master gain (0.32) and one noise buffer. `play(name, seat)` pans by seat and synthesises:
+`StudioAudio` owns a lazily created `AudioContext`, a master gain (0.8), a `DynamicsCompressorNode`, an `AnalyserNode` tap and one noise buffer. The analyser is inline so `verify.mjs` can measure a real RMS peak without altering the sound. `play(name, seat)` pans by seat and synthesises:
 
 - `clack` — band-passed noise + 150 Hz/78 Hz sine thumps.
 - `flip` — high-passed click.
@@ -157,7 +169,7 @@ The saved payload is:
 - `win` / `lose` — arpeggios.
 - `click` / `undo` — short tones.
 
-`play` returns immediately until the first pointer/key event calls `resume()`. This avoids Chrome's autoplay warning.
+`play` returns immediately until the first pointer/key event calls `resume()`. If the context is still suspended when a sound is requested, `play` calls `resume()` and retries after the promise resolves. This covers the first-gesture race and avoids Chrome's autoplay warning.
 
 ## Failure model
 

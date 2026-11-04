@@ -2,6 +2,28 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] — 2026-11-04
+
+### Added
+
+- **Display settings panel** (`Aa` in the stage toolbar) with four interface text sizes: Small, Default, Large and Extra large.
+- **Three themes**: Mahogany (default), Jade Court and Midnight Lacquer.
+- Theme switching recolours the UI panels, felt, wood, brass/silver inlay, table rim, floor and lighting; old procedural textures are disposed.
+- Display preferences persist in `localStorage` alongside language, sound and coach settings.
+- A `Reset display` action and browser verification for the 1.24× XL scale, theme propagation to the 3D scene, persistence and the four-size/three-theme controls.
+- 21 new bilingual keys (232 per language) and updated release documentation.
+
+### Fixed
+
+- **Audio audibility.** The master gain was raised from 0.32 to 0.8, a dynamics compressor was added, and per-effect levels were raised. The old graph produced ~0.009 RMS on the clack, which was effectively inaudible on laptop speakers; the new graph measures ~0.04–0.11 RMS peak. The analyser tap is used by `verify.mjs`.
+- **First-gesture audio.** If the context is still suspended when the first sound is requested, `play()` now calls `resume()` and retries after the promise resolves, covering the resume race.
+- **Mobile header at XL.** The About icon moves to the sidebar footer on phones, the HUD is bounded before the stage tools, and the action buttons wrap so nothing is clipped at 1.24× text.
+
+### Changed
+
+- Version bumped to `1.1.0`; save/export version follows.
+- Screenshots now include the Display panel and both alternate themes.
+
 ## [1.0.0] — 2026-11-04
 
 ### Added

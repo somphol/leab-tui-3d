@@ -7,7 +7,7 @@
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.0.0",
+  version: "1.1.0",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -18,13 +18,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-04T00:16:43-08:00",
-    packagedAt: "2026-11-04T01:24:23-08:00",
-    durationHuman: "1h 7m 40s",
-    tokensTotal: "551625",
-    tokensInput: "322458",
-    tokensOutput: "142357",
-    tokensReasoning: "86810",
-    tokensCacheRead: "31036288",
+    packagedAt: "2026-11-04T08:31:38-08:00",
+    durationHuman: "1h 36m 40s",
+    tokensTotal: "743289",
+    tokensInput: "433865",
+    tokensOutput: "180500",
+    tokensReasoning: "128924",
+    tokensCacheRead: "56907776",
     sessionId: "ses_e5a5e419dffedJGEsMy3mKV3ey",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -58,6 +58,85 @@ const SEATS = Object.freeze([
   { id: 2, key: "north", wind: "北", angle: Math.PI,       en: "North", th: "อุดร",       short: "N" },
   { id: 3, key: "west",  wind: "西", angle: -Math.PI / 2,  en: "West",  th: "ประจิม",     short: "W" }
 ]);
+
+const FONT_SIZES = Object.freeze([
+  { id: "sm", scale: 0.9, labelKey: "display.small" },
+  { id: "md", scale: 1.0, labelKey: "display.default" },
+  { id: "lg", scale: 1.12, labelKey: "display.large" },
+  { id: "xl", scale: 1.24, labelKey: "display.xlarge" }
+]);
+
+const THEMES = Object.freeze([
+  { id: "mahogany", labelKey: "theme.mahogany", descKey: "theme.mahoganyDesc" },
+  { id: "jade", labelKey: "theme.jade", descKey: "theme.jadeDesc" },
+  { id: "midnight", labelKey: "theme.midnight", descKey: "theme.midnightDesc" }
+]);
+
+const SCENE_THEMES = Object.freeze({
+  mahogany: {
+    felt: ["#56222a", "#3d161d", "#240b0f"],
+    ring: "#d8b26b",
+    woodBase: "#3b180f",
+    woodLight: "#8a4a28",
+    woodDark: "#1c0804",
+    woodTint: 0x8b5a3c,
+    rim: 0x35150f,
+    gold: 0xc9a35e,
+    background: 0x0f0507,
+    fog: 0x0f0507,
+    key: 0xffe2b8,
+    rimLight: 0x8fcbb6,
+    warm: 0xffc78e,
+    redGlow: 0xb63d52,
+    jadeGlow: 0x5fa88c,
+    floor: 0x17090c,
+    tileSide: 0xe6d2ab,
+    tileEdge: 0x9b7648,
+    back: ["#65242c", "#43151c", "#250a0e"]
+  },
+  jade: {
+    felt: ["#1d4a3d", "#12332a", "#07201a"],
+    ring: "#d8c08a",
+    woodBase: "#2e1d12",
+    woodLight: "#6a4428",
+    woodDark: "#160d07",
+    woodTint: 0x8a6a4a,
+    rim: 0x20382c,
+    gold: 0xd8c08a,
+    background: 0x06110d,
+    fog: 0x06110d,
+    key: 0xffe7c0,
+    rimLight: 0x8fe0c3,
+    warm: 0xffd7a0,
+    redGlow: 0x3f8f74,
+    jadeGlow: 0x8fe0c3,
+    floor: 0x08150f,
+    tileSide: 0xe9ddc3,
+    tileEdge: 0x9aa87c,
+    back: ["#2a4a3c", "#163026", "#081a14"]
+  },
+  midnight: {
+    felt: ["#1a2438", "#101827", "#070c14"],
+    ring: "#b9c9e6",
+    woodBase: "#1a1410",
+    woodLight: "#3f2f24",
+    woodDark: "#0d0906",
+    woodTint: 0x6a5a4a,
+    rim: 0x17202e,
+    gold: 0xb9c9e6,
+    background: 0x05070d,
+    fog: 0x05070d,
+    key: 0xdce8ff,
+    rimLight: 0x8fb8ff,
+    warm: 0xffd9b0,
+    redGlow: 0x6a4fae,
+    jadeGlow: 0x5f9fd0,
+    floor: 0x070a12,
+    tileSide: 0xe4ddcb,
+    tileEdge: 0x8d8a7a,
+    back: ["#26324a", "#151f31", "#080d16"]
+  }
+});
 
 const TABLE_Y = 0.30;
 const HAND_RADIUS = 4.12;
@@ -160,12 +239,31 @@ const I18N = {
     "actions.continue": "Continue",
     "actions.keep": "Keep playing",
     "actions.sound": "Sound",
+    "display.title": "Display",
+    "display.font": "Text size",
+    "display.small": "Small",
+    "display.default": "Default",
+    "display.large": "Large",
+    "display.xlarge": "Extra large",
+    "display.theme": "Theme",
+    "display.note": "Text size scales the interface, not the 3D table. Theme changes the panels and the felt / wood palette.",
+    "display.reset": "Reset display",
+    "theme.mahogany": "Mahogany",
+    "theme.mahoganyDesc": "Burgundy felt, aged brass and lacquer red.",
+    "theme.jade": "Jade Court",
+    "theme.jadeDesc": "Deep green felt, cool brass and a jade glow.",
+    "theme.midnight": "Midnight Lacquer",
+    "theme.midnightDesc": "Blue-black felt, silver inlay and a cold table light.",
+    "toast.fontSize": "Text size set to {size}.",
+    "toast.theme": "Theme set to {theme}.",
+    "toast.displayReset": "Display settings reset.",
     "camera.hint": "Drag to orbit · scroll to zoom · right-drag to pan",
     "coach.title": "Coach",
     "coach.live": "live",
     "score.title": "Match",
     "score.target": "First to",
     "score.points": "points",
+    "score.pile": "pile",
     "score.piles": "piles",
     "inspector.title": "Tile inspector",
     "inspector.hover": "hover",
@@ -190,6 +288,7 @@ const I18N = {
     "rules.title": "Rules of เลี๊ยบตุ่ย",
     "undo.title": "Why did that trick go wrong?",
     "about.title": "About this studio",
+    "about.short": "About",
     "confirm.title": "Start a new match?",
     "confirm.body": "The current scores and round history will be cleared. Saved statistics stay.",
     "confirm.yes": "Start match",
@@ -375,12 +474,31 @@ const I18N = {
     "actions.continue": "เล่นต่อ",
     "actions.keep": "เล่นต่อ",
     "actions.sound": "เสียง",
+    "display.title": "การแสดงผล",
+    "display.font": "ขนาดตัวอักษร",
+    "display.small": "เล็ก",
+    "display.default": "ปกติ",
+    "display.large": "ใหญ่",
+    "display.xlarge": "ใหญ่พิเศษ",
+    "display.theme": "ธีม",
+    "display.note": "ขนาดตัวอักษรปรับเฉพาะหน้าจอ ไม่กระทบโต๊ะ 3 มิติ ส่วนธีมเปลี่ยนสีแผงและโทนโต๊ะ",
+    "display.reset": "รีเซ็ตการแสดงผล",
+    "theme.mahogany": "มาฮอกกานี",
+    "theme.mahoganyDesc": "ผ้าสีเบอร์กันดี ทองเก่า และแดงแล็กเกอร์",
+    "theme.jade": "ศาลหยก",
+    "theme.jadeDesc": "ผ้าสีเขียวเข้ม ทองเย็น และแสงหยก",
+    "theme.midnight": "แล็กเกอร์เที่ยงคืน",
+    "theme.midnightDesc": "ผ้าสีน้ำเงินดำ เงินฝัง และแสงโต๊ะเย็น",
+    "toast.fontSize": "ตั้งขนาดตัวอักษรเป็น {size}",
+    "toast.theme": "ตั้งธีมเป็น {theme}",
+    "toast.displayReset": "รีเซ็ตการแสดงผลแล้ว",
     "camera.hint": "ลากเพื่อหมุน · เลื่อนเพื่อซูม · ลากขวาเพื่อเลื่อนฉาก",
     "coach.title": "โค้ช",
     "coach.live": "สด",
     "score.title": "คะแนน",
     "score.target": "ถึง",
     "score.points": "แต้ม",
+    "score.pile": "กอง",
     "score.piles": "กอง",
     "inspector.title": "ตรวจหมาก",
     "inspector.hover": "ชี้",
@@ -405,6 +523,7 @@ const I18N = {
     "rules.title": "กติกาเลี๊ยบตุ่ย",
     "undo.title": "ทำไมตานั้นถึงแพ้?",
     "about.title": "เกี่ยวกับสตูดิโอนี้",
+    "about.short": "เกี่ยวกับ",
     "confirm.title": "เริ่มแมตช์ใหม่?",
     "confirm.body": "คะแนนและประวัติรอบปัจจุบันจะถูกล้าง แต่สถิติที่บันทึกไว้จะยังอยู่",
     "confirm.yes": "เริ่มแมตช์",
@@ -897,7 +1016,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "mahogany", fontSize: "md" });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -1009,6 +1128,8 @@ function loadPrefs() {
     if (raw) prefs = { ...DEFAULT_PREFS, ...JSON.parse(raw) };
   } catch { prefs = { ...DEFAULT_PREFS }; }
   LANG = prefs.lang === "th" ? "th" : "en";
+  if (!FONT_SIZES.some((entry) => entry.id === prefs.fontSize)) prefs.fontSize = "md";
+  if (!THEMES.some((entry) => entry.id === prefs.theme)) prefs.theme = "mahogany";
 }
 
 function loadStats() {
@@ -1786,7 +1907,7 @@ function renderScoreboard() {
     return `<div class="score-row ${active ? "active" : ""} ${seat.id === 0 ? "you" : ""}">
       <span class="score-seat">${seat.wind}</span>
       <span class="score-name">${escapeHTML(seatName(seat.id))}</span>
-      <span class="score-piles">${piles} ${escapeHTML(t("score.piles"))}</span>
+      <span class="score-piles">${piles} ${escapeHTML(piles === 1 ? t("score.pile") : t("score.piles"))}</span>
       <span class="score-points">${state.scores[seat.id]}</span>
     </div>`;
   }).join("");
@@ -2058,6 +2179,54 @@ function renderAbout() {
    11. Language, theme and chrome
    -------------------------------------------------------------------------- */
 
+function applyFontSize(id, options = {}) {
+  const entry = FONT_SIZES.find((item) => item.id === id) || FONT_SIZES[1];
+  prefs.fontSize = entry.id;
+  document.documentElement.dataset.fontSize = entry.id;
+  document.documentElement.style.setProperty("--fs-scale", String(entry.scale));
+  if (!options.silent) {
+    savePrefs();
+    audio?.play("click", 0);
+    toast(t("toast.fontSize", { size: t(entry.labelKey) }));
+  }
+  renderDisplay();
+}
+
+function applyTheme(id, options = {}) {
+  const entry = THEMES.find((item) => item.id === id) || THEMES[0];
+  prefs.theme = entry.id;
+  document.documentElement.dataset.theme = entry.id;
+  scene?.setTheme?.(entry.id);
+  if (!options.silent) {
+    savePrefs();
+    audio?.play("click", 0);
+    toast(t("toast.theme", { theme: t(entry.labelKey) }));
+  }
+  renderDisplay();
+}
+
+function renderDisplay() {
+  $$("button[data-font-size]").forEach((button) => {
+    const active = button.dataset.fontSize === prefs.fontSize;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  $$("button[data-theme-choice]").forEach((button) => {
+    const active = button.dataset.themeChoice === prefs.theme;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function resetDisplay() {
+  applyFontSize("md", { silent: true });
+  applyTheme("mahogany", { silent: true });
+  savePrefs();
+  toast(t("toast.displayReset"), "jade");
+  audio?.play("click", 0);
+  renderDisplay();
+}
+
 function applyLanguage(lang) {
   LANG = lang === "th" ? "th" : "en";
   prefs.lang = LANG;
@@ -2081,6 +2250,7 @@ function applyLanguage(lang) {
   }
   const sound = $("#soundToggle");
   if (sound) sound.setAttribute("aria-label", `${t("actions.sound")}: ${prefs.sound ? "on" : "off"}`);
+  renderDisplay();
   renderRules();
   renderAbout();
   renderAll();
@@ -2293,6 +2463,8 @@ class StudioAudio {
     this.noiseBuffer = null;
     this.enabled = true;
     this.unlocked = false;
+    this.playCount = 0;
+    this.lastPlayed = null;
   }
 
   ensure() {
@@ -2301,8 +2473,18 @@ class StudioAudio {
     if (!Ctx) return null;
     this.ctx = new Ctx();
     this.master = this.ctx.createGain();
-    this.master.gain.value = 0.32;
-    this.master.connect(this.ctx.destination);
+    this.master.gain.value = 0.8;
+    this.compressor = this.ctx.createDynamicsCompressor();
+    this.compressor.threshold.value = -18;
+    this.compressor.knee.value = 20;
+    this.compressor.ratio.value = 6;
+    this.compressor.attack.value = 0.003;
+    this.compressor.release.value = 0.25;
+    this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 256;
+    this.master.connect(this.compressor);
+    this.compressor.connect(this.analyser);
+    this.analyser.connect(this.ctx.destination);
     const length = this.ctx.sampleRate * 0.7;
     this.noiseBuffer = this.ctx.createBuffer(1, length, this.ctx.sampleRate);
     const data = this.noiseBuffer.getChannelData(0);
@@ -2359,45 +2541,64 @@ class StudioAudio {
     osc.stop(start + duration + 0.02);
   }
 
+  level() {
+    if (!this.analyser) return 0;
+    const data = new Uint8Array(this.analyser.fftSize);
+    this.analyser.getByteTimeDomainData(data);
+    let sum = 0;
+    for (let i = 0; i < data.length; i += 1) {
+      const value = (data[i] - 128) / 128;
+      sum += value * value;
+    }
+    return Math.sqrt(sum / data.length);
+  }
+
   play(name, seat = 0) {
     if (!prefs.sound || !this.unlocked) return;
+    this.playCount += 1;
+    this.lastPlayed = name;
     const ctx = this.ensure();
     if (!ctx) return;
-    if (ctx.state === "suspended") ctx.resume();
+    if (ctx.state === "suspended") {
+      ctx.resume().then(() => {
+        if (ctx.state === "running") this.play(name, seat);
+      }).catch(() => {});
+      return;
+    }
     const pan = seat === 0 ? 0 : seat === 1 ? 0.55 : seat === 3 ? -0.55 : 0;
     switch (name) {
       case "click":
-        this.tone(620, 0.045, 0.03, "triangle", pan);
+        this.tone(620, 0.045, 0.055, "triangle", pan);
         break;
       case "clack":
-        this.noise(0.11, "bandpass", 1750, 0.16, pan);
-        this.tone(150, 0.1, 0.09, "sine", pan);
-        this.tone(78, 0.16, 0.05, "triangle", pan);
+        this.noise(0.11, "bandpass", 1750, 0.3, pan);
+        this.tone(150, 0.1, 0.18, "sine", pan);
+        this.tone(78, 0.16, 0.11, "triangle", pan);
         break;
       case "flip":
-        this.noise(0.05, "highpass", 2800, 0.07, pan);
-        this.tone(900, 0.04, 0.025, "triangle", pan);
+        this.noise(0.05, "highpass", 2800, 0.12, pan);
+        this.tone(900, 0.04, 0.05, "triangle", pan);
         break;
       case "shuffle":
         for (let i = 0; i < 9; i += 1) {
-          this.noise(0.09, "bandpass", 900 + i * 170, 0.06, (i % 3) * 0.3 - 0.3, i * 0.055);
+          this.noise(0.09, "bandpass", 900 + i * 170, 0.11, (i % 3) * 0.3 - 0.3, i * 0.055);
         }
-        this.tone(95, 0.3, 0.04, "triangle", 0);
+        this.tone(95, 0.3, 0.07, "triangle", 0);
         break;
       case "sweep":
-        this.noise(0.45, "bandpass", 380, 0.12, pan, 0, 2600);
-        this.tone(220, 0.35, 0.04, "sine", pan, 0, 540);
+        this.noise(0.45, "bandpass", 380, 0.2, pan, 0, 2600);
+        this.tone(220, 0.35, 0.07, "sine", pan, 0, 540);
         break;
       case "win":
-        [523.25, 659.25, 783.99, 1046.5].forEach((freq, index) => this.tone(freq, 0.32, 0.055, "triangle", pan, index * 0.075));
-        this.noise(0.5, "highpass", 3400, 0.035, pan, 0.05);
+        [523.25, 659.25, 783.99, 1046.5].forEach((freq, index) => this.tone(freq, 0.32, 0.09, "triangle", pan, index * 0.075));
+        this.noise(0.5, "highpass", 3400, 0.06, pan, 0.05);
         break;
       case "lose":
-        [330, 294, 262, 196].forEach((freq, index) => this.tone(freq, 0.3, 0.04, "sine", pan, index * 0.09));
+        [330, 294, 262, 196].forEach((freq, index) => this.tone(freq, 0.3, 0.07, "sine", pan, index * 0.09));
         break;
       case "undo":
-        this.tone(440, 0.12, 0.04, "triangle", pan, 0, 300);
-        this.tone(300, 0.18, 0.03, "sine", pan, 0.08);
+        this.tone(440, 0.12, 0.07, "triangle", pan, 0, 300);
+        this.tone(300, 0.18, 0.055, "sine", pan, 0.08);
         break;
       default:
         break;
@@ -2421,12 +2622,20 @@ function createCanvasTexture(THREE, draw, size = 512) {
   return texture;
 }
 
-function makeFeltTexture(THREE) {
+function hexToRgba(hex, alpha) {
+  const value = parseInt(hex.replace("#", ""), 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function makeFeltTexture(THREE, palette) {
   return createCanvasTexture(THREE, (ctx, size) => {
     const gradient = ctx.createRadialGradient(size * 0.5, size * 0.46, 40, size * 0.5, size * 0.5, size * 0.7);
-    gradient.addColorStop(0, "#56222a");
-    gradient.addColorStop(0.55, "#3d161d");
-    gradient.addColorStop(1, "#240b0f");
+    gradient.addColorStop(0, palette.felt[0]);
+    gradient.addColorStop(0.55, palette.felt[1]);
+    gradient.addColorStop(1, palette.felt[2]);
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, size, size);
 
@@ -2440,14 +2649,14 @@ function makeFeltTexture(THREE) {
 
     ctx.save();
     ctx.translate(size / 2, size / 2);
-    ctx.strokeStyle = "rgba(216, 178, 107, 0.22)";
+    ctx.strokeStyle = hexToRgba(palette.ring, 0.22);
     ctx.lineWidth = 2;
     [0.78, 0.70, 0.36, 0.30].forEach((radius) => {
       ctx.beginPath();
       ctx.arc(0, 0, size * radius * 0.5, 0, Math.PI * 2);
       ctx.stroke();
     });
-    ctx.strokeStyle = "rgba(216, 178, 107, 0.10)";
+    ctx.strokeStyle = hexToRgba(palette.ring, 0.1);
     ctx.lineWidth = 1;
     for (let i = 0; i < 32; i += 1) {
       const angle = (i / 32) * Math.PI * 2;
@@ -2456,32 +2665,32 @@ function makeFeltTexture(THREE) {
       ctx.lineTo(Math.cos(angle) * size * 0.35, Math.sin(angle) * size * 0.35);
       ctx.stroke();
     }
-    ctx.fillStyle = "rgba(216, 178, 107, 0.10)";
+    ctx.fillStyle = hexToRgba(palette.ring, 0.1);
     ctx.font = `500 ${size * 0.19}px "Iowan Old Style", "Palatino Linotype", "Noto Serif Thai", Georgia, serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("帥", 0, -size * 0.015);
     ctx.font = `600 ${size * 0.035}px "Avenir Next", "Sarabun", sans-serif`;
     ctx.letterSpacing = "8px";
-    ctx.fillStyle = "rgba(216, 178, 107, 0.16)";
+    ctx.fillStyle = hexToRgba(palette.ring, 0.16);
     ctx.fillText("L E A B · T U I", 0, size * 0.135);
     ctx.restore();
   }, 1024);
 }
 
-function makeWoodTexture(THREE) {
+function makeWoodTexture(THREE, palette) {
   return createCanvasTexture(THREE, (ctx, size) => {
-    ctx.fillStyle = "#3b180f";
+    ctx.fillStyle = palette.woodBase;
     ctx.fillRect(0, 0, size, size);
     for (let x = 0; x < size; x += 1) {
       const wave = Math.sin(x * 0.031) * 14 + Math.sin(x * 0.11) * 4;
-      const light = 0.12 + 0.09 * Math.sin(x * 0.12 + wave);
-      ctx.fillStyle = `rgba(${120 + Math.sin(x * 0.2) * 22}, ${58 + Math.sin(x * 0.07) * 14}, ${30 + Math.sin(x * 0.11) * 8}, ${Math.max(0.02, light)})`;
+      const light = 0.1 + 0.09 * Math.sin(x * 0.12 + wave);
+      ctx.fillStyle = hexToRgba(palette.woodLight, Math.max(0.02, light));
       ctx.fillRect(x, 0, 1.4, size);
     }
     for (let i = 0; i < 160; i += 1) {
       const y = Math.random() * size;
-      ctx.strokeStyle = `rgba(20, 6, 2, ${Math.random() * 0.13})`;
+      ctx.strokeStyle = hexToRgba(palette.woodDark, Math.random() * 0.16);
       ctx.lineWidth = Math.random() * 1.5;
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -2541,12 +2750,12 @@ function makeTileFaceTexture(THREE, tile) {
   }, 512);
 }
 
-function makeTileBackTexture(THREE) {
+function makeTileBackTexture(THREE, palette) {
   return createCanvasTexture(THREE, (ctx, size) => {
     const gradient = ctx.createRadialGradient(size * 0.38, size * 0.3, size * 0.04, size * 0.5, size * 0.5, size * 0.55);
-    gradient.addColorStop(0, "#65242c");
-    gradient.addColorStop(0.6, "#43151c");
-    gradient.addColorStop(1, "#250a0e");
+    gradient.addColorStop(0, palette.back[0]);
+    gradient.addColorStop(0.6, palette.back[1]);
+    gradient.addColorStop(1, palette.back[2]);
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, size, size);
     for (let i = 0; i < 700; i += 1) {
@@ -2555,7 +2764,7 @@ function makeTileBackTexture(THREE) {
       ctx.arc(Math.random() * size, Math.random() * size, Math.random() * 2.4, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.strokeStyle = "rgba(216, 178, 107, 0.68)";
+    ctx.strokeStyle = hexToRgba(palette.ring, 0.68);
     ctx.lineWidth = size * 0.012;
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size * 0.44, 0, Math.PI * 2);
@@ -2567,7 +2776,7 @@ function makeTileBackTexture(THREE) {
 
     ctx.save();
     ctx.translate(size / 2, size / 2);
-    ctx.strokeStyle = "rgba(216, 178, 107, 0.55)";
+    ctx.strokeStyle = hexToRgba(palette.ring, 0.55);
     ctx.lineWidth = size * 0.018;
     ctx.strokeRect(-size * 0.11, -size * 0.11, size * 0.22, size * 0.22);
     ctx.beginPath();
@@ -2650,9 +2859,11 @@ async function createScene() {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
 
+  let currentThemeId = SCENE_THEMES[prefs.theme] ? prefs.theme : "mahogany";
+  const scenePalette = SCENE_THEMES[currentThemeId];
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0f0507);
-  scene.fog = new THREE.Fog(0x0f0507, 15, 34);
+  scene.background = new THREE.Color(scenePalette.background);
+  scene.fog = new THREE.Fog(scenePalette.fog ?? scenePalette.background, 15, 34);
 
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 80);
   const portrait = window.matchMedia("(max-width: 640px)").matches;
@@ -2685,7 +2896,7 @@ async function createScene() {
   const ambient = new THREE.AmbientLight(0x5b2a2f, 0.55);
   scene.add(ambient);
 
-  const key = new THREE.DirectionalLight(0xffe2b8, 2.6);
+  const key = new THREE.DirectionalLight(scenePalette.key, 2.6);
   key.position.set(6.5, 13, 7.5);
   key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048);
@@ -2699,11 +2910,11 @@ async function createScene() {
   key.shadow.radius = 4;
   scene.add(key);
 
-  const rim = new THREE.DirectionalLight(0x8fcbb6, 0.8);
+  const rim = new THREE.DirectionalLight(scenePalette.rimLight, 0.8);
   rim.position.set(-8, 6, -7);
   scene.add(rim);
 
-  const warm = new THREE.SpotLight(0xffc78e, 95, 26, 0.62, 0.55, 1.7);
+  const warm = new THREE.SpotLight(scenePalette.warm, 95, 26, 0.62, 0.55, 1.7);
   warm.position.set(0, 12.5, 3.5);
   warm.target.position.set(0, 0, 0);
   warm.castShadow = true;
@@ -2712,23 +2923,23 @@ async function createScene() {
   scene.add(warm);
   scene.add(warm.target);
 
-  const redGlow = new THREE.PointLight(0xb63d52, 8, 12, 2);
+  const redGlow = new THREE.PointLight(scenePalette.redGlow, 8, 12, 2);
   redGlow.position.set(-6, 2.4, 4);
   scene.add(redGlow);
-  const jadeGlow = new THREE.PointLight(0x5fa88c, 6, 12, 2);
+  const jadeGlow = new THREE.PointLight(scenePalette.jadeGlow, 6, 12, 2);
   jadeGlow.position.set(6, 2.2, -4);
   scene.add(jadeGlow);
 
   const table = new THREE.Group();
-  const feltTexture = makeFeltTexture(THREE);
-  const woodTexture = makeWoodTexture(THREE);
+  const feltTexture = makeFeltTexture(THREE, scenePalette);
+  const woodTexture = makeWoodTexture(THREE, scenePalette);
   woodTexture.wrapS = THREE.RepeatWrapping;
   woodTexture.wrapT = THREE.RepeatWrapping;
   woodTexture.repeat.set(4, 1);
 
   const feltMaterial = new THREE.MeshStandardMaterial({ map: feltTexture, roughness: 0.96, metalness: 0.02 });
-  const woodSide = new THREE.MeshStandardMaterial({ map: woodTexture, color: 0x8b5a3c, roughness: 0.55, metalness: 0.08 });
-  const woodDark = new THREE.MeshStandardMaterial({ color: 0x2e110c, roughness: 0.66, metalness: 0.12 });
+  const woodSide = new THREE.MeshStandardMaterial({ map: woodTexture, color: scenePalette.woodTint, roughness: 0.55, metalness: 0.08 });
+  const woodDark = new THREE.MeshStandardMaterial({ color: scenePalette.woodDark, roughness: 0.66, metalness: 0.12 });
 
   const tabletop = new THREE.Mesh(new THREE.CylinderGeometry(6.62, 6.62, 0.42, 96), [woodSide, feltMaterial, woodDark]);
   tabletop.position.y = TABLE_Y - 0.21;
@@ -2736,13 +2947,13 @@ async function createScene() {
   tabletop.receiveShadow = true;
   table.add(tabletop);
 
-  const rimRing = new THREE.Mesh(new THREE.TorusGeometry(6.64, 0.19, 18, 120), new THREE.MeshStandardMaterial({ color: 0x35150f, roughness: 0.42, metalness: 0.22 }));
+  const rimRing = new THREE.Mesh(new THREE.TorusGeometry(6.64, 0.19, 18, 120), new THREE.MeshStandardMaterial({ color: scenePalette.rim, roughness: 0.42, metalness: 0.22 }));
   rimRing.rotation.x = Math.PI / 2;
   rimRing.position.y = TABLE_Y - 0.06;
   rimRing.castShadow = true;
   table.add(rimRing);
 
-  const goldInlay = new THREE.Mesh(new THREE.TorusGeometry(6.3, 0.012, 8, 120), new THREE.MeshStandardMaterial({ color: 0xc9a35e, roughness: 0.28, metalness: 0.8 }));
+  const goldInlay = new THREE.Mesh(new THREE.TorusGeometry(6.3, 0.012, 8, 120), new THREE.MeshStandardMaterial({ color: scenePalette.gold, roughness: 0.28, metalness: 0.8 }));
   goldInlay.rotation.x = Math.PI / 2;
   goldInlay.position.y = TABLE_Y + 0.003;
   table.add(goldInlay);
@@ -2760,7 +2971,7 @@ async function createScene() {
 
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(20, 72),
-    new THREE.MeshStandardMaterial({ color: 0x17090c, roughness: 0.9, metalness: 0.05 })
+    new THREE.MeshStandardMaterial({ color: scenePalette.floor, roughness: 0.9, metalness: 0.05 })
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -2.9;
@@ -2768,9 +2979,10 @@ async function createScene() {
   scene.add(floor);
 
   const faceTextures = new Map();
-  const backTexture = makeTileBackTexture(THREE);
-  const sideMaterial = new THREE.MeshStandardMaterial({ color: 0xe6d2ab, roughness: 0.52, metalness: 0.02 });
-  const edgeMaterial = new THREE.MeshStandardMaterial({ color: 0x9b7648, roughness: 0.42, metalness: 0.35 });
+  const backTexture = makeTileBackTexture(THREE, scenePalette);
+  const backMaterial = new THREE.MeshStandardMaterial({ map: backTexture, roughness: 0.46, metalness: 0.04 });
+  const sideMaterial = new THREE.MeshStandardMaterial({ color: scenePalette.tileSide, roughness: 0.52, metalness: 0.02 });
+  const edgeMaterial = new THREE.MeshStandardMaterial({ color: scenePalette.tileEdge, roughness: 0.42, metalness: 0.35 });
   const hitMeshes = [];
   const tileObjects = new Map();
 
@@ -2806,7 +3018,7 @@ async function createScene() {
 
     const back = new THREE.Mesh(
       new THREE.CircleGeometry(TILE_RADIUS * 0.965, 48),
-      new THREE.MeshStandardMaterial({ map: backTexture, roughness: 0.46, metalness: 0.04 })
+      backMaterial
     );
     back.rotation.x = Math.PI / 2;
     back.position.y = -TILE_THICKNESS / 2 - 0.0015;
@@ -3250,12 +3462,57 @@ async function createScene() {
   }
   renderer.setAnimationLoop(render);
 
+  function applySceneTheme(id) {
+    const palette = SCENE_THEMES[id];
+    if (!palette) return;
+    currentThemeId = id;
+    const oldFelt = feltMaterial.map;
+    const oldWood = woodSide.map;
+    const oldBack = backMaterial.map;
+
+    const nextFelt = makeFeltTexture(THREE, palette);
+    feltMaterial.map = nextFelt;
+    feltMaterial.needsUpdate = true;
+
+    const nextWood = makeWoodTexture(THREE, palette);
+    nextWood.wrapS = THREE.RepeatWrapping;
+    nextWood.wrapT = THREE.RepeatWrapping;
+    nextWood.repeat.set(4, 1);
+    woodSide.map = nextWood;
+    woodSide.color.set(palette.woodTint);
+    woodSide.needsUpdate = true;
+
+    backMaterial.map = makeTileBackTexture(THREE, palette);
+    backMaterial.needsUpdate = true;
+
+    woodDark.color.set(palette.woodDark);
+    rimRing.material.color.set(palette.rim);
+    goldInlay.material.color.set(palette.gold);
+    floor.material.color.set(palette.floor);
+    sideMaterial.color.set(palette.tileSide);
+    edgeMaterial.color.set(palette.tileEdge);
+
+    scene.background.set(palette.background);
+    scene.fog.color.set(palette.fog ?? palette.background);
+    key.color.set(palette.key);
+    rim.color.set(palette.rimLight);
+    warm.color.set(palette.warm);
+    redGlow.color.set(palette.redGlow);
+    jadeGlow.color.set(palette.jadeGlow);
+
+    if (oldFelt) oldFelt.dispose();
+    if (oldWood) oldWood.dispose();
+    if (oldBack) oldBack.dispose();
+    updateLabels(currentState);
+  }
+
   const api = {
     deal,
     sync,
     collect,
     flipHumanHand,
     setSelected,
+    setTheme: applySceneTheme,
     reset(gameState) {
       currentState = gameState;
       for (const record of tileObjects.values()) {
@@ -3273,6 +3530,9 @@ async function createScene() {
         target: controls.target.toArray(),
         topView,
         cinema,
+        theme: currentThemeId,
+        background: scene.background?.getHexString?.(),
+        fog: scene.fog?.color?.getHexString?.(),
         tiles: [...tileObjects.values()].filter((record) => record.root.visible).length
       };
     }
@@ -3289,9 +3549,14 @@ function bindEvents() {
   $("#soundToggle")?.addEventListener("click", () => setSound(!prefs.sound));
   $("#rulesBtn")?.addEventListener("click", () => { renderRules(); openModal("rulesModal"); audio?.play("click", 0); });
   $("#aboutBtn")?.addEventListener("click", () => { renderAbout(); openModal("aboutModal"); audio?.play("click", 0); });
+  $("#aboutBtnSide")?.addEventListener("click", () => { renderAbout(); openModal("aboutModal"); audio?.play("click", 0); });
   $("#resetViewBtn")?.addEventListener("click", () => scene?.resetView());
   $("#topViewBtn")?.addEventListener("click", () => scene?.toggleTopView());
   $("#cinemaBtn")?.addEventListener("click", () => scene?.toggleCinema());
+  $("#displayBtn")?.addEventListener("click", () => { renderDisplay(); openModal("displayModal"); audio?.play("click", 0); });
+  $$("button[data-font-size]").forEach((button) => button.addEventListener("click", () => applyFontSize(button.dataset.fontSize)));
+  $$("button[data-theme-choice]").forEach((button) => button.addEventListener("click", () => applyTheme(button.dataset.themeChoice)));
+  $("#displayReset")?.addEventListener("click", resetDisplay);
 
   $("#leadBtn")?.addEventListener("click", humanLead);
   $("#revealBtn")?.addEventListener("click", () => humanFollow(true));
@@ -3357,6 +3622,8 @@ function bindEvents() {
 async function boot() {
   loadPrefs();
   loadStats();
+  applyFontSize(prefs.fontSize, { silent: true });
+  applyTheme(prefs.theme, { silent: true });
   audio = new StudioAudio();
   applyLanguage(LANG);
   bindEvents();
@@ -3442,6 +3709,11 @@ window.LeabTui = {
   simulateRound,
   detectCombo: (ids) => detectCombo(ids.map((id) => TILE_BY_ID[id]).filter(Boolean)),
   getCamera: () => scene?.getState?.() || null,
+  applyFontSize,
+  applyTheme,
+  getDisplay: () => ({ fontSize: prefs.fontSize, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),
+  getAudioState: () => ({ context: audio?.ctx?.state || null, unlocked: Boolean(audio?.unlocked), sound: prefs.sound, master: audio?.master?.gain.value ?? null, level: audio?.level?.() ?? 0, time: audio?.ctx?.currentTime ?? null, playCount: audio?.playCount ?? 0, lastPlayed: audio?.lastPlayed ?? null }),
+  playSound: (name, seat = 0) => audio?.play(name, seat),
   inspect: (id) => inspectTile(id),
   inspectHidden,
   resetView: () => scene?.resetView(),

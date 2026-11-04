@@ -87,7 +87,11 @@ const required = [
   "screenshots/hero.jpg",
   "screenshots/thai.jpg",
   "screenshots/mobile.jpg",
-  "screenshots/rules.jpg"
+  "screenshots/rules.jpg",
+  "screenshots/jade.jpg",
+  "screenshots/midnight.jpg",
+  "screenshots/display.jpg",
+  "screenshots/mobile-xl.jpg"
 ];
 
 for (const file of required) {
@@ -135,6 +139,22 @@ ok(script.includes("copy.captures = source.captures.map"), "serialization conver
 ok(script.includes("serializeCombo"), "combination serializer exists");
 ok(!/localStorage\.setItem\([^,]+,\s*JSON\.stringify\(state\)/.test(script), "live state is not written to localStorage");
 ok(script.includes("window.LeabTui"), "public test surface exists");
+ok(script.includes("const FONT_SIZES"), "font size table exists");
+ok(script.includes("scale: 0.9") && script.includes("scale: 1.24"), "four font sizes are defined");
+ok(script.includes("const THEMES"), "theme table exists");
+ok(script.includes('id: "jade"') && script.includes('id: "midnight"'), "three themes are defined");
+ok(script.includes("setTheme: applySceneTheme"), "scene theme switching is wired");
+ok(script.includes("this.master.gain.value = 0.8"), "audio master gain is audible");
+ok(script.includes("createDynamicsCompressor"), "audio compressor exists");
+ok(script.includes("this.analyser"), "audio analyser tap exists");
+ok(script.includes("ctx.resume().then"), "first-gesture audio retry exists");
+ok(script.includes("scene.fog.color.set"), "scene fog follows the theme");
+ok(script.includes('theme: "mahogany"') && script.includes('fontSize: "md"'), "display preferences have defaults");
+ok(index.includes('id="displayModal"'), "display modal exists");
+ok(index.includes('data-font-size="xl"'), "font size control exists");
+ok(index.includes('data-theme-choice="jade"'), "theme control exists");
+ok(css.includes('html[data-theme="jade"]') && css.includes('html[data-theme="midnight"]'), "theme CSS exists");
+ok(css.includes("--fs-scale") && css.includes("data-font-size=\"xl\""), "font scale CSS exists");
 
 ok(script.includes("function scorePiles"), "scorePiles exists");
 ok(script.includes("if (piles >= 8) return 16;"), "Chuan scores 16");
@@ -158,7 +178,7 @@ const enKeys = keys(enBlock);
 const thKeys = keys(thBlock);
 const missingTh = enKeys.filter((key) => !thKeys.includes(key));
 const missingEn = thKeys.filter((key) => !enKeys.includes(key));
-ok(enKeys.length >= 200, "English dictionary is substantial", String(enKeys.length));
+ok(enKeys.length >= 230, "English dictionary is substantial", String(enKeys.length));
 ok(!missingTh.length && !missingEn.length, "i18n dictionaries are symmetrical", `missing TH: ${missingTh.join(",")} | missing EN: ${missingEn.join(",")}`);
 
 // Relative Markdown links must exist.

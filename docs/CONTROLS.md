@@ -16,6 +16,7 @@
 | `?` button | Rules |
 | `i` button | About / credits |
 | Camera buttons (top-right) | Reset view · top view · cinematic orbit |
+| **Aa** (stage toolbar) | Display settings: text size and theme |
 
 The camera is damped; release the mouse and it glides to a stop. Pan is clamped so the table cannot be lost off-screen.
 
@@ -51,6 +52,15 @@ The app is usable without a mouse for the main flow:
 | **Hint** | Select a deterministic recommendation. It does not play the tiles. |
 | **Undo trick** | Rewind the last completed trick and explain the comparison. |
 
+## Display settings
+
+Press **Aa** in the stage toolbar to open the Display panel.
+
+- **Text size** — Small (0.9×), Default (1×), Large (1.12×), Extra large (1.24×). The whole interface scales; the 3D table does not.
+- **Theme** — Mahogany, Jade Court, Midnight Lacquer. Both the panels and the 3D felt/wood/light palette change.
+- **Reset display** returns to Default + Mahogany.
+- The choices persist in `localStorage` and are restored on reload.
+
 ## Camera presets
 
 - **Reset (⤾)** — return to the desktop/portrait home view.
@@ -60,6 +70,6 @@ The app is usable without a mouse for the main flow:
 ## Troubleshooting
 
 - **No table:** check the browser console for a Three.js CDN or WebGL 2 error. The coach and rules still work.
-- **No sound:** click once anywhere in the page. Browsers require a gesture before audio can start.
+- **No sound:** click once anywhere in the page (browsers require a gesture), confirm the speaker icon is on, and check the device/tab volume. The sounds are synthesised; the analyser in `verify.mjs` measures a real signal.
 - **Hand hidden on phone:** rotate to landscape or use the hand chips in the sidebar; the 3D hand is framed for 390×844 portrait.
 - **Tile not selectable:** it is not your turn, it is not in your hand, or the round is over.

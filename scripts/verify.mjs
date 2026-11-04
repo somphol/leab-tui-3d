@@ -111,6 +111,50 @@ async function main() {
   if (self.bootError === false) pass("no boot error overlay");
   else fail("no boot error overlay");
 
+  const audioExpr = `(async () => {
+    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 150));
+    LeabTui.playSound('clack', 0);
+    let peak = 0;
+    for (let i = 0; i < 12; i += 1) {
+      await new Promise((r) => setTimeout(r, 20));
+      peak = Math.max(peak, LeabTui.getAudioState().level);
+    }
+    const state = LeabTui.getAudioState();
+    return JSON.stringify({ context: state.context, unlocked: state.unlocked, peak, playCount: state.playCount });
+  })()`;
+  const audio = runHarness(["--url", base, "--wait", "2500", "--eval", audioExpr]);
+  const audioValue = audio.evalValue || {};
+  if (audioValue.context === "running" && audioValue.unlocked && audioValue.peak > 0.01) pass(`audio signal measured (peak ${audioValue.peak.toFixed(3)})`);
+  else fail("audio signal measured", JSON.stringify(audioValue));
+
+  const display = runHarness(["--url", base, "--wait", "2500", "--eval", `(async () => {
+    LeabTui.applyFontSize('xl');
+    LeabTui.applyTheme('jade');
+    document.querySelector('#displayBtn').click();
+    await new Promise((r) => setTimeout(r, 700));
+    const style = getComputedStyle(document.documentElement);
+    return JSON.stringify({
+      font: document.documentElement.dataset.fontSize,
+      scale: style.getPropertyValue('--fs-scale').trim(),
+      theme: document.documentElement.dataset.theme,
+      scene: LeabTui.getCamera()?.theme,
+      prefs: LeabTui.getPrefs(),
+      modal: !document.querySelector('#displayModal').hidden,
+      fontButtons: document.querySelectorAll('button[data-font-size]').length,
+      themeButtons: document.querySelectorAll('button[data-theme-choice]').length
+    });
+  })()`]);
+  const displayValue = display.evalValue || {};
+  if (displayValue.font === "xl" && displayValue.scale === "1.24") pass("text size XL applies a 1.24 scale");
+  else fail("text size XL applies a 1.24 scale", JSON.stringify(displayValue));
+  if (displayValue.theme === "jade" && displayValue.scene === "jade") pass("Jade theme reaches the UI and 3D scene");
+  else fail("Jade theme reaches the UI and 3D scene", JSON.stringify(displayValue));
+  if (displayValue.prefs?.fontSize === "xl" && displayValue.prefs?.theme === "jade") pass("display preferences persist");
+  else fail("display preferences persist", JSON.stringify(displayValue.prefs));
+  if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.themeButtons === 3) pass("display panel exposes four sizes and three themes");
+  else fail("display panel exposes four sizes and three themes", JSON.stringify(displayValue));
+
   const flow = runHarness(["--url", base, "--wait", "900", "--eval", playthrough]);
   const value = flow.evalValue || {};
   const flowExceptions = (flow.events || []).filter((event) => event.type === "exception");

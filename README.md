@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.0.0-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.1.0-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -19,6 +19,7 @@ A bilingual, interactive 3D studio for **เลี๊ยบตุ่ย (Leab-Tu
 - **Carved 3D Xiangqi tiles.** Every tile is a bevelled cylinder with a procedurally painted Hanzi face, raised rim and a lacquered back. Dealing, flipping, playing and capture sweeps are animated with lerped transforms.
 - **A table you can orbit.** Drag to rotate, scroll to zoom, right-drag to pan. Reset, top view and a cinematic orbit are one click away.
 - **A coach that explains the trick.** The side panel names a legal lead, warns when a set cannot beat the table, counts the remaining tiles and explains rank dominance. It never plays for you.
+- **Display settings for long sessions.** Four interface text sizes (Small, Default, Large, Extra large) and three themes — **Mahogany**, **Jade Court** and **Midnight Lacquer** — that recolour both the panels and the 3D felt, wood, inlay and lighting. Preferences persist.
 - **Undo and Learn.** Rewind the last trick and read a side-by-side comparison of your set and the winning set, with the hierarchy in view.
 - **Bilingual everywhere.** EN ⇄ ไทย switches the header, HUD, rules, tile names, coach, summaries, log, inspector and ARIA labels without a reload.
 - **Synthesised sound.** Shuffles, wooden clacks, flips, sweeps and win/lose stings are generated with the Web Audio API. No audio files, no network requests.
@@ -37,7 +38,7 @@ A bilingual, interactive 3D studio for **เลี๊ยบตุ่ย (Leab-Tu
 | **Trick** | Everyone sends the called number of tiles. Only revealed sets compete. The winner takes all 4×N tiles and leads next |
 | **Scoring** | 2 piles = par (0). Each pile above or below is ±1. All 8 piles = Chuan, **16 points**. First to 20 wins |
 
-Full rules, including the source and the interpretation choices: **[docs/RULES.md](docs/RULES.md)**.
+The **Display** panel also carries the text-size and theme controls. Full rules, including the source and the interpretation choices: **[docs/RULES.md](docs/RULES.md)**.
 
 ## Quick start
 
@@ -60,6 +61,7 @@ An HTTP server is required because `script.js` is an ES module. The page needs n
 | Select via the accessible list | Click a chip in **Your hand** |
 | Hint / Clear | Buttons, or `H` / `Esc` |
 | Lead / Reveal / Play face-down | Buttons under the table |
+| Display settings | `Aa` in the stage toolbar |
 | Rules / About | `?` and `i` in the header |
 
 See **[docs/CONTROLS.md](docs/CONTROLS.md)** for touch and keyboard details.
@@ -73,6 +75,11 @@ See **[docs/CONTROLS.md](docs/CONTROLS.md)** for touch and keyboard details.
 | Rules drawer | Phone layout |
 | --- | --- |
 | ![Rules](screenshots/rules.jpg) | ![Mobile](screenshots/mobile.jpg) |
+
+### Themes
+
+![Jade Court](screenshots/jade.jpg)
+![Midnight Lacquer](screenshots/midnight.jpg)
 
 ## Run and verify
 

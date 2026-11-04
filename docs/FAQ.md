@@ -33,6 +33,15 @@ No. It selects a legal recommendation; you still press Lead, Reveal or Play face
 **Does Undo work after a reload?**  
 No. The live game resumes, but the pre-trick snapshot is intentionally not persisted. Undo is a one-trick teaching tool.
 
+**Can I make the text bigger?**  
+Yes. Open **Aa** in the stage toolbar and choose Small, Default, Large or Extra large. The interface scales; the 3D table stays fixed. The choice persists.
+
+**Can I change the theme?**  
+Yes. The same Display panel offers Mahogany, Jade Court and Midnight Lacquer. Themes recolour the UI and the 3D felt/wood/light palette. They do not change the rules.
+
+**I hear no sound. What should I check?**  
+Click once anywhere in the page first — browsers block audio until a gesture. Then check the speaker icon (sound on), the device volume, and the browser tab mute. The clack is synthesised, not a file; there is no audio download to fail. If you still hear nothing, open the console and check for an `AudioContext` error.
+
 **Where is my data?**  
 In this browser's `localStorage` (`leabtui.match.v1`, `leabtui.prefs.v1`, `leabtui.stats.v1`). **Export JSON** writes a file; nothing is uploaded.
 

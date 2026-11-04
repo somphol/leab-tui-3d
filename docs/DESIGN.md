@@ -23,6 +23,22 @@ The table should feel like a late-night back room in a Thai shophouse: dark maho
 
 Red and black tiles are distinguished by Hanzi and written colour, not by hue alone. The red tone is a lacquer, not a fire-engine red; the black is warm near-black (`#201a18`), not pure black.
 
+## Themes
+
+Three themes share one layout and one component set:
+
+| Theme | UI | 3D |
+| --- | --- | --- |
+| **Mahogany** | burgundy panels, brass, lacquer red | wine felt, dark mahogany, brass inlay, warm key |
+| **Jade Court** | deep green panels, cool brass, jade glow | green felt, dark walnut, brass inlay, warm/jade lights |
+| **Midnight Lacquer** | blue-black panels, silver, cold blue | indigo felt, near-black wood, silver inlay, cool key |
+
+The theme is a CSS variable set on `html[data-theme]` plus a `SCENE_THEMES` palette. It changes the felt, wood, rim, inlay, floor, key/rim/warm lights, point lights and tile side/edge/back. It never changes the rules, the tile faces or the layout.
+
+## Text size
+
+Four interface sizes sit on `html[data-font-size]` and drive `--fs-scale` (0.9, 1, 1.12, 1.24). All CSS type uses `calc(...px * var(--fs-scale))`, so the header, HUD, panels, dock, chips, modals, rules and inspector scale together. The 3D table does **not** scale; it is a physical object, and scaling it would break the camera framing. The Display panel previews both changes immediately and persists them.
+
 ## Type
 
 - Display: `Iowan Old Style`, `Palatino Linotype`, `Noto Serif Thai`, `Thonburi`, Georgia, serif. It carries the title, panel headings, coach, modal headings and tile medallions.

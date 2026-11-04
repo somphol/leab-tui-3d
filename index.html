@@ -69,6 +69,7 @@
           <button id="resetViewBtn" class="tool-btn" type="button" title="Reset camera" aria-label="Reset camera">⤾</button>
           <button id="topViewBtn" class="tool-btn" type="button" title="Top view" aria-label="Top view">⌖</button>
           <button id="cinemaBtn" class="tool-btn" type="button" title="Cinematic orbit" aria-label="Cinematic orbit" aria-pressed="false">◉</button>
+          <button id="displayBtn" class="tool-btn" type="button" title="Display settings" aria-label="Display settings">Aa</button>
         </div>
 
         <div id="toastLayer" class="toast-layer" aria-live="polite" aria-atomic="false"></div>
@@ -155,6 +156,8 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
+          <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
+          <span class="dot">·</span>
           <a href="https://github.com/somphol/leab-tui-3d" target="_blank" rel="noopener">GitHub</a>
         </footer>
       </aside>
@@ -164,6 +167,44 @@
       <h2 data-i18n="error.webglTitle">The 3D table could not start</h2>
       <p data-i18n="error.webglBody">Three.js needs WebGL 2 and a network connection to the CDN. The rules, score and coaching panels still work.</p>
       <button class="btn btn-gold" type="button" data-close-boot data-i18n="actions.continue">Continue</button>
+    </div>
+
+    <div id="displayModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="displayTitle">
+      <div class="modal-card modal-small">
+        <button class="modal-close" type="button" data-close="displayModal" aria-label="Close">×</button>
+        <h2 id="displayTitle" data-i18n="display.title">Display</h2>
+        <div class="display-section">
+          <h3 data-i18n="display.font">Text size</h3>
+          <div class="segmented" id="fontSizeGroup" role="group" aria-label="Text size">
+            <button type="button" data-font-size="sm" data-i18n="display.small">Small</button>
+            <button type="button" data-font-size="md" data-i18n="display.default">Default</button>
+            <button type="button" data-font-size="lg" data-i18n="display.large">Large</button>
+            <button type="button" data-font-size="xl" data-i18n="display.xlarge">Extra large</button>
+          </div>
+        </div>
+        <div class="display-section">
+          <h3 data-i18n="display.theme">Theme</h3>
+          <div class="theme-grid" id="themeGroup" role="group" aria-label="Theme">
+            <button type="button" class="theme-card" data-theme-choice="mahogany">
+              <span class="swatch swatch-mahogany" aria-hidden="true"></span>
+              <span><b data-i18n="theme.mahogany">Mahogany</b><span data-i18n="theme.mahoganyDesc">Burgundy felt, aged brass and lacquer red.</span></span>
+            </button>
+            <button type="button" class="theme-card" data-theme-choice="jade">
+              <span class="swatch swatch-jade" aria-hidden="true"></span>
+              <span><b data-i18n="theme.jade">Jade Court</b><span data-i18n="theme.jadeDesc">Deep green felt, cool brass and a jade glow.</span></span>
+            </button>
+            <button type="button" class="theme-card" data-theme-choice="midnight">
+              <span class="swatch swatch-midnight" aria-hidden="true"></span>
+              <span><b data-i18n="theme.midnight">Midnight Lacquer</b><span data-i18n="theme.midnightDesc">Blue-black felt, silver inlay and a cold table light.</span></span>
+            </button>
+          </div>
+        </div>
+        <p class="display-note" data-i18n="display.note">Text size scales the interface, not the 3D table. Theme changes the panels and the felt / wood palette.</p>
+        <div class="modal-actions">
+          <button id="displayReset" class="btn btn-ghost" type="button" data-i18n="display.reset">Reset display</button>
+          <button class="btn btn-gold" type="button" data-close="displayModal" data-i18n="actions.continue">Continue</button>
+        </div>
+      </div>
     </div>
 
     <div id="rulesModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="rulesTitle">

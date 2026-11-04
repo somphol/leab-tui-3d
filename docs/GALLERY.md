@@ -14,6 +14,24 @@ A trick in progress: the human hand fanned across the south edge, the opponent h
 
 The same table after **EN ⇄ ไทย**: header, HUD, seat names, coach, scoreboard, actions, inspector, tile names and hand list. The selected tile is lifted with a gold ring; the inspector shows จุก 兵, แดง · Soldier, อันดับ 1/7, จำนวน 5.
 
+## Jade Court
+
+![Jade Court](../screenshots/jade.jpg)
+
+The green theme: felt, panels and brass follow the palette; the tiles stay ivory for contrast.
+
+## Midnight Lacquer
+
+![Midnight Lacquer](../screenshots/midnight.jpg)
+
+The blue-black theme: silver inlay, cool key light and a cold table.
+
+## Display panel
+
+![Display panel](../screenshots/display.jpg)
+
+Four text sizes and three themes, with a reset. The modal is the same component system as the rules and about drawers.
+
 ## Rules drawer
 
 ![Rules](../screenshots/rules.jpg)
@@ -25,6 +43,12 @@ The in-app rules: goal, equipment, hierarchy, colour/tie, the nine calls, the tr
 ![Phone](../screenshots/mobile.jpg)
 
 The portrait layout: a wider camera keeps the whole table and the human hand visible; the dock is compact (title, one line of advice, four buttons) and the coach/score panels follow below the stage.
+
+## Phone at Extra large + Jade
+
+![Phone at XL with Jade](../screenshots/mobile-xl.jpg)
+
+The stress case: 390×844, 1.24× text and the Jade Court palette. The header drops the About icon (it moves to the sidebar footer), the HUD wraps to two rows, the action buttons wrap to two rows, and the hand is still visible.
 
 ## What is not shown
 

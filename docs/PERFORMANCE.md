@@ -23,6 +23,7 @@ The scene is tiny by WebGL standards. The dominant costs are the two shadow maps
 - Pixel ratio is capped at 2. On a 3× phone this avoids 2.25× the fragment work for little visual gain.
 - The table uses `MeshStandardMaterial`; no transmission, no clearcoat, no environment map.
 - `prefers-reduced-motion` only affects CSS; Three.js timings are already short (≈520–760 ms).
+- Theme changes regenerate three 1024²/512² CanvasTextures once and dispose the old maps. Text size is pure CSS (`--fs-scale`) with no render-loop cost.
 
 ## Measured
 
