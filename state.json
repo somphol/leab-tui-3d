@@ -9,23 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-04T00:16:43-08:00",
     "startedAt": "2026-11-04T00:16:43-08:00",
-    "packagedAt": "2026-11-04T01:20:36-08:00",
-    "durationSeconds": 3833,
-    "durationHuman": "1h 3m 53s",
+    "packagedAt": "2026-11-04T01:24:23-08:00",
+    "durationSeconds": 4060,
+    "durationHuman": "1h 7m 40s",
     "timezone": "UTC",
-    "note": "Source-freeze snapshot from the OpenCode session record at 2026-11-04T01:20:36-08:00. The final state-file commit and Pages verification add a small number of tokens; the session ID is recorded below so the next agent can re-measure from opencode.db.",
-    "includes": "Rules research and interpretation; pure rules engine; heuristic AI; four-seat game flow; undo snapshots; 3D table with 32 carved tiles and procedural textures; OrbitControls; responsive portrait camera; bilingual EN/TH copy; coach, inspector and hint; synthesised Web Audio; localStorage autosave; JSON export; self-test; CDP verification harness; screenshots; release documentation."
+    "note": "Handoff snapshot from the OpenCode session record at 2026-11-04T01:24:23-08:00, after the project and skill were published. The final state-file commit and Pages rebuild add a small amount; re-measure from the session ID if exact final numbers are needed.",
+    "includes": "Rules research and interpretation; pure rules engine; heuristic AI; four-seat game flow; undo snapshots; 3D table with 32 carved tiles and procedural textures; OrbitControls; responsive portrait camera; bilingual EN/TH copy; coach, inspector and hint; synthesised Web Audio; localStorage autosave; JSON export; self-test; CDP verification harness; screenshots; release documentation.",
+    "publishedAt": "2026-11-04T01:23:25Z"
   },
   "tokens": {
-    "input": 317490,
-    "output": 139948,
-    "reasoning": 85199,
-    "cacheRead": 28995072,
+    "input": 322458,
+    "output": 142357,
+    "reasoning": 86810,
+    "cacheRead": 31036288,
     "cacheWrite": 1639,
-    "total": 542637,
-    "totalWithCache": 29539348,
+    "total": 551625,
+    "totalWithCache": 31589552,
     "cost": 0.0,
-    "note": "Source-freeze snapshot from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T01:20:36-08:00. total = input + output + reasoning. Cache reads/writes are context usage and are reported separately. The final state-file commit adds a small amount."
+    "note": "Handoff snapshot from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T01:24:23-08:00. total = input + output + reasoning. Cache reads/writes are context usage and are reported separately. The final state-file commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,

@@ -35,24 +35,24 @@
 | Documentation, release files, state record | 01:03–01:15 | ~12m |
 | GitHub publication, Pages and skill catalog | 01:15–01:21 | ~6m |
 
-**Measured build duration:** **1h 3m 53s** (3,833 s), source freeze at 2026-11-04 01:20:36 -08:00.
+**Measured build duration:** **1h 7m 40s** (4,060 s), handoff snapshot at 2026-11-04 01:24:23 -08:00. The final state commit and Pages rebuild add a small amount.
 
 ## Token consumption
 
-Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 01:20:36 (-08:00):
+Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 01:24:23 (-08:00), after the project and skill were published:
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 317,490 |
-| Output | 139,948 |
-| Reasoning | 85,199 |
-| **Total (input + output + reasoning)** | **542,637** |
-| Cache read | 28,995,072 |
+| Input | 322,458 |
+| Output | 142,357 |
+| Reasoning | 86,810 |
+| **Total (input + output + reasoning)** | **551,625** |
+| Cache read | 31,036,288 |
 | Cache write | 1,639 |
-| **Total including cache** | **29,539,348** |
+| **Total including cache** | **31,589,552** |
 | Cost | $0.00 (as reported) |
 
-The cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. These are source-freeze figures. The final state-file commit and Pages verification add a small number of tokens; the session ID allows re-measurement from `opencode.db`.
+The cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. These are handoff figures. The final state-file commit and Pages rebuild add a small number of tokens; the session ID allows re-measurement from `opencode.db`.
 
 ## What shipped
 
