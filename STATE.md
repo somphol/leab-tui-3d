@@ -12,12 +12,12 @@
 | Project status | ✅ Complete, verified and published |
 | App version | `1.0.0` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 25/25) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Source files | `index.html`, `style.css`, `script.js` |
 | Source lines | 4,443 |
-| Source size | ~230 KB |
+| Source size | 196,076 bytes (~191 KB) |
 | Runtime dependency | Three.js r160 from jsDelivr (pinned) |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
@@ -32,27 +32,27 @@
 | First headless run; canvas, render and audio fixes | 00:40–00:50 | ~10m |
 | Full round, undo, next-round and reload tests | 00:50–00:58 | ~8m |
 | Screenshots (EN, TH, rules, mobile) | 00:58–01:03 | ~5m |
-| Documentation, release files, state record | 01:03–… | — |
-| GitHub publication and Pages verification | — | — |
+| Documentation, release files, state record | 01:03–01:15 | ~12m |
+| GitHub publication, Pages and skill catalog | 01:15–01:21 | ~6m |
 
-**Measured build duration:** 46m 33s at the documentation checkpoint (2,793 s). The final packaged duration is recorded in `state.json` and updated at the end of the session.
+**Measured build duration:** **1h 3m 53s** (3,833 s), source freeze at 2026-11-04 01:20:36 -08:00.
 
 ## Token consumption
 
-Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 01:03:16 (UTC):
+Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 01:20:36 (-08:00):
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 229,660 |
-| Output | 79,621 |
-| Reasoning | 75,745 |
-| **Total (input + output + reasoning)** | **385,026** |
-| Cache read | 10,768,256 |
+| Input | 317,490 |
+| Output | 139,948 |
+| Reasoning | 85,199 |
+| **Total (input + output + reasoning)** | **542,637** |
+| Cache read | 28,995,072 |
 | Cache write | 1,639 |
-| **Total including cache** | **11,163,282** |
+| **Total including cache** | **29,539,348** |
 | Cost | $0.00 (as reported) |
 
-The cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The final figures, including the release documentation and publishing turns, are written to `state.json` at the end of the session.
+The cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. These are source-freeze figures. The final state-file commit and Pages verification add a small number of tokens; the session ID allows re-measurement from `opencode.db`.
 
 ## What shipped
 
