@@ -91,7 +91,9 @@ const required = [
   "screenshots/jade.jpg",
   "screenshots/midnight.jpg",
   "screenshots/display.jpg",
-  "screenshots/mobile-xl.jpg"
+  "screenshots/mobile-xl.jpg",
+  "screenshots/parchment.jpg",
+  "screenshots/daybreak.jpg"
 ];
 
 for (const file of required) {
@@ -142,7 +144,7 @@ ok(script.includes("window.LeabTui"), "public test surface exists");
 ok(script.includes("const FONT_SIZES"), "font size table exists");
 ok(script.includes("scale: 0.9") && script.includes("scale: 1.24"), "four font sizes are defined");
 ok(script.includes("const THEMES"), "theme table exists");
-ok(script.includes('id: "jade"') && script.includes('id: "midnight"'), "three themes are defined");
+ok(script.includes('id: "jade"') && script.includes('id: "midnight"') && script.includes('id: "parchment"') && script.includes('id: "daybreak"'), "five themes are defined");
 ok(script.includes("setTheme: applySceneTheme"), "scene theme switching is wired");
 ok(script.includes("this.master.gain.value = 0.8"), "audio master gain is audible");
 ok(script.includes("createDynamicsCompressor"), "audio compressor exists");
@@ -152,8 +154,8 @@ ok(script.includes("scene.fog.color.set"), "scene fog follows the theme");
 ok(script.includes('theme: "mahogany"') && script.includes('fontSize: "md"'), "display preferences have defaults");
 ok(index.includes('id="displayModal"'), "display modal exists");
 ok(index.includes('data-font-size="xl"'), "font size control exists");
-ok(index.includes('data-theme-choice="jade"'), "theme control exists");
-ok(css.includes('html[data-theme="jade"]') && css.includes('html[data-theme="midnight"]'), "theme CSS exists");
+ok(index.includes('data-theme-choice="jade"') && index.includes('data-theme-choice="parchment"') && index.includes('data-theme-choice="daybreak"'), "theme controls exist");
+ok(css.includes('html[data-theme="jade"]') && css.includes('html[data-theme="midnight"]') && css.includes('html[data-theme="parchment"]') && css.includes('html[data-theme="daybreak"]'), "theme CSS exists");
 ok(css.includes("--fs-scale") && css.includes("data-font-size=\"xl\""), "font scale CSS exists");
 
 ok(script.includes("function scorePiles"), "scorePiles exists");

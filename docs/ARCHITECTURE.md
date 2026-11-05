@@ -118,7 +118,7 @@ The scene stores `root → lift → tilt` groups:
 - `lift.position.y` is the hover/selection lift.
 - `tilt.rotation.x` is the flip: `0` face-up, `π` face-down.
 
-`moveTile` and `setFace` keep their own animation records; `sync` skips a target if it is already within 0.004 units, so repeated renders do not restart animations. The render loop also pulses the active seat ring, bobs the turn chevron, drifts dust and applies camera tweens.
+`moveTile` and `setFace` keep their own animation records; `sync` skips a target if it is already within 0.004 units, so repeated renders do not restart animations. The render loop also pulses the active seat ring, drifts dust and applies camera tweens.
 
 ## Camera and responsive framing
 
@@ -150,7 +150,7 @@ The saved payload is:
 
 ## Display and themes
 
-`prefs` carries `fontSize` (`sm|md|lg|xl`) and `theme` (`mahogany|jade|midnight`).
+`prefs` carries `fontSize` (`sm|md|lg|xl`) and `theme` (`mahogany|jade|midnight|parchment|daybreak`).
 
 - `applyFontSize(id)` sets `html[data-font-size]` and `--fs-scale`. Every CSS type size uses `calc(Npx * var(--fs-scale))`; the 3D table does not scale.
 - `applyTheme(id)` sets `html[data-theme]` and calls `scene.setTheme(id)`. `SCENE_THEMES` supplies felt/wood/back palettes, rim/inlay/floor colours and light colours.

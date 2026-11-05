@@ -131,14 +131,18 @@ async function main() {
   const display = runHarness(["--url", base, "--wait", "2500", "--eval", `(async () => {
     LeabTui.applyFontSize('xl');
     LeabTui.applyTheme('jade');
+    const jadeScene = LeabTui.getCamera()?.theme;
+    LeabTui.applyTheme('parchment');
     document.querySelector('#displayBtn').click();
-    await new Promise((r) => setTimeout(r, 700));
+    await new Promise((r) => setTimeout(r, 900));
     const style = getComputedStyle(document.documentElement);
     return JSON.stringify({
       font: document.documentElement.dataset.fontSize,
       scale: style.getPropertyValue('--fs-scale').trim(),
       theme: document.documentElement.dataset.theme,
       scene: LeabTui.getCamera()?.theme,
+      background: LeabTui.getCamera()?.background,
+      jadeScene,
       prefs: LeabTui.getPrefs(),
       modal: !document.querySelector('#displayModal').hidden,
       fontButtons: document.querySelectorAll('button[data-font-size]').length,
@@ -148,12 +152,12 @@ async function main() {
   const displayValue = display.evalValue || {};
   if (displayValue.font === "xl" && displayValue.scale === "1.24") pass("text size XL applies a 1.24 scale");
   else fail("text size XL applies a 1.24 scale", JSON.stringify(displayValue));
-  if (displayValue.theme === "jade" && displayValue.scene === "jade") pass("Jade theme reaches the UI and 3D scene");
-  else fail("Jade theme reaches the UI and 3D scene", JSON.stringify(displayValue));
-  if (displayValue.prefs?.fontSize === "xl" && displayValue.prefs?.theme === "jade") pass("display preferences persist");
+  if (displayValue.jadeScene === "jade" && displayValue.theme === "parchment" && displayValue.scene === "parchment" && displayValue.background === "d9cdb8") pass("bright Parchment theme reaches the UI and 3D scene");
+  else fail("bright Parchment theme reaches the UI and 3D scene", JSON.stringify(displayValue));
+  if (displayValue.prefs?.fontSize === "xl" && displayValue.prefs?.theme === "parchment") pass("display preferences persist");
   else fail("display preferences persist", JSON.stringify(displayValue.prefs));
-  if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.themeButtons === 3) pass("display panel exposes four sizes and three themes");
-  else fail("display panel exposes four sizes and three themes", JSON.stringify(displayValue));
+  if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.themeButtons === 5) pass("display panel exposes four sizes and five themes");
+  else fail("display panel exposes four sizes and five themes", JSON.stringify(displayValue));
 
   const flow = runHarness(["--url", base, "--wait", "900", "--eval", playthrough]);
   const value = flow.evalValue || {};

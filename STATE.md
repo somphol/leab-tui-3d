@@ -10,27 +10,31 @@
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.1.0` |
+| App version | `1.2.0` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 25/25) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Source files | `index.html`, `style.css`, `script.js` |
-| Source lines | 4,937 |
-| Source size | 219,465 bytes (~214 KB) |
+| Source lines | 5,093 |
+| Source size | 226,115 bytes (~221 KB) |
 | Runtime dependency | Three.js r160 from jsDelivr (pinned) |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
 ## Release 1.1.0 — display settings
 
-Added a **Display** panel (`Aa` in the stage toolbar) with four interface text sizes — Small (0.9×), Default (1×), Large (1.12×), Extra large (1.24×) — and three themes:
+Added a **Display** panel (`Aa` in the stage toolbar) with four interface text sizes — Small (0.9×), Default (1×), Large (1.12×), Extra large (1.24×) — and the original three themes:
 
 - **Mahogany** — the original burgundy felt, brass and lacquer red.
 - **Jade Court** — deep green felt, cool brass and a jade glow.
 - **Midnight Lacquer** — blue-black felt, silver inlay and a cold table light.
 
 Audio was also rebalanced: master 0.8, a dynamics compressor, higher per-effect gains, an analyser tap for verification, and a first-gesture `resume()` retry. Themes recolour both the CSS panels and the 3D scene: felt, wood, rim, brass/silver inlay, floor, key/rim/warm lights, point lights and tile side/edge/back. Old procedural textures are disposed on switch. Text size scales the interface only, by design; the 3D table stays fixed. Both preferences persist in `localStorage` and are covered by the browser verification.
+
+## Release 1.2.0 — brighter themes
+
+Added **Parchment** (warm ivory UI, olive felt) and **Daybreak** (pale blue-white UI, teal felt). Both are full palettes across the panels, controls, modals and the 3D table. The Display panel now shows five theme cards in a two-column grid.
 
 ## Build timeline
 
@@ -45,23 +49,24 @@ Audio was also rebalanced: master 0.8, a dynamics compressor, higher per-effect 
 | Documentation, release files, state record | 01:03–01:15 | ~12m |
 | GitHub publication, Pages and skill catalog | 01:15–01:21 | ~6m |
 | **1.1.0 display + audio update** | 08:02–08:31 | 29m 0s |
-| **Audio test + final verification** | 16:37–16:42 | 5m 0s |
+| **Audio test + chevron removal** | 16:37–16:57 | 20m 0s |
+| **Bright themes + verification** | 16:57–17:07 | 10m 25s |
 
-**Measured active build estimate:** **1h 48m 40s** (6,520 s) across the initial build, the display/audio update and the final audio test. Session wall clock is much longer because it includes idle gaps between requests.
+**Measured active build estimate:** **~1h 55m** across the initial build, display/audio update, chevron removal and bright-theme additions. Session wall clock is much longer because it includes idle gaps between requests.
 
 ## Token consumption
 
-Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 16:42:58 (-08:00), including display settings, themes and the audio rebalance:
+Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 17:07:29 (-08:00), including display settings, five themes, the audio rebalance and the chevron removal:
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 451,673 |
-| Output | 186,418 |
-| Reasoning | 137,175 |
-| **Total (input + output + reasoning)** | **775,266** |
-| Cache read | 64,696,448 |
+| Input | 489,169 |
+| Output | 200,491 |
+| Reasoning | 151,204 |
+| **Total (input + output + reasoning)** | **840,864** |
+| Cache read | 77,819,520 |
 | Cache write | 1,639 |
-| **Total including cache** | **65,473,353** |
+| **Total including cache** | **78,662,023** |
 | Cost | $0.00 (as reported) |
 
 The cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. These are session totals. The final state-file commit and Pages rebuild add a small number of tokens; the session ID allows re-measurement from `opencode.db`.
@@ -89,7 +94,7 @@ The cache figures describe context reuse, not additional generated work. They ar
 | Undo at round end | pre-trick position restored, 32 tiles accounted for, stats reverted |
 | Next round | round 2, eight tiles each, scores preserved |
 | Reload mid-trick | phase `follow`, turn 0, hands `[8,7,7,7]`, centre 3, lead/best restored |
-| Display settings | XL applies 1.24×; Jade theme reaches UI + 3D scene; prefs survive reload; 4 sizes + 3 themes exposed |
+| Display settings | XL applies 1.24×; bright Parchment theme reaches UI + 3D scene; prefs survive reload; 4 sizes + 5 themes exposed |
 | Audio | context running after a gesture; clack peak ≈ 0.11 RMS; **Test sound** action added; no autoplay warning |
 | Console exceptions | none during boot, self-test or full round |
 | Screenshots | 1440×900 EN, 1440×900 TH, 1440×900 rules, 390×844 mobile |

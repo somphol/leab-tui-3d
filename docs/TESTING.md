@@ -112,10 +112,10 @@ applyFontSize("xl")  → html[data-font-size="xl"], --fs-scale 1.24
 applyTheme("jade")   → html[data-theme="jade"], scene.theme "jade"
 prefs                → { fontSize: "xl", theme: "jade" }
 reload               → fontSize "xl", theme "jade", scene "jade"
-panel                → 4 font buttons, 3 theme buttons
+panel                → 4 font buttons, 5 theme buttons
 ```
 
-The browser harness also asserts that **Jade reaches the 3D scene**, not just the CSS. The scene updates felt, wood, rim, inlay, floor, lights and tile side/edge/back; old textures are disposed.
+The browser harness asserts that **Jade and bright Parchment reach the 3D scene**, not just the CSS. The scene updates felt, wood, rim, inlay, floor, lights and tile side/edge/back; old textures are disposed.
 
 ### Reload resume
 
@@ -143,7 +143,7 @@ The saved game survived the reload and the scene re-synced. A saved `roundEnd` o
 - [ ] Eight face-down tiles deal to each seat; the human hand flips face-up.
 - [ ] The holder of the red General is the leader.
 - [ ] **Display** (`Aa`) opens; Small/Default/Large/XL change the interface text and persist.
-- [ ] Mahogany/Jade Court/Midnight Lacquer change the panels **and** the felt/wood/light palette.
+- [ ] All five themes — Mahogany, Jade Court, Midnight Lacquer, Parchment, Daybreak — change the panels **and** the felt/wood/light palette.
 - [ ] The 3D table does not scale with text size (by design).
 - [ ] The table can be orbited, zoomed and panned; reset returns home.
 - [ ] No console error. No network request except `cdn.jsdelivr.net/npm/three@0.160.0/...`.

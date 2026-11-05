@@ -25,13 +25,15 @@ Red and black tiles are distinguished by Hanzi and written colour, not by hue al
 
 ## Themes
 
-Three themes share one layout and one component set:
+Five themes share one layout and one component set:
 
 | Theme | UI | 3D |
 | --- | --- | --- |
 | **Mahogany** | burgundy panels, brass, lacquer red | wine felt, dark mahogany, brass inlay, warm key |
 | **Jade Court** | deep green panels, cool brass, jade glow | green felt, dark walnut, brass inlay, warm/jade lights |
 | **Midnight Lacquer** | blue-black panels, silver, cold blue | indigo felt, near-black wood, silver inlay, cool key |
+| **Parchment** | warm ivory panels, dark ink, olive accents | olive felt, walnut, brass inlay, warm key |
+| **Daybreak** | pale blue-white panels, navy ink, teal accents | teal felt, warm oak, brass inlay, cool daylight |
 
 The theme is a CSS variable set on `html[data-theme]` plus a `SCENE_THEMES` palette. It changes the felt, wood, rim, inlay, floor, key/rim/warm lights, point lights and tile side/edge/back. It never changes the rules, the tile faces or the layout.
 
@@ -80,7 +82,6 @@ The face is a `CanvasTexture`; the geometry, side material and bevel are shared.
 - Flip: 260–300 ms `easeInOutCubic`.
 - Hover/selection lift: damped toward 0.19 units.
 - Active seat ring: 0.18 ± 0.09 opacity pulse at ~460 ms.
-- Turn chevron: 0.055-unit bob, slow rotation.
 - Dust: one 220-point cloud, 0.00025 rad/frame rotation.
 
 The animation is functional: it shows where a tile came from and who owns it. It is not decorative confetti.

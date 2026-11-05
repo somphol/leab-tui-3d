@@ -35,7 +35,7 @@ Preferences shape:
 }
 ```
 
-`theme` is `mahogany`, `jade` or `midnight`; `fontSize` is `sm`, `md`, `lg` or `xl`. Invalid values fall back to `mahogany` and `md`. The 1.0.0 → 1.1.0 update adds these two fields but does not change the match or export schema.
+`theme` is `mahogany`, `jade`, `midnight`, `parchment` or `daybreak`; `fontSize` is `sm`, `md`, `lg` or `xl`. Invalid values fall back to `mahogany` and `md`. The 1.0.0 → 1.1.0 update adds these two fields but does not change the match or export schema.
 
 The autosave is written after every action, on `visibilitychange` when hidden, and on `beforeunload`.
 ## Export

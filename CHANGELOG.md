@@ -2,6 +2,26 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] — 2026-11-04
+
+### Added
+
+- **Parchment** — warm ivory panels, dark ink and an olive felt table.
+- **Daybreak** — pale blue-white panels, navy ink and a teal table.
+- Both bright themes are full palettes: UI surfaces, text, borders, buttons, modals and the 3D felt, wood, rim, inlay, floor, lights and tile backs.
+- The theme picker is now a two-column grid of five cards.
+
+### Changed
+
+- Version bumped to `1.2.0`; save/export version follows.
+- Display docs, screenshots and verification updated for five themes.
+
+## [1.1.1] — 2026-11-04
+
+### Changed
+
+- Removed the floating, spinning 3D turn chevron above the active seat. It read as a selector but was only a decorative turn marker; the pulsing seat ring and the **TURN** HUD chip now carry that signal. The active ring is slightly stronger to compensate.
+
 ## [1.1.0] — 2026-11-04
 
 ### Added

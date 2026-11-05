@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.1.0",
-  "version": "1.1.0",
+  "projectVersion": "1.2.0",
+  "version": "1.2.0",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 from a pinned CDN.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-04T00:16:43-08:00",
     "startedAt": "2026-11-04T00:16:43-08:00",
-    "packagedAt": "2026-11-04T16:42:58-08:00",
-    "durationSeconds": 6520,
-    "durationHuman": "1h 48m 40s",
+    "packagedAt": "2026-11-04T17:07:29-08:00",
+    "durationSeconds": 6900,
+    "durationHuman": "1h 55m 0s",
     "timezone": "UTC-08:00",
-    "note": "Active build estimate across the session: initial build 1h 7m 40s, 1.1.0 display/audio update ~29m, audio follow-up ~7m, final verification/docs ~5m. Session wall clock is much longer because it includes idle gaps. Final state-file commit adds a small amount.",
+    "note": "Active build estimate across the session (initial build, display/audio update, chevron removal and bright-theme additions), excluding long idle gaps. Final state-file commit adds a small amount.",
     "includes": "Rules research and interpretation; pure rules engine; heuristic AI; four-seat game flow; undo snapshots; 3D table with 32 carved tiles and procedural textures; OrbitControls; responsive portrait camera; bilingual EN/TH copy; coach, inspector and hint; synthesised Web Audio; localStorage autosave; JSON export; self-test; CDP verification harness; screenshots; release documentation.",
     "publishedAt": "2026-11-04T01:23:25Z"
   },
   "tokens": {
-    "input": 451673,
-    "output": 186418,
-    "reasoning": 137175,
-    "cacheRead": 64696448,
+    "input": 489169,
+    "output": 200491,
+    "reasoning": 151204,
+    "cacheRead": 77819520,
     "cacheWrite": 1639,
-    "total": 775266,
-    "totalWithCache": 65473353,
+    "total": 840864,
+    "totalWithCache": 78662023,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T16:42:58-08:00, including display settings, themes, audio rebalance and the final Test sound action. total = input + output + reasoning. Cache reads/writes are reported separately. The final state-file commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T17:07:29-08:00, including display settings, five themes, audio rebalance and the chevron removal. total = input + output + reasoning. Cache reads/writes are reported separately."
   },
   "cost": {
     "usd": 0.0,
@@ -92,6 +92,16 @@
       "version": "1.1.0",
       "date": "2026-11-04",
       "summary": "Display settings: four interface text sizes and three themes (Mahogany, Jade Court, Midnight Lacquer) with matching UI and 3D table palettes."
+    },
+    {
+      "version": "1.1.1",
+      "date": "2026-11-04",
+      "summary": "Removed the distracting floating turn chevron; the active seat ring and TURN chip carry turn state."
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-11-04",
+      "summary": "Added Parchment and Daybreak bright themes with full CSS and 3D palettes; five-theme picker."
     }
   ],
   "releaseNotes": "1.1.0 adds a Display panel with Small/Default/Large/Extra large text and Mahogany/Jade Court/Midnight Lacquer themes. Theme changes recolor the panels, felt, wood, inlay and lighting; text size scales the interface only.",
@@ -99,11 +109,11 @@
     {
       "version": "1.1.0",
       "startedAt": "2026-11-04T08:02:38-08:00",
-      "completedAt": "2026-11-04T16:42:58-08:00",
+      "completedAt": "2026-11-04T17:07:29-08:00",
       "durationSeconds": 1740,
       "durationHuman": "29m 0s",
-      "tokensAdded": 223641,
-      "summary": "Display panel (four text sizes, three themes with matching 3D palettes), audio audibility/compressor/first-gesture retry/Test sound, mobile XL layout, docs and verification."
+      "tokensAdded": 289239,
+      "summary": "Display panel (four text sizes, five themes including bright Parchment and Daybreak), audio audibility/compressor/Test sound, chevron removal, mobile XL layout, docs and verification."
     }
   ]
 }

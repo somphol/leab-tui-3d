@@ -81,7 +81,7 @@ Persistence saves `{format, version, savedAt, game}` where `game` is the ID-base
 - **Audio.** `StudioAudio.play` returns until `unlocked` is true. Never create/resume an `AudioContext` before a user gesture; Chrome logs autoplay warnings otherwise. The graph is `source → filter → gain → panner → master (0.8) → compressor → analyser → destination`. If the context is still suspended at the first play, `play` calls `resume()` and retries; this covers the first-gesture race. Keep the analyser tap: `verify.mjs` measures a real RMS peak. Do not lower the master to the old 0.32 without re-measuring; it was effectively inaudible.
 - **CDN pin.** `three@0.160.0` in the import map. Do not float the version. If the CDN fails, the table cannot render; that is a documented limitation, not a reason to inline Three.js.
 - **CSP.** `script-src` allows `'unsafe-inline'` only because import maps are inline. The app has no inline event handlers. Do not add remote fonts or analytics.
-- **Display settings.** Font size scales the interface through `--fs-scale` on `html[data-font-size]`, never the 3D table. Themes are `html[data-theme]` CSS variables plus `SCENE_THEMES`; `scene.setTheme` must dispose the replaced felt/wood/back textures. Never add a theme that only recolours the panels and leaves the 3D scene behind.
+- **Display settings.** Font size scales the interface through `--fs-scale` on `html[data-font-size]`, never the 3D table. Five themes are `html[data-theme]` CSS variables plus `SCENE_THEMES`: Mahogany, Jade Court, Midnight Lacquer, Parchment and Daybreak. `scene.setTheme` must dispose the replaced felt/wood/back textures. Never add a theme that only recolours the panels and leaves the 3D scene behind.
 - **No build step.** Keep it three files. Scripts may verify, screenshot, or publish, but must not generate the runtime source.
 
 ## 5. Known issues
@@ -93,7 +93,7 @@ Persistence saves `{format, version, savedAt, game}` where `game` is the ID-base
 - The mobile layout is verified in headless Chrome at 390×844, not on physical iOS/Android hardware. Safe-area insets are not handled.
 - The page requires network access for Three.js. The HUD and coach work without it, but the table does not.
 - The title/meta screenshots use the `?demo=1` seed state; regenerating them changes the hand and may change the coach text.
-- Only three dark themes ship; there is no light or high-contrast theme yet. Text size scales the interface but not the 3D table (by design).
+- Five themes ship, including two bright palettes (Parchment, Daybreak); there is no dedicated high-contrast mode. Text size scales the interface but not the 3D table (by design).
 
 ## 6. Continuity
 

@@ -21,7 +21,7 @@
 - **No automated axe-core audit.** The DOM was reviewed manually; it has not been screened by a screen reader.
 - **The 3D canvas is not navigable by keyboard.** The hand list is the accessible path; it mirrors the same selection state.
 - **Live regions are chatty.** The coach updates on every action; a screen reader may queue several messages. Consider `aria-live="off"` on the meta line and a single polite summary.
-- **No light or high-contrast theme.** All three themes are dark. Text size helps readability but does not provide a WCAG AAA contrast mode.
+- **No dedicated high-contrast mode.** The bright themes improve comfort but are not a certified WCAG AAA mode. Text size helps readability.
 - **The 3D table does not scale** with the text size; it is a fixed spatial scene.
 - **Colour-blindness.** Red/black tiles are distinguished by Hanzi and by the inspector's written colour, not by hue alone. The red felt/gold text is decorative.
 - **Motion.** The 3D scene still animates deals, flips and captures under reduced motion; only CSS transitions are shortened. A future option should snap tile positions.

@@ -30,7 +30,7 @@ The blue-black theme: silver inlay, cool key light and a cold table.
 
 ![Display panel](../screenshots/display.jpg)
 
-Four text sizes and three themes, with a reset. The modal is the same component system as the rules and about drawers.
+Four text sizes and five themes, with a reset. The bright themes make the modal itself light. The modal is the same component system as the rules and about drawers.
 
 ## Rules drawer
 
@@ -43,6 +43,18 @@ The in-app rules: goal, equipment, hierarchy, colour/tie, the nine calls, the tr
 ![Phone](../screenshots/mobile.jpg)
 
 The portrait layout: a wider camera keeps the whole table and the human hand visible; the dock is compact (title, one line of advice, four buttons) and the coach/score panels follow below the stage.
+
+## Parchment
+
+![Parchment](../screenshots/parchment.jpg)
+
+Warm ivory panels, dark ink and an olive felt table — the first bright theme.
+
+## Daybreak
+
+![Daybreak](../screenshots/daybreak.jpg)
+
+Pale blue-white panels, navy ink and a teal table — the second bright theme.
 
 ## Phone at Extra large + Jade
 

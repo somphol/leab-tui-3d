@@ -7,7 +7,7 @@
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.1.0",
+  version: "1.2.0",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -18,13 +18,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-04T00:16:43-08:00",
-    packagedAt: "2026-11-04T16:42:58-08:00",
-    durationHuman: "1h 48m 40s",
-    tokensTotal: "775266",
-    tokensInput: "451673",
-    tokensOutput: "186418",
-    tokensReasoning: "137175",
-    tokensCacheRead: "64696448",
+    packagedAt: "2026-11-04T17:07:29-08:00",
+    durationHuman: "1h 55m 0s",
+    tokensTotal: "840864",
+    tokensInput: "489169",
+    tokensOutput: "200491",
+    tokensReasoning: "151204",
+    tokensCacheRead: "77819520",
     sessionId: "ses_e5a5e419dffedJGEsMy3mKV3ey",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -69,7 +69,9 @@ const FONT_SIZES = Object.freeze([
 const THEMES = Object.freeze([
   { id: "mahogany", labelKey: "theme.mahogany", descKey: "theme.mahoganyDesc" },
   { id: "jade", labelKey: "theme.jade", descKey: "theme.jadeDesc" },
-  { id: "midnight", labelKey: "theme.midnight", descKey: "theme.midnightDesc" }
+  { id: "midnight", labelKey: "theme.midnight", descKey: "theme.midnightDesc" },
+  { id: "parchment", labelKey: "theme.parchment", descKey: "theme.parchmentDesc" },
+  { id: "daybreak", labelKey: "theme.daybreak", descKey: "theme.daybreakDesc" }
 ]);
 
 const SCENE_THEMES = Object.freeze({
@@ -135,6 +137,48 @@ const SCENE_THEMES = Object.freeze({
     tileSide: 0xe4ddcb,
     tileEdge: 0x8d8a7a,
     back: ["#26324a", "#151f31", "#080d16"]
+  },
+  parchment: {
+    felt: ["#4a5236", "#343d26", "#222a18"],
+    ring: "#c9a35e",
+    woodBase: "#4a2e1a",
+    woodLight: "#8a623c",
+    woodDark: "#2a160c",
+    woodTint: 0x9a7048,
+    rim: 0x3a2414,
+    gold: 0xc9a35e,
+    background: 0xd9cdb8,
+    fog: 0xd9cdb8,
+    key: 0xfff2d8,
+    rimLight: 0xa8c7a0,
+    warm: 0xffd9a8,
+    redGlow: 0xb06a4a,
+    jadeGlow: 0x6f9a78,
+    floor: 0xb9a98f,
+    tileSide: 0xf1e4c8,
+    tileEdge: 0xb08a58,
+    back: ["#7a4a2a", "#55301a", "#2e180c"]
+  },
+  daybreak: {
+    felt: ["#2f5d63", "#1f464b", "#102d31"],
+    ring: "#d8c08a",
+    woodBase: "#6b4a30",
+    woodLight: "#a67a52",
+    woodDark: "#3a2416",
+    woodTint: 0xb08a62,
+    rim: 0x4a3220,
+    gold: 0xd8c08a,
+    background: 0xdbe7ea,
+    fog: 0xdbe7ea,
+    key: 0xf4f8ff,
+    rimLight: 0x9fc7d6,
+    warm: 0xffe2b8,
+    redGlow: 0xc06a5a,
+    jadeGlow: 0x6fb0b8,
+    floor: 0xb8c8cc,
+    tileSide: 0xf4ecd8,
+    tileEdge: 0xb09a72,
+    back: ["#4a6a72", "#304a52", "#182b30"]
   }
 });
 
@@ -255,6 +299,10 @@ const I18N = {
     "theme.jadeDesc": "Deep green felt, cool brass and a jade glow.",
     "theme.midnight": "Midnight Lacquer",
     "theme.midnightDesc": "Blue-black felt, silver inlay and a cold table light.",
+    "theme.parchment": "Parchment",
+    "theme.parchmentDesc": "Warm ivory panels, dark ink and an olive table.",
+    "theme.daybreak": "Daybreak",
+    "theme.daybreakDesc": "Pale blue-white panels, navy ink and a teal table.",
     "toast.fontSize": "Text size set to {size}.",
     "toast.theme": "Theme set to {theme}.",
     "toast.displayReset": "Display settings reset.",
@@ -492,6 +540,10 @@ const I18N = {
     "theme.jadeDesc": "ผ้าสีเขียวเข้ม ทองเย็น และแสงหยก",
     "theme.midnight": "แล็กเกอร์เที่ยงคืน",
     "theme.midnightDesc": "ผ้าสีน้ำเงินดำ เงินฝัง และแสงโต๊ะเย็น",
+    "theme.parchment": "กระดาษพาร์ชเมนต์",
+    "theme.parchmentDesc": "แผงงาช้างอุ่น หมึกเข้ม และโต๊ะมะกอก",
+    "theme.daybreak": "อรุณรุ่ง",
+    "theme.daybreakDesc": "แผงขาวฟ้าอ่อน หมึกน้ำเงิน และโต๊ะสีเขียวน้ำทะเล",
     "toast.fontSize": "ตั้งขนาดตัวอักษรเป็น {size}",
     "toast.theme": "ตั้งธีมเป็น {theme}",
     "toast.displayReset": "รีเซ็ตการแสดงผลแล้ว",
@@ -3064,7 +3116,6 @@ async function createScene() {
   }
 
   const seatRings = [];
-  const chevrons = [];
   const labels = [];
   const labelCanvases = [];
   for (const seat of SEATS) {
@@ -3077,16 +3128,6 @@ async function createScene() {
     ring.position.set(pos.x, TABLE_Y + 0.004, pos.z);
     scene.add(ring);
     seatRings.push(ring);
-
-    const chevron = new THREE.Mesh(
-      new THREE.ConeGeometry(0.13, 0.3, 4),
-      new THREE.MeshStandardMaterial({ color: 0xf0d49a, emissive: 0x8a6a2b, emissiveIntensity: 1.2, roughness: 0.3, metalness: 0.6 })
-    );
-    chevron.rotation.z = Math.PI;
-    chevron.position.set(pos.x, 1.15, pos.z);
-    chevron.visible = false;
-    scene.add(chevron);
-    chevrons.push(chevron);
 
     const canvas = document.createElement("canvas");
     canvas.width = 512;
@@ -3441,12 +3482,8 @@ async function createScene() {
       SEATS.forEach((seat) => {
         const active = activePhase && currentState.turn === seat.id;
         const ring = seatRings[seat.id];
-        const pulse = 0.08 + (active ? 0.18 + Math.sin(now / 460) * 0.09 : 0);
+        const pulse = 0.08 + (active ? 0.26 + Math.sin(now / 460) * 0.08 : 0);
         ring.material.opacity += (pulse - ring.material.opacity) * 0.12;
-        const chevron = chevrons[seat.id];
-        chevron.visible = active;
-        chevron.position.y = 1.12 + Math.sin(now / 520 + seat.id) * 0.055;
-        chevron.rotation.y += 0.012;
       });
     }
 
