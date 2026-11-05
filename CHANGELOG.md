@@ -2,6 +2,14 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] — 2026-11-04
+
+### Changed
+
+- Enlarged the rank-order reference to a near-full-stage sheet (980 px on desktop), with 44 px tile medallions, 17 px names, larger rank numbers and a larger tie note.
+- On phones the ladder now uses a two-column grid so all seven ranks are visible at once.
+- Screenshots and galleries regenerated for the larger sheet.
+
 ## [1.3.0] — 2026-11-04
 
 ### Added

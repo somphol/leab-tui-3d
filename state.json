@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.3.0",
-  "version": "1.3.0",
+  "projectVersion": "1.3.1",
+  "version": "1.3.1",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 from a pinned CDN.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-04T00:16:43-08:00",
     "startedAt": "2026-11-04T00:16:43-08:00",
-    "packagedAt": "2026-11-04T17:32:31-08:00",
-    "durationSeconds": 7500,
-    "durationHuman": "2h 5m 0s",
+    "packagedAt": "2026-11-04T17:40:53-08:00",
+    "durationSeconds": 7980,
+    "durationHuman": "2h 13m 0s",
     "timezone": "UTC-08:00",
-    "note": "Active build estimate across the session (initial build, display/audio update, chevron removal, bright themes and rank quick reference), excluding long idle gaps. Final state-file commit adds a small amount.",
+    "note": "Active build estimate across the session, excluding long idle gaps. Final state-file commit adds a small amount.",
     "includes": "Rules research and interpretation; pure rules engine; heuristic AI; four-seat game flow; undo snapshots; 3D table with 32 carved tiles and procedural textures; OrbitControls; responsive portrait camera; bilingual EN/TH copy; coach, inspector and hint; synthesised Web Audio; localStorage autosave; JSON export; self-test; CDP verification harness; screenshots; release documentation.",
     "publishedAt": "2026-11-04T01:23:25Z"
   },
   "tokens": {
-    "input": 522500,
-    "output": 211891,
-    "reasoning": 165755,
-    "cacheRead": 90081152,
+    "input": 536022,
+    "output": 217402,
+    "reasoning": 171036,
+    "cacheRead": 96474240,
     "cacheWrite": 1639,
-    "total": 900146,
-    "totalWithCache": 90982937,
+    "total": 924460,
+    "totalWithCache": 97400339,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T17:32:31-08:00, including display settings, five themes, audio rebalance, chevron removal and the rank-order quick reference. total = input + output + reasoning. Cache reads/writes are reported separately."
+    "note": "Session total from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T17:40:53-08:00, including display settings, five themes, audio rebalance, chevron removal and the enlarged rank reference."
   },
   "cost": {
     "usd": 0.0,
@@ -107,6 +107,11 @@
       "version": "1.3.0",
       "date": "2026-11-04",
       "summary": "Added a bilingual pictorial rank-order quick reference with red/black Hanzi, names, rank numbers and tie rules."
+    },
+    {
+      "version": "1.3.1",
+      "date": "2026-11-04",
+      "summary": "Enlarged the rank-order sheet to near-full stage width with larger tiles, names and a two-column mobile layout."
     }
   ],
   "releaseNotes": "1.1.0 adds a Display panel with Small/Default/Large/Extra large text and Mahogany/Jade Court/Midnight Lacquer themes. Theme changes recolor the panels, felt, wood, inlay and lighting; text size scales the interface only.",
@@ -114,11 +119,11 @@
     {
       "version": "1.1.0",
       "startedAt": "2026-11-04T08:02:38-08:00",
-      "completedAt": "2026-11-04T17:32:31-08:00",
+      "completedAt": "2026-11-04T17:40:53-08:00",
       "durationSeconds": 1740,
       "durationHuman": "29m 0s",
-      "tokensAdded": 348521,
-      "summary": "Display panel (four text sizes, five themes including bright Parchment and Daybreak), audio audibility/compressor/Test sound, chevron removal, rank-order quick reference, mobile layouts, docs and verification."
+      "tokensAdded": 372835,
+      "summary": "Display panel (four text sizes, five themes including bright Parchment and Daybreak), audio audibility/compressor/Test sound, chevron removal, rank-order quick reference and enlargement, mobile layouts, docs and verification."
     }
   ]
 }
