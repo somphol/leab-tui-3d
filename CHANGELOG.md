@@ -11,7 +11,7 @@ All notable changes to Leab-Tui 3D are documented here. The format follows [Keep
 - Theme switching recolours the UI panels, felt, wood, brass/silver inlay, table rim, floor and lighting; old procedural textures are disposed.
 - Display preferences persist in `localStorage` alongside language, sound and coach settings.
 - A `Reset display` action and browser verification for the 1.24× XL scale, theme propagation to the 3D scene, persistence and the four-size/three-theme controls.
-- 21 new bilingual keys (232 per language) and updated release documentation.
+- 24 new bilingual keys (235 per language), a **Test sound** action and updated release documentation.
 
 ### Fixed
 

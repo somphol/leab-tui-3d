@@ -42,6 +42,9 @@ Yes. The same Display panel offers Mahogany, Jade Court and Midnight Lacquer. Th
 **I hear no sound. What should I check?**  
 Click once anywhere in the page first — browsers block audio until a gesture. Then check the speaker icon (sound on), the device volume, and the browser tab mute. The clack is synthesised, not a file; there is no audio download to fail. If you still hear nothing, open the console and check for an `AudioContext` error.
 
+**How do I confirm sound works?**  
+Open **Aa** → **Test sound**. You should hear a wooden clack. The same sound plays when you lead a tile; if the test is silent, check the tab/device volume, the speaker icon, and the browser console.
+
 **Where is my data?**  
 In this browser's `localStorage` (`leabtui.match.v1`, `leabtui.prefs.v1`, `leabtui.stats.v1`). **Export JSON** writes a file; nothing is uploaded.
 

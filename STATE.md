@@ -16,8 +16,8 @@
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Source files | `index.html`, `style.css`, `script.js` |
-| Source lines | 4,927 |
-| Source size | 218,918 bytes (~214 KB) |
+| Source lines | 4,937 |
+| Source size | 219,465 bytes (~214 KB) |
 | Runtime dependency | Three.js r160 from jsDelivr (pinned) |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
@@ -45,22 +45,23 @@ Audio was also rebalanced: master 0.8, a dynamics compressor, higher per-effect 
 | Documentation, release files, state record | 01:03–01:15 | ~12m |
 | GitHub publication, Pages and skill catalog | 01:15–01:21 | ~6m |
 | **1.1.0 display + audio update** | 08:02–08:31 | 29m 0s |
+| **Audio test + final verification** | 16:37–16:42 | 5m 0s |
 
-**Measured active build duration:** **1h 36m 40s** (5,800 s) = 1h 7m 40s initial build + 29m 0s display/audio update. Session wall clock is longer because it includes an overnight idle gap; the source freeze for 1.0.0 was 01:24:23 and the 1.1.0 update completed at 08:31:38.
+**Measured active build estimate:** **1h 48m 40s** (6,520 s) across the initial build, the display/audio update and the final audio test. Session wall clock is much longer because it includes idle gaps between requests.
 
 ## Token consumption
 
-Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 08:31:38 (-08:00), including the 1.1.0 display/audio update:
+Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 16:42:58 (-08:00), including display settings, themes and the audio rebalance:
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 433,865 |
-| Output | 180,500 |
-| Reasoning | 128,924 |
-| **Total (input + output + reasoning)** | **743,289** |
-| Cache read | 56,907,776 |
+| Input | 451,673 |
+| Output | 186,418 |
+| Reasoning | 137,175 |
+| **Total (input + output + reasoning)** | **775,266** |
+| Cache read | 64,696,448 |
 | Cache write | 1,639 |
-| **Total including cache** | **57,652,704** |
+| **Total including cache** | **65,473,353** |
 | Cost | $0.00 (as reported) |
 
 The cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. These are session totals. The final state-file commit and Pages rebuild add a small number of tokens; the session ID allows re-measurement from `opencode.db`.
@@ -71,7 +72,7 @@ The cache figures describe context reuse, not additional generated work. They ar
 - **Four-seat game** — human South plus three heuristic AI seats; dealing, leading, face-down submission, optional reveal, trick capture, next leader, round and match end.
 - **3D table** — 32 bevelled cylindrical tiles with procedural Hanzi faces and lacquered backs, mahogany felt table, soft shadows, seat rings, floating labels, dust, dealing/flip/capture animations, OrbitControls, reset/top/cinematic cameras, portrait framing.
 - **Learning tools** — tile inspector (Thai/English/rank/copies), live bilingual coach, deterministic Hint, Undo & Learn comparison, full rules drawer.
-- **Bilingual UI** — EN ⇄ TH across 232 dictionary keys, dynamic coach/log/summary strings, tile names, ARIA labels and 3D score labels.
+- **Bilingual UI** — EN ⇄ TH across 235 dictionary keys, dynamic coach/log/summary strings, tile names, ARIA labels and 3D score labels.
 - **Audio** — synthesised shuffle, clack, flip, sweep, win, lose, undo; unlocked on first gesture; no files.
 - **Persistence** — autosaved match, preferences and statistics; reload-resume; versioned JSON export with app, credits, stats and game.
 - **Verification** — 25-check in-page suite, dependency-free static check, Chrome CDP harness, full-round/undo/next-round/reload tests, four release screenshots.
@@ -89,7 +90,7 @@ The cache figures describe context reuse, not additional generated work. They ar
 | Next round | round 2, eight tiles each, scores preserved |
 | Reload mid-trick | phase `follow`, turn 0, hands `[8,7,7,7]`, centre 3, lead/best restored |
 | Display settings | XL applies 1.24×; Jade theme reaches UI + 3D scene; prefs survive reload; 4 sizes + 3 themes exposed |
-| Audio | context running after a trusted gesture; clack peak ≈ 0.11 RMS; no autoplay warning |
+| Audio | context running after a gesture; clack peak ≈ 0.11 RMS; **Test sound** action added; no autoplay warning |
 | Console exceptions | none during boot, self-test or full round |
 | Screenshots | 1440×900 EN, 1440×900 TH, 1440×900 rules, 390×844 mobile |
 

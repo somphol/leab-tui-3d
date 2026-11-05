@@ -58,6 +58,7 @@ Press **Aa** in the stage toolbar to open the Display panel.
 
 - **Text size** — Small (0.9×), Default (1×), Large (1.12×), Extra large (1.24×). The whole interface scales; the 3D table does not.
 - **Theme** — Mahogany, Jade Court, Midnight Lacquer. Both the panels and the 3D felt/wood/light palette change.
+- **Test sound** plays a wooden clack so you can confirm the audio path.
 - **Reset display** returns to Default + Mahogany.
 - The choices persist in `localStorage` and are restored on reload.
 

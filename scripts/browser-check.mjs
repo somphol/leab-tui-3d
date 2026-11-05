@@ -29,6 +29,7 @@ const evalExpr2 = arg("--eval2");
 const reload = args.includes("--reload");
 const waitMs = Number(arg("--wait", "9000"));
 const width = Number(arg("--width", "1440"));
+const click = arg("--click");
 const height = Number(arg("--height", "900"));
 const port = Number(arg("--port", String(9300 + Math.floor(Math.random() * 400))));
 const chromePath = process.env.CHROME_PATH || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -124,6 +125,13 @@ async function main() {
   await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
   await send("Page.navigate", { url });
   await sleep(waitMs);
+  if (click) {
+    const [x, y] = click.split(",").map(Number);
+    await send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+    await send("Input.dispatchMouseEvent", { type: "mousePressed", x, y, button: "left", clickCount: 1 });
+    await send("Input.dispatchMouseEvent", { type: "mouseReleased", x, y, button: "left", clickCount: 1 });
+    await sleep(350);
+  }
 
   const result = await send("Runtime.evaluate", {
     expression: evalExpr || `JSON.stringify({

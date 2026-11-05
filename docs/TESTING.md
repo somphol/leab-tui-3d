@@ -54,7 +54,7 @@ node scripts/verify.mjs
 | 21 | deal gives four hands of eight | 4 × 8, 32 unique |
 | 22 | scoring table | `-2,-1,0,1,2,3,4,5,16` |
 | 23 | simulated round conserves tiles | captures = 32 |
-| 24 | i18n keys symmetrical | EN and TH both 232 keys |
+| 24 | i18n keys symmetrical | EN and TH both 235 keys |
 | 25 | export payload shape | app + credits + 4 scores |
 
 Latest result: **SELFTEST PASS 25/25** (Chrome headless, 2026-11-04).

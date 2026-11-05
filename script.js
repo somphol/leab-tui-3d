@@ -18,13 +18,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-04T00:16:43-08:00",
-    packagedAt: "2026-11-04T08:31:38-08:00",
-    durationHuman: "1h 36m 40s",
-    tokensTotal: "743289",
-    tokensInput: "433865",
-    tokensOutput: "180500",
-    tokensReasoning: "128924",
-    tokensCacheRead: "56907776",
+    packagedAt: "2026-11-04T16:42:58-08:00",
+    durationHuman: "1h 48m 40s",
+    tokensTotal: "775266",
+    tokensInput: "451673",
+    tokensOutput: "186418",
+    tokensReasoning: "137175",
+    tokensCacheRead: "64696448",
     sessionId: "ses_e5a5e419dffedJGEsMy3mKV3ey",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -248,6 +248,7 @@ const I18N = {
     "display.theme": "Theme",
     "display.note": "Text size scales the interface, not the 3D table. Theme changes the panels and the felt / wood palette.",
     "display.reset": "Reset display",
+    "display.testSound": "Test sound",
     "theme.mahogany": "Mahogany",
     "theme.mahoganyDesc": "Burgundy felt, aged brass and lacquer red.",
     "theme.jade": "Jade Court",
@@ -257,6 +258,7 @@ const I18N = {
     "toast.fontSize": "Text size set to {size}.",
     "toast.theme": "Theme set to {theme}.",
     "toast.displayReset": "Display settings reset.",
+    "toast.soundTest": "Sound test — a wooden clack.",
     "camera.hint": "Drag to orbit · scroll to zoom · right-drag to pan",
     "coach.title": "Coach",
     "coach.live": "live",
@@ -483,6 +485,7 @@ const I18N = {
     "display.theme": "ธีม",
     "display.note": "ขนาดตัวอักษรปรับเฉพาะหน้าจอ ไม่กระทบโต๊ะ 3 มิติ ส่วนธีมเปลี่ยนสีแผงและโทนโต๊ะ",
     "display.reset": "รีเซ็ตการแสดงผล",
+    "display.testSound": "ทดสอบเสียง",
     "theme.mahogany": "มาฮอกกานี",
     "theme.mahoganyDesc": "ผ้าสีเบอร์กันดี ทองเก่า และแดงแล็กเกอร์",
     "theme.jade": "ศาลหยก",
@@ -492,6 +495,7 @@ const I18N = {
     "toast.fontSize": "ตั้งขนาดตัวอักษรเป็น {size}",
     "toast.theme": "ตั้งธีมเป็น {theme}",
     "toast.displayReset": "รีเซ็ตการแสดงผลแล้ว",
+    "toast.soundTest": "ทดสอบเสียง — เสียงไม้กระทบ",
     "camera.hint": "ลากเพื่อหมุน · เลื่อนเพื่อซูม · ลากขวาเพื่อเลื่อนฉาก",
     "coach.title": "โค้ช",
     "coach.live": "สด",
@@ -2266,7 +2270,7 @@ function setSound(enabled) {
   button?.setAttribute("aria-pressed", String(prefs.sound));
   const icon = $("#soundIcon");
   if (icon) icon.textContent = prefs.sound ? "♪" : "♪";
-  if (prefs.sound) audio?.play("click", 0);
+  if (prefs.sound) audio?.play("clack", 0);
   savePrefs();
   toast(prefs.sound ? t("toast.soundOn") : t("toast.soundOff"));
 }
@@ -3557,6 +3561,11 @@ function bindEvents() {
   $$("button[data-font-size]").forEach((button) => button.addEventListener("click", () => applyFontSize(button.dataset.fontSize)));
   $$("button[data-theme-choice]").forEach((button) => button.addEventListener("click", () => applyTheme(button.dataset.themeChoice)));
   $("#displayReset")?.addEventListener("click", resetDisplay);
+  $("#soundTest")?.addEventListener("click", () => {
+    audio?.resume();
+    setTimeout(() => audio?.play("clack", 0), 30);
+    toast(t("toast.soundTest"), "jade");
+  });
 
   $("#leadBtn")?.addEventListener("click", humanLead);
   $("#revealBtn")?.addEventListener("click", () => humanFollow(true));

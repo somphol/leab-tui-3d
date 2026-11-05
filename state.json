@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-04T00:16:43-08:00",
     "startedAt": "2026-11-04T00:16:43-08:00",
-    "packagedAt": "2026-11-04T08:31:38-08:00",
-    "durationSeconds": 5800,
-    "durationHuman": "1h 36m 40s",
+    "packagedAt": "2026-11-04T16:42:58-08:00",
+    "durationSeconds": 6520,
+    "durationHuman": "1h 48m 40s",
     "timezone": "UTC-08:00",
-    "note": "Initial build source freeze 2026-11-04T01:24:23-08:00 (1h 7m 40s, 551,625 tokens). The 1.1.0 display/audio update ran 08:02:38–08:31:38 (29m 0s, +191,664 tokens). Active build total 1h 36m 40s; session wall clock includes an overnight idle gap. The final state-file commit adds a small amount.",
+    "note": "Active build estimate across the session: initial build 1h 7m 40s, 1.1.0 display/audio update ~29m, audio follow-up ~7m, final verification/docs ~5m. Session wall clock is much longer because it includes idle gaps. Final state-file commit adds a small amount.",
     "includes": "Rules research and interpretation; pure rules engine; heuristic AI; four-seat game flow; undo snapshots; 3D table with 32 carved tiles and procedural textures; OrbitControls; responsive portrait camera; bilingual EN/TH copy; coach, inspector and hint; synthesised Web Audio; localStorage autosave; JSON export; self-test; CDP verification harness; screenshots; release documentation.",
     "publishedAt": "2026-11-04T01:23:25Z"
   },
   "tokens": {
-    "input": 433865,
-    "output": 180500,
-    "reasoning": 128924,
-    "cacheRead": 56907776,
+    "input": 451673,
+    "output": 186418,
+    "reasoning": 137175,
+    "cacheRead": 64696448,
     "cacheWrite": 1639,
-    "total": 743289,
-    "totalWithCache": 57652704,
+    "total": 775266,
+    "totalWithCache": 65473353,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T08:31:38-08:00, including the 1.1.0 display/audio update. total = input + output + reasoning. Cache reads/writes are context usage and are reported separately. The final state-file commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T16:42:58-08:00, including display settings, themes, audio rebalance and the final Test sound action. total = input + output + reasoning. Cache reads/writes are reported separately. The final state-file commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -99,11 +99,11 @@
     {
       "version": "1.1.0",
       "startedAt": "2026-11-04T08:02:38-08:00",
-      "completedAt": "2026-11-04T08:31:38-08:00",
+      "completedAt": "2026-11-04T16:42:58-08:00",
       "durationSeconds": 1740,
       "durationHuman": "29m 0s",
-      "tokensAdded": 191664,
-      "summary": "Display panel (four text sizes, three themes with matching 3D palettes), audio audibility/compressor/first-gesture retry, mobile XL layout, docs and verification."
+      "tokensAdded": 223641,
+      "summary": "Display panel (four text sizes, three themes with matching 3D palettes), audio audibility/compressor/first-gesture retry/Test sound, mobile XL layout, docs and verification."
     }
   ]
 }
