@@ -10,14 +10,14 @@
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.3.1` |
+| App version | `1.3.2` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 25/25) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Source files | `index.html`, `style.css`, `script.js` |
 | Source lines | 5,256 |
-| Source size | 234,471 bytes (~229 KB) |
+| Source size | 234,492 bytes (~229 KB) |
 | Runtime dependency | Three.js r160 from jsDelivr (pinned) |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
@@ -44,6 +44,10 @@ Added a **Ranks** control at the top-left HUD. It opens a pictorial hierarchy of
 
 Enlarged the reference to a near-full-stage sheet (980 px desktop) with 44 px tile medallions, 17 px names and a larger note. Phones use a two-column grid so all seven ranks fit without horizontal scrolling.
 
+## Release 1.3.2 — large Hanzi
+
+The rank-sheet glyphs were being overridden by the secondary-name rule and rendered at 11 px. Fixed the selector so the red/black characters are **44 px on 76 px medallions** on desktop (36 px on 64 px on phones), stacked vertically for easy comparison with the table.
+
 ## Build timeline
 
 | Milestone | Time (local) | Elapsed |
@@ -61,22 +65,23 @@ Enlarged the reference to a near-full-stage sheet (980 px desktop) with 44 px ti
 | **Bright themes + verification** | 16:57–17:07 | 10m 25s |
 | **Rank quick reference** | 17:22–17:32 | 10m 31s |
 | **Rank sheet enlargement** | 17:32–17:40 | 8m 0s |
+| **Large Hanzi fix** | 17:40–18:00 | 20m 0s |
 
-**Measured active build estimate:** **~2h 13m** across the initial build, display/audio update, chevron removal, bright themes, the rank quick reference and its enlargement. Session wall clock is much longer because it includes idle gaps between requests.
+**Measured active build estimate:** **~2h 33m** across the initial build, display/audio update, chevron removal, bright themes, the rank quick reference and the large-glyph fix. Session wall clock is much longer because it includes idle gaps between requests.
 
 ## Token consumption
 
-Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 17:40:53 (-08:00), including display settings, five themes, the audio rebalance, the chevron removal and the enlarged rank reference:
+Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 18:00:36 (-08:00), including display settings, five themes, the audio rebalance, the chevron removal and the rank reference:
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 536,022 |
-| Output | 217,402 |
-| Reasoning | 171,036 |
-| **Total (input + output + reasoning)** | **924,460** |
-| Cache read | 96,474,240 |
+| Input | 546,686 |
+| Output | 221,205 |
+| Reasoning | 175,044 |
+| **Total (input + output + reasoning)** | **942,935** |
+| Cache read | 101,512,832 |
 | Cache write | 1,639 |
-| **Total including cache** | **97,400,339** |
+| **Total including cache** | **102,457,406** |
 | Cost | $0.00 (as reported) |
 
 The cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. These are session totals. The final state-file commit and Pages rebuild add a small number of tokens; the session ID allows re-measurement from `opencode.db`.

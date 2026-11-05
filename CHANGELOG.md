@@ -2,6 +2,14 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.2] — 2026-11-04
+
+### Fixed
+
+- The Hanzi in the rank sheet were being overridden by the secondary-name selector and rendered at 11 px. The name rule is now scoped to the direct child, so the red/black glyphs render at **44 px on 76 px medallions** on desktop and **36 px on 64 px** on phones.
+- The red and black tiles are stacked in each card, making the characters much easier to compare against the table.
+- Screenshots regenerated.
+
 ## [1.3.1] — 2026-11-04
 
 ### Changed
