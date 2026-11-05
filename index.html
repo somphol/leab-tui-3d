@@ -58,11 +58,27 @@
       <section class="stage-wrap" aria-label="Game table">
         <canvas id="scene" aria-label="3D Leab-Tui table" role="img"></canvas>
         <div class="stage-hint" data-i18n="camera.hint">Drag to orbit · scroll to zoom · right-drag to pan</div>
-        <div class="hud-strip" role="status" aria-live="polite">
-          <span class="hud-chip"><span class="hud-label" data-i18n="hud.round">Round</span><strong id="roundChip">1</strong></span>
-          <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Trick</span><strong id="trickChip">0</strong></span>
-          <span class="hud-chip"><span class="hud-label" data-i18n="hud.target">Target</span><strong id="targetChip">20</strong></span>
-          <span class="hud-chip hud-turn"><span class="hud-label" data-i18n="hud.turn">Turn</span><strong id="turnChip">You</strong></span>
+        <div class="hud-strip">
+          <div class="quick-ref-wrap">
+            <button id="rankReferenceBtn" class="quick-ref-btn" type="button" aria-expanded="false" aria-controls="rankReference" aria-label="Rank order">
+              <span class="quick-ref-icon" aria-hidden="true">帥</span><span data-i18n="rankRef.open">Ranks</span>
+            </button>
+            <div id="rankReference" class="rank-reference" hidden role="region" aria-labelledby="rankReferenceTitle">
+              <div class="rank-ref-head">
+                <h3 id="rankReferenceTitle" data-i18n="rankRef.title">Rank order</h3>
+                <button class="rank-ref-close" type="button" data-rank-close aria-label="Close rank order" data-i18n-aria="rankRef.close">×</button>
+              </div>
+              <div class="rank-scale"><span data-i18n="rankRef.highest">Highest</span><span data-i18n="rankRef.lowest">Lowest</span></div>
+              <div id="rankReferenceSteps" class="rank-steps"></div>
+              <p class="rank-note" data-i18n="rankRef.note">General &gt; Advisor &gt; Elephant &gt; Chariot &gt; Horse &gt; Cannon &gt; Soldier. Red beats black at equal rank; if rank and colour are equal, the earlier play wins.</p>
+            </div>
+          </div>
+          <div class="hud-chips" role="status" aria-live="polite">
+            <span class="hud-chip"><span class="hud-label" data-i18n="hud.round">Round</span><strong id="roundChip">1</strong></span>
+            <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Trick</span><strong id="trickChip">0</strong></span>
+            <span class="hud-chip"><span class="hud-label" data-i18n="hud.target">Target</span><strong id="targetChip">20</strong></span>
+            <span class="hud-chip hud-turn"><span class="hud-label" data-i18n="hud.turn">Turn</span><strong id="turnChip">You</strong></span>
+          </div>
         </div>
 
         <div class="stage-tools" aria-label="Camera controls">

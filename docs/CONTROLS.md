@@ -17,6 +17,7 @@
 | `i` button | About / credits |
 | Camera buttons (top-right) | Reset view · top view · cinematic orbit |
 | **Aa** (stage toolbar) | Display settings: text size and theme |
+| **Ranks** (top-left HUD) | Show/hide the pictorial rank-order reference |
 
 The camera is damped; release the mouse and it glides to a stop. Pan is clamped so the table cannot be lost off-screen.
 
@@ -51,6 +52,10 @@ The app is usable without a mouse for the main flow:
 | **Play face-down** | Send the required number of tiles without revealing them. They cannot win. |
 | **Hint** | Select a deterministic recommendation. It does not play the tiles. |
 | **Undo trick** | Rewind the last completed trick and explain the comparison. |
+
+## Rank order
+
+Press **Ranks** at the top-left HUD to open the pictorial hierarchy. Each card shows the red and black Hanzi, the Thai and English names, and its rank number (7 down to 1). The note repeats the tie rules. Click **Ranks** again, the `×`, press `Esc`, or click outside to hide it.
 
 ## Display settings
 

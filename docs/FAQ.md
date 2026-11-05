@@ -42,6 +42,9 @@ Yes. The same Display panel offers Mahogany, Jade Court, Midnight Lacquer, Parch
 **I hear no sound. What should I check?**  
 Click once anywhere in the page first — browsers block audio until a gesture. Then check the speaker icon (sound on), the device volume, and the browser tab mute. The clack is synthesised, not a file; there is no audio download to fail. If you still hear nothing, open the console and check for an `AudioContext` error.
 
+**Where is the rank order?**  
+Press **Ranks** at the top-left HUD (next to Round). It opens the pictorial hierarchy with red/black Hanzi, Thai/English names and rank numbers. Click again, press `Esc`, or click outside to hide it.
+
 **How do I confirm sound works?**  
 Open **Aa** → **Test sound**. You should hear a wooden clack. The same sound plays when you lead a tile; if the test is silent, check the tab/device volume, the speaker icon, and the browser console.
 

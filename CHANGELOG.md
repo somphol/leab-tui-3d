@@ -2,6 +2,18 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] — 2026-11-04
+
+### Added
+
+- **Rank order quick reference** — a **Ranks** button at the top-left HUD opens a pictorial hierarchy: red and black Hanzi tiles, Thai and English names, rank numbers, highest/lowest labels and the red/earlier-play tie rules.
+- Toggle it closed with the button, the close control, `Esc`, or a click outside. It is theme-aware and bilingual.
+
+### Changed
+
+- Version bumped to `1.3.0`; save/export version follows.
+- The HUD status region was separated from the quick-reference button for cleaner screen-reader semantics.
+
 ## [1.2.0] — 2026-11-04
 
 ### Added

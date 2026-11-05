@@ -49,7 +49,7 @@ Load order: `index.html` → `style.css` → `script.js` (module; import map pin
 5. **Flow** — `beginMatch` → `dealRound` → `beginTrick` → `leadTrick` / `submitPlay` → `resolveTrick` → `endRound` / `startNextRound`; `undoLastTrick` restores the pre-trick snapshot and restarts the trick.
 6. **3D scene** — `createScene` dynamically imports Three.js. `scene.deal`, `scene.sync`, `scene.collect`, `scene.flipHumanHand` map state to tile targets; the scene never owns rules. `scene.setTheme` regenerates felt/wood/back textures, recolours the table and lights, and disposes the old maps.
 7. **Audio** — `StudioAudio` synthesises everything; the context is unlocked by the first pointer/key event.
-8. **UI** — `renderAll` → HUD, scoreboard, hand list, selection dock, coach, log, inspector; `applyLanguage` swaps all `data-i18n` text and re-renders the 3D labels. `applyFontSize` sets `--fs-scale` and `applyTheme` sets `data-theme`; both persist in prefs and are exposed in the Display modal.
+8. **UI** — `renderAll` → HUD, scoreboard, hand list, selection dock, coach, log, inspector; `applyLanguage` swaps all `data-i18n` text and re-renders the 3D labels. `applyFontSize` sets `--fs-scale` and `applyTheme` sets `data-theme`; both persist in prefs and are exposed in the Display modal. `renderRankReference` builds the pictorial rank ladder; `setRankReference` toggles it.
 9. **Persistence/export** — `saveMatch`, `savePrefs`, `saveStats`, `loadMatch`, `buildExport`, `exportGame`.
 10. **Self-test** — `selfTest()` and `simulateRound()`; also exposed through `window.LeabTui`.
 

@@ -44,6 +44,18 @@ The in-app rules: goal, equipment, hierarchy, colour/tie, the nine calls, the tr
 
 The portrait layout: a wider camera keeps the whole table and the human hand visible; the dock is compact (title, one line of advice, four buttons) and the coach/score panels follow below the stage.
 
+## Rank order quick reference
+
+![Rank order quick reference](../screenshots/ranks.jpg)
+
+The **Ranks** shortcut at the top-left HUD: seven cards, red and black Hanzi, Thai/English names, rank numbers, highest/lowest labels and the tie rules.
+
+## Rank order — ไทย
+
+![Rank order in Thai](../screenshots/ranks-th.jpg)
+
+The same ladder in Thai on the Parchment theme: ตี่ > บิน > ช้าง > กือ > เบ๊ > เผ่า > จุก, with the tie rules underneath.
+
 ## Parchment
 
 ![Parchment](../screenshots/parchment.jpg)

@@ -54,7 +54,7 @@ node scripts/verify.mjs
 | 21 | deal gives four hands of eight | 4 × 8, 32 unique |
 | 22 | scoring table | `-2,-1,0,1,2,3,4,5,16` |
 | 23 | simulated round conserves tiles | captures = 32 |
-| 24 | i18n keys symmetrical | EN and TH both 235 keys |
+| 24 | i18n keys symmetrical | EN and TH both 245 keys |
 | 25 | export payload shape | app + credits + 4 scores |
 
 Latest result: **SELFTEST PASS 25/25** (Chrome headless, 2026-11-04).
@@ -105,6 +105,16 @@ playCount increments; no autoplay warning
 
 The graph is `source → filter → gain → panner → master → compressor → analyser → destination`. The analyser tap is used by the harness; it does not change the output. The first `play` retries after `resume()` if the context was still suspended, which covers the first-gesture race.
 
+### Rank quick reference
+
+```text
+click #rankReferenceBtn → panel open, 7 .rank-step cards
+click again              → panel hidden
+Esc / outside click      → panel hidden
+```
+
+The button is outside the `role="status"` HUD region; the region now wraps only the four status chips. The ladder is generated from `RANKS`, so it cannot drift from the engine order.
+
 ### Display settings
 
 ```text
@@ -142,6 +152,8 @@ The saved game survived the reload and the scene re-synced. A saved `roundEnd` o
 - [ ] Header, HUD, coach, scoreboard, actions, inspector and hand list all render.
 - [ ] Eight face-down tiles deal to each seat; the human hand flips face-up.
 - [ ] The holder of the red General is the leader.
+- [ ] **Ranks** opens the pictorial ladder with 7 cards; the toggle, close, `Esc` and outside click hide it.
+- [ ] The rank note reads correctly in EN and TH.
 - [ ] **Display** (`Aa`) opens; Small/Default/Large/XL change the interface text and persist.
 - [ ] All five themes — Mahogany, Jade Court, Midnight Lacquer, Parchment, Daybreak — change the panels **and** the felt/wood/light palette.
 - [ ] The 3D table does not scale with text size (by design).

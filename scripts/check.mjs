@@ -93,7 +93,8 @@ const required = [
   "screenshots/display.jpg",
   "screenshots/mobile-xl.jpg",
   "screenshots/parchment.jpg",
-  "screenshots/daybreak.jpg"
+  "screenshots/daybreak.jpg",
+  "screenshots/ranks.jpg"
 ];
 
 for (const file of required) {
@@ -141,6 +142,10 @@ ok(script.includes("copy.captures = source.captures.map"), "serialization conver
 ok(script.includes("serializeCombo"), "combination serializer exists");
 ok(!/localStorage\.setItem\([^,]+,\s*JSON\.stringify\(state\)/.test(script), "live state is not written to localStorage");
 ok(script.includes("window.LeabTui"), "public test surface exists");
+ok(script.includes("function renderRankReference"), "rank reference renderer exists");
+ok(script.includes("function setRankReference"), "rank reference toggle exists");
+ok(index.includes('id="rankReference"') && index.includes('id="rankReferenceBtn"'), "rank reference markup exists");
+ok(css.includes(".rank-reference") && css.includes(".rank-step") && css.includes(".mini-tile"), "rank reference styles exist");
 ok(script.includes("const FONT_SIZES"), "font size table exists");
 ok(script.includes("scale: 0.9") && script.includes("scale: 1.24"), "four font sizes are defined");
 ok(script.includes("const THEMES"), "theme table exists");

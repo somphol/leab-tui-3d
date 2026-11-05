@@ -7,7 +7,7 @@
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.2.0",
+  version: "1.3.0",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -18,13 +18,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-04T00:16:43-08:00",
-    packagedAt: "2026-11-04T17:07:29-08:00",
-    durationHuman: "1h 55m 0s",
-    tokensTotal: "840864",
-    tokensInput: "489169",
-    tokensOutput: "200491",
-    tokensReasoning: "151204",
-    tokensCacheRead: "77819520",
+    packagedAt: "2026-11-04T17:32:31-08:00",
+    durationHuman: "2h 5m 0s",
+    tokensTotal: "900146",
+    tokensInput: "522500",
+    tokensOutput: "211891",
+    tokensReasoning: "165755",
+    tokensCacheRead: "90081152",
     sessionId: "ses_e5a5e419dffedJGEsMy3mKV3ey",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -307,6 +307,12 @@ const I18N = {
     "toast.theme": "Theme set to {theme}.",
     "toast.displayReset": "Display settings reset.",
     "toast.soundTest": "Sound test — a wooden clack.",
+    "rankRef.open": "Ranks",
+    "rankRef.title": "Rank order",
+    "rankRef.note": "General > Advisor > Elephant > Chariot > Horse > Cannon > Soldier. Red beats black at equal rank; if rank and colour are equal, the earlier play wins.",
+    "rankRef.close": "Close rank order",
+    "rankRef.highest": "Highest",
+    "rankRef.lowest": "Lowest",
     "camera.hint": "Drag to orbit · scroll to zoom · right-drag to pan",
     "coach.title": "Coach",
     "coach.live": "live",
@@ -548,6 +554,12 @@ const I18N = {
     "toast.theme": "ตั้งธีมเป็น {theme}",
     "toast.displayReset": "รีเซ็ตการแสดงผลแล้ว",
     "toast.soundTest": "ทดสอบเสียง — เสียงไม้กระทบ",
+    "rankRef.open": "ลำดับศักดิ์",
+    "rankRef.title": "ลำดับศักดิ์",
+    "rankRef.note": "ตี่ > บิน > ช้าง > กือ > เบ๊ > เผ่า > จุก · แดงชนะดำเมื่อศักดิ์เท่ากัน · ถ้าศักดิ์กับสีเท่ากัน คนที่ลงก่อนชนะ",
+    "rankRef.close": "ปิดลำดับศักดิ์",
+    "rankRef.highest": "สูงสุด",
+    "rankRef.lowest": "ต่ำสุด",
     "camera.hint": "ลากเพื่อหมุน · เลื่อนเพื่อซูม · ลากขวาเพื่อเลื่อนฉาก",
     "coach.title": "โค้ช",
     "coach.live": "สด",
@@ -2235,6 +2247,27 @@ function renderAbout() {
    11. Language, theme and chrome
    -------------------------------------------------------------------------- */
 
+function renderRankReference() {
+  const steps = $("#rankReferenceSteps");
+  if (!steps) return;
+  steps.innerHTML = RANKS.slice().reverse().map((rank, index) => `
+    <div class="rank-step">
+      <em>${rank.power}</em>
+      <div class="rank-tiles"><span class="mini-tile red">${rank.red}</span><span class="mini-tile black">${rank.black}</span></div>
+      <b>${escapeHTML(LANG === "th" ? rank.th : rank.en)}</b>
+      <span>${escapeHTML(LANG === "th" ? rank.en : rank.th)}</span>
+    </div>${index < RANKS.length - 1 ? '<span class="rank-arrow" aria-hidden="true">›</span>' : ""}`).join("");
+}
+
+function setRankReference(open) {
+  const panel = $("#rankReference");
+  const button = $("#rankReferenceBtn");
+  if (!panel || !button) return;
+  panel.hidden = !open;
+  button.setAttribute("aria-expanded", String(open));
+  button.classList.toggle("active", open);
+}
+
 function applyFontSize(id, options = {}) {
   const entry = FONT_SIZES.find((item) => item.id === id) || FONT_SIZES[1];
   prefs.fontSize = entry.id;
@@ -2307,6 +2340,7 @@ function applyLanguage(lang) {
   const sound = $("#soundToggle");
   if (sound) sound.setAttribute("aria-label", `${t("actions.sound")}: ${prefs.sound ? "on" : "off"}`);
   renderDisplay();
+  renderRankReference();
   renderRules();
   renderAbout();
   renderAll();
@@ -3595,6 +3629,14 @@ function bindEvents() {
   $("#topViewBtn")?.addEventListener("click", () => scene?.toggleTopView());
   $("#cinemaBtn")?.addEventListener("click", () => scene?.toggleCinema());
   $("#displayBtn")?.addEventListener("click", () => { renderDisplay(); openModal("displayModal"); audio?.play("click", 0); });
+  $("#rankReferenceBtn")?.addEventListener("click", () => setRankReference($("#rankReference")?.hidden ?? true));
+  $("[data-rank-close]")?.addEventListener("click", () => setRankReference(false));
+  document.addEventListener("pointerdown", (event) => {
+    const panel = $("#rankReference");
+    const button = $("#rankReferenceBtn");
+    if (!panel || panel.hidden) return;
+    if (!panel.contains(event.target) && !button?.contains(event.target)) setRankReference(false);
+  });
   $$("button[data-font-size]").forEach((button) => button.addEventListener("click", () => applyFontSize(button.dataset.fontSize)));
   $$("button[data-theme-choice]").forEach((button) => button.addEventListener("click", () => applyTheme(button.dataset.themeChoice)));
   $("#displayReset")?.addEventListener("click", resetDisplay);
@@ -3645,6 +3687,7 @@ function bindEvents() {
     if (event.key === "Escape") {
       const open = $$(".modal").find((modal) => !modal.hidden);
       if (open && open.id !== "summaryModal") open.hidden = true;
+      setRankReference(false);
     }
     if (event.key === "h" && !event.metaKey && !event.ctrlKey && !event.altKey) applyHint();
     if (event.key === "Escape" && state?.selected?.length) clearSelection();
@@ -3758,6 +3801,8 @@ window.LeabTui = {
   applyFontSize,
   applyTheme,
   getDisplay: () => ({ fontSize: prefs.fontSize, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),
+  openRanks: () => setRankReference(true),
+  closeRanks: () => setRankReference(false),
   getAudioState: () => ({ context: audio?.ctx?.state || null, unlocked: Boolean(audio?.unlocked), sound: prefs.sound, master: audio?.master?.gain.value ?? null, level: audio?.level?.() ?? 0, time: audio?.ctx?.currentTime ?? null, playCount: audio?.playCount ?? 0, lastPlayed: audio?.lastPlayed ?? null }),
   playSound: (name, seat = 0) => audio?.play(name, seat),
   inspect: (id) => inspectTile(id),

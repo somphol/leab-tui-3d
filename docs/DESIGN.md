@@ -37,6 +37,10 @@ Five themes share one layout and one component set:
 
 The theme is a CSS variable set on `html[data-theme]` plus a `SCENE_THEMES` palette. It changes the felt, wood, rim, inlay, floor, key/rim/warm lights, point lights and tile side/edge/back. It never changes the rules, the tile faces or the layout.
 
+## Rank quick reference
+
+A compact **Ranks** chip sits before the HUD status chips, so the hierarchy is one click from the table without opening the full rules drawer. The popover uses the same cream tile medallions as the inspector, a red/black pair per rank, rank numbers in mono, and a gold-bordered note. It inherits the active theme, so it is legible on both dark and bright palettes.
+
 ## Text size
 
 Four interface sizes sit on `html[data-font-size]` and drive `--fs-scale` (0.9, 1, 1.12, 1.24). All CSS type uses `calc(...px * var(--fs-scale))`, so the header, HUD, panels, dock, chips, modals, rules and inspector scale together. The 3D table does **not** scale; it is a physical object, and scaling it would break the camera framing. The Display panel previews both changes immediately and persists them.

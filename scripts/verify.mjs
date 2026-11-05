@@ -128,6 +128,21 @@ async function main() {
   if (audioValue.context === "running" && audioValue.unlocked && audioValue.peak > 0.01) pass(`audio signal measured (peak ${audioValue.peak.toFixed(3)})`);
   else fail("audio signal measured", JSON.stringify(audioValue));
 
+  const rankExpr = `(async () => {
+    document.querySelector('#rankReferenceBtn').click();
+    await new Promise((r) => setTimeout(r, 150));
+    const open = !document.querySelector('#rankReference').hidden;
+    const steps = document.querySelectorAll('.rank-step').length;
+    document.querySelector('#rankReferenceBtn').click();
+    await new Promise((r) => setTimeout(r, 100));
+    const closed = document.querySelector('#rankReference').hidden;
+    return JSON.stringify({ open, steps, closed });
+  })()`;
+  const rank = runHarness(["--url", base, "--wait", "2500", "--eval", rankExpr]);
+  const rankValue = rank.evalValue || {};
+  if (rankValue.open && rankValue.steps === 7 && rankValue.closed) pass("rank reference opens with 7 cards and toggles closed");
+  else fail("rank reference opens with 7 cards and toggles closed", JSON.stringify(rankValue));
+
   const display = runHarness(["--url", base, "--wait", "2500", "--eval", `(async () => {
     LeabTui.applyFontSize('xl');
     LeabTui.applyTheme('jade');
