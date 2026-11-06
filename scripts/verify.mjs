@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const port = 8123;
 const base = `http://127.0.0.1:${port}/`;
+const soloBase = `${base}?mode=solo`;
 const failures = [];
 let server = null;
 
@@ -113,18 +114,21 @@ async function main() {
 
   const audioExpr = `(async () => {
     document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 200));
+    for (let i = 0; i < 40; i += 1) {
+      if (LeabTui.getAudioState().context === 'running') break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
     LeabTui.playSound('clack', 0);
     let peak = 0;
-    for (let i = 0; i < 24; i += 1) {
-      if (i === 8) LeabTui.playSound('clack', 0);
+    for (let i = 0; i < 30; i += 1) {
+      if (i === 10) LeabTui.playSound('clack', 0);
       await new Promise((r) => setTimeout(r, 20));
       peak = Math.max(peak, LeabTui.getAudioState().level);
     }
     const state = LeabTui.getAudioState();
     return JSON.stringify({ context: state.context, unlocked: state.unlocked, peak, playCount: state.playCount });
   })()`;
-  const audio = runHarness(["--url", base, "--wait", "2500", "--eval", audioExpr]);
+  const audio = runHarness(["--url", soloBase, "--wait", "2500", "--eval", audioExpr]);
   const audioValue = audio.evalValue || {};
   if (audioValue.context === "running" && audioValue.unlocked && audioValue.peak > 0.01) pass(`audio signal measured (peak ${audioValue.peak.toFixed(3)})`);
   else fail("audio signal measured", JSON.stringify(audioValue));
@@ -139,12 +143,12 @@ async function main() {
     const closed = document.querySelector('#rankReference').hidden;
     return JSON.stringify({ open, steps, closed });
   })()`;
-  const rank = runHarness(["--url", base, "--wait", "2500", "--eval", rankExpr]);
+  const rank = runHarness(["--url", soloBase, "--wait", "2500", "--eval", rankExpr]);
   const rankValue = rank.evalValue || {};
   if (rankValue.open && rankValue.steps === 7 && rankValue.closed) pass("rank reference opens with 7 cards and toggles closed");
   else fail("rank reference opens with 7 cards and toggles closed", JSON.stringify(rankValue));
 
-  const display = runHarness(["--url", base, "--wait", "2500", "--eval", `(async () => {
+  const display = runHarness(["--url", soloBase, "--wait", "2500", "--eval", `(async () => {
     LeabTui.applyFontSize('xl');
     LeabTui.applyTheme('jade');
     const jadeScene = LeabTui.getCamera()?.theme;
@@ -175,7 +179,7 @@ async function main() {
   if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.themeButtons === 5) pass("display panel exposes four sizes and five themes");
   else fail("display panel exposes four sizes and five themes", JSON.stringify(displayValue));
 
-  const flow = runHarness(["--url", base, "--wait", "900", "--eval", playthrough]);
+  const flow = runHarness(["--url", soloBase, "--wait", "900", "--eval", playthrough]);
   const value = flow.evalValue || {};
   const flowExceptions = (flow.events || []).filter((event) => event.type === "exception");
   if (value.ok === true) pass("complete round reached roundEnd");

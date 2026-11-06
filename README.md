@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.4.0-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.4.1-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -32,11 +32,11 @@ A bilingual, interactive 3D studio for **เลี๊ยบตุ่ย (Leab-Tu
 
 ![Multiplayer lobby](screenshots/lobby.jpg)
 
-1. Open **Multiplayer** in the Actions panel, or let the launch overlay appear.
-2. Choose **Host a table**. The browser opens a room and shows a code such as `LEAB-ABC-234`.
-3. Send the code or the **Copy invite link** URL to a friend. They open it, enter a name, and join seat 1, 2 or 3.
+1. On load, the **Choose how to play** overlay appears: Play solo, Host a table, Join a table, or Resume match when a solo save exists.
+2. Enter **Your name**, then choose **Host a table**. The browser opens a room and shows a code such as `LEAB-ABC-234`.
+3. Send the code or the **Copy invite link** URL to a friend. They open it, enter their own name, and join seat 1, 2 or 3.
 4. As soon as **two humans** are connected, press **Start table**. Empty seats are filled with bots (`Bot 1`, `Bot 2`).
-5. If a guest closes the tab, their hand and score stay in place and a bot takes over the seat.
+5. If a guest closes the tab, their hand and score stay in place and a bot takes over the seat. The host can leave with the wine-coloured **Leave room** button in Actions; it confirms first and closes the room for everyone.
 
 The room is peer-to-peer: **no game server**, no account, no database. PeerJS's public broker is used only for the first WebRTC handshake; game traffic then flows directly between browsers. The host runs all rules and AI. Guests receive a redacted state in which every other hand and every hidden centre play is replaced by a face-down placeholder. Full protocol: **[docs/PROTOCOL.md](docs/PROTOCOL.md)** · operations and troubleshooting: **[docs/MULTIPLAYER.md](docs/MULTIPLAYER.md)**.
 
@@ -71,10 +71,10 @@ Useful launch URLs:
 
 | URL | Behaviour |
 | --- | --- |
-| `/` | Launch overlay: solo, host or join |
-| `/?mode=solo` | Skip the overlay and deal a solo table |
+| `/` | Launch overlay: solo, host, join, or Resume match when a solo save exists |
+| `/?mode=solo` | Skip the overlay and deal/resume a solo table |
 | `/?mode=host&name=Ana` | Open a room immediately |
-| `/?room=ABC234` | Open the join panel and connect with the saved name |
+| `/?room=ABC234` | Open the join panel with the code prefilled; the guest confirms their name |
 | `/?lobby=1` | Force the launch overlay |
 | `/?selftest=1` | Run the 35-check suite |
 
@@ -177,7 +177,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 
 ## Credits
 
-Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The P2P build is release **1.4.0**; the original table was 1.0.0.
+Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The P2P build is release **1.4.1**; the original table was 1.0.0.
 
 Rules reference: Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016), linked in [docs/RULES.md](docs/RULES.md). Three.js and PeerJS are MIT-licensed; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

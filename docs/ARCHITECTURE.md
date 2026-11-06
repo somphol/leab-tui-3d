@@ -30,10 +30,12 @@ boot()
   loadMatch()              validate saved game or return false
   makeState()              only if no valid save
   createScene()            dynamic import; may throw → #bootError
-  dealRound()              shuffle, deal, animate, beginTrick()
+  dealRound()              only when the launch prompt is skipped or a save resumes
   optional ?selftest / ?demo / ?seed
   optional launch overlay / ?mode=host / ?room=
 ```
+
+A normal load does not deal behind the overlay. It asks for **Your name** and a mode first; a restored save appears as **Resume match**. This avoids a phantom game that would otherwise be saved before the player chose to play.
 
 The scene is created **after** the first render so the UI is usable during the Three.js download. `dealRound` waits for the scene's deal promise before `beginTrick`, but falls back to a timeout if `scene` is null.
 
@@ -169,7 +171,7 @@ The saved payload is:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "savedAt": "2026-11-06T...",
   "network": false,
   "game": { "phase": "...", "hands": [["r-general-0"], ...], ... }

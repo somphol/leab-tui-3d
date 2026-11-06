@@ -18,7 +18,8 @@
 | Camera buttons (top-right) | Reset view · top view · cinematic orbit |
 | **Aa** (stage toolbar) | Display settings: text size and theme |
 | **Ranks** (top-left HUD) | Show/hide the pictorial rank-order reference |
-| **Multiplayer** (Actions) | Open the lobby: solo / host / join |
+| **Multiplayer** (Actions) | Open the lobby: solo / host / join; set your name here |
+| **Leave room** (Actions) | Confirmed exit from a network room; hidden in solo |
 | Room chip (header) | Copy the invite link while in a room |
 
 The camera is damped; release the mouse and it glides to a stop. Pan is clamped so the table cannot be lost off-screen.

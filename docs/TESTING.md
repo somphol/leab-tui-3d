@@ -170,6 +170,7 @@ lobby humans          2
 start                 host + guest + Bot 1 + Bot 2
 guest own hand        8 real tile ids
 other hands           24 ghost ids, no real ids on the wire
+host in-game controls leave button visible, Start hidden, "Match in progress"
 actions               9–13 moves crossed the channel, a trick resolved
 guest tab closed      seat 1 became Bot 3, score/hand preserved
 console               no exceptions on either page
@@ -178,6 +179,15 @@ console               no exceptions on either page
 The privacy check is the important one: it reads the guest's `LeabTui.getState()` and asserts that every id outside the guest's own seat starts with `ghost-`. That value comes from the actual data channel, not from a unit stub.
 
 ## Manual checklist
+
+### Launch
+
+- [ ] A normal load shows Choose how to play before dealing a game.
+- [ ] Your name is required before hosting or joining; an empty name shows a clear message.
+- [ ] Hosting uses the menu name and the roster shows it.
+- [ ] An invite link prefills the room code but asks the guest to confirm their own name.
+- [ ] Reloading a solo save shows Resume match with the round, trick and score.
+- [ ] Play solo starts a fresh deal; Resume match restores the saved one.
 
 ### First load
 
@@ -221,7 +231,8 @@ The privacy check is the important one: it reads the guest's `LeabTui.getState()
 
 ### Multiplayer
 
-- [ ] The launch overlay offers Play solo, Host a table and Join a table.
+- [ ] The launch overlay offers Your name, Play solo, Host a table and Join a table, plus Resume match when a save exists.
+- [ ] The host Leave room button is visible in Actions, confirms first, and returns to the menu.
 - [ ] Host shows a `LEAB-XXX-XXX` code, a 4-seat roster and a disabled Start until a second human joins.
 - [ ] Copy invite link copies a URL with `?room=...`.
 - [ ] Guest enters the code and a name; the waiting panel shows the same roster.

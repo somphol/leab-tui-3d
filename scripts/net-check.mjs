@@ -213,6 +213,21 @@ async function main() {
     console.log(`GUEST SHOT ${process.env.GUEST_SHOT}`);
   }
 
+  await host.eval("LeabTui.net.openLobby(); true");
+  await sleep(400);
+  const hostControls = JSON.parse(await host.eval(`JSON.stringify({
+    leave: !document.querySelector('#leaveRoomBtn').hidden,
+    startHidden: document.querySelector('#lobbyStartBtn').hidden,
+    back: document.querySelector('#lobbyHostPanel [data-lobby-back]').textContent,
+    title: document.querySelector('#lobbyTitle').textContent
+  })`));
+  if (hostControls.leave && hostControls.startHidden && /leave/i.test(hostControls.back)) {
+    pass("host in-game controls: leave visible, start hidden", hostControls.title);
+  } else {
+    fail("host in-game controls: leave visible, start hidden", JSON.stringify(hostControls));
+  }
+  await host.eval("document.querySelector('#lobbyModal').hidden = true; true");
+
   // Drive whichever human seat is on turn until a trick resolves. This works
   // regardless of who holds the red General and exercises both directions of
   // the action channel.

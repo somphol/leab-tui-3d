@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Release **1.4.0** of Leab-Tui 3D is built, verified and published. It adds serverless P2P multiplayer to the 1.3.2 table.
+Release **1.4.1** of Leab-Tui 3D is built, verified and published. It adds the launch choice and a confirmed Leave room action on top of the 1.4.0 serverless P2P table.
 
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Live: <https://somphol.github.io/leab-tui-3d/>
@@ -18,10 +18,10 @@ Release **1.4.0** of Leab-Tui 3D is built, verified and published. It adds serve
 | AI | Heuristic lead/follow with conservation and challenge probability; also fills empty network seats |
 | 3D | 32 carved tiles, 32 back-only ghost meshes, mahogany table, OrbitControls, deal/flip/capture animations, seat-relative world rotation, portrait framing |
 | UI | Bilingual EN/TH, coach, inspector, hint, undo comparison, rules, summaries, toasts, launch lobby, room chip |
-| Multiplayer | Host-authoritative WebRTC via PeerJS; 2–4 humans; empty seats become bots; disconnects become bots; per-seat redaction |
+| Multiplayer | Host-authoritative WebRTC via PeerJS; 2–4 humans; empty seats become bots; disconnects become bots; per-seat redaction; confirmed Leave room |
 | Audio | Synthesised shuffle/clack/flip/sweep/win/lose, gesture-unlocked |
 | Persistence | Autosave, solo resume, stats, versioned JSON export; network saves marked non-resumable |
-| Verification | 35/35 self-test, static check, CDP harness, full-round evidence, 12-check two-browser WebRTC suite |
+| Verification | 35/35 self-test, static check, CDP harness, full-round evidence, 13-check two-browser WebRTC suite |
 | Release docs | README, AGENTS, STATE, rules, architecture, multiplayer, protocol, tests, deployment, reproduction, data format, controls, accessibility, performance, design, browser support, FAQ, roadmap, release checklist, gallery, glossary |
 | Skill | `leab-tui-p2p-studio`, mirrored to `~/Projects/opencode-skills/` and published |
 
@@ -33,7 +33,7 @@ node --check peer-manager.js           PASS
 node scripts/check.mjs                 PASS (292 checks)
 ?selftest=1                            SELFTEST PASS 35/35
 node scripts/verify.mjs                ALL BROWSER CHECKS PASSED
-node scripts/net-check.mjs             ALL 12 MULTIPLAYER CHECKS PASSED
+node scripts/net-check.mjs             ALL 13 MULTIPLAYER CHECKS PASSED
 full round                             roundEnd, 32 tiles, points sum 0
 host + guest                           2 humans + Bot 1 + Bot 2
 guest privacy                          own 8 real ids, other 24 ghost ids
@@ -56,7 +56,9 @@ console exceptions                     none on either page
 10. **View rotation.** Rotate the table `world` group, not the camera.
 11. **Canvas placement.** `#scene` lives inside `.stage-wrap`; an app-level canvas renders behind the sidebar.
 12. **Audio unlock.** Do not create an `AudioContext` before the first user gesture.
-13. **Portrait camera.** Mobile needs `(0,14.3,17.2)`, FOV 46 and a compact dock; otherwise the hand is hidden.
+13. **Launch prompt.** Normal loads always ask; a saved solo game appears as Resume match, never as a phantom deal.
+14. **Leave room.** The host exit is destructive and must keep its confirmation; guests keep their seat as a bot.
+15. **Portrait camera.** Mobile needs `(0,14.3,17.2)`, FOV 46 and a compact dock; otherwise the hand is hidden.
 
 ## If the build is resumed
 

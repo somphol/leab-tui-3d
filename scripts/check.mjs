@@ -101,7 +101,8 @@ const required = [
   "screenshots/ranks.jpg",
   "screenshots/lobby.jpg",
   "screenshots/lobby-mobile.jpg",
-  "screenshots/guest-play.jpg"
+  "screenshots/guest-play.jpg",
+  "screenshots/mobile-leave.jpg"
 ];
 
 for (const file of required) {

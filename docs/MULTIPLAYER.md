@@ -27,6 +27,16 @@ This is a deliberate rules decision, not a missing seat. If you fork the project
 
 The host is always seat 0. Guests are assigned seats 1–3 in join order. A guest cannot choose or swap seats.
 
+## Identity
+
+Every human sets a name in the launch flow before hosting or joining. The name is trimmed to 18 characters and stored in `localStorage["leabtui.name.v1"]`; the menu and join fields stay in sync.
+
+- The host name becomes the seat 0 roster label.
+- A guest confirms their own name in the join panel.
+- An invite link (`?room=...`) pre-fills the code but never the identity, so a shared link cannot silently join as the last person who used that browser.
+- `?room=...&name=Bea` is an explicit deep link for tests and automation; it joins immediately.
+- There is no account, password or uniqueness check.
+
 ## Lobby lifecycle
 
 ```text
@@ -40,6 +50,7 @@ launch
   │    beginMatch + publish ──► game
   └─ Join a table
        enter code + name ─────► PeerJS client
+       (invite links prefill the code, never the identity)
        welcome { seat } ──────► waiting lobby
        state #1 ──────────────► table
 ```
@@ -57,6 +68,16 @@ A code is six characters from an unambiguous alphabet: `ABCDEFGHJKLMNPQRSTUVWXYZ
 - Code collisions are retried up to four times (`unavailable-id`).
 
 There are 32⁶ ≈ 1.07 billion codes. The broker does not provide a directory; a code is only useful while the host page is open.
+
+## Leaving the room
+
+During a network game the Actions panel carries a wine-coloured **Leave room** button, full-width below the action grid.
+
+- **Host:** asks for confirmation, sends `closed` to every guest, destroys the peer and returns to the launch menu. Guests see **Table closed**. The room code stops working.
+- **Guest:** asks for confirmation, closes the data channel and returns to the menu. The host converts the seat to a bot; the match continues.
+- **Lobby before start:** the host panel's **Back** and the guest waiting panel's **Leave room** use the same confirmation.
+
+The button is hidden in solo. On phones it sits inside the Actions panel below the table, so it never covers the hand dock; the header room chip shrinks to a status icon.
 
 ## Starting and filling
 
@@ -122,7 +143,8 @@ Without a TURN relay, symmetric NAT and some corporate firewalls will fail. The 
 | --- | --- |
 | `?mode=solo` | Skip the launch overlay |
 | `?mode=host&name=Ana` | Open a room immediately |
-| `?room=ABC234` | Join immediately; `&name=Guest` sets the handle |
+| `?room=ABC234` | Open the join panel with the code prefilled; no connection until the guest confirms a name |
+| `?room=ABC234&name=Bea` | Join immediately as Bea (used by the net-check harness) |
 | `?lobby=1` | Force the launch overlay |
 | `LeabTui.net.getState()` | Role, formatted code, seat, roster, PeerJS ID |
 | `LeabTui.net.host(name)` | Open a room from the console |

@@ -2,6 +2,26 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.4.1] — 2026-11-06
+
+### Added
+
+- **Launch prompt on every normal load.** The Choose how to play overlay now appears even when a saved solo game exists, with a **Resume match** card showing the round, trick and score. A fresh visit no longer deals a game behind the overlay.
+- **Dedicated Leave room button** in the Actions panel during a network game. It is wine-coloured, full-width below the action grid, and opens a confirmation that explains the host/guest consequence.
+- The host lobby hides **Start table** after kickoff and relabels its back action **Leave room**; it shows "Match in progress" instead.
+
+### Changed
+
+- The mobile header compresses the room chip to a 34 px status icon so the rules button stays reachable at 390 px.
+- `scripts/browser-check.mjs` accepts `--reload-url` for saved-game/launch tests.
+- The two-browser suite now checks the host in-game controls (leave visible, start hidden), 13 checks total.
+
+### Fixed
+
+- A fresh visit no longer created a hidden deal that could later appear as a phantom "Resume match".
+- `LeabTui.net.openLobby()` opens the host panel for a host instead of the guest waiting panel.
+- Starting an already-running host match now refuses with a clear message instead of silently re-dealing.
+
 ## [1.4.0] — 2026-11-06
 
 ### Added

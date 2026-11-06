@@ -3,25 +3,36 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.4.0**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.4.1**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.4.0` |
+| App version | `1.4.1` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 35/35) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js` |
-| Source lines | 7,163 |
-| Source size | 310,181 bytes |
+| Source lines | 7,386 |
+| Source size | 319,623 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.4.1 — launch choice and a clear exit
+
+The launch overlay now appears on every normal load, even when a solo save exists. It offers Play solo, Host a table, Join a table and, when applicable, **Resume match** with the round, trick and current score. A first visit no longer deals a hidden game behind the overlay, so there is no phantom save to resume.
+
+During a network game, the Actions panel carries a wine-coloured **Leave room** button. It is full-width below the action grid, confirms first, and explains the consequence:
+
+- **Host:** closes the room for every guest; their seats become bots and the code stops working.
+- **Guest:** leaves the table; a bot takes over their seat and the match continues.
+
+The host lobby hides **Start table** after kickoff, relabels its back action **Leave room**, and shows "Match in progress". On phones the room chip compresses to a 34 px status icon so the rules button stays reachable.
 
 ## Release 1.4.0 — serverless P2P multiplayer
 
@@ -48,23 +59,25 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | First browser boot, lobby and host-room test | 10:38–10:44 | ~6m |
 | Two-browser harness; privacy, action and disconnect fixes | 10:44–11:04 | ~20m |
 | Docs set, protocol, release files, screenshots | 11:04–11:17 | ~13m |
-| Verification, state record, commit and publish | 11:17–… | final |
+| Verification, state record, commit and publish | 11:17–11:31 | ~14m |
+| Review gap between requests | 11:31–12:14 | idle |
+| 1.4.1 launch name, resume card, Leave room, phone fit | 12:14–12:34 | ~20m |
 
-**Measured session wall clock:** **1h 25m 57s** (5,157 s) from the OpenCode session record at the last token measurement. The final commit and push add a small amount.
+**Measured session wall clock:** **2h 31m 57s** (9,117 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
-Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T11:17:17-08:00 (-08:00):
+Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12:33:59-08:00 (-08:00), covering 1.4.0 and 1.4.1:
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 361,358 |
-| Output | 132,347 |
-| Reasoning | 55,836 |
-| **Total (input + output + reasoning)** | **549,541** |
-| Cache read | 80,757,504 |
+| Input | 435,104 |
+| Output | 162,737 |
+| Reasoning | 80,734 |
+| **Total (input + output + reasoning)** | **678,575** |
+| Cache read | 124,208,896 |
 | Cache write | 1,087 |
-| **Total including cache** | **81,308,132** |
+| **Total including cache** | **124,888,558** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.
@@ -79,7 +92,7 @@ Cache figures describe context reuse, not additional generated work. They are re
 - **Bilingual UI** — EN ⇄ TH across 315 dictionary keys, dynamic coach/log/summary strings, tile names, ARIA labels, lobby copy and 3D labels.
 - **Audio** — synthesised shuffle, clack, flip, sweep, win, lose, undo; unlocked on first gesture; no files.
 - **Persistence** — autosaved solo match, preferences and statistics; reload-resume; versioned JSON export with app, credits, stats and game; network saves marked non-resumable.
-- **Verification** — 35-check in-page suite, 299-check static release check, Chrome CDP harness, full-round test, 12-check two-browser WebRTC suite, 8 release screenshots.
+- **Verification** — 35-check in-page suite, 301-check static release check, Chrome CDP harness, full-round test, 13-check two-browser WebRTC suite, 9 release screenshots.
 - **Release** — README, AGENTS handoff, rules, architecture, multiplayer, protocol, testing, deployment, reproduction, data format, controls, accessibility, performance, design, FAQ, roadmap, release checklist, gallery, glossary, browser support, licence, changelog, contribution/security/privacy/support docs, citation, notices, GitHub templates, static-check workflow and a published skill.
 
 ## Verification snapshot
@@ -88,17 +101,17 @@ Cache figures describe context reuse, not additional generated work. They are re
 | --- | --- |
 | `node --check script.js` | pass |
 | `node --check peer-manager.js` | pass |
-| `node scripts/check.mjs` | pass (299) |
+| `node scripts/check.mjs` | pass (301) |
 | In-page self-test | **35/35** |
 | `node scripts/verify.mjs` | ALL BROWSER CHECKS PASSED |
-| `node scripts/net-check.mjs` | **12/12** multiplayer checks |
+| `node scripts/net-check.mjs` | **13/13** multiplayer checks |
 | Full round through the public API | `roundEnd`, 32 tiles captured, hands empty, points sum 0 |
 | Host + guest | 2 humans + Bot 1 + Bot 2 |
 | Guest privacy | own 8 real ids; other 24 ghost ids |
 | Actions | 11 lead/follow moves crossed the data channel; a trick resolved |
 | Guest close | seat 1 became a bot; hand and score preserved |
 | Console exceptions | none on host or guest |
-| Screenshots | hero, Thai, rules, mobile, lobby, host panel, mobile lobby, guest table |
+| Screenshots | hero, Thai, rules, mobile, lobby, host panel, mobile lobby, mobile leave, guest table |
 
 The detailed evidence is in [docs/TESTING.md](docs/TESTING.md).
 

@@ -23,7 +23,7 @@ import {
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.4.0",
+  version: "1.4.1",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -34,13 +34,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T11:31:30-08:00",
-    durationHuman: "1h 25m 57s",
-    tokensTotal: "549541",
-    tokensInput: "361358",
-    tokensOutput: "132347",
-    tokensReasoning: "55836",
-    tokensCacheRead: "80757504",
+    packagedAt: "2026-11-06T12:37:30-08:00",
+    durationHuman: "2h 31m 57s",
+    tokensTotal: "678575",
+    tokensInput: "435104",
+    tokensOutput: "162737",
+    tokensReasoning: "80734",
+    tokensCacheRead: "124208896",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -545,6 +545,9 @@ const I18N = {
     "net.codePlaceholder": "LEAB-ABC-234",
     "net.nameLabel": "Your name",
     "net.namePlaceholder": "Guest",
+    "net.yourName": "Your name",
+    "net.yourNamePlaceholder": "Host or guest name",
+    "net.enterName": "Enter your name before hosting or joining.",
     "net.connect": "Connect",
     "net.connecting": "Connecting…",
     "net.handshake": "Connected. Waiting for the host…",
@@ -583,6 +586,13 @@ const I18N = {
     "net.rejected.full": "The table is full (four seats).",
     "net.rejected.illegal": "That play was not legal.",
     "net.openLobby": "Multiplayer",
+    "net.resumeMatch": "Resume match",
+    "net.resumeMeta": "Round {round} · trick {trick} · {score} points",
+    "net.leaveTitle": "Leave the room?",
+    "net.leaveBodyHost": "This closes the room for every guest. Their seats become bots and the room code stops working.",
+    "net.leaveBodyGuest": "You will leave the table. A bot will take over your seat and the match will continue.",
+    "net.matchInProgress": "Match in progress",
+    "net.alreadyStarted": "The match is already running. Use New match for a rematch, or leave the room.",
     "net.joinHint": "Ask the host for the six-character code.",
     "toast.netGuest": "{name} joined the table.",
     "toast.netGuestLeft": "{name} left the lobby.",
@@ -590,7 +600,8 @@ const I18N = {
     "toast.netStarted": "Table {code} started.",
     "toast.netLeft": "Left the table.",
     "toast.netCopied": "Invite link copied.",
-    "toast.solo": "Solo table ready."
+    "toast.solo": "Solo table ready.",
+    "toast.resumed": "Match resumed."
   },
   th: {
     "app.title": "เลี๊ยบตุ่ย 3 มิติ",
@@ -862,6 +873,9 @@ const I18N = {
     "net.codePlaceholder": "LEAB-ABC-234",
     "net.nameLabel": "ชื่อของคุณ",
     "net.namePlaceholder": "แขก",
+    "net.yourName": "ชื่อของคุณ",
+    "net.yourNamePlaceholder": "ชื่อเจ้าบ้านหรือแขก",
+    "net.enterName": "กรอกชื่อของคุณก่อนเปิดหรือเข้าร่วมโต๊ะ",
     "net.connect": "เชื่อมต่อ",
     "net.connecting": "กำลังเชื่อมต่อ…",
     "net.handshake": "เชื่อมต่อแล้ว กำลังรอเจ้าบ้าน…",
@@ -900,6 +914,13 @@ const I18N = {
     "net.rejected.full": "โต๊ะเต็ม (สี่ที่นั่ง)",
     "net.rejected.illegal": "ชุดนั้นไม่ถูกกติกา",
     "net.openLobby": "ผู้เล่นหลายคน",
+    "net.resumeMatch": "เล่นต่อ",
+    "net.resumeMeta": "รอบ {round} · ตา {trick} · {score} แต้ม",
+    "net.leaveTitle": "ออกจากห้องหรือไม่?",
+    "net.leaveBodyHost": "การออกจะปิดห้องสำหรับแขกทุกคน ที่นั่งของแขกทุกคนจะกลายเป็นบอท และรหัสห้องจะใช้ไม่ได้อีก",
+    "net.leaveBodyGuest": "คุณจะออกจากโต๊ะ บอทจะรับที่นั่งของคุณและแมตช์จะดำเนินต่อ",
+    "net.matchInProgress": "แมตช์กำลังเล่น",
+    "net.alreadyStarted": "แมตช์เริ่มแล้ว ใช้ปุ่มสร้างแมตช์ใหม่เพื่อเล่นอีกครั้ง หรือออกจากห้อง",
     "net.joinHint": "ขอรหัสหกตัวจากเจ้าบ้าน",
     "toast.netGuest": "{name} เข้าร่วมโต๊ะ",
     "toast.netGuestLeft": "{name} ออกจากห้องรับแขก",
@@ -907,7 +928,8 @@ const I18N = {
     "toast.netStarted": "โต๊ะ {code} เริ่มแล้ว",
     "toast.netLeft": "ออกจากโต๊ะแล้ว",
     "toast.netCopied": "คัดลอกลิงก์เชิญแล้ว",
-    "toast.solo": "โต๊ะคนเดียวพร้อมแล้ว"
+    "toast.solo": "โต๊ะคนเดียวพร้อมแล้ว",
+    "toast.resumed": "เล่นแมตช์เดิมต่อแล้ว"
   }
 };
 
@@ -1271,6 +1293,7 @@ let MY_SEAT = 0;
 let SEAT_PROFILES = null;
 let net = null;
 let lobbyState = null;
+let resumeAvailable = false;
 let remoteClock = null;
 let lastPublished = 0;
 let publishTimer = null;
@@ -1606,6 +1629,7 @@ function dealRound(leaderHint = null) {
 function beginMatch(options = {}) {
   clearTimeout(actionTimer);
   actionToken += 1;
+  resumeAvailable = false;
   state = makeState(options.seed ?? Math.floor(Math.random() * 1e9));
   state.fast = Boolean(options.fast);
   state.dealer = 3;
@@ -2800,6 +2824,7 @@ function applyRemoteState(raw) {
     ? previousSelected.filter((id) => inHand.has(id))
     : [];
   state = next;
+  resumeAvailable = false;
   if (scene) scene.setViewSeat?.(MY_SEAT);
   renderAll();
   if (scene) {
@@ -3018,6 +3043,10 @@ async function createHostRoom(name) {
 
 function startHostedMatch() {
   if (!isHost()) return;
+  if (net.started) {
+    toast(t("net.alreadyStarted"), "wine");
+    return;
+  }
   const humans = SEAT_PROFILES.filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.connected).length;
   if (humans < 2) {
     toast(t("net.needTwo"), "wine");
@@ -3031,6 +3060,7 @@ function startHostedMatch() {
   });
   net.started = true;
   net.seq = 0;
+  if (lobbyState) lobbyState.status = t("net.matchInProgress");
   const roster = serialiseRoster();
   for (const profile of SEAT_PROFILES) {
     if (profile.kind !== "human" || !profile.connId) continue;
@@ -3180,6 +3210,7 @@ function leaveRoom({ silent = false, keepState = false } = {}) {
   SEAT_PROFILES = null;
   MY_SEAT = 0;
   lobbyState = null;
+  resumeAvailable = false;
   if (!keepState) {
     state = null;
     renderAll();
@@ -3190,6 +3221,30 @@ function leaveRoom({ silent = false, keepState = false } = {}) {
     audio?.play("click", 0);
   }
   if (role) renderNetChrome();
+}
+
+function resumeSavedMatch() {
+  if (!state || isNetworked() || !resumeAvailable) return;
+  resumeAvailable = false;
+  closeLobby();
+  if (state.phase === "roundEnd" || state.phase === "matchEnd") {
+    showRoundSummary(state.phase === "matchEnd");
+  } else if (scene) {
+    scene.sync(state);
+  }
+  toast(t("toast.resumed"), "jade");
+}
+
+function requestLeaveRoom() {
+  if (!isNetworked()) {
+    showLobby("menu");
+    return;
+  }
+  const body = $("#leaveBody");
+  if (body) body.textContent = t(isHost() ? "net.leaveBodyHost" : "net.leaveBodyGuest");
+  const modal = $("#leaveModal");
+  if (modal) modal.hidden = false;
+  audio?.play("click", 0);
 }
 
 function backToSolo() {
@@ -3221,6 +3276,12 @@ function loadPlayerName() {
   try { return localStorage.getItem(PLAYER_NAME_KEY) || ""; } catch { return ""; }
 }
 
+function preferredPlayerName() {
+  const menu = $("#lobbyPlayerName")?.value || "";
+  const join = $("#lobbyNameInput")?.value || "";
+  return (menu || join || loadPlayerName()).trim().slice(0, 18);
+}
+
 function lobbyRosterHTML(players, options = {}) {
   const preview = options.preview !== false;
   return SEATS.map((seat) => {
@@ -3248,11 +3309,25 @@ function renderLobby() {
   });
   if (view === "menu") {
     if ($("#lobbyTitle")) $("#lobbyTitle").textContent = t("net.launchTitle");
+    const resume = $("#lobbyResumeSaved");
+    if (resume) {
+      const canResume = Boolean(resumeAvailable && state && !isNetworked());
+      resume.hidden = !canResume;
+      if (canResume) {
+        const meta = $("#lobbyResumeMeta");
+        if (meta) meta.textContent = t("net.resumeMeta", {
+          round: state.round,
+          trick: state.trick,
+          score: state.scores[MY_SEAT]
+        });
+      }
+    }
     return;
   }
+  const started = Boolean(net?.started);
   const title = $("#lobbyTitle");
   if (title) {
-    title.textContent = view === "host" ? t("net.hostTitle")
+    title.textContent = view === "host" ? (started ? t("net.matchInProgress") : t("net.hostTitle"))
       : view === "join" ? t("net.joinTitle")
       : view === "lost" ? t("net.lostTitle")
       : view === "waiting" ? t("net.waitingHost")
@@ -3262,7 +3337,7 @@ function renderLobby() {
   const code = lobbyState?.roomCode || net?.code || "";
   const formatted = code ? formatRoomCode(code) : "—";
   const humans = (SEAT_PROFILES || []).filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.connected).length;
-  const canStart = view === "host" ? humans >= 2 : Boolean(lobbyState?.canStart);
+  const canStart = view === "host" ? humans >= 2 && !started : Boolean(lobbyState?.canStart);
 
   if ($("#lobbyRoomCode")) $("#lobbyRoomCode").textContent = formatted;
   const invite = code ? inviteUrl(code) : "";
@@ -3278,11 +3353,17 @@ function renderLobby() {
   }
   const start = $("#lobbyStartBtn");
   if (start) {
-    start.disabled = !canStart;
+    start.hidden = started;
+    start.disabled = !canStart || started;
     start.textContent = canStart ? t("net.startTable") : t("net.needTwo");
   }
   const hint = $("#lobbyStartHint");
-  if (hint) hint.textContent = canStart ? t("net.startHint") : t("net.needTwoLong");
+  if (hint) {
+    hint.hidden = started;
+    hint.textContent = canStart ? t("net.startHint") : t("net.needTwoLong");
+  }
+  const hostBack = $("#lobbyHostPanel [data-lobby-back]");
+  if (hostBack) hostBack.textContent = started ? t("net.leave") : t("net.back");
   const status = $("#lobbyStatus");
   if (status && lobbyState?.status) status.textContent = lobbyState.status;
   const waitStatus = $("#lobbyWaitStatus");
@@ -3306,7 +3387,11 @@ function showLobby(view = "menu") {
   modal.hidden = false;
   if (!lobbyState) lobbyState = { view, players: [], status: "", roomCode: "" };
   lobbyState.view = view;
-  if ($("#lobbyNameInput") && !$("#lobbyNameInput").value) $("#lobbyNameInput").value = loadPlayerName();
+  const storedName = loadPlayerName();
+  for (const selector of ["#lobbyNameInput", "#lobbyPlayerName"]) {
+    const field = $(selector);
+    if (field && !field.value) field.value = storedName;
+  }
   renderLobby();
 }
 
@@ -3334,6 +3419,8 @@ function renderNetChrome() {
   }
   const undo = $("#undoBtn");
   if (undo && isClient()) undo.disabled = true;
+  const leave = $("#leaveRoomBtn");
+  if (leave) leave.hidden = !isNetworked();
 }
 
 async function copyInvite() {
@@ -4746,31 +4833,71 @@ function bindEvents() {
   });
   $("#netChip")?.addEventListener("click", copyInvite);
   $("#lobbySolo")?.addEventListener("click", backToSolo);
-  $("#lobbyHost")?.addEventListener("click", () => createHostRoom($("#lobbyNameInput")?.value || loadPlayerName() || t("net.hostDefault")));
+  $("#lobbyResumeSaved")?.addEventListener("click", resumeSavedMatch);
+  $("#lobbyHost")?.addEventListener("click", () => {
+    const name = preferredPlayerName();
+    if (!name) {
+      setLobbyStatus(t("net.enterName"), "wine");
+      $("#lobbyPlayerName")?.focus();
+      return;
+    }
+    createHostRoom(name);
+  });
   $("#lobbyJoin")?.addEventListener("click", () => {
     showLobby("join");
+    const field = $("#lobbyNameInput");
+    if (field && !field.value) field.value = preferredPlayerName();
     if (normalizeRoomCode($("#lobbyCodeInput")?.value || "")) $("#lobbyNameInput")?.focus();
     else $("#lobbyCodeInput")?.focus();
   });
-  $("#lobbyConnectBtn")?.addEventListener("click", () => joinRoom($("#lobbyCodeInput")?.value || "", $("#lobbyNameInput")?.value || ""));
+  $("#lobbyConnectBtn")?.addEventListener("click", () => {
+    const name = preferredPlayerName();
+    if (!name) {
+      setLobbyStatus(t("net.enterName"), "wine");
+      $("#lobbyNameInput")?.focus();
+      return;
+    }
+    joinRoom($("#lobbyCodeInput")?.value || "", name);
+  });
+  $("#lobbyPlayerName")?.addEventListener("input", (event) => {
+    const field = $("#lobbyNameInput");
+    if (field) field.value = event.target.value;
+  });
+  $("#lobbyNameInput")?.addEventListener("input", (event) => {
+    const field = $("#lobbyPlayerName");
+    if (field) field.value = event.target.value;
+  });
   $("#lobbyCodeInput")?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") joinRoom($("#lobbyCodeInput").value, $("#lobbyNameInput")?.value || "");
+    if (event.key === "Enter") {
+      const name = preferredPlayerName();
+      if (!name) { setLobbyStatus(t("net.enterName"), "wine"); $("#lobbyNameInput")?.focus(); return; }
+      joinRoom($("#lobbyCodeInput").value, name);
+    }
   });
   $("#lobbyNameInput")?.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
+      const name = preferredPlayerName();
+      if (!name) { setLobbyStatus(t("net.enterName"), "wine"); $("#lobbyNameInput").focus(); return; }
       const joinView = !$("#lobbyJoinPanel")?.hidden;
-      if (joinView) joinRoom($("#lobbyCodeInput")?.value || "", $("#lobbyNameInput").value);
-      else createHostRoom($("#lobbyNameInput").value);
+      if (joinView) joinRoom($("#lobbyCodeInput")?.value || "", name);
+      else createHostRoom(name);
     }
   });
   $("#lobbyCopyBtn")?.addEventListener("click", copyInvite);
   $("#lobbyStartBtn")?.addEventListener("click", startHostedMatch);
-  $("#lobbyWaitLeave")?.addEventListener("click", () => { leaveRoom(); showLobby("menu"); });
+  $("#lobbyWaitLeave")?.addEventListener("click", requestLeaveRoom);
   $("#lobbyResumeBtn")?.addEventListener("click", closeLobby);
   $("#lobbySoloFromLost")?.addEventListener("click", backToSolo);
-  $$("[data-lobby-back]").forEach((button) => button.addEventListener("click", () => {
-    if (net) leaveRoom();
+  $("#leaveRoomBtn")?.addEventListener("click", requestLeaveRoom);
+  $("#leaveCancel")?.addEventListener("click", () => closeModal("leaveModal"));
+  $("#leaveConfirm")?.addEventListener("click", () => {
+    closeModal("leaveModal");
+    leaveRoom();
     showLobby("menu");
+  });
+  $$("[data-lobby-back]").forEach((button) => button.addEventListener("click", () => {
+    if (net) requestLeaveRoom();
+    else showLobby("menu");
   }));
 
   $("#newMatchBtn")?.addEventListener("click", () => { openModal("confirmModal"); });
@@ -4851,14 +4978,23 @@ async function boot() {
     if (Number.isFinite(seed)) random = mulberry32(seed);
   }
 
+  const autoRoom = normalizeRoomCode(params.get("room") || "");
+  const autoHost = params.get("mode") === "host" || params.get("host") === "1";
+  const skipLaunch = autoRoom || autoHost || params.get("mode") === "solo"
+    || params.get("selftest") === "1" || params.get("demo") === "1";
+  const willPrompt = !skipLaunch;
+
   const restored = loadMatch();
-  if (!restored) {
+  resumeAvailable = restored;
+  if (restored) {
+    renderAll();
+    if (state.phase === "roundEnd" || state.phase === "matchEnd") showRoundSummary(state.phase === "matchEnd");
+  } else if (!willPrompt) {
     state = makeState();
     state.target = 20;
     renderAll();
   } else {
-    renderAll();
-    if (state.phase === "roundEnd" || state.phase === "matchEnd") showRoundSummary(state.phase === "matchEnd");
+    state = null;
   }
   updateUndoButton();
 
@@ -4869,12 +5005,14 @@ async function boot() {
     $("#bootError").hidden = false;
   }
 
-  if (!restored) {
+  if (!restored && !willPrompt) {
     dealRound();
-  } else if (state.phase === "lead" || state.phase === "follow") {
+  } else if (restored && (state.phase === "lead" || state.phase === "follow")) {
     if (isBotSeat(state.turn)) scheduleAI(900);
     else coachTick();
     if (scene) scene.sync(state);
+  } else if (!restored && willPrompt && scene) {
+    scene.reset?.(state);
   }
 
   if (scene) scene.setViewSeat?.(MY_SEAT);
@@ -4907,18 +5045,23 @@ async function boot() {
     }, 2600);
   }
 
-  const autoRoom = normalizeRoomCode(params.get("room") || "");
-  const autoHost = params.get("mode") === "host" || params.get("host") === "1";
-  const skipLaunch = autoRoom || autoHost || params.get("mode") === "solo"
-    || params.get("selftest") === "1" || params.get("demo") === "1" || restored;
-  if (!skipLaunch) {
+  if (willPrompt) {
     setTimeout(() => showLobby("menu"), 450);
   } else if (autoRoom) {
     setTimeout(() => {
       const field = $("#lobbyCodeInput");
       if (field) field.value = formatRoomCode(autoRoom);
-      const name = params.get("name") || loadPlayerName() || t("net.guestDefault");
-      joinRoom(autoRoom, name);
+      const explicitName = (params.get("name") || "").trim().slice(0, 18);
+      if (explicitName) {
+        joinRoom(autoRoom, explicitName);
+        return;
+      }
+      const nameField = $("#lobbyNameInput");
+      if (nameField && !nameField.value) nameField.value = loadPlayerName();
+      showLobby("join");
+      setLobbyStatus(nameField?.value ? t("net.joinHint") : t("net.enterName"), "");
+      if (nameField?.value) $("#lobbyCodeInput")?.focus();
+      else nameField?.focus();
     }, 350);
   } else if (autoHost) {
     setTimeout(() => createHostRoom(params.get("name") || loadPlayerName() || t("net.hostDefault")), 300);
@@ -4973,7 +5116,7 @@ window.LeabTui = {
       peerId: isHost() ? net.host?.id : net.client?.hostId,
       lastPublished
     } : null),
-    openLobby: () => showLobby(isNetworked() ? "waiting" : "menu"),
+    openLobby: () => showLobby(isNetworked() ? (isHost() ? "host" : "waiting") : "menu"),
     closeLobby,
     host: (name) => createHostRoom(name),
     join: (code, name) => joinRoom(code, name),

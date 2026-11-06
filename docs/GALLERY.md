@@ -78,7 +78,7 @@ The stress case: 390×844, 1.24× text and the Jade Court palette. The header dr
 
 ![Multiplayer lobby](../screenshots/lobby.jpg)
 
-The launch overlay: **Play solo**, **Host a table** and **Join a table**, with a short privacy note. The dimmed table behind is the solo deal, so the 3D scene is already warm when the player chooses.
+The launch overlay: a required **Your name**, **Play solo**, **Host a table** and **Join a table**, with a short privacy note. The Resume match card appears here when a solo save exists. The dimmed table behind is intentionally empty until the player chooses.
 
 ## Host panel
 
@@ -97,6 +97,12 @@ The same overlay at 390×844: one mode per row, full-width touch targets, and th
 ![Guest table](../screenshots/guest-play.jpg)
 
 A guest's view after the host started: the guest's own hand is at the bottom, the host is on the left, bots are opposite and right, and the room chip shows `LEAB-JUG-MPF`. The other hands are back-only ghost meshes; the wire never carried their tile ids. This capture came from `scripts/net-check.mjs` with `GUEST_SHOT` set.
+
+## Mobile — room exit
+
+![Mobile leave room](../screenshots/mobile-leave.jpg)
+
+The host in a room at 390×844: the room chip is now a compact status icon, and **Leave room** spans the Actions grid below the table. It is visible, but it never covers the hand dock. The confirmation modal explains that the host exit closes the room for everyone.
 
 ## What is not shown
 

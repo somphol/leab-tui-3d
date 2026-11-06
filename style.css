@@ -1332,11 +1332,70 @@ a:hover { text-decoration: underline; }
 
 @media (max-width: 640px) {
   .net-chip {
-    max-width: 96px;
+    width: 34px;
+    max-width: 34px;
     height: 32px;
-    padding: 0 8px;
+    padding: 0;
+    justify-content: center;
     overflow: hidden;
-    font-size: calc(9px * var(--fs-scale));
+    font-size: 0;
     white-space: nowrap;
   }
+  .net-chip::before {
+    content: "◉";
+    font-size: calc(14px * var(--fs-scale));
+  }
+  .net-chip[data-mode="client"]::before { content: "◇"; }
+}
+
+/* A visible but non-alarming exit from a network room. It lives in the
+   Actions panel, so it never covers the table or the hand dock on phones. */
+#leaveRoomBtn {
+  grid-column: 1 / -1;
+  border-color: rgba(182, 75, 95, 0.62);
+  background: linear-gradient(180deg, rgba(142, 42, 60, 0.22), rgba(91, 23, 35, 0.18));
+  color: #ffd9d3;
+}
+#leaveRoomBtn:hover:not(:disabled) {
+  border-color: rgba(220, 110, 130, 0.9);
+  background: linear-gradient(180deg, rgba(166, 54, 75, 0.34), rgba(107, 28, 42, 0.28));
+}
+#leaveRoomBtn::before {
+  content: "⏻";
+  margin-right: 7px;
+  font-size: calc(12px * var(--fs-scale));
+  opacity: 0.85;
+}
+
+.lobby-resume {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 13px 16px;
+  border: 1px solid rgba(216, 178, 107, 0.55);
+  border-radius: 13px;
+  background: linear-gradient(100deg, rgba(216, 178, 107, 0.14), rgba(216, 178, 107, 0.05));
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.lobby-resume[hidden] { display: none; }
+.lobby-resume:hover, .lobby-resume:focus-visible {
+  border-color: var(--gold-bright);
+  background: linear-gradient(100deg, rgba(216, 178, 107, 0.22), rgba(216, 178, 107, 0.08));
+  transform: translateY(-1px);
+  outline: none;
+}
+.lobby-resume-copy { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.lobby-resume-copy b { font-family: var(--serif); font-size: calc(16px * var(--fs-scale)); font-weight: 500; color: var(--gold-bright); }
+.lobby-resume-copy span { color: var(--ink-faint); font-size: calc(11px * var(--fs-scale)); }
+.lobby-resume-arrow { margin-left: auto; color: var(--gold); font-size: calc(22px * var(--fs-scale)); line-height: 1; }
+
+@media (max-width: 640px) {
+  #leaveRoomBtn { min-height: 34px; }
+  .lobby-resume { padding: 11px 13px; }
+  .lobby-resume-copy b { font-size: calc(14px * var(--fs-scale)); }
 }

@@ -4,7 +4,7 @@
 
 A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, four source files, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots). It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.4.0**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.4.1**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -43,7 +43,7 @@ git push origin main
 
 `?selftest=1` runs 35 pure-rule, serialization and redaction checks and sets the document title to `SELFTEST PASS 35/35`. `?demo=1` auto-leads one human combination after dealing so a screenshot shows a real trick. `?seed=123` makes the shuffle reproducible.
 
-Launch modes: no parameter or `?lobby=1` shows the lobby; `?mode=solo` skips it; `?mode=host&name=Ana` opens a room; `?room=ABC234&name=Bea` joins. Network rooms are not resumable.
+Launch modes: no parameter or `?lobby=1` shows the lobby on every normal load, including a saved solo game (Resume match); `?mode=solo` skips it; `?mode=host&name=Ana` opens a room; `?room=ABC234` opens the join panel with the code prefilled (guests confirm their name); `&name=Bea` joins immediately. Network rooms are not resumable. The host/guest exit is **Leave room** in Actions, with confirmation.
 
 ## 3. Architecture
 
@@ -75,7 +75,7 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.4.0"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.4.1"
 prefs: theme mahogany|jade|midnight|parchment|daybreak; fontSize sm|md|lg|xl; CSS --fs-scale 0.9/1/1.12/1.24
 room: LEAB-ABC-234; peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```

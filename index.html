@@ -139,6 +139,7 @@
             <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo trick</button>
             <button id="exportBtn" class="btn btn-ghost" type="button" data-i18n="actions.export">Export JSON</button>
             <button id="lobbyBtn" class="btn btn-ghost" type="button" data-i18n="net.openLobby">Multiplayer</button>
+            <button id="leaveRoomBtn" class="btn btn-ghost btn-wine" type="button" hidden data-i18n="net.leave">Leave room</button>
           </div>
         </section>
 
@@ -200,6 +201,15 @@
 
         <section id="lobbyMenu" class="lobby-view">
           <p class="lobby-lead" data-i18n="net.launchBody">Set up a direct WebRTC table. The host browser runs the rules and the bots; guests only need the invite code.</p>
+          <label class="field-label" for="lobbyPlayerName" data-i18n="net.yourName">Your name</label>
+          <input id="lobbyPlayerName" class="lobby-input lobby-player-name" type="text" maxlength="18" autocomplete="nickname" placeholder="Your name" data-i18n-placeholder="net.yourNamePlaceholder" />
+          <button id="lobbyResumeSaved" class="lobby-resume" type="button" hidden>
+            <span class="lobby-resume-copy">
+              <b data-i18n="net.resumeMatch">Resume match</b>
+              <span id="lobbyResumeMeta"></span>
+            </span>
+            <span class="lobby-resume-arrow" aria-hidden="true">›</span>
+          </button>
           <div class="lobby-modes">
             <button id="lobbySolo" class="lobby-mode" type="button">
               <span class="lobby-mode-icon" aria-hidden="true">一</span>
@@ -354,6 +364,17 @@
         <button class="modal-close" type="button" data-close="aboutModal" aria-label="Close">×</button>
         <h2 id="aboutTitle" data-i18n="about.title">About this studio</h2>
         <div id="aboutBody" class="about-body"></div>
+      </div>
+    </div>
+
+    <div id="leaveModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="leaveTitle">
+      <div class="modal-card modal-small">
+        <h2 id="leaveTitle" data-i18n="net.leaveTitle">Leave the room?</h2>
+        <p id="leaveBody"></p>
+        <div class="modal-actions">
+          <button id="leaveCancel" class="btn btn-ghost" type="button" data-i18n="actions.keep">Keep playing</button>
+          <button id="leaveConfirm" class="btn btn-wine" type="button" data-i18n="net.leave">Leave room</button>
+        </div>
       </div>
     </div>
 

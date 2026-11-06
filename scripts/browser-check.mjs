@@ -27,6 +27,7 @@ const out = arg("--out");
 const evalExpr = arg("--eval");
 const evalExpr2 = arg("--eval2");
 const reload = args.includes("--reload");
+const reloadUrl = arg("--reload-url");
 const waitMs = Number(arg("--wait", "9000"));
 const width = Number(arg("--width", "1440"));
 const click = arg("--click");
@@ -173,6 +174,10 @@ async function main() {
   if (reload) {
     await send("Page.reload", { ignoreCache: false });
     await sleep(Number(arg("--wait2", "6000")));
+    if (reloadUrl) {
+      await send("Page.navigate", { url: reloadUrl });
+      await sleep(Number(arg("--wait2", "6000")));
+    }
     const second = await send("Runtime.evaluate", {
       expression: evalExpr2 || "JSON.stringify({state: window.LeabTui?.getState(), stored: JSON.parse(localStorage.getItem('leabtui.match.v1') || 'null'), title: document.title})",
       awaitPromise: true,

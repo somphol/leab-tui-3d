@@ -30,7 +30,7 @@
 git status
 git diff --stat
 git add -A
-git commit -m "Release Leab-Tui 3D 1.4.0"
+git commit -m "Release Leab-Tui 3D 1.4.1"
 git push origin main
 ```
 
@@ -43,7 +43,7 @@ Use one release commit if possible. Do not commit `node_modules`, local saves, s
 - [ ] Open the live URL and repeat the smoke test: boot, selftest, one trick, language toggle, export.
 - [ ] Check the live page over HTTPS and confirm there is no mixed content.
 - [ ] Confirm the repository is public and contains no secrets.
-- [ ] Tag the release: `git tag -a v1.4.0 -m "Leab-Tui 3D 1.4.0" && git push origin v1.4.0`.
+- [ ] Tag the release: `git tag -a v1.4.1 -m "Leab-Tui 3D 1.4.1" && git push origin v1.4.1`.
 - [ ] Create a GitHub release with the changelog and the hero screenshot.
 - [ ] Verify the Open Graph image path resolves on Pages.
 - [ ] Update the README “Live demo” link if the Pages URL changed.
