@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-06T12:37:30-08:00",
-    "durationSeconds": 9117,
-    "durationHuman": "2h 31m 57s",
+    "packagedAt": "2026-11-06T12:40:07-08:00",
+    "durationSeconds": 9274,
+    "durationHuman": "2h 34m 34s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.0 P2P work plus 1.4.1 launch/identity/leave refinements: seat refactor, PeerJS transport, lobby, required player names, host authority, per-seat redaction, ghost meshes, seat-relative view, bot fill, disconnect-to-bot, confirmed Leave room, resume card, compact phone room chip, two-browser harness, protocol/multiplayer docs, screenshots, release files and the skill mirror.",
-    "publishedAt": "2026-11-06T20:37:45Z"
+    "publishedAt": "2026-11-06T20:40:14Z"
   },
   "tokens": {
-    "input": 435104,
-    "output": 162737,
-    "reasoning": 80734,
-    "cacheRead": 124208896,
+    "input": 440064,
+    "output": 165642,
+    "reasoning": 81189,
+    "cacheRead": 127944064,
     "cacheWrite": 1087,
-    "total": 678575,
-    "totalWithCache": 124888558,
+    "total": 686895,
+    "totalWithCache": 128632046,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T12:37:30-08:00, covering 1.4.0 multiplayer and 1.4.1 launch/identity/leave refinements. The final state-record commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T12:40:07-08:00, covering 1.4.0 multiplayer and 1.4.1 launch/identity/leave refinements. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -140,10 +140,10 @@
     {
       "version": "1.4.0/1.4.1",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-06T12:37:30-08:00",
-      "durationSeconds": 9117,
-      "durationHuman": "2h 31m 57s",
-      "tokensAdded": 678575,
+      "completedAt": "2026-11-06T12:40:07-08:00",
+      "durationSeconds": 9274,
+      "durationHuman": "2h 34m 34s",
+      "tokensAdded": 686895,
       "summary": "Serverless WebRTC multiplayer plus the launch name, resume card, confirmed Leave room and mobile room-chip refinements."
     }
   ],

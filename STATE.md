@@ -63,7 +63,7 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | Review gap between requests | 11:31–12:14 | idle |
 | 1.4.1 launch name, resume card, Leave room, phone fit | 12:14–12:34 | ~20m |
 
-**Measured session wall clock:** **2h 31m 57s** (9,117 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **2h 34m 34s** (9,274 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -71,13 +71,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 435,104 |
-| Output | 162,737 |
-| Reasoning | 80,734 |
-| **Total (input + output + reasoning)** | **678,575** |
-| Cache read | 124,208,896 |
+| Input | 440,064 |
+| Output | 165,642 |
+| Reasoning | 81,189 |
+| **Total (input + output + reasoning)** | **686,895** |
+| Cache read | 127,944,064 |
 | Cache write | 1,087 |
-| **Total including cache** | **124,888,558** |
+| **Total including cache** | **128,632,046** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.
