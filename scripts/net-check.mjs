@@ -192,7 +192,7 @@ async function main() {
   else fail("host sees an approval control for the request", String(approveControls));
   await host.eval(`LeabTui.net.approve(${JSON.stringify(pending[0].connId)}); true`);
 
-  const guestNet = await guest.waitFor("JSON.stringify(window.LeabTui?.net.getState?.() || null)", "guest joined", 30000);
+  const guestNet = await guest.waitFor("window.LeabTui?.net.getState?.()?.role === 'client' ? JSON.stringify(window.LeabTui.net.getState()) : ''", "guest joined", 30000);
   const guestState = JSON.parse(guestNet);
   if (guestState.role === "client" && guestState.mySeat >= 1) pass("guest joined a seat", `seat ${guestState.mySeat}`);
   else fail("guest joined a seat", guestNet);

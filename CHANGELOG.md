@@ -2,6 +2,21 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.1] — 2026-11-06
+
+### Added
+
+- **Auto-generated PIN by default** — a 20-character grouped PIN is created when the room opens. **New PIN** rotates it; the awkward Save PIN field is gone and policy details live behind an ⓘ.
+- **Copy invite + PIN** — one paste carries the URL and the generated passcode together. The label switches from “Copy room info” when a PIN is set.
+- **Share invite + PIN** — native `navigator.share` where available, with clipboard fallback.
+- **Paste** on the guest PIN field — extracts `PIN:`/`Passcode:`/`รหัส:` from the host's message, or accepts the passcode alone.
+- Self-test for passcode extraction (38 total).
+
+### Changed
+
+- The guest join panel explains that the passcode comes from the host's message.
+- The PIN remains outside the URL; only the shared text contains it.
+
 ## [1.6.0] — 2026-11-06
 
 ### Added

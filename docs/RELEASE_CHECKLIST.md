@@ -9,7 +9,7 @@
 - [ ] `STATE.md` reflects the same numbers and the actual verification results.
 - [ ] `node --check script.js` and `node --check peer-manager.js` pass.
 - [ ] `node scripts/check.mjs` passes.
-- [ ] `?selftest=1` shows `SELFTEST PASS 37/37`.
+- [ ] `?selftest=1` shows `SELFTEST PASS 38/38`.
 - [ ] `node scripts/verify.mjs` passes (boot, scene, full round, no exceptions).
 - [ ] `node scripts/net-check.mjs` passes on a real network (PIN, approval, wrong PIN, host, join, redaction, chat, voice, mic mute, deafen, disconnect-to-bot).
 - [ ] A full round, undo, next round and reload were exercised manually.
@@ -34,7 +34,7 @@
 git status
 git diff --stat
 git add -A
-git commit -m "Release Leab-Tui 3D 1.6.0"
+git commit -m "Release Leab-Tui 3D 1.6.1"
 git push origin main
 ```
 
@@ -47,7 +47,7 @@ Use one release commit if possible. Do not commit `node_modules`, local saves, s
 - [ ] Open the live URL and repeat the smoke test: boot, selftest, one trick, language toggle, export.
 - [ ] Check the live page over HTTPS and confirm there is no mixed content.
 - [ ] Confirm the repository is public and contains no secrets.
-- [ ] Tag the release: `git tag -a v1.6.0 -m "Leab-Tui 3D 1.6.0" && git push origin v1.6.0`.
+- [ ] Tag the release: `git tag -a v1.6.1 -m "Leab-Tui 3D 1.6.1" && git push origin v1.6.1`.
 - [ ] Create a GitHub release with the changelog and the hero screenshot.
 - [ ] Verify the Open Graph image path resolves on Pages.
 - [ ] Update the README “Live demo” link if the Pages URL changed.
@@ -65,6 +65,6 @@ Use one release commit if possible. Do not commit `node_modules`, local saves, s
 
 - `screenshots/hero.jpg`, `thai.jpg`, `mobile.jpg`, `rules.jpg`, `lobby.jpg`.
 - The exact commands and output of `scripts/check.mjs`, `scripts/verify.mjs` and `scripts/net-check.mjs`.
-- The self-test title (`SELFTEST PASS 37/37`).
+- The self-test title (`SELFTEST PASS 38/38`).
 - `state.json` with the measured duration and tokens.
 - The live URL and the commit SHA.

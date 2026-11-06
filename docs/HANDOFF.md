@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Release **1.6.0** of Leab-Tui 3D is built, verified and published. It hardens the room with host approval, a strong optional PIN with memory-only digest, connection/message caps and a voice allowlist, on top of chat and full-mesh voice.
+Release **1.6.1** of Leab-Tui 3D is built, verified and published. It hardens the room with host approval, an auto-generated strong PIN with memory-only digest, connection/message caps and a voice allowlist, on top of chat and full-mesh voice.
 
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Live: <https://somphol.github.io/leab-tui-3d/>
@@ -23,7 +23,7 @@ Release **1.6.0** of Leab-Tui 3D is built, verified and published. It hardens th
 | Voice | Full-mesh PeerJS media, mic mute, deafen, speaking pulse, no recording |
 | Audio | Synthesised shuffle/clack/flip/sweep/win/lose, gesture-unlocked |
 | Persistence | Autosave, solo resume, stats, versioned JSON export; network saves marked non-resumable |
-| Verification | 37/37 self-test, 342-check static check, CDP harness, full-round evidence, 20-check two-browser WebRTC suite |
+| Verification | 38/38 self-test, 342-check static check, CDP harness, full-round evidence, 20-check two-browser WebRTC suite |
 | Release docs | README, AGENTS, STATE, rules, architecture, multiplayer, protocol, tests, deployment, reproduction, data format, controls, accessibility, performance, design, browser support, FAQ, roadmap, release checklist, gallery, glossary |
 | Skill | `leab-tui-p2p-studio`, mirrored to `~/Projects/opencode-skills/` and published |
 
@@ -33,7 +33,7 @@ Release **1.6.0** of Leab-Tui 3D is built, verified and published. It hardens th
 node --check script.js                 PASS
 node --check peer-manager.js           PASS
 node scripts/check.mjs                 PASS (292 checks)
-?selftest=1                            SELFTEST PASS 37/37
+?selftest=1                            SELFTEST PASS 38/38
 node scripts/verify.mjs                ALL BROWSER CHECKS PASSED
 node scripts/net-check.mjs             ALL 17 MULTIPLAYER CHECKS PASSED
 full round                             roundEnd, 32 tiles, points sum 0
@@ -68,7 +68,7 @@ console exceptions                     none on either page
 
 1. Read `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/MULTIPLAYER.md` and `docs/PROTOCOL.md`.
 2. Run `node scripts/check.mjs`, `node scripts/verify.mjs` and `node scripts/net-check.mjs`.
-3. Open `?selftest=1` and confirm 37/37.
+3. Open `?selftest=1` and confirm 38/38.
 4. If changing rules, update `docs/RULES.md`, `detectCombo`, `allCombos`/`comboPower`, both dictionaries, the rules modal and the self-test together.
 5. If changing the wire format, bump `PROTOCOL_VERSION`, update `docs/PROTOCOL.md`, `sanitizeForSeat`, `hydrateRemoteState`, `netSelfTest` and `scripts/net-check.mjs`.
 6. If changing the save format, bump `APP.version`, update `docs/DATA_FORMAT.md`, add a migration or reject safely.

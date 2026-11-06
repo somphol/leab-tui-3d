@@ -134,7 +134,7 @@ ok(index.includes('id="lobbyModal"') && index.includes('id="lobbyHost"') && inde
 ok(index.includes('id="netChip"'), "network room chip exists");
 ok(index.includes('id="chatPanel"') && index.includes('id="chatList"') && index.includes('id="chatForm"'), "table chat markup exists");
 ok(index.includes('id="voiceJoinBtn"') && index.includes('id="micBtn"') && index.includes('id="deafenBtn"'), "voice controls exist");
-ok(index.includes('id="hostApproval"') && index.includes('id="hostPin"') && index.includes('id="lobbyPinInput"'), "approval and PIN controls exist");
+ok(index.includes('id="hostApproval"') && index.includes('id="hostPinValue"') && index.includes('id="hostPinRegenerate"') && index.includes('id="hostPinInfo"') && index.includes('id="lobbyPinInput"'), "approval and PIN controls exist");
 ok(index.includes('id="lobbyPending"') && index.includes('id="lobbyApproveAll"'), "pending request UI exists");
 ok(index.includes('id="remoteAudio"') && css.includes(".remote-audio") && css.includes(".chat-panel"), "remote audio and chat styles exist");
 ok(/type="importmap"/.test(index), "index has an import map");
@@ -225,7 +225,7 @@ ok(script.includes("function selfTest"), "self-test exists");
 // Count the self-test checks to keep the documented count honest.
 const selfTestBody = script.slice(script.indexOf("function netSelfTest()"), script.indexOf("function simulateRound"));
 const selfTestCount = (selfTestBody.match(/check\(/g) || []).length;
-ok(selfTestCount >= 37, "self-test has at least 37 checks", String(selfTestCount));
+ok(selfTestCount >= 38, "self-test has at least 38 checks", String(selfTestCount));
 
 // i18n symmetry
 const enBlock = script.slice(script.indexOf("  en: {"), script.indexOf("  th: {"));

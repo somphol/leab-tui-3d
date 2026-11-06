@@ -3,25 +3,33 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.6.0**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.6.1**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.6.0` |
+| App version | `1.6.1` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 37/37) |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
-| Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js` |
-| Source lines | 8,864 |
-| Source size | 376,973 bytes |
+| Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js` |
+| Source lines | 9,015 |
+| Source size | 383,739 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.6.1 — one-paste sharing
+
+- A 20-character PIN is generated automatically. **New PIN** rotates it; policy detail lives behind ⓘ.
+- **Copy invite + PIN** puts the room URL and the generated passcode in one clipboard payload.
+- **Share invite + PIN** uses the native share sheet where available and falls back to the clipboard.
+- **Paste** on the guest PIN field extracts `PIN:`/`Passcode:`/`รหัส:` from the host's message, or accepts the passcode alone.
+- The link still never contains the PIN; only the shared text does.
 
 ## Release 1.6.0 — room hardening
 
@@ -84,8 +92,9 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | 1.4.1 launch name, resume card, Leave room, phone fit | 12:14–12:34 | ~20m |
 | 1.5.0 chat, voice mesh, mute/deafen, screenshots | 12:34–13:15 | ~41m |
 | 1.6.0 approval, PIN policy, caps, security docs | 13:15–14:30 | ~75m |
+| 1.6.1 one-paste invite + PIN sharing, auto PIN UI | 14:30–15:20 | ~50m |
 
-**Measured session wall clock:** **4h 27m 31s** (16,051 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **5h 18m 32s** (19,112 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -93,13 +102,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 1,053,401 |
-| Output | 257,042 |
-| Reasoning | 142,210 |
-| **Total (input + output + reasoning)** | **1,452,653** |
-| Cache read | 264,019,072 |
+| Input | 1,120,947 |
+| Output | 293,604 |
+| Reasoning | 158,214 |
+| **Total (input + output + reasoning)** | **1,572,765** |
+| Cache read | 317,776,640 |
 | Cache write | 1,087 |
-| **Total including cache** | **265,472,812** |
+| **Total including cache** | **319,350,492** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.
@@ -114,7 +123,7 @@ Cache figures describe context reuse, not additional generated work. They are re
 - **Bilingual UI** — EN ⇄ TH across 315 dictionary keys, dynamic coach/log/summary strings, tile names, ARIA labels, lobby copy and 3D labels.
 - **Audio** — synthesised shuffle, clack, flip, sweep, win, lose, undo; unlocked on first gesture; no files.
 - **Persistence** — autosaved solo match, preferences and statistics; reload-resume; versioned JSON export with app, credits, stats and game; network saves marked non-resumable.
-- **Verification** — 37-check in-page suite, 342-check static release check, Chrome CDP harness, full-round test, 20-check two-browser WebRTC suite, 20 release screenshots.
+- **Verification** — 38-check in-page suite, 342-check static release check, Chrome CDP harness, full-round test, 20-check two-browser WebRTC suite, 20 release screenshots.
 - **Release** — README, AGENTS handoff, rules, architecture, multiplayer, protocol, testing, deployment, reproduction, data format, controls, accessibility, performance, design, FAQ, roadmap, release checklist, gallery, glossary, browser support, licence, changelog, contribution/security/privacy/support docs, citation, notices, GitHub templates, static-check workflow and a published skill.
 
 ## Verification snapshot
@@ -124,7 +133,7 @@ Cache figures describe context reuse, not additional generated work. They are re
 | `node --check script.js` | pass |
 | `node --check peer-manager.js` | pass |
 | `node scripts/check.mjs` | pass (342) |
-| In-page self-test | **37/37** |
+| In-page self-test | **38/38** |
 | `node scripts/verify.mjs` | ALL BROWSER CHECKS PASSED |
 | `node scripts/net-check.mjs` | **20/20** multiplayer checks |
 | Full round through the public API | `roundEnd`, 32 tiles captured, hands empty, points sum 0 |

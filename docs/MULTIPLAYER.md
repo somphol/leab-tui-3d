@@ -42,9 +42,9 @@ Every human sets a name in the launch flow before hosting or joining. The name i
 The protocol is public. Do not treat the room code or PIN as authentication.
 
 - **Host approval is on by default.** A guest sends `hello`; the host sees a pending request with the name and time, then **Approve** or **Deny**. No seat, roster entry or game state is sent before approval. Pending requests expire after 120 seconds; six can wait at once.
-- **PIN is optional.** Set one before sharing the room. Policy: 15–64 characters, lower case, upper case, a digit and a symbol; no whitespace; rejected if common, sequential, repeated, or containing the room code/host name. **Generate** creates a 20-character grouped PIN.
+- **PIN is generated automatically.** **New PIN** rotates it before sharing. Policy: 15–64 characters, lower case, upper case, a digit and a symbol; no whitespace; rejected if common, sequential, repeated, or containing the room code/host name. **New PIN** creates a fresh 20-character grouped PIN; the first one is generated automatically.
 - **The host stores only a SHA-256 digest** in memory. The plain PIN is shown once in the host panel for copying, never in the invite URL, roster, state, export or `localStorage`.
-- **Copy room info** writes the code, optional PIN and link. That is convenient but puts the PIN in the clipboard; share it only in a trusted channel. **Copy invite link** never includes the PIN.
+- **Copy room info** writes the code, PIN and link. That is convenient but puts the PIN in the clipboard; share it only in a trusted channel. **Copy invite link** never includes the PIN.
 - **Wrong PIN / denied / expired / busy** connections receive a `rejected` reason and are closed. Eight wrong PINs trigger a 60-second room-wide lockout.
 - **Caps:** 16 connections, 6 pending, 4 human seats, 80 messages/10 s per connection, 16 KB payloads, 200-char chat at 350 ms, voice calls only from approved roster IDs.
 
@@ -57,7 +57,7 @@ launch
   ├─ Play solo ───────────────► normal solo table
   ├─ Host a table
   │    generate LEAB-XXXXXX ──► open PeerJS host
-  │    optional PIN / approval► lobby security
+  │    PIN (auto) / approval► lobby security
   │    guest hello ───────────► PIN check -> pending request
   │    host Approve / Deny ───► assign seat 1–3 (or close)
   │    at least 2 humans ─────► Start table

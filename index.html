@@ -256,7 +256,8 @@
             <span data-i18n="net.roomCode">Room code</span>
             <strong id="lobbyRoomCode">—</strong>
             <button id="lobbyCopyBtn" class="btn btn-ghost btn-small" type="button" data-i18n="net.copyLink">Copy invite link</button>
-            <button id="lobbyCopyInfo" class="btn btn-ghost btn-small" type="button" data-i18n="net.copyRoomInfo">Copy room info</button>
+            <button id="lobbyCopyInfo" class="btn btn-ghost btn-small" type="button" data-i18n="net.copyInvitePin">Copy invite + PIN</button>
+            <button id="lobbyShareBtn" class="btn btn-gold btn-small" type="button" hidden data-i18n="net.shareInvitePin">Share invite + PIN</button>
           </div>
           <input id="lobbyInvite" class="lobby-invite" readonly hidden aria-label="Invite link" />
           <p class="lobby-note" data-i18n="net.codeHelp">Share this code. Letter case does not matter.</p>
@@ -265,20 +266,21 @@
               <input id="hostApproval" type="checkbox" checked />
               <span data-i18n="net.approvalLabel">Approve each guest before they get a seat</span>
             </label>
-            <label class="field-label" for="hostPin" data-i18n="net.pinLabel">Room PIN (optional)</label>
-            <div class="room-line pin-line">
-              <input id="hostPin" class="lobby-input pin-input" type="text" inputmode="text" autocomplete="new-password" autocapitalize="off" spellcheck="false" maxlength="64" placeholder="15+ chars: upper, lower, number, symbol" data-i18n-placeholder="net.pinPlaceholder" />
-              <button id="hostPinGenerate" class="btn btn-gold btn-small" type="button" data-i18n="net.pinGenerate">Generate</button>
-              <button id="hostPinSave" class="btn btn-ghost btn-small" type="button" data-i18n="net.pinSave">Save PIN</button>
+            <div class="pin-summary-head">
+              <span class="field-label" data-i18n="net.pinLabel">Room PIN</span>
+              <button id="hostPinInfo" class="pin-info-btn" type="button" aria-expanded="false" aria-controls="pinInfoPanel" aria-label="About the room PIN" data-i18n-aria="net.pinInfoAria">i</button>
             </div>
-            <div id="hostPinReveal" class="pin-reveal" hidden>
-              <span data-i18n="net.pinReveal">PIN to share</span>
+            <div id="hostPinReady" class="pin-ready" hidden>
               <code id="hostPinValue"></code>
               <button id="hostPinCopy" class="mini-btn" type="button" data-i18n="net.pinCopy">Copy PIN</button>
+              <button id="hostPinRegenerate" class="mini-btn" type="button" data-i18n="net.pinNew">New PIN</button>
             </div>
             <p id="hostSecurityStatus" class="lobby-note"></p>
-            <p class="lobby-note" data-i18n="net.pinPolicy">Use 15–64 characters with upper case, lower case, a number and a symbol. Avoid names, the room code and common passwords.</p>
-            <p class="lobby-note" data-i18n="net.pinHint">Share the PIN separately from the invite link. The link never contains it. The host stores only a SHA-256 digest in memory.</p>
+            <div id="pinInfoPanel" class="pin-info-panel" hidden>
+              <strong data-i18n="net.pinInfoTitle">How the PIN works</strong>
+              <p data-i18n="net.pinInfoBody">A 20-character PIN is generated for each room. New PIN replaces it for future joins. Guests need the code + PIN, then you approve them.</p>
+              <p data-i18n="net.pinInfoDigest">The host keeps only a SHA-256 digest in memory. The PIN is not in the invite link, saved game or exported file. Copy invite + PIN is the one-paste share text.</p>
+            </div>
           </div>
           <h3 data-i18n="net.pendingTitle">Join requests</h3>
           <div id="lobbyPending" class="lobby-pending"></div>
@@ -299,8 +301,12 @@
           <input id="lobbyCodeInput" class="lobby-input code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="LEAB-ABC-234" data-i18n-placeholder="net.codePlaceholder" />
           <label class="field-label" for="lobbyNameInput" data-i18n="net.nameLabel">Your name</label>
           <input id="lobbyNameInput" class="lobby-input" type="text" maxlength="18" autocomplete="nickname" placeholder="Guest" data-i18n-placeholder="net.namePlaceholder" />
-          <label class="field-label" for="lobbyPinInput" data-i18n="net.pinLabel">Room PIN (optional)</label>
-          <input id="lobbyPinInput" class="lobby-input pin-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="64" placeholder="Only if the host set one" data-i18n-placeholder="net.pinGuestPlaceholder" />
+          <label class="field-label" for="lobbyPinInput" data-i18n="net.pinLabel">Room PIN</label>
+          <div class="pin-line guest-pin-line">
+            <input id="lobbyPinInput" class="lobby-input pin-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="64" placeholder="Only if the host set one" data-i18n-placeholder="net.pinGuestPlaceholder" />
+            <button id="lobbyPinPaste" class="btn btn-ghost btn-small" type="button" data-i18n="net.pinPaste">Paste</button>
+          </div>
+          <p class="lobby-note" data-i18n="net.pinFromMessage">Paste the passcode from the host's message.</p>
           <div class="modal-actions">
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
             <button id="lobbyConnectBtn" class="btn btn-gold" type="button" data-i18n="net.connect">Connect</button>

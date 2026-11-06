@@ -25,7 +25,7 @@ Assume the attacker has read this repository and knows the protocol, message nam
 ## Lobby gate
 
 1. The host generates a room code (six unambiguous characters, `LEAB-ABC-234`).
-2. The host may set a PIN. The PIN is **never in the invite URL**, never in the roster, never in `localStorage`, and never in the exported game.
+2. A 20-character PIN is generated when the room opens; **New PIN** rotates it. The PIN is **never in the invite URL**, never in the roster, never in `localStorage`, and never in the exported game.
 3. A guest sends the room code, name and PIN over the encrypted WebRTC data channel.
 4. The host verifies the PIN against an in-memory SHA-256 digest and then puts the request in the **approval queue**.
 5. The host approves or denies each request. Only after approval is a seat assigned and a `welcome` sent.
@@ -40,7 +40,7 @@ The PIN is a **gate**, not authentication. Host approval is the real access-cont
 - No whitespace.
 - Rejected if it is in the bundled common-password deny-list, contains the room code, contains the host name, is one repeated character, or contains an obvious sequence.
 - The host stores only `SHA-256(PIN)` in memory. The plain PIN is shown once in the host panel so it can be copied; it is never stored in app state, the roster, an export or localStorage.
-- **Generate** creates a 20-character grouped PIN with all four classes.
+- **New PIN** creates a fresh 20-character grouped PIN with all four classes. The first PIN is generated automatically.
 - **Copy room info** includes the PIN and the link. Share it only in a trusted channel; for maximum separation, send the link and the PIN in different channels.
 - Eight wrong attempts trigger a 60-second room-wide lockout.
 - Changing the PIN affects future joins, not already-approved guests.

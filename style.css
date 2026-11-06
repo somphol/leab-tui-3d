@@ -1551,3 +1551,61 @@ a:hover { text-decoration: underline; }
 .pin-reveal > span { color: var(--ink-faint); font-size: calc(9px * var(--fs-scale)); letter-spacing: 0.08em; text-transform: uppercase; }
 .pin-reveal code { flex: 1 1 100%; color: var(--gold-bright); font-family: var(--mono); font-size: calc(12px * var(--fs-scale)); overflow-wrap: anywhere; }
 .pin-reveal .mini-btn { flex: 0 0 auto; }
+
+.guest-pin-line { flex-wrap: nowrap; align-items: center; }
+.guest-pin-line .pin-input { flex: 1 1 auto; margin: 0; }
+.guest-pin-line .btn { flex: 0 0 auto; min-height: 36px; }
+
+@media (max-width: 640px) {
+  .guest-pin-line { flex-wrap: wrap; }
+  .guest-pin-line .pin-input { flex-basis: 100%; }
+  .guest-pin-line .btn { width: 100%; }
+}
+
+.pin-summary-head { display: flex; align-items: center; gap: 7px; margin-top: 10px; }
+.pin-info-btn {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--line-soft);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-faint);
+  font-family: var(--serif);
+  font-size: calc(11px * var(--fs-scale));
+  line-height: 1;
+  cursor: pointer;
+}
+.pin-info-btn:hover, .pin-info-btn.active { color: var(--gold-bright); border-color: var(--gold); }
+.pin-ready { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin: 5px 0 2px; }
+.pin-ready[hidden] { display: none; }
+.pin-ready code {
+  flex: 1 1 100%;
+  padding: 7px 9px;
+  border: 1px solid rgba(216, 178, 107, 0.3);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.16);
+  color: var(--gold-bright);
+  font-family: var(--mono);
+  font-size: calc(11px * var(--fs-scale));
+  overflow-wrap: anywhere;
+}
+.pin-info-panel {
+  margin: 6px 0 2px;
+  padding: 9px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.16);
+  color: var(--ink-faint);
+  font-size: calc(10px * var(--fs-scale));
+  line-height: 1.45;
+}
+.pin-info-panel[hidden] { display: none; }
+.pin-info-panel strong { display: block; margin-bottom: 3px; color: var(--gold); font-size: calc(10.5px * var(--fs-scale)); }
+.pin-info-panel p { margin: 0 0 5px; }
+.pin-info-panel p:last-child { margin-bottom: 0; }
+
+@media (max-width: 640px) {
+  .pin-ready .mini-btn { min-height: 30px; }
+}

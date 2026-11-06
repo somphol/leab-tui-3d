@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Syntax | `node --check script.js` + `peer-manager.js` + `voice-chat.js` | all three modules parse |
 | Repository | `node scripts/check.mjs` | files, links, version, i18n parity, rule constants, serialization policy, CDN pins, redaction guards |
-| Rules + protocol | `?selftest=1` → `selfTest()` | 37 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export, chat normalization, room codes, redaction, hydration, loopback |
+| Rules + protocol | `?selftest=1` → `selfTest()` | 38 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export, chat normalization, room codes, redaction, hydration, loopback |
 | Browser | `node scripts/verify.mjs` | Chrome loads the page, no console exceptions, the table renders, the self-test passes |
 | Flow | CDP playthrough (below) | a complete round, 32-tile conservation |
 | Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, chat, voice mesh, mute/deafen, actions, disconnect-to-bot |
@@ -71,8 +71,9 @@ node scripts/net-check.mjs   # real broker, needs outbound 0.peerjs.com
 | 35 | host-only maps stripped | no `hiddenTags`, no `snapshot` |
 | 36 | ghost hydration | `ghost-2-3` round-trips |
 | 37 | loopback transport | envelope arrives with `__leab: 1` |
+| 38 | passcode extraction | `PIN: …` is pulled from a shared message |
 
-Latest result: **SELFTEST PASS 37/37** (Chrome headless, 2026-11-06).
+Latest result: **SELFTEST PASS 38/38** (Chrome headless, 2026-11-06).
 
 ## Recorded flow tests
 
@@ -293,4 +294,4 @@ A green suite does not prove the table looks right. Inspect the screenshots afte
 2. If it is a rule invariant, add it to `scripts/check.mjs` as a string/regex guard too.
 3. If it is a flow, add a CDP expression to `scripts/verify.mjs` and assert on `window.LeabTui.getState()`.
 4. If it is a protocol or redaction invariant, add it to `netSelfTest()` and, when it needs a real channel, to `scripts/net-check.mjs`.
-5. Update this document and the count in the title assertion (`37/37`).
+5. Update this document and the count in the title assertion (`38/38`).

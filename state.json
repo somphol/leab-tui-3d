@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.6.0",
-  "version": "1.6.0",
+  "projectVersion": "1.6.1",
+  "version": "1.6.1",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-06T14:33:05-08:00",
-    "durationSeconds": 16051,
-    "durationHuman": "4h 27m 31s",
+    "packagedAt": "2026-11-06T15:24:06-08:00",
+    "durationSeconds": 19112,
+    "durationHuman": "5h 18m 32s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-06T22:33:12Z"
+    "publishedAt": "2026-11-06T23:24:11Z"
   },
   "tokens": {
-    "input": 1053401,
-    "output": 257042,
-    "reasoning": 142210,
-    "cacheRead": 264019072,
+    "input": 1120947,
+    "output": 293604,
+    "reasoning": 158214,
+    "cacheRead": 317776640,
     "cacheWrite": 1087,
-    "total": 1452653,
-    "totalWithCache": 265472812,
+    "total": 1572765,
+    "totalWithCache": 319350492,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T14:33:05-08:00, covering 1.4.0–1.6.0: multiplayer, launch/identity/leave, chat, voice and security hardening. The final state-record commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T15:24:06-08:00, covering 1.4.0–1.6.1. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -70,7 +70,7 @@
     ]
   },
   "verification": {
-    "selfTest": "37/37",
+    "selfTest": "38/38",
     "staticCheck": "scripts/check.mjs (342 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
     "multiplayer": "scripts/net-check.mjs — 20/20 PIN, approval, wrong PIN, host, join, bot fill, privacy, controls, chat, voice, mute/deafen, actions, disconnect",
@@ -143,18 +143,23 @@
       "version": "1.6.0",
       "date": "2026-11-06",
       "summary": "Host approval queue, strong generated PIN with memory-only SHA-256 digest, Copy room info, abuse caps, voice allowlist, security docs and 20-check two-browser suite."
+    },
+    {
+      "version": "1.6.1",
+      "date": "2026-11-06",
+      "summary": "Copy invite + PIN, native Share, guest Paste with passcode extraction, 38 self-tests."
     }
   ],
-  "releaseNotes": "1.6.0 hardens the room boundary: host approval by default, an optional 15–64 character PIN with upper/lower/digit/symbol and deny-list checks, a generated 20-character PIN, SHA-256 digest only, Copy room info, connection/message/payload/chat caps and a voice-call allowlist. The PIN is a gate, not authentication; approval is the access-control decision.",
+  "releaseNotes": "1.6.1 adds a one-paste Copy invite + PIN, native Share invite + PIN and a guest Paste button that extracts the passcode from the host message. The PIN still never appears in the URL or persisted state.",
   "updates": [
     {
-      "version": "1.4.0–1.6.0",
+      "version": "1.4.0–1.6.1",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-06T14:33:05-08:00",
-      "durationSeconds": 16051,
-      "durationHuman": "4h 27m 31s",
-      "tokensAdded": 1452653,
-      "summary": "Serverless WebRTC multiplayer, launch/identity/leave, chat, full-mesh voice, host approval, strong PIN, abuse caps and skill mirror."
+      "completedAt": "2026-11-06T15:24:06-08:00",
+      "durationSeconds": 19112,
+      "durationHuman": "5h 18m 32s",
+      "tokensAdded": 1572765,
+      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, strong PIN, abuse caps, one-paste sharing and skill mirrors."
     }
   ],
   "multiplayer": {

@@ -4,7 +4,7 @@
 
 | Browser | Version | Platform | Result |
 | --- | --- | --- | --- |
-| Google Chrome | current stable (headless) | macOS arm64 | ✅ boot, 37/37 self-test, full round, screenshots |
+| Google Chrome | current stable (headless) | macOS arm64 | ✅ boot, 38/38 self-test, full round, screenshots |
 | Google Chrome | 390×844 device metrics | macOS headless | ✅ responsive layout and hand dock |
 
 ## Expected to work
@@ -45,7 +45,7 @@ These use the same standards (ES modules, import maps, WebGL 2, CanvasTexture, W
 ## Testing a new browser
 
 1. Serve the folder over HTTP.
-2. Open `?selftest=1`; expect `SELFTEST PASS 37/37`.
+2. Open `?selftest=1`; expect `SELFTEST PASS 38/38`.
 3. Open the page, orbit, select a tile, lead/follow one trick.
 4. Check the inspector, rules modal, language toggle, export and reload.
 5. On mobile, check 390×844 and a landscape orientation; confirm the hand is not behind the dock.

@@ -25,7 +25,7 @@ import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./s
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.6.0",
+  version: "1.6.1",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -36,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T14:33:05-08:00",
-    durationHuman: "4h 27m 31s",
-    tokensTotal: "1452653",
-    tokensInput: "1053401",
-    tokensOutput: "257042",
-    tokensReasoning: "142210",
-    tokensCacheRead: "264019072",
+    packagedAt: "2026-11-06T15:24:06-08:00",
+    durationHuman: "5h 18m 32s",
+    tokensTotal: "1572765",
+    tokensInput: "1120947",
+    tokensOutput: "293604",
+    tokensReasoning: "158214",
+    tokensCacheRead: "317776640",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -551,7 +551,7 @@ const I18N = {
     "net.yourNamePlaceholder": "Host or guest name",
     "net.enterName": "Enter your name before hosting or joining.",
     "net.approvalLabel": "Approve each guest before they get a seat",
-    "net.pinLabel": "Room PIN (optional)",
+    "net.pinLabel": "Room PIN",
     "net.pinPlaceholder": "15+ chars: upper, lower, number, symbol",
     "net.pinGuestPlaceholder": "Only if the host set one",
     "net.pinPolicy": "Use 15–64 characters with upper case, lower case, a number and a symbol. Avoid names, the room code and common passwords.",
@@ -570,10 +570,23 @@ const I18N = {
     "net.pinRule.name": "PIN cannot contain your name.",
     "net.pinSave": "Save PIN",
     "net.pinGenerate": "Generate",
+    "net.pinNew": "New PIN",
+    "net.pinAuto": "Auto-generated · stored as a digest",
+    "net.pinApprovalOnly": "Approval only (no PIN)",
+    "net.pinInfoAria": "About the room PIN",
+    "net.pinInfoTitle": "How the PIN works",
+    "net.pinInfoBody": "A 20-character PIN is generated for each room. New PIN replaces it for future joins. Guests need the code + PIN, then you approve them.",
+    "net.pinInfoDigest": "The host keeps only a SHA-256 digest in memory. The PIN is not in the invite link, saved game or exported file. Copy invite + PIN is the one-paste share text.",
     "net.pinReveal": "PIN to share",
     "net.pinCopy": "Copy PIN",
     "net.pinCopied": "PIN copied.",
     "net.copyRoomInfo": "Copy room info",
+    "net.copyInvitePin": "Copy invite + PIN",
+    "net.shareInvitePin": "Share invite + PIN",
+    "net.pinPaste": "Paste",
+    "net.pinPasted": "Passcode filled from the clipboard.",
+    "net.pinPasteFailed": "Clipboard access was blocked. Paste the passcode manually.",
+    "net.pinFromMessage": "Paste the passcode from the host's message.",
     "net.roomInfoCopied": "Room info copied — it includes the PIN. Share it only in a trusted channel.",
     "net.roomInfoNoPin": "Room info copied without a PIN. Approval still gates the room.",
     "net.pinSet": "PIN set; only a digest is kept. Share it separately from the room link.",
@@ -944,7 +957,7 @@ const I18N = {
     "net.yourNamePlaceholder": "ชื่อเจ้าบ้านหรือแขก",
     "net.enterName": "กรอกชื่อของคุณก่อนเปิดหรือเข้าร่วมโต๊ะ",
     "net.approvalLabel": "ให้เจ้าบ้านอนุมัติแขกทีละคนก่อนได้ที่นั่ง",
-    "net.pinLabel": "PIN ห้อง (ไม่บังคับ)",
+    "net.pinLabel": "PIN ห้อง",
     "net.pinPlaceholder": "15 ตัวขึ้นไป: ใหญ่ เล็ก ตัวเลข สัญลักษณ์",
     "net.pinGuestPlaceholder": "ใส่เฉพาะเมื่อเจ้าบ้านตั้งไว้",
     "net.pinPolicy": "ใช้ 15–64 ตัว มีตัวพิมพ์ใหญ่ เล็ก ตัวเลข และสัญลักษณ์ หลีกเลี่ยงชื่อ รหัสห้อง และรหัสผ่านยอดนิยม",
@@ -963,10 +976,23 @@ const I18N = {
     "net.pinRule.name": "PIN ต้องไม่มีชื่อของคุณ",
     "net.pinSave": "บันทึก PIN",
     "net.pinGenerate": "สร้าง PIN",
+    "net.pinNew": "PIN ใหม่",
+    "net.pinAuto": "สร้างอัตโนมัติ · เก็บเฉพาะค่าแฮช",
+    "net.pinApprovalOnly": "ใช้การอนุมัติอย่างเดียว (ไม่มี PIN)",
+    "net.pinInfoAria": "เกี่ยวกับ PIN ห้อง",
+    "net.pinInfoTitle": "PIN ทำงานอย่างไร",
+    "net.pinInfoBody": "ระบบสร้าง PIN 20 ตัวต่อห้อง ปุ่ม PIN ใหม่จะเปลี่ยนสำหรับคนที่เข้าหลังจากนี้ แขกต้องใช้รหัสห้อง + PIN แล้วเจ้าบ้านอนุมัติ",
+    "net.pinInfoDigest": "เจ้าบ้านเก็บเฉพาะค่าแฮช SHA-256 ในหน่วยความจำ PIN ไม่อยู่ในลิงก์เชิญ ไฟล์เซฟ หรือไฟล์ส่งออก ใช้คัดลอกลิงก์ + PIN เพื่อแชร์ครั้งเดียว",
     "net.pinReveal": "PIN สำหรับแชร์",
     "net.pinCopy": "คัดลอก PIN",
     "net.pinCopied": "คัดลอก PIN แล้ว",
     "net.copyRoomInfo": "คัดลอกข้อมูลห้อง",
+    "net.copyInvitePin": "คัดลอกลิงก์ + PIN",
+    "net.shareInvitePin": "แชร์ลิงก์ + PIN",
+    "net.pinPaste": "วาง",
+    "net.pinPasted": "เติมรหัสผ่านจากคลิปบอร์ดแล้ว",
+    "net.pinPasteFailed": "เข้าถึงคลิปบอร์ดไม่ได้ กรุณาวางรหัสผ่านเอง",
+    "net.pinFromMessage": "วางรหัสผ่านจากข้อความของเจ้าบ้าน",
     "net.roomInfoCopied": "คัดลอกข้อมูลห้องแล้ว — มี PIN อยู่ด้วย แชร์เฉพาะช่องทางที่ไว้ใจ",
     "net.roomInfoNoPin": "คัดลอกข้อมูลห้องโดยไม่มี PIN การอนุมัติยังเป็นตัวกันหลัก",
     "net.pinSet": "ตั้ง PIN แล้ว เก็บเฉพาะค่าแฮช แชร์แยกจากลิงก์ห้อง",
@@ -3242,8 +3268,6 @@ async function setRoomPin(value, options = {}) {
   net.security.pinFails = 0;
   net.security.lockUntil = 0;
   roomPinPlain = pin;
-  const field = $("#hostPin");
-  if (field) field.value = "";
   renderLobby();
   if (!options.silent) toast(t("net.pinSet"), "jade");
   return true;
@@ -3364,6 +3388,7 @@ async function createHostRoom(name) {
     SEAT_PROFILES = [{ seat: 0, name: handle, kind: "host", connected: true, host: true, peerId: host.id, voice: false }, null, null, null];
     MY_SEAT = 0;
     lobbyState.roomCode = host.code;
+    await setRoomPin(generatePin(), { silent: true });
     setLobbyStatus(t("net.lobbyOpen"), "jade");
     renderLobby();
     renderNetChrome();
@@ -3683,6 +3708,33 @@ function preferredPin() {
   return normalisePin($("#lobbyPinInput")?.value || "");
 }
 
+function extractPasscode(text) {
+  const source = String(text || "");
+  const match = source.match(/(?:pass(?:code)?|pin|รหัส(?:ผ่าน)?)\s*[:：=]\s*([^\s]+)/i);
+  return normalisePin(match ? match[1] : source);
+}
+
+async function pastePasscode() {
+  const field = $("#lobbyPinInput");
+  if (!field) return;
+  try {
+    const text = await navigator.clipboard.readText();
+    const pin = extractPasscode(text);
+    if (!pin) {
+      toast(t("net.pinPasteFailed"), "wine");
+      field.focus();
+      return;
+    }
+    field.value = pin;
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    toast(t("net.pinPasted"), "jade");
+    field.focus();
+  } catch {
+    toast(t("net.pinPasteFailed"), "wine");
+    field.focus();
+  }
+}
+
 function lobbyRosterHTML(players, options = {}) {
   const preview = options.preview !== false;
   return SEATS.map((seat) => {
@@ -3717,7 +3769,7 @@ function renderPending() {
   if (approveAll) approveAll.hidden = entries.length === 0;
   const status = $("#hostSecurityStatus");
   if (status && isHost() && net?.security) {
-    status.textContent = net.security.pinSet ? t("net.pinSet") : t("net.pinCleared");
+    status.textContent = net.security.pinSet ? t("net.pinAuto") : t("net.pinApprovalOnly");
   }
   const approval = $("#hostApproval");
   if (approval && isHost() && net?.security) approval.checked = Boolean(net.security.approval);
@@ -3807,7 +3859,12 @@ function renderLobby() {
   const copyBtn = $("#lobbyCopyBtn");
   if (copyBtn) copyBtn.disabled = !code;
   const copyInfo = $("#lobbyCopyInfo");
-  if (copyInfo) copyInfo.disabled = !code;
+  if (copyInfo) {
+    copyInfo.disabled = !code;
+    copyInfo.textContent = roomPinPlain ? t("net.copyInvitePin") : t("net.copyRoomInfo");
+  }
+  const share = $("#lobbyShareBtn");
+  if (share) share.hidden = !(code && roomPinPlain && typeof navigator.share === "function");
   renderPending();
   renderPinReveal();
 }
@@ -3888,11 +3945,20 @@ async function copyInvite() {
   await copyText(inviteUrl(code), t("toast.netCopied"));
 }
 
+function setPinInfo(open) {
+  const panel = $("#pinInfoPanel");
+  const button = $("#hostPinInfo");
+  if (!panel || !button) return;
+  panel.hidden = !open;
+  button.setAttribute("aria-expanded", String(open));
+  button.classList.toggle("active", open);
+}
+
 function renderPinReveal() {
-  const reveal = $("#hostPinReveal");
+  const ready = $("#hostPinReady");
   const value = $("#hostPinValue");
-  if (!reveal || !value) return;
-  reveal.hidden = !roomPinPlain;
+  if (!ready || !value) return;
+  ready.hidden = !roomPinPlain;
   value.textContent = roomPinPlain || "";
 }
 
@@ -3923,12 +3989,26 @@ async function copyRoomInfo() {
   if (!ok) toast(text.split("\n").slice(0, 3).join(" · "));
 }
 
+async function shareRoomInfo() {
+  const text = roomInfoText();
+  if (!text) return;
+  if (typeof navigator.share === "function") {
+    try {
+      await navigator.share({ title: "Leab-Tui 3D table", text });
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    }
+  }
+  await copyRoomInfo();
+}
+
 async function generateRoomPin() {
   if (!isHost() || !net) return;
   const pin = generatePin();
   const ok = await setRoomPin(pin);
   if (ok) {
-    toast(t("net.pinSet"), "jade");
+    toast(t("net.pinAuto"), "jade");
     renderPinReveal();
   }
 }
@@ -4263,6 +4343,11 @@ function selfTest() {
       && !validatePin("abc12345").ok
       && !validatePin("Password123").ok
       && !validatePin("Lb4821xAzz7Qmzz").ok
+  ));
+
+  check("invite text extracts the passcode", () => (
+    extractPasscode("Join my table\nPIN: Lb-4821-xA!z7Qm\nLink: https://example.test/?room=ABC234") === "Lb-4821-xA!z7Qm"
+      && extractPasscode("Lb-4821-xA!z7Qm") === "Lb-4821-xA!z7Qm"
   ));
 
   for (const result of netSelfTest()) results.push(result);
@@ -5484,8 +5569,10 @@ function bindEvents() {
   document.addEventListener("pointerdown", (event) => {
     const panel = $("#rankReference");
     const button = $("#rankReferenceBtn");
-    if (!panel || panel.hidden) return;
-    if (!panel.contains(event.target) && !button?.contains(event.target)) setRankReference(false);
+    if (panel && !panel.hidden && !panel.contains(event.target) && !button?.contains(event.target)) setRankReference(false);
+    const pinPanel = $("#pinInfoPanel");
+    const pinButton = $("#hostPinInfo");
+    if (pinPanel && !pinPanel.hidden && !pinPanel.contains(event.target) && !pinButton?.contains(event.target)) setPinInfo(false);
   });
   $$("button[data-font-size]").forEach((button) => button.addEventListener("click", () => applyFontSize(button.dataset.fontSize)));
   $$("button[data-theme-choice]").forEach((button) => button.addEventListener("click", () => applyTheme(button.dataset.themeChoice)));
@@ -5565,13 +5652,12 @@ function bindEvents() {
   });
   $("#lobbyCopyBtn")?.addEventListener("click", copyInvite);
   $("#lobbyCopyInfo")?.addEventListener("click", copyRoomInfo);
-  $("#hostPinGenerate")?.addEventListener("click", generateRoomPin);
+  $("#lobbyShareBtn")?.addEventListener("click", shareRoomInfo);
+  $("#lobbyPinPaste")?.addEventListener("click", pastePasscode);
+  $("#hostPinRegenerate")?.addEventListener("click", generateRoomPin);
   $("#hostPinCopy")?.addEventListener("click", copyPin);
+  $("#hostPinInfo")?.addEventListener("click", () => setPinInfo($("#pinInfoPanel")?.hidden ?? true));
   $("#hostApproval")?.addEventListener("change", (event) => setRoomApproval(event.target.checked));
-  $("#hostPinSave")?.addEventListener("click", () => { setRoomPin($("#hostPin")?.value || "").catch(() => {}); });
-  $("#hostPin")?.addEventListener("input", (event) => {
-    event.target.value = normalisePin(event.target.value);
-  });
   $("#lobbyApproveAll")?.addEventListener("click", approveAllPending);
   $("#lobbyPending")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-approve], [data-deny]");
@@ -5670,6 +5756,7 @@ function bindEvents() {
       const open = $$(".modal").find((modal) => !modal.hidden);
       if (open && open.id !== "summaryModal") open.hidden = true;
       setRankReference(false);
+      setPinInfo(false);
     }
     if (event.key === "h" && !event.metaKey && !event.ctrlKey && !event.altKey) applyHint();
     if (event.key === "Escape" && state?.selected?.length) clearSelection();
