@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.5.0",
-  "version": "1.5.0",
+  "projectVersion": "1.6.0",
+  "version": "1.6.0",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-06T13:19:18-08:00",
-    "durationSeconds": 11625,
-    "durationHuman": "3h 13m 45s",
+    "packagedAt": "2026-11-06T14:33:05-08:00",
+    "durationSeconds": 16051,
+    "durationHuman": "4h 27m 31s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x P2P work plus 1.5.0 chat and voice: seat refactor, PeerJS transport, lobby, required names, host authority, per-seat redaction, ghost meshes, seat-relative view, bot fill, disconnect-to-bot, confirmed Leave room, resume card, host-routed chat, full-mesh voice with mic mute/deafen and speaking pulse, two-browser harness, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-06T21:19:26Z"
+    "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
+    "publishedAt": "2026-11-06T22:33:12Z"
   },
   "tokens": {
-    "input": 953484,
-    "output": 210270,
-    "reasoning": 111188,
-    "cacheRead": 185869568,
+    "input": 1053401,
+    "output": 257042,
+    "reasoning": 142210,
+    "cacheRead": 264019072,
     "cacheWrite": 1087,
-    "total": 1274942,
-    "totalWithCache": 187145597,
+    "total": 1452653,
+    "totalWithCache": 265472812,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T13:19:18-08:00, covering 1.4.0–1.5.0. The final state-record commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T14:33:05-08:00, covering 1.4.0–1.6.0: multiplayer, launch/identity/leave, chat, voice and security hardening. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -70,10 +70,10 @@
     ]
   },
   "verification": {
-    "selfTest": "36/36",
-    "staticCheck": "scripts/check.mjs (322 checks)",
+    "selfTest": "37/37",
+    "staticCheck": "scripts/check.mjs (342 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
-    "multiplayer": "scripts/net-check.mjs — 17/17 host, join, bot fill, privacy, controls, chat, voice, mute/deafen, actions, disconnect",
+    "multiplayer": "scripts/net-check.mjs — 20/20 PIN, approval, wrong PIN, host, join, bot fill, privacy, controls, chat, voice, mute/deafen, actions, disconnect",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
@@ -138,18 +138,23 @@
       "version": "1.5.0",
       "date": "2026-11-06",
       "summary": "Host-routed text chat, full-mesh P2P voice, independent mic mute/deafen, remote audio elements, speaking pulse, chat/voice screenshots and 17-check two-browser suite."
+    },
+    {
+      "version": "1.6.0",
+      "date": "2026-11-06",
+      "summary": "Host approval queue, strong generated PIN with memory-only SHA-256 digest, Copy room info, abuse caps, voice allowlist, security docs and 20-check two-browser suite."
     }
   ],
-  "releaseNotes": "1.5.0 adds a collapsible host-routed table chat and an independent full-mesh PeerJS voice channel with separate mic-mute and deafen controls, hidden remote audio elements and a speaking pulse. Chat is escaped and capped; voice is opt-in and never recorded. The four-seat rules contract and data protocol are unchanged.",
+  "releaseNotes": "1.6.0 hardens the room boundary: host approval by default, an optional 15–64 character PIN with upper/lower/digit/symbol and deny-list checks, a generated 20-character PIN, SHA-256 digest only, Copy room info, connection/message/payload/chat caps and a voice-call allowlist. The PIN is a gate, not authentication; approval is the access-control decision.",
   "updates": [
     {
-      "version": "1.4.0–1.5.0",
+      "version": "1.4.0–1.6.0",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-06T13:19:18-08:00",
-      "durationSeconds": 11625,
-      "durationHuman": "3h 13m 45s",
-      "tokensAdded": 1274942,
-      "summary": "Serverless WebRTC multiplayer, launch/identity/leave refinements, host-routed chat, full-mesh voice with mic mute/deafen, two-browser verification and skill mirror."
+      "completedAt": "2026-11-06T14:33:05-08:00",
+      "durationSeconds": 16051,
+      "durationHuman": "4h 27m 31s",
+      "tokensAdded": 1452653,
+      "summary": "Serverless WebRTC multiplayer, launch/identity/leave, chat, full-mesh voice, host approval, strong PIN, abuse caps and skill mirror."
     }
   ],
   "multiplayer": {

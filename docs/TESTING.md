@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Syntax | `node --check script.js` + `peer-manager.js` + `voice-chat.js` | all three modules parse |
 | Repository | `node scripts/check.mjs` | files, links, version, i18n parity, rule constants, serialization policy, CDN pins, redaction guards |
-| Rules + protocol | `?selftest=1` → `selfTest()` | 36 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export, chat normalization, room codes, redaction, hydration, loopback |
+| Rules + protocol | `?selftest=1` → `selfTest()` | 37 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export, chat normalization, room codes, redaction, hydration, loopback |
 | Browser | `node scripts/verify.mjs` | Chrome loads the page, no console exceptions, the table renders, the self-test passes |
 | Flow | CDP playthrough (below) | a complete round, 32-tile conservation |
 | Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, chat, voice mesh, mute/deafen, actions, disconnect-to-bot |
@@ -60,18 +60,19 @@ node scripts/net-check.mjs   # real broker, needs outbound 0.peerjs.com
 | 24 | i18n keys symmetrical | EN and TH share every key |
 | 25 | export payload shape | app + credits + 4 scores |
 | 26 | chat text | whitespace collapsed, 200-character cap |
-| 27 | room code | six chars from the unambiguous alphabet |
-| 28 | code normalization | `leab-abc-234` → `ABC234` |
-| 29 | incomplete code rejected | `ABC` → `null` |
-| 30 | formatted code | starts with `LEAB-` |
-| 31 | peer id stability | uppercase and dashed codes collide intentionally |
-| 32 | redaction hides another hand | every id is a ghost |
-| 33 | redaction keeps the recipient hand | every id is real |
-| 34 | host-only maps stripped | no `hiddenTags`, no `snapshot` |
-| 35 | ghost hydration | `ghost-2-3` round-trips |
-| 36 | loopback transport | envelope arrives with `__leab: 1` |
+| 27 | PIN policy | 15+ chars, four classes, deny-list |
+| 28 | room code | six chars from the unambiguous alphabet |
+| 29 | code normalization | `leab-abc-234` → `ABC234` |
+| 30 | incomplete code rejected | `ABC` → `null` |
+| 31 | formatted code | starts with `LEAB-` |
+| 32 | peer id stability | uppercase and dashed codes collide intentionally |
+| 33 | redaction hides another hand | every id is a ghost |
+| 34 | redaction keeps the recipient hand | every id is real |
+| 35 | host-only maps stripped | no `hiddenTags`, no `snapshot` |
+| 36 | ghost hydration | `ghost-2-3` round-trips |
+| 37 | loopback transport | envelope arrives with `__leab: 1` |
 
-Latest result: **SELFTEST PASS 36/36** (Chrome headless, 2026-11-06).
+Latest result: **SELFTEST PASS 37/37** (Chrome headless, 2026-11-06).
 
 ## Recorded flow tests
 
@@ -184,6 +185,9 @@ The privacy check is the important one: it reads the guest's `LeabTui.getState()
 ### Launch
 
 - [ ] A normal load shows Choose how to play before dealing a game.
+- [ ] Host approval is on by default; a guest waits for Approve/Deny.
+- [ ] A generated PIN has 15+ characters, four classes and is not in state/URL.
+- [ ] Wrong PIN is rejected; eight wrong attempts lock the room briefly.
 - [ ] Your name is required before hosting or joining; an empty name shows a clear message.
 - [ ] Hosting uses the menu name and the roster shows it.
 - [ ] An invite link prefills the room code but asks the guest to confirm their own name.
@@ -270,6 +274,7 @@ The privacy check is the important one: it reads the guest's `LeabTui.getState()
 | `screenshots/lobby.jpg` | launch overlay, name field, three modes, no clipped copy |
 | `screenshots/chat-voice.jpg` | chat messages, voice buttons, leave room, speaking pulse |
 | `screenshots/mobile-chat.jpg` | chat/voice fit at 390 px, hand dock not covered |
+| `screenshots/host-security.jpg` | approval, generated PIN, Copy room info, digest note |
 
 A green suite does not prove the table looks right. Inspect the screenshots after any camera, material or dock change.
 
@@ -288,4 +293,4 @@ A green suite does not prove the table looks right. Inspect the screenshots afte
 2. If it is a rule invariant, add it to `scripts/check.mjs` as a string/regex guard too.
 3. If it is a flow, add a CDP expression to `scripts/verify.mjs` and assert on `window.LeabTui.getState()`.
 4. If it is a protocol or redaction invariant, add it to `netSelfTest()` and, when it needs a real channel, to `scripts/net-check.mjs`.
-5. Update this document and the count in the title assertion (`36/36`).
+5. Update this document and the count in the title assertion (`37/37`).

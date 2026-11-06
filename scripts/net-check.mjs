@@ -174,10 +174,24 @@ async function main() {
   if (hostState.role === "host" && /^LEAB-/.test(hostState.code)) pass("host opened a branded room", hostState.code);
   else fail("host opened a branded room", hostNet);
   const code = hostState.code.replace("LEAB-", "").replace("-", "");
+  const roomPin = "Lb-4821-xA!z7Qm";
+  await host.eval(`LeabTui.net.setPin(${JSON.stringify(roomPin)})`);
 
-  const guestWs = await newTarget(`${BASE}?room=${code}&name=Guest`);
+  const guestWs = await newTarget(`${BASE}?room=${code}&name=Guest&pin=${encodeURIComponent(roomPin)}`);
   const guest = await Session.connect(guestWs);
   await sleep(2500);
+  const pending = JSON.parse(await host.waitFor(
+    "window.LeabTui?.net.pending?.().length >= 1 ? JSON.stringify(window.LeabTui.net.pending()) : ''",
+    "host approval queue",
+    20000
+  ));
+  if (pending.length === 1 && pending[0].name === "Guest") pass("PIN accepted and guest is held for host approval", pending[0].name);
+  else fail("PIN accepted and guest is held for host approval", JSON.stringify(pending));
+  const approveControls = await host.eval("document.querySelectorAll('#lobbyPending [data-approve]').length");
+  if (approveControls === 1) pass("host sees an approval control for the request");
+  else fail("host sees an approval control for the request", String(approveControls));
+  await host.eval(`LeabTui.net.approve(${JSON.stringify(pending[0].connId)}); true`);
+
   const guestNet = await guest.waitFor("JSON.stringify(window.LeabTui?.net.getState?.() || null)", "guest joined", 30000);
   const guestState = JSON.parse(guestNet);
   if (guestState.role === "client" && guestState.mySeat >= 1) pass("guest joined a seat", `seat ${guestState.mySeat}`);
@@ -187,6 +201,18 @@ async function main() {
   const players = JSON.parse(roster);
   if (players.filter((player) => player.kind === "host" || player.kind === "human").length === 2) pass("lobby sees two humans");
   else fail("lobby sees two humans", roster);
+
+  const badWs = await newTarget(`${BASE}?room=${code}&name=Mallory&pin=000000000000000`);
+  const bad = await Session.connect(badWs);
+  await sleep(2500);
+  const badStatus = await bad.waitFor(
+    "document.querySelector('#lobbyStatus')?.textContent?.includes('Wrong room PIN') ? document.querySelector('#lobbyStatus').textContent : ''",
+    "wrong PIN rejection",
+    20000
+  );
+  if (badStatus) pass("wrong PIN is rejected", badStatus);
+  else fail("wrong PIN is rejected", "no status");
+  await bad.closePage();
 
   await host.eval("document.querySelector('#lobbyStartBtn').click(); true");
   const guestPhase = await guest.waitFor("['lead','follow'].includes(window.LeabTui?.getState?.()?.phase) ? window.LeabTui.getState().phase : ''", "guest received match state", 30000);
@@ -244,10 +270,13 @@ async function main() {
     const ctx = new AudioContext();
     await ctx.resume();
     const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
     const dest = ctx.createMediaStreamDestination();
-    osc.connect(dest);
+    gain.gain.value = 0;
+    osc.connect(gain);
+    gain.connect(dest);
     osc.start();
-    window.__fakeVoice = { ctx, osc, stream: dest.stream };
+    window.__fakeVoice = { ctx, osc, gain, stream: dest.stream };
     return dest.stream.getAudioTracks().length;
   })()`;
   await host.eval(synth);

@@ -116,6 +116,12 @@ A hosted room with the glass chat panel open: two messages, the voice controls i
 
 The chat panel at 390×844: **Leave room** is still visible in Actions, the glass chat sits below it, and the voice bar collapses to two columns. The hand dock is below the inspector and is not covered.
 
+## Host security
+
+![Host security](../screenshots/host-security.jpg)
+
+Approval is on, a generated 20-character PIN is set, and **Copy room info** sits next to **Copy invite link**. The plain PIN is shown once in the host panel; state, roster, URL and export contain only the digest. The warning explains that Copy room info puts the PIN in the clipboard.
+
 ## What is not shown
 
 - The match-end summary and the undo comparison modal. Both use the same card system; capture them if you add release notes about scoring or learning.

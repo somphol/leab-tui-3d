@@ -226,12 +226,14 @@ export class VoiceChat {
   }
 
   _answer(call) {
-    if (!this.joined || !this.localStream) {
+    const peerId = call.peer;
+    const peer = this.peers.find((entry) => entry.peerId === peerId);
+    /* Only approved room members may open a media call. This blocks a peer who
+       guessed the deterministic host id from the room code. */
+    if (!peer || !this.joined || !this.localStream) {
       try { call.close(); } catch { /* ignore */ }
       return;
     }
-    const peerId = call.peer;
-    const peer = this.peers.find((entry) => entry.peerId === peerId) || { seat: -1, name: "" };
     try {
       call.answer(this.localStream);
       this._trackCall(peerId, call, peer);

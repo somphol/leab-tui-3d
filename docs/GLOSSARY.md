@@ -58,3 +58,7 @@
 | **Speaking meter** | Per-stream `AnalyserNode` RMS that drives the green voice pulse. |
 | **`getUserMedia`** | The browser API that asks for microphone permission and returns a MediaStream. |
 | **DTLS-SRTP** | The encryption used by WebRTC media and data channels in transit. |
+| **Approval queue** | Guests who passed the PIN wait for the host to approve or deny a seat. |
+| **Room PIN** | Optional 15–64 char passphrase with four classes; stored as an in-memory SHA-256 digest. |
+| **Deny-list** | Small public list of obvious passwords rejected by the PIN policy. |
+| **Payload cap** | 16 KB inbound envelope limit enforced by the host transport. |

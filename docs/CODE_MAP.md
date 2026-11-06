@@ -1,6 +1,6 @@
 # Code map
 
-`script.js` is one module, but it is organised in numbered sections. `peer-manager.js` and `voice-chat.js` are the other runtime modules.
+`script.js` is one module, but it is organised in numbered sections. `peer-manager.js`, `voice-chat.js` and `security.js` are the other runtime modules.
 
 ## `script.js`
 
@@ -35,6 +35,15 @@
 | Guest | `PeerClient` |
 | Test | `createLoopbackPair`, `protocolEnvelope`, `isProtocolMessage` |
 | Constants | `PROTOCOL_VERSION`, `ROOM_PREFIX`, `ROOM_CODE_LENGTH`, `PEER_MANAGER_INFO` |
+
+## `security.js`
+
+| Area | Key symbols |
+| --- | --- |
+| Policy | `PIN_MIN`, `PIN_MAX`, `validatePin`, `PIN_POLICY` |
+| Generation | `generatePin`, `pinStrength` |
+| Storage | `hashPin` (SHA-256, memory only) |
+| Input | `normalisePin` |
 
 ## `voice-chat.js`
 
@@ -71,6 +80,8 @@
 | Change lobby UI | `index.html` `#lobbyModal`, `renderLobby`, `lobbyRosterHTML`, `style.css` `.lobby-*` |
 | Change chat | `sendChat`, `hostChat`, `appendChat`, `renderChat`, `chatHistory`, `index.html` `#chatPanel`, `docs/PROTOCOL.md` |
 | Change voice | `voice-chat.js`, `syncVoicePeers`, `renderVoiceState`, `serialiseRoster` (`peerId`/`voice`), `index.html` voice bar, docs/MULTIPLAYER.md |
+| Change lobby security | `requestGuest`, `approvePending`, `denyPending`, `setRoomApproval`, `setRoomPin`, `roomInfoText`, `security.js`, host panel markup, docs/SECURITY.md |
+| Change PIN policy | `security.js`, `setRoomPin`, `requestGuest`, `docs/SECURITY.md`, self-test, `scripts/net-check.mjs` |
 | Change room codes / PeerJS | `peer-manager.js`, `index.html` CSP, `docs/MULTIPLAYER.md` |
 | Change visuals | `:root` tokens in `style.css`, felt/wood/tile texture functions, `SCENE_THEMES` |
 
@@ -88,3 +99,5 @@
 - A guest never calls the engine flow.
 - Chat is appended once on the host and broadcast; guest input is rate-limited and escaped.
 - Voice never uses the data channel; mic mute is `track.enabled`, deafen is `<audio>.muted`.
+- The host stores only a PIN digest; the plain PIN is never in state, roster, export, URL or localStorage.
+- A guest is not seated before `approvePending`; `requestGuest` only queues.

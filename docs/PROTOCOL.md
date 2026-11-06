@@ -151,7 +151,9 @@ Sent once the data channel opens.
 { "type": "hello", "name": "Bea", "protocol": 1 }
 ```
 
-The host assigns the lowest free seat 1–3. Names are trimmed to 18 characters. Empty names become `Guest n`.
+The host verifies the optional PIN against an in-memory SHA-256 digest, then either queues the request (`pending`) or rejects it. The host assigns the lowest free seat 1–3 only after approval. Names are trimmed to 18 characters; control characters and angle brackets are stripped. Empty names become `Guest n`.
+
+`bad-pin`, `denied`, `busy`, `timeout`, `full` and `in-progress` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s.
 
 ### `action`
 
@@ -248,12 +250,23 @@ Voice is **not** an envelope type and never travels over the data channel. It is
 - The lexicographically larger peer ID initiates a call to the smaller one, so both sides agree.
 - Only peers with roster `voice: true` are called.
 - `voice-state` updates the host's roster and is rebroadcast via `lobby`.
+- Incoming media calls are accepted **only** from a `peerId` already present in the approved roster; unknown peer IDs are closed immediately.
 - The incoming media stream is attached to a hidden `<audio autoplay playsinline>` element; no base64 or JSON audio.
 - Mic mute sets `localStream.getAudioTracks()[0].enabled = false`.
 - Deafen sets `.muted = true` on every remote `<audio>`.
 - An analyser per stream drives the speaking pulse; it is not connected to `destination`.
 
 The broker only signals the media call. Game state remains on the data channel and is still host-authoritative.
+
+## Abuse limits
+
+- Host: 16 live data connections, 6 pending requests, 80 messages per 10 s per connection, 16 KB inbound envelope cap.
+- Chat: 200 characters, 350 ms per guest.
+- Actions: at most six tile IDs; the host re-validates ownership and legality.
+- Voice: calls only from approved roster peer IDs.
+- PIN: 15–64 chars, four character classes, deny-list/sequence checks, 8 wrong attempts -> 60 s room-wide lockout.
+
+These are mitigation, not a DDoS guarantee.
 
 ## Versioning
 

@@ -161,7 +161,7 @@ function peerErrorText(error) {
  * game. It only reports connection lifecycle and carries JSON envelopes.
  */
 export class PeerHost {
-  constructor({ code, name = "Host", onOpen, onConnection, onMessage, onClose, onError, onStatus, options = {} } = {}) {
+  constructor({ code, name = "Host", onOpen, onConnection, onMessage, onClose, onError, onStatus, options = {}, maxConnections = 16 } = {}) {
     this.code = normalizeRoomCode(code);
     this.name = name;
     this.id = peerIdForCode(this.code);
@@ -174,6 +174,10 @@ export class PeerHost {
     this.options = { ...defaultPeerOptions(), ...options };
     this.peer = null;
     this.connections = new Map();
+    this.rates = new Map();
+    this.maxConnections = maxConnections;
+    this.rateWindowMs = 10000;
+    this.rateLimit = 80;
     this.closed = false;
   }
 
@@ -218,14 +222,42 @@ export class PeerHost {
 
   _accept(connection) {
     const connId = connection.peer || `conn-${this.connections.size + 1}`;
+    if (this.connections.size >= this.maxConnections) {
+      try { connection.close(); } catch { /* ignore */ }
+      this.onError({ scope: "host", type: "busy", connId });
+      return;
+    }
     this.connections.set(connId, connection);
     const drop = (reason) => {
       if (!this.connections.has(connId)) return;
       this.connections.delete(connId);
+      this.rates.delete(connId);
       this.onClose({ connId, reason });
     };
     connection.on("open", () => this.onConnection({ connId, connection }));
     connection.on("data", (data) => {
+      const now = Date.now();
+      const rate = this.rates.get(connId) || { start: now, count: 0 };
+      if (now - rate.start > this.rateWindowMs) {
+        rate.start = now;
+        rate.count = 0;
+      }
+      rate.count += 1;
+      this.rates.set(connId, rate);
+      if (rate.count > this.rateLimit) {
+        this.onError({ scope: "host", type: "rate-limit", connId });
+        drop("rate-limit");
+        try { connection.close(); } catch { /* ignore */ }
+        return;
+      }
+      let size = 0;
+      try { size = JSON.stringify(data).length; } catch { size = Infinity; }
+      if (size > 16384) {
+        this.onError({ scope: "host", type: "oversize", connId });
+        drop("oversize");
+        try { connection.close(); } catch { /* ignore */ }
+        return;
+      }
       if (data && data.__leab === PROTOCOL_VERSION) this.onMessage({ connId, message: data, connection });
       else this.onError({ scope: "host", type: "protocol", connId, message: data });
     });
@@ -260,6 +292,15 @@ export class PeerHost {
     let count = 0;
     for (const connection of this.connections.values()) if (connection.open) count += 1;
     return count;
+  }
+
+  closeConnection(connId) {
+    const connection = this.connections.get(connId);
+    if (!connection) return false;
+    this.connections.delete(connId);
+    this.rates.delete(connId);
+    try { connection.close(); } catch { /* ignore */ }
+    return true;
   }
 
   close() {

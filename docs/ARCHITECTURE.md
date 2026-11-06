@@ -10,6 +10,7 @@ style.css         design tokens, layout, responsive rules, modal system, chat/vo
 script.js         one ES module: data → rules → AI → state → flow → 3D → audio → UI → network
 peer-manager.js   room codes, lazy PeerJS loader, host/client endpoints, loopback test pair
 voice-chat.js     full-mesh media calls, mic mute, deafen, remote audio, speaking meter
+security.js       PIN policy, generated passphrases, deny-list, SHA-256 digest
 ```
 
 There is no bundler, framework, server, database or API key. `script.js` dynamically imports `three@0.160.0` and `OrbitControls` from jsDelivr so the rule engine, coaching, scoring and persistence still initialise if WebGL or the CDN fails. `peer-manager.js` lazily injects the pinned PeerJS UMD bundle only when a room is opened.
@@ -55,6 +56,7 @@ The scene is created **after** the first render so the UI is usable during the T
 | Persistence | save/load/export | persist live objects |
 | Network | lobby, seats, host authority, redaction, bot takeover | let a guest run the engine |
 | Chat | host relay, attribution, history, rate limit | trust guest HTML |
+| Security | approval queue, PIN policy/hash, connection/rate/payload caps | call a PIN authentication |
 | Voice | mesh calls, mute/deafen, analyser pulse | route audio through the data channel |
 | Self-test | rule, conservation and redaction checks | require a GPU or network |
 
@@ -128,6 +130,20 @@ host browser                         guest browser
 
 The full message set, redaction table and invariants are in [PROTOCOL.md](PROTOCOL.md); operations and troubleshooting are in [MULTIPLAYER.md](MULTIPLAYER.md).
 
+## Security boundary
+
+The room has three gates, in order:
+
+1. **Room code** — six unambiguous characters. It identifies the host PeerJS id, so it is not a secret from anyone who has it.
+2. **PIN** — optional, 15–64 characters, upper/lower/digit/symbol, deny-list and sequence checks. The host stores only a SHA-256 digest in memory; the plain PIN is shown once in the host panel for copying and is never in the roster, state, export, URL or `localStorage`.
+3. **Host approval** — every request enters a pending queue by default. Only `approvePending` calls `acceptGuest`, which assigns a seat and sends `welcome`.
+
+`requestGuest` is async because it hashes the candidate PIN. A wrong PIN increments a per-room counter; eight failures set a 60-second `lockUntil`. Pending requests expire in 120 seconds. Denied, wrong-PIN, busy, expired and in-progress connections receive `rejected` and are closed.
+
+The host transport also enforces caps: 16 live connections, 80 messages per 10 s per connection, 16 KB inbound envelopes, six pending requests. Voice calls are accepted only from a peer already in the approved roster. Chat is escaped and rate-limited.
+
+Assume the attacker has read this file. The PIN is a brute-force cost, not authentication; approval is the access-control decision. See [SECURITY.md](../SECURITY.md).
+
 ## Chat and voice
 
 **Text chat** is a host-relayed data-channel feature:
@@ -199,7 +215,7 @@ The saved payload is:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "savedAt": "2026-11-06T...",
   "network": false,
   "game": { "phase": "...", "hands": [["r-general-0"], ...], ... }

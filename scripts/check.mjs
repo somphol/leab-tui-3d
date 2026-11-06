@@ -38,6 +38,7 @@ const required = [
   "script.js",
   "peer-manager.js",
   "voice-chat.js",
+  "security.js",
   "favicon.svg",
   "README.md",
   "AGENTS.md",
@@ -105,7 +106,8 @@ const required = [
   "screenshots/guest-play.jpg",
   "screenshots/mobile-leave.jpg",
   "screenshots/chat-voice.jpg",
-  "screenshots/mobile-chat.jpg"
+  "screenshots/mobile-chat.jpg",
+  "screenshots/host-security.jpg"
 ];
 
 for (const file of required) {
@@ -117,6 +119,7 @@ const css = read("style.css");
 const script = read("script.js");
 const peer = read("peer-manager.js");
 const voice = read("voice-chat.js");
+const security = read("security.js");
 const readme = read("README.md");
 const agents = read("AGENTS.md");
 const changelog = read("CHANGELOG.md");
@@ -131,6 +134,8 @@ ok(index.includes('id="lobbyModal"') && index.includes('id="lobbyHost"') && inde
 ok(index.includes('id="netChip"'), "network room chip exists");
 ok(index.includes('id="chatPanel"') && index.includes('id="chatList"') && index.includes('id="chatForm"'), "table chat markup exists");
 ok(index.includes('id="voiceJoinBtn"') && index.includes('id="micBtn"') && index.includes('id="deafenBtn"'), "voice controls exist");
+ok(index.includes('id="hostApproval"') && index.includes('id="hostPin"') && index.includes('id="lobbyPinInput"'), "approval and PIN controls exist");
+ok(index.includes('id="lobbyPending"') && index.includes('id="lobbyApproveAll"'), "pending request UI exists");
 ok(index.includes('id="remoteAudio"') && css.includes(".remote-audio") && css.includes(".chat-panel"), "remote audio and chat styles exist");
 ok(/type="importmap"/.test(index), "index has an import map");
 ok(index.includes("three@0.160.0/build/three.module.js"), "Three.js r160 is pinned");
@@ -180,6 +185,13 @@ ok(voice.includes("getUserMedia") && voice.includes("getAudioTracks") && voice.i
 ok(voice.includes("audio.muted = this.deafened"), "deafen mutes remote audio elements");
 ok(voice.includes("createMediaStreamSource") && voice.includes("onSpeaking"), "speaking meter exists");
 ok(script.includes("syncVoicePeers") && script.includes("voice-state"), "voice roster sync exists");
+ok(script.includes("pendingRequests") && script.includes("approvePending") && script.includes("requestGuest"), "host approval queue exists");
+ok(script.includes("pinHash") && !/pin:\s*["']/.test(script), "PIN is stored as a digest, not plaintext");
+ok(script.includes("net.security.approval") && script.includes("setRoomApproval"), "approval can be toggled");
+ok(security.includes("PIN_MIN = 15") && security.includes("COMMON") && security.includes("validatePin"), "PIN policy and deny-list exist");
+ok(security.includes("crypto.subtle.digest") && security.includes("SHA-256"), "PIN is hashed in memory");
+ok(voice.includes("if (!peer || !this.joined"), "voice calls are allowlisted by roster");
+ok(peer.includes("maxConnections") && peer.includes("rateLimit") && peer.includes("size > 16384"), "host has connection, rate and payload caps");
 ok(script.includes("function renderRankReference"), "rank reference renderer exists");
 ok(script.includes("function setRankReference"), "rank reference toggle exists");
 ok(index.includes('id="rankReference"') && index.includes('id="rankReferenceBtn"'), "rank reference markup exists");
@@ -213,7 +225,7 @@ ok(script.includes("function selfTest"), "self-test exists");
 // Count the self-test checks to keep the documented count honest.
 const selfTestBody = script.slice(script.indexOf("function netSelfTest()"), script.indexOf("function simulateRound"));
 const selfTestCount = (selfTestBody.match(/check\(/g) || []).length;
-ok(selfTestCount >= 36, "self-test has at least 36 checks", String(selfTestCount));
+ok(selfTestCount >= 37, "self-test has at least 37 checks", String(selfTestCount));
 
 // i18n symmetry
 const enBlock = script.slice(script.indexOf("  en: {"), script.indexOf("  th: {"));
@@ -265,7 +277,7 @@ const secretPatterns = [
   /AKIA[0-9A-Z]{16}/,
   /sk-[A-Za-z0-9]{20,}/
 ];
-for (const file of ["index.html", "style.css", "script.js", "peer-manager.js", "voice-chat.js", "README.md", "AGENTS.md", "STATE.md", "state.json"]) {
+for (const file of ["index.html", "style.css", "script.js", "peer-manager.js", "voice-chat.js", "security.js", "README.md", "AGENTS.md", "STATE.md", "state.json"]) {
   if (!exists(file)) continue;
   for (const pattern of secretPatterns) {
     ok(!pattern.test(read(file)), `possible secret in ${file}`, pattern.source);
@@ -291,6 +303,13 @@ try {
   ok(true, "voice-chat.js parses");
 } catch (error) {
   ok(false, "voice-chat.js parses", error.message);
+}
+
+try {
+  execFileSync(process.execPath, ["--check", join(root, "security.js")], { stdio: "pipe" });
+  ok(true, "security.js parses");
+} catch (error) {
+  ok(false, "security.js parses", error.message);
 }
 
 if (failures.length) {

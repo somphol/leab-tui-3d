@@ -1504,3 +1504,50 @@ a:hover { text-decoration: underline; }
   .chat-list { max-height: 130px; }
   .voice-btn { min-height: 33px; font-size: calc(10.5px * var(--fs-scale)); }
 }
+
+/* Room security: approval queue and PIN */
+.lobby-security {
+  margin: 8px 0 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.12);
+}
+.lobby-check { display: flex; align-items: center; gap: 8px; color: var(--ink-dim); font-size: calc(11px * var(--fs-scale)); cursor: pointer; }
+.lobby-check input { width: 15px; height: 15px; accent-color: var(--gold); }
+.pin-line { margin: 4px 0 2px; }
+.pin-input { flex: 1; min-width: 0; margin: 0; font-family: var(--mono); font-size: calc(11.5px * var(--fs-scale)); letter-spacing: 0.03em; }
+.lobby-pending { display: flex; flex-direction: column; gap: 5px; margin: 6px 0 4px; }
+.pending-empty { padding: 7px 2px; color: var(--ink-faint); font-size: calc(10.5px * var(--fs-scale)); }
+.pending-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line-soft); border-radius: 8px; background: var(--card-bg); }
+.pending-name { min-width: 0; flex: 1; overflow: hidden; color: var(--ink); font-size: calc(11px * var(--fs-scale)); text-overflow: ellipsis; white-space: nowrap; }
+.pending-row time { color: var(--ink-faint); font-family: var(--mono); font-size: calc(8.5px * var(--fs-scale)); }
+.pending-row .mini-btn { flex: 0 0 auto; }
+.pending-row .mini-btn.approve { color: #a8d8bd; border-color: rgba(127, 191, 154, 0.4); }
+.pending-row .mini-btn.deny { color: #e7a6a0; border-color: rgba(182, 75, 95, 0.4); }
+
+@media (max-width: 640px) {
+  .lobby-security { padding: 9px 10px; }
+  .pin-line .btn { min-height: 30px; }
+  .pending-row { flex-wrap: wrap; }
+  .pending-name { flex-basis: 100%; }
+}
+
+.pin-line { flex-wrap: wrap; }
+.pin-line .pin-input { flex: 1 1 100%; }
+.pin-line .btn { flex: 0 0 auto; }
+.pin-reveal {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 2px;
+  padding: 8px 10px;
+  border: 1px solid rgba(216, 178, 107, 0.35);
+  border-radius: 8px;
+  background: rgba(216, 178, 107, 0.08);
+}
+.pin-reveal[hidden] { display: none; }
+.pin-reveal > span { color: var(--ink-faint); font-size: calc(9px * var(--fs-scale)); letter-spacing: 0.08em; text-transform: uppercase; }
+.pin-reveal code { flex: 1 1 100%; color: var(--gold-bright); font-family: var(--mono); font-size: calc(12px * var(--fs-scale)); overflow-wrap: anywhere; }
+.pin-reveal .mini-btn { flex: 0 0 auto; }

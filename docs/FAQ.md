@@ -77,6 +77,18 @@ Sometimes. It uses public STUN only, no TURN relay. Symmetric NAT or a restricti
 
 Yes. **Table chat** is host-routed, escaped, capped at 200 characters and kept in memory. **Join voice** requests the microphone and connects a direct full-mesh voice call; **Mute mic** disables your track without dropping the call, and **Mute others** deafens every remote stream. Neither is recorded.
 
+**Does the room have a PIN?**
+
+Yes, optional. Set a 15–64 character passphrase with upper case, lower case, a digit and a symbol, or press **Generate** for a 20-character grouped PIN. The host stores only a SHA-256 digest; the link never contains it. **Copy room info** can copy code + PIN + link for convenience.
+
+**Is the PIN enough security?**
+
+No. It raises guessing cost, but host approval is the real gate. Assume the source and policy are public. Approve only people you know, share the PIN separately when you can, and close the room when done.
+
+**Can a stranger crash the app?**
+
+The host caps connections, pending requests, message rate, payload size, chat rate and voice callers. There is no server to absorb a network flood, so a determined DDoS remains possible. The controls are mitigation, not a guarantee.
+
 **Why does Join voice do nothing?**
 
 Voice needs HTTPS or localhost and microphone permission. Denying the prompt leaves chat and the game working. Some corporate networks block WebRTC media; there is no TURN relay.

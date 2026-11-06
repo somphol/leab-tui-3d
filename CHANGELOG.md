@@ -2,6 +2,25 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] — 2026-11-06
+
+### Added
+
+- **Host approval queue** — guests request access; the host sees name/time and approves or denies each one. No seat or game state is sent before approval. Pending requests expire after 120 seconds.
+- **Strong optional room PIN** — 15–64 characters with upper case, lower case, a digit and a symbol. Rejects whitespace, common passwords, sequences, repeated characters, the room code and the host name.
+- **Auto-generate PIN** — a 20-character grouped passphrase with all four classes.
+- **Copy room info** — copies room code, optional PIN and link for one-click sharing. **Copy invite link** still never includes the PIN.
+- **PIN digest only** — SHA-256 in memory; the plain PIN is never in the roster, state, export, URL or localStorage. `security.js` owns the policy and generator.
+- **Abuse caps** — 16 live connections, 6 pending requests, 80 messages/10 s per connection, 16 KB inbound envelope, 200-char/350 ms chat, six action tiles, voice calls only from approved roster peer IDs.
+- 8 wrong PIN attempts trigger a 60-second room-wide lockout.
+- 1 new self-test (37 total), 3 new two-browser checks (20 total), security screenshot to follow.
+
+### Changed
+
+- Host approval is on by default.
+- Room-code + PIN + approval are documented as gates, not authentication.
+- README, AGENTS, architecture, multiplayer, protocol, security, privacy, testing, checklist, FAQ and reproduction updated with the threat model and caps.
+
 ## [1.5.0] — 2026-11-06
 
 ### Added

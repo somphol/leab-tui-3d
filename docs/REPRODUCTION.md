@@ -1,6 +1,6 @@
 # Reproduction guide
 
-This is the order that worked. It assumes a blank folder and no framework. The goal is a static, bilingual 3D trick-taking studio with five source files, serverless P2P multiplayer, text chat and independent voice and a verified release.
+This is the order that worked. It assumes a blank folder and no framework. The goal is a static, bilingual 3D trick-taking studio with six source files, serverless P2P multiplayer, text chat and independent voice and a verified release.
 
 ## 0. Write the rules contract before the code
 
@@ -152,6 +152,16 @@ Do this **after** the solo game is correct. Network code magnifies an unstable e
 | Rotating the camera instead of the world | lighting/controls break | rotate a world group; keep lights and camera fixed |
 | Expecting six seats | rules no longer Leab-Tui | four winds, 32 tiles, eight each |
 | Using a public broker in CI | flaky offline tests | keep `net-check.mjs` separate from `verify.mjs` |
+
+### Lobby security
+
+Treat the source as public. The room code is an identifier, not a secret. Add three gates:
+
+1. **Host approval** on by default. `hello` goes to a pending queue; only host `approve` assigns a seat and sends `welcome`. Pending entries expire.
+2. **Optional PIN** with a real policy: 15–64 chars, upper/lower/digit/symbol, no whitespace, deny-list and sequence checks, no room code or host name. Hash it with SHA-256 and keep only the digest in memory. Show the plain PIN once for copying; never put it in the URL, roster, export or localStorage.
+3. **Caps and allowlists**: connections, pending requests, messages/second, payload size, chat rate, action tile count, voice calls only from approved roster peer IDs.
+
+The PIN is not authentication. Say so in the UI and the docs. The host approval click is the access-control decision. Add **Generate** and **Copy room info** so the host can use a strong PIN without choosing a weak one; warn that Copy room info puts the PIN in the clipboard.
 
 ### Text chat
 

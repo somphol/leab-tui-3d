@@ -4,22 +4,73 @@
 
 | Version | Supported |
 | --- | --- |
-| 1.4.x | ✅ |
-| < 1.4 | ❌ |
+| 1.6.x | ✅ |
+| < 1.6 | ❌ |
+
+## Threat model
+
+Assume the attacker has read this repository and knows the protocol, message names, PeerJS IDs, room-code format and PIN policy. Nothing here relies on obscurity.
+
+| Asset | Risk | Control |
+| --- | --- | --- |
+| Other players' hands | A guest reads them from the wire | Host-authoritative redaction (`sanitizeForSeat`); only own hand and public captures are real |
+| The host browser | A stranger joins, floods it, or tries to run code | Room code + PIN + **host approval**, connection/message/payload caps, escaped text, no `eval`/`innerHTML` for peer input |
+| Seat ownership | A guest acts for another seat | Actions are tied to the sender's `connId` profile and re-validated by the host |
+| Room availability | A stranger opens many connections or floods actions/chat | 16-connection cap, 6 pending requests, 80 messages/10 s per connection, 16 KB payload cap, 350 ms chat limit |
+| Voice mesh | A stranger calls the deterministic host peer id | Media calls are accepted only from peer IDs already in the approved roster |
+| PIN | Offline guessing from source or online guessing | 15–64 chars, four classes, deny-list + sequence checks, SHA-256 digest in memory, 8-attempt lockout |
+| Chat | XSS or impersonation | `escapeHTML`/`textContent`, 200-char cap, sender profile, host relay |
+| Saved game | Malformed JSON | Shape/ID validation; malformed saves start a new match |
+
+## Lobby gate
+
+1. The host generates a room code (six unambiguous characters, `LEAB-ABC-234`).
+2. The host may set a PIN. The PIN is **never in the invite URL**, never in the roster, never in `localStorage`, and never in the exported game.
+3. A guest sends the room code, name and PIN over the encrypted WebRTC data channel.
+4. The host verifies the PIN against an in-memory SHA-256 digest and then puts the request in the **approval queue**.
+5. The host approves or denies each request. Only after approval is a seat assigned and a `welcome` sent.
+6. Pending requests expire after 120 seconds. Denied, wrong-PIN and expired connections are closed.
+
+The PIN is a **gate**, not authentication. Host approval is the real access-control decision. A determined attacker with the room code can still knock; they cannot get a seat without the host's click.
+
+## PIN policy
+
+- 15–64 characters.
+- At least one lower-case letter, one upper-case letter, one digit and one symbol.
+- No whitespace.
+- Rejected if it is in the bundled common-password deny-list, contains the room code, contains the host name, is one repeated character, or contains an obvious sequence.
+- The host stores only `SHA-256(PIN)` in memory. The plain PIN is shown once in the host panel so it can be copied; it is never stored in app state, the roster, an export or localStorage.
+- **Generate** creates a 20-character grouped PIN with all four classes.
+- **Copy room info** includes the PIN and the link. Share it only in a trusted channel; for maximum separation, send the link and the PIN in different channels.
+- Eight wrong attempts trigger a 60-second room-wide lockout.
+- Changing the PIN affects future joins, not already-approved guests.
+
+The policy and deny-list are public. They raise online guessing cost; they are not a substitute for approval, and a short human-chosen PIN is still weak. There is no account lockout, MFA or identity proof.
+
+## Denial-of-service controls
+
+- Host accepts at most **16** simultaneous data connections; rejected connections are closed.
+- At most **6** pending approval requests.
+- At most **4** human seats (the game's rule contract).
+- **80 messages / 10 s** per connection, then the connection is closed.
+- Inbound envelopes over **16 KB** are dropped and closed.
+- Chat is 200 characters and limited to one message per **350 ms** per guest.
+- Actions are limited to six tile IDs and validated by the engine.
+- Voice calls from peer IDs not in the approved roster are closed immediately.
+- The host tab remains a single point of failure: a browser crash or deliberate close ends the room. There is no server to absorb a flood.
+
+These are mitigation, not a DDoS guarantee. A network-level flood against the public broker or the host's IP is outside the app's control.
 
 ## Reporting a vulnerability
 
-This is a static site with no game server, account system, database or API keys. Multiplayer adds a WebRTC data channel and the public PeerJS signalling broker. The realistic security surface is:
+This is a static site with no game server, account system, database or API keys. Realistic issues include:
 
-- Cross-site scripting through user-controlled text (handles are trimmed and escaped; tile names are fixed).
-- A malicious saved game in `localStorage` (validated on load; malformed data falls back to a new match).
-- A compromised or typo-squatted CDN path for Three.js or PeerJS.
-- A dependency vulnerability in Three.js r160 or PeerJS 1.5.4.
-- A malicious host, or a guest inspecting their own client; the host is trusted by design and redaction only protects the wire.
-- Denial of service by a guest flooding `action` or `chat` messages (actions are validated; chat is capped at 200 chars and 350 ms).
-- Microphone permission and browser media handling. Voice is opt-in; the app never opens the mic on load.
-- Unmoderated chat. Text is escaped before rendering, but there is no profanity filter, block list or report flow.
-- Voice mesh metadata: every active speaker learns the PeerJS IDs of the other active speakers. Audio is DTLS-SRTP encrypted in transit.
+- Cross-site scripting through a handle or chat message.
+- A bypass of host approval, seat ownership or redaction.
+- A way to crash the host with a small message.
+- A voice call accepted from an unapproved peer.
+- A compromised CDN path for Three.js or PeerJS.
+- A dependency vulnerability in Three.js r160, PeerJS 1.5.4 or the browser media stack.
 
 Please **do not open a public issue** for a vulnerability. Contact the maintainer privately through GitHub (profile: <https://github.com/somphol>) with:
 
@@ -28,30 +79,30 @@ Please **do not open a public issue** for a vulnerability. Contact the maintaine
 3. The impact and any suggested fix.
 4. Whether you want credit.
 
-You can expect an acknowledgement within a few days and a fix or mitigation as soon as is practical. There is no bug bounty.
+You can expect an acknowledgement within a few days and a fix or mitigation as soon as practical. There is no bug bounty.
 
 ## What is not a vulnerability
 
-- The lack of accounts or server-side validation.
 - The host being able to see every hand (that is how an authoritative peer works).
-- Chat messages being visible to the host and every guest (that is the feature).
-- Voice being peer-to-peer with no recording (the app does not record; the browser/OS may still have its own controls).
-- A guest being able to read its own client memory.
-- The lack of a focus trap in modals (an accessibility gap, tracked in `docs/ACCESSIBILITY.md`).
-- The CDN and the PeerJS broker being runtime dependencies (documented).
-- `localStorage` being readable by the same origin (by design).
-- The export JSON containing the current game (that is its purpose).
+- A guest being able to inspect its own client memory.
+- Chat being visible to the host and every guest (that is the feature).
+- Voice being peer-to-peer with no recording.
+- The lack of accounts, MFA, anti-cheat, profanity filtering, moderation or a report queue.
+- The lack of a TURN relay or host migration.
+- The source being public. The controls above are designed to survive that.
+- The lack of a focus trap in modals (an accessibility gap; see `docs/ACCESSIBILITY.md`).
+- The CDN and PeerJS broker being runtime dependencies.
+- A PIN copied to the clipboard by the host (that is the explicit Copy room info action).
 
 ## Hardening notes
 
-- The page uses a meta CSP. `script-src` permits `'unsafe-inline'` only for the import map; there are no inline event handlers. `connect-src` is limited to the app origin, jsDelivr and the PeerJS broker.
-- User-facing dynamic text is inserted with `textContent` or `escapeHTML`; handles are capped at 18 characters.
-- Saved games are shape-checked; unknown tile IDs are rejected.
-- Guest actions are re-validated by the host engine, never trusted as combos.
-- Chat is escaped, length-capped and host-rate-limited; voice is opt-in and uses `getUserMedia` only after a click.
-- Private hands are redacted per recipient with `sanitizeForSeat`; the host-only `hiddenTags` map is stripped from every payload and save.
+- CSP: `script-src` allows `'unsafe-inline'` only for the inline import map; `connect-src` is limited to self, jsDelivr, `https://0.peerjs.com` and `wss://0.peerjs.com`.
+- Peer input is rendered with `textContent`/`escapeHTML`; chat has no HTML mode.
+- Host actions are re-validated; guest messages never carry a trusted combo.
+- `sanitizeForSeat` is the only privacy boundary; `hiddenTags` is stripped from every payload and save.
+- Voice is opt-in, requires a user gesture, and checks the roster before answering a media call.
 - No token, key or credential is stored in the repository or the app.
-- The build process reads a GitHub credential from the OS keychain in memory and never writes it to disk or logs.
+- The build reads a GitHub credential from the OS keychain in memory and never writes it to disk or logs.
 
 ## Dependency updates
 

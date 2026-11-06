@@ -20,11 +20,12 @@ import {
   isProtocolMessage
 } from "./peer-manager.js";
 import { VoiceChat } from "./voice-chat.js";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.5.0",
+  version: "1.6.0",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T13:19:18-08:00",
-    durationHuman: "3h 13m 45s",
-    tokensTotal: "1274942",
-    tokensInput: "953484",
-    tokensOutput: "210270",
-    tokensReasoning: "111188",
-    tokensCacheRead: "185869568",
+    packagedAt: "2026-11-06T14:33:05-08:00",
+    durationHuman: "4h 27m 31s",
+    tokensTotal: "1452653",
+    tokensInput: "1053401",
+    tokensOutput: "257042",
+    tokensReasoning: "142210",
+    tokensCacheRead: "264019072",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -549,6 +550,48 @@ const I18N = {
     "net.yourName": "Your name",
     "net.yourNamePlaceholder": "Host or guest name",
     "net.enterName": "Enter your name before hosting or joining.",
+    "net.approvalLabel": "Approve each guest before they get a seat",
+    "net.pinLabel": "Room PIN (optional)",
+    "net.pinPlaceholder": "15+ chars: upper, lower, number, symbol",
+    "net.pinGuestPlaceholder": "Only if the host set one",
+    "net.pinPolicy": "Use 15–64 characters with upper case, lower case, a number and a symbol. Avoid names, the room code and common passwords.",
+    "net.pinSecureOnly": "PIN hashing needs HTTPS or localhost.",
+    "net.pinRule.short": "PIN must be at least 15 characters.",
+    "net.pinRule.long": "PIN must be at most 64 characters.",
+    "net.pinRule.lower": "PIN needs a lower-case letter.",
+    "net.pinRule.upper": "PIN needs an upper-case letter.",
+    "net.pinRule.digit": "PIN needs a number.",
+    "net.pinRule.symbol": "PIN needs a symbol (for example ! @ # $ % * + ?).",
+    "net.pinRule.space": "PIN cannot contain spaces.",
+    "net.pinRule.common": "That PIN is too common. Choose another.",
+    "net.pinRule.repeat": "PIN cannot be one repeated character.",
+    "net.pinRule.sequence": "PIN cannot be a simple sequence.",
+    "net.pinRule.room": "PIN cannot contain the room code.",
+    "net.pinRule.name": "PIN cannot contain your name.",
+    "net.pinSave": "Save PIN",
+    "net.pinGenerate": "Generate",
+    "net.pinReveal": "PIN to share",
+    "net.pinCopy": "Copy PIN",
+    "net.pinCopied": "PIN copied.",
+    "net.copyRoomInfo": "Copy room info",
+    "net.roomInfoCopied": "Room info copied — it includes the PIN. Share it only in a trusted channel.",
+    "net.roomInfoNoPin": "Room info copied without a PIN. Approval still gates the room.",
+    "net.pinSet": "PIN set; only a digest is kept. Share it separately from the room link.",
+    "net.pinCleared": "PIN cleared. The room now relies on approval.",
+    "net.pinInvalid": "A PIN must be 4–6 digits.",
+    "net.pinHint": "Share the PIN separately from the invite link. The link never contains it.",
+    "net.pendingTitle": "Join requests",
+    "net.pendingEmpty": "No one is waiting.",
+    "net.approve": "Approve",
+    "net.deny": "Deny",
+    "net.approveAll": "Approve all",
+    "net.waitingApproval": "Waiting for the host to approve you…",
+    "net.rejected.denied": "The host declined your request.",
+    "net.rejected.bad-pin": "Wrong room PIN.",
+    "net.rejected.busy": "The host is busy. Try again in a moment.",
+    "net.rejected.timeout": "The join request timed out.",
+    "net.pinLocked": "Too many wrong PINs. Try again in a minute.",
+    "net.pendingCount": "{n} waiting",
     "net.connect": "Connect",
     "net.connecting": "Connecting…",
     "net.handshake": "Connected. Waiting for the host…",
@@ -900,6 +943,48 @@ const I18N = {
     "net.yourName": "ชื่อของคุณ",
     "net.yourNamePlaceholder": "ชื่อเจ้าบ้านหรือแขก",
     "net.enterName": "กรอกชื่อของคุณก่อนเปิดหรือเข้าร่วมโต๊ะ",
+    "net.approvalLabel": "ให้เจ้าบ้านอนุมัติแขกทีละคนก่อนได้ที่นั่ง",
+    "net.pinLabel": "PIN ห้อง (ไม่บังคับ)",
+    "net.pinPlaceholder": "15 ตัวขึ้นไป: ใหญ่ เล็ก ตัวเลข สัญลักษณ์",
+    "net.pinGuestPlaceholder": "ใส่เฉพาะเมื่อเจ้าบ้านตั้งไว้",
+    "net.pinPolicy": "ใช้ 15–64 ตัว มีตัวพิมพ์ใหญ่ เล็ก ตัวเลข และสัญลักษณ์ หลีกเลี่ยงชื่อ รหัสห้อง และรหัสผ่านยอดนิยม",
+    "net.pinSecureOnly": "การแฮช PIN ต้องใช้ HTTPS หรือ localhost",
+    "net.pinRule.short": "PIN ต้องมีอย่างน้อย 15 ตัว",
+    "net.pinRule.long": "PIN ต้องมีไม่เกิน 64 ตัว",
+    "net.pinRule.lower": "PIN ต้องมีตัวพิมพ์เล็ก",
+    "net.pinRule.upper": "PIN ต้องมีตัวพิมพ์ใหญ่",
+    "net.pinRule.digit": "PIN ต้องมีตัวเลข",
+    "net.pinRule.symbol": "PIN ต้องมีสัญลักษณ์ (เช่น ! @ # $ % * + ?)",
+    "net.pinRule.space": "PIN ต้องไม่มีช่องว่าง",
+    "net.pinRule.common": "PIN นี้พบบ่อยเกินไป เลือกใหม่",
+    "net.pinRule.repeat": "PIN ต้องไม่ใช่ตัวเดิมซ้ำทั้งหมด",
+    "net.pinRule.sequence": "PIN ต้องไม่ใช่ลำดับง่าย ๆ",
+    "net.pinRule.room": "PIN ต้องไม่มีรหัสห้อง",
+    "net.pinRule.name": "PIN ต้องไม่มีชื่อของคุณ",
+    "net.pinSave": "บันทึก PIN",
+    "net.pinGenerate": "สร้าง PIN",
+    "net.pinReveal": "PIN สำหรับแชร์",
+    "net.pinCopy": "คัดลอก PIN",
+    "net.pinCopied": "คัดลอก PIN แล้ว",
+    "net.copyRoomInfo": "คัดลอกข้อมูลห้อง",
+    "net.roomInfoCopied": "คัดลอกข้อมูลห้องแล้ว — มี PIN อยู่ด้วย แชร์เฉพาะช่องทางที่ไว้ใจ",
+    "net.roomInfoNoPin": "คัดลอกข้อมูลห้องโดยไม่มี PIN การอนุมัติยังเป็นตัวกันหลัก",
+    "net.pinSet": "ตั้ง PIN แล้ว เก็บเฉพาะค่าแฮช แชร์แยกจากลิงก์ห้อง",
+    "net.pinCleared": "ล้าง PIN แล้ว ห้องจะใช้การอนุมัติแทน",
+    "net.pinInvalid": "PIN ต้องเป็นตัวเลข 4–6 หลัก",
+    "net.pinHint": "แชร์ PIN แยกจากลิงก์เชิญ ลิงก์จะไม่มี PIN",
+    "net.pendingTitle": "คำขอเข้าร่วม",
+    "net.pendingEmpty": "ยังไม่มีใครรอ",
+    "net.approve": "อนุมัติ",
+    "net.deny": "ปฏิเสธ",
+    "net.approveAll": "อนุมัติทั้งหมด",
+    "net.waitingApproval": "กำลังรอเจ้าบ้านอนุมัติ…",
+    "net.rejected.denied": "เจ้าบ้านปฏิเสธคำขอของคุณ",
+    "net.rejected.bad-pin": "PIN ห้องไม่ถูกต้อง",
+    "net.rejected.busy": "เจ้าบ้านไม่ว่าง ลองใหม่ภายหลัง",
+    "net.rejected.timeout": "คำขอเข้าร่วมหมดเวลา",
+    "net.pinLocked": "ใส่ PIN ผิดหลายครั้ง ลองใหม่ในหนึ่งนาที",
+    "net.pendingCount": "รอ {n} คน",
     "net.connect": "เชื่อมต่อ",
     "net.connecting": "กำลังเชื่อมต่อ…",
     "net.handshake": "เชื่อมต่อแล้ว กำลังรอเจ้าบ้าน…",
@@ -1345,6 +1430,9 @@ let voice = null;
 let voiceActive = false;
 let chatHistory = [];
 let chatOpen = true;
+let pendingRequests = new Map();
+const pendingTimers = new Map();
+let roomPinPlain = "";
 const speakingSeats = new Set();
 let remoteClock = null;
 let lastPublished = 0;
@@ -2980,7 +3068,8 @@ function convertSeatToBot(seat, reason = "left") {
 }
 
 function acceptGuest(connId, name) {
-  const clean = String(name || "").trim().slice(0, 18) || `Guest ${net.seatSeq + 1}`;
+  clearPending(connId);
+  const clean = cleanGuestName(name, `Guest ${net.seatSeq + 1}`);
   if (net.started) {
     net.host.send(connId, { type: "rejected", reason: "in-progress" });
     return;
@@ -3021,11 +3110,150 @@ function acceptGuest(connId, name) {
   audio?.play("click", 0);
 }
 
+function cleanGuestName(name, fallback) {
+  const clean = String(name || "").replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, 18);
+  return clean || fallback || "Guest";
+}
+
+function pendingList() {
+  return [...pendingRequests.values()];
+}
+
+function clearPending(connId) {
+  pendingRequests.delete(connId);
+  const timer = pendingTimers.get(connId);
+  if (timer) clearTimeout(timer);
+  pendingTimers.delete(connId);
+}
+
+function rejectConnection(connId, reason) {
+  if (net?.host) net.host.send(connId, { type: "rejected", reason });
+  setTimeout(() => net?.host?.closeConnection?.(connId), 350);
+}
+
+function expirePending(connId) {
+  if (!pendingRequests.has(connId)) return;
+  clearPending(connId);
+  rejectConnection(connId, "timeout");
+  renderLobby();
+}
+
+async function requestGuest(connId, message) {
+  if (!isHost() || !net?.host) return;
+  if (net.started) {
+    rejectConnection(connId, "in-progress");
+    return;
+  }
+  const humans = SEAT_PROFILES.filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.connected).length;
+  if (humans >= TABLE_SEATS) {
+    rejectConnection(connId, "full");
+    return;
+  }
+  if (pendingRequests.has(connId)) return;
+  if (pendingRequests.size >= 6) {
+    rejectConnection(connId, "busy");
+    return;
+  }
+  if (net.security.lockUntil > Date.now()) {
+    rejectConnection(connId, "busy");
+    return;
+  }
+  if (net.security.pinHash) {
+    const candidate = await hashPin(message.pin);
+    if (!candidate || candidate !== net.security.pinHash) {
+      net.security.pinFails += 1;
+      rejectConnection(connId, "bad-pin");
+      if (net.security.pinFails >= 8) net.security.lockUntil = Date.now() + 60000;
+      return;
+    }
+    net.security.pinFails = 0;
+  }
+  const name = cleanGuestName(message.name, `Guest ${net.seatSeq + 1}`);
+  if (net.security.approval) {
+    pendingRequests.set(connId, { connId, name, at: Date.now() });
+    pendingTimers.set(connId, setTimeout(() => expirePending(connId), 120000));
+    net.host.send(connId, { type: "pending", roomCode: net.code, hostName: net.name });
+    renderLobby();
+    return;
+  }
+  acceptGuest(connId, name);
+}
+
+function approvePending(connId) {
+  const request = pendingRequests.get(connId);
+  if (!request) return false;
+  clearPending(connId);
+  acceptGuest(connId, request.name);
+  renderLobby();
+  return true;
+}
+
+function denyPending(connId, reason = "denied") {
+  if (!pendingRequests.has(connId)) return false;
+  clearPending(connId);
+  rejectConnection(connId, reason);
+  renderLobby();
+  return true;
+}
+
+function denyAllPending(reason = "denied") {
+  for (const connId of [...pendingRequests.keys()]) denyPending(connId, reason);
+}
+
+function approveAllPending() {
+  for (const request of pendingList()) {
+    if (pendingRequests.size === 0) break;
+    approvePending(request.connId);
+  }
+}
+
+function setRoomApproval(value) {
+  if (!isHost() || !net) return;
+  net.security.approval = Boolean(value);
+  if (!net.security.approval) approveAllPending();
+  renderLobby();
+}
+
+async function setRoomPin(value, options = {}) {
+  if (!isHost() || !net) return false;
+  const pin = normalisePin(value);
+  if (!pin) {
+    net.security.pinHash = null;
+    net.security.pinSet = false;
+    net.security.pinFails = 0;
+    net.security.lockUntil = 0;
+    roomPinPlain = "";
+    renderLobby();
+    if (!options.silent) toast(t("net.pinCleared"), "");
+    return true;
+  }
+  const check = validatePin(pin, { roomCode: net.code, name: net.name });
+  if (!check.ok) {
+    if (!options.silent) toast(t(`net.pinRule.${check.reason}`), "wine");
+    return false;
+  }
+  const digest = await hashPin(pin);
+  if (!digest) {
+    if (!options.silent) toast(t("net.pinSecureOnly"), "wine");
+    return false;
+  }
+  net.security.pinHash = digest;
+  net.security.pinSet = true;
+  net.security.pinFails = 0;
+  net.security.lockUntil = 0;
+  roomPinPlain = pin;
+  const field = $("#hostPin");
+  if (field) field.value = "";
+  renderLobby();
+  if (!options.silent) toast(t("net.pinSet"), "jade");
+  return true;
+}
+
 function hostMessage({ connId, message }) {
   if (!isProtocolMessage(message)) return;
   switch (message.type) {
     case "hello":
-      acceptGuest(connId, message.name);
+      requestGuest(connId, message).catch(() => rejectConnection(connId, "busy"));
       break;
     case "action": {
       const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
@@ -3062,6 +3290,11 @@ function hostMessage({ connId, message }) {
       net.host.send(connId, { type: "pong", at: Date.now() });
       break;
     case "leave": {
+      if (pendingRequests.has(connId)) {
+        clearPending(connId);
+        renderLobby();
+        return;
+      }
       const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
       if (profile) {
         if (net.started && state) convertSeatToBot(profile.seat);
@@ -3080,6 +3313,11 @@ function hostMessage({ connId, message }) {
 }
 
 function hostConnectionLost({ connId }) {
+  if (pendingRequests.has(connId)) {
+    clearPending(connId);
+    renderLobby();
+    return;
+  }
   const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
   if (!profile) return;
   if (net?.started && state) {
@@ -3095,6 +3333,7 @@ function hostConnectionLost({ connId }) {
 
 async function createHostRoom(name) {
   if (net) leaveRoom({ silent: true });
+  roomPinPlain = "";
   const handle = String(name || "").trim().slice(0, 18) || t("net.hostDefault");
   lobbyState = { view: "host", roomCode: "", status: t("net.startingHost"), error: "", players: [], hostName: handle, started: false };
   showLobby("host");
@@ -3112,7 +3351,16 @@ async function createHostRoom(name) {
   };
   try {
     const host = await openHostWithRetry({ name: handle, ...hostHandlers });
-    net = { role: "host", host, code: host.code, name: handle, seq: 0, started: false, seatSeq: 0 };
+    net = {
+      role: "host",
+      host,
+      code: host.code,
+      name: handle,
+      seq: 0,
+      started: false,
+      seatSeq: 0,
+      security: { approval: true, pinHash: null, pinSet: false, pinFails: 0, lockUntil: 0 }
+    };
     SEAT_PROFILES = [{ seat: 0, name: handle, kind: "host", connected: true, host: true, peerId: host.id, voice: false }, null, null, null];
     MY_SEAT = 0;
     lobbyState.roomCode = host.code;
@@ -3133,6 +3381,7 @@ function startHostedMatch() {
     toast(t("net.alreadyStarted"), "wine");
     return;
   }
+  denyAllPending("in-progress");
   const humans = SEAT_PROFILES.filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.connected).length;
   if (humans < 2) {
     toast(t("net.needTwo"), "wine");
@@ -3179,7 +3428,8 @@ function clientMessage({ message }) {
         hostName: message.hostName,
         players: message.players,
         status: t("net.connectedWaiting"),
-        started: false
+        started: false,
+        pending: false
       };
       showLobby("waiting");
       renderLobby();
@@ -3216,9 +3466,37 @@ function clientMessage({ message }) {
     case "chat":
       if (message.entry) appendChat(message.entry);
       break;
-    case "rejected":
-      setLobbyStatus(t(`net.rejected.${message.reason}`) || t("net.error", { error: message.reason }), "wine");
+    case "pending":
+      lobbyState = {
+        view: "waiting",
+        roomCode: message.roomCode,
+        hostName: message.hostName,
+        players: [],
+        status: t("net.waitingApproval"),
+        started: false,
+        pending: true
+      };
+      showLobby("waiting");
       break;
+    case "rejected": {
+      if (net) net.rejected = true;
+      if (message.reason === "illegal") {
+        toast(t("net.rejected.illegal"), "wine");
+        break;
+      }
+      if (lobbyState?.view !== "table") {
+        lobbyState = {
+          ...(lobbyState || {}),
+          view: "join",
+          pending: false,
+          status: t(`net.rejected.${message.reason}`)
+        };
+        showLobby("join");
+        if (message.reason === "bad-pin") $("#lobbyPinInput")?.focus();
+      }
+      setLobbyStatus(t(`net.rejected.${message.reason}`), "wine");
+      break;
+    }
     case "closed":
       handleHostLost();
       break;
@@ -3248,14 +3526,15 @@ function handleHostLost() {
   showLobby("lost");
 }
 
-async function joinRoom(code, name) {
+async function joinRoom(code, name, pin = "") {
   if (net) leaveRoom({ silent: true });
   const normalized = normalizeRoomCode(code);
   if (!normalized) {
     setLobbyStatus(t("net.badCode"), "wine");
     return;
   }
-  const handle = String(name || "").trim().slice(0, 18) || t("net.guestDefault");
+  const handle = cleanGuestName(name, t("net.guestDefault"));
+  const roomPin = normalisePin(pin);
   MY_SEAT = 0;
   SEAT_PROFILES = null;
   lobbyState = { view: "join", roomCode: normalized, status: t("net.connecting"), error: "", players: [], hostName: "", started: false, name: handle };
@@ -3267,10 +3546,11 @@ async function joinRoom(code, name) {
       name: handle,
       onMessage: clientMessage,
       onOpen: () => {
-        client.send({ type: "hello", name: handle, protocol: PROTOCOL_VERSION });
+        client.send({ type: "hello", name: handle, pin: roomPin, protocol: PROTOCOL_VERSION });
         setLobbyStatus(t("net.handshake"), "jade");
       },
       onClose: () => {
+        if (net?.rejected) { net = null; return; }
         if (net?.role === "client" && net.client === client) handleHostLost();
       },
       onError: ({ type }) => {
@@ -3282,7 +3562,7 @@ async function joinRoom(code, name) {
         if (status === "dialing") setLobbyStatus(t("net.connecting"), "wine");
       }
     });
-    net = { role: "client", client, code: normalized, name: handle, seq: 0, started: false };
+    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false };
     await client.connect();
     savePlayerName(handle);
   } catch (error) {
@@ -3317,6 +3597,12 @@ function leaveRoom({ silent = false, keepState = false } = {}) {
   clearSpeaking();
   chatHistory = [];
   renderChat();
+  roomPinPlain = "";
+  renderPinReveal();
+  denyAllPending("host-left");
+  pendingRequests = new Map();
+  for (const timer of pendingTimers.values()) clearTimeout(timer);
+  pendingTimers.clear();
   net = null;
   SEAT_PROFILES = null;
   MY_SEAT = 0;
@@ -3393,6 +3679,10 @@ function preferredPlayerName() {
   return (menu || join || loadPlayerName()).trim().slice(0, 18);
 }
 
+function preferredPin() {
+  return normalisePin($("#lobbyPinInput")?.value || "");
+}
+
 function lobbyRosterHTML(players, options = {}) {
   const preview = options.preview !== false;
   return SEATS.map((seat) => {
@@ -3408,6 +3698,29 @@ function lobbyRosterHTML(players, options = {}) {
       <span class="lobby-dot" aria-hidden="true"></span>
     </div>`;
   }).join("");
+}
+
+function renderPending() {
+  const list = $("#lobbyPending");
+  if (!list) return;
+  const entries = pendingList();
+  list.innerHTML = entries.length
+    ? entries.map((request) => `
+      <div class="pending-row" data-conn="${escapeHTML(request.connId)}">
+        <span class="pending-name">${escapeHTML(request.name)}</span>
+        <time>${escapeHTML(chatClock(request.at))}</time>
+        <button class="mini-btn approve" type="button" data-approve data-i18n="net.approve">${escapeHTML(t("net.approve"))}</button>
+        <button class="mini-btn deny" type="button" data-deny data-i18n="net.deny">${escapeHTML(t("net.deny"))}</button>
+      </div>`).join("")
+    : `<span class="pending-empty">${escapeHTML(t("net.pendingEmpty"))}</span>`;
+  const approveAll = $("#lobbyApproveAll");
+  if (approveAll) approveAll.hidden = entries.length === 0;
+  const status = $("#hostSecurityStatus");
+  if (status && isHost() && net?.security) {
+    status.textContent = net.security.pinSet ? t("net.pinSet") : t("net.pinCleared");
+  }
+  const approval = $("#hostApproval");
+  if (approval && isHost() && net?.security) approval.checked = Boolean(net.security.approval);
 }
 
 function renderLobby() {
@@ -3460,8 +3773,12 @@ function renderLobby() {
   if ($("#lobbyWaitCode")) $("#lobbyWaitCode").textContent = formatted;
   if ($("#lobbyWaitRoster")) $("#lobbyWaitRoster").innerHTML = lobbyRosterHTML(SEAT_PROFILES || players);
   if ($("#lobbyWaitTitle")) {
-    $("#lobbyWaitTitle").textContent = view === "lost" ? t("net.lostTitle") : view === "waiting" ? t("net.waitingHost") : t("net.joinTitle");
+    $("#lobbyWaitTitle").textContent = view === "lost" ? t("net.lostTitle")
+      : view === "waiting" && lobbyState?.pending ? t("net.waitingApproval")
+      : view === "waiting" ? t("net.waitingHost")
+      : t("net.joinTitle");
   }
+  if ($("#lobbyWaitRoster")) $("#lobbyWaitRoster").hidden = Boolean(lobbyState?.pending);
   const start = $("#lobbyStartBtn");
   if (start) {
     start.hidden = started;
@@ -3489,6 +3806,10 @@ function renderLobby() {
   if (waitLeave) waitLeave.hidden = view === "lost";
   const copyBtn = $("#lobbyCopyBtn");
   if (copyBtn) copyBtn.disabled = !code;
+  const copyInfo = $("#lobbyCopyInfo");
+  if (copyInfo) copyInfo.disabled = !code;
+  renderPending();
+  renderPinReveal();
 }
 
 function showLobby(view = "menu") {
@@ -3536,21 +3857,79 @@ function renderNetChrome() {
   if (chatPanel) chatPanel.hidden = !isNetworked();
 }
 
-async function copyInvite() {
-  const code = lobbyState?.roomCode || net?.code;
-  if (!code) return;
-  const text = inviteUrl(code);
+async function copyText(text, message) {
+  if (!text) return false;
   try {
     await navigator.clipboard.writeText(text);
-    toast(t("toast.netCopied"), "jade");
+    toast(message, "jade");
+    return true;
   } catch {
     const field = $("#lobbyInvite");
     if (field) {
       field.hidden = false;
+      field.value = text;
       field.focus();
       field.select();
-      try { document.execCommand("copy"); toast(t("toast.netCopied"), "jade"); } catch { toast(text); }
+      try {
+        if (document.execCommand("copy")) {
+          toast(message, "jade");
+          return true;
+        }
+      } catch { /* fall through */ }
     }
+    toast(text);
+    return false;
+  }
+}
+
+async function copyInvite() {
+  const code = lobbyState?.roomCode || net?.code;
+  if (!code) return;
+  await copyText(inviteUrl(code), t("toast.netCopied"));
+}
+
+function renderPinReveal() {
+  const reveal = $("#hostPinReveal");
+  const value = $("#hostPinValue");
+  if (!reveal || !value) return;
+  reveal.hidden = !roomPinPlain;
+  value.textContent = roomPinPlain || "";
+}
+
+async function copyPin() {
+  if (!roomPinPlain) return;
+  await copyText(roomPinPlain, t("net.pinCopied"));
+}
+
+function roomInfoText() {
+  if (!isHost() || !net) return "";
+  const code = formatRoomCode(net.code);
+  return [
+    "Leab-Tui 3D table",
+    `Room code: ${code}`,
+    roomPinPlain ? `PIN: ${roomPinPlain}` : "PIN: none — host approval still applies",
+    `Link: ${inviteUrl(net.code)}`,
+    roomPinPlain
+      ? "Open the link, enter your name and the PIN, then wait for the host to approve you."
+      : "Open the link, enter your name, then wait for the host to approve you.",
+    net.security?.approval ? "The host approves each guest before a seat is assigned." : ""
+  ].filter(Boolean).join("\n");
+}
+
+async function copyRoomInfo() {
+  const text = roomInfoText();
+  if (!text) return;
+  const ok = await copyText(text, t(roomPinPlain ? "net.roomInfoCopied" : "net.roomInfoNoPin"));
+  if (!ok) toast(text.split("\n").slice(0, 3).join(" · "));
+}
+
+async function generateRoomPin() {
+  if (!isHost() || !net) return;
+  const pin = generatePin();
+  const ok = await setRoomPin(pin);
+  if (ok) {
+    toast(t("net.pinSet"), "jade");
+    renderPinReveal();
   }
 }
 
@@ -3876,6 +4255,14 @@ function selfTest() {
 
   check("chat text is normalised and bounded", () => (
     normaliseChat("  hello \n  table  ") === "hello table" && normaliseChat("x".repeat(300)).length === 200
+  ));
+
+  check("room PIN policy requires 15+ mixed characters", () => (
+    normalisePin(" Lb-4821-xA!z7Qm ") === "Lb-4821-xA!z7Qm"
+      && validatePin("Lb-4821-xA!z7Qm", { roomCode: "ABC234", name: "Host" }).ok
+      && !validatePin("abc12345").ok
+      && !validatePin("Password123").ok
+      && !validatePin("Lb4821xAzz7Qmzz").ok
   ));
 
   for (const result of netSelfTest()) results.push(result);
@@ -5150,7 +5537,7 @@ function bindEvents() {
       $("#lobbyNameInput")?.focus();
       return;
     }
-    joinRoom($("#lobbyCodeInput")?.value || "", name);
+    joinRoom($("#lobbyCodeInput")?.value || "", name, preferredPin());
   });
   $("#lobbyPlayerName")?.addEventListener("input", (event) => {
     const field = $("#lobbyNameInput");
@@ -5164,7 +5551,7 @@ function bindEvents() {
     if (event.key === "Enter") {
       const name = preferredPlayerName();
       if (!name) { setLobbyStatus(t("net.enterName"), "wine"); $("#lobbyNameInput")?.focus(); return; }
-      joinRoom($("#lobbyCodeInput").value, name);
+      joinRoom($("#lobbyCodeInput").value, name, preferredPin());
     }
   });
   $("#lobbyNameInput")?.addEventListener("keydown", (event) => {
@@ -5172,11 +5559,29 @@ function bindEvents() {
       const name = preferredPlayerName();
       if (!name) { setLobbyStatus(t("net.enterName"), "wine"); $("#lobbyNameInput").focus(); return; }
       const joinView = !$("#lobbyJoinPanel")?.hidden;
-      if (joinView) joinRoom($("#lobbyCodeInput")?.value || "", name);
+      if (joinView) joinRoom($("#lobbyCodeInput")?.value || "", name, preferredPin());
       else createHostRoom(name);
     }
   });
   $("#lobbyCopyBtn")?.addEventListener("click", copyInvite);
+  $("#lobbyCopyInfo")?.addEventListener("click", copyRoomInfo);
+  $("#hostPinGenerate")?.addEventListener("click", generateRoomPin);
+  $("#hostPinCopy")?.addEventListener("click", copyPin);
+  $("#hostApproval")?.addEventListener("change", (event) => setRoomApproval(event.target.checked));
+  $("#hostPinSave")?.addEventListener("click", () => { setRoomPin($("#hostPin")?.value || "").catch(() => {}); });
+  $("#hostPin")?.addEventListener("input", (event) => {
+    event.target.value = normalisePin(event.target.value);
+  });
+  $("#lobbyApproveAll")?.addEventListener("click", approveAllPending);
+  $("#lobbyPending")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-approve], [data-deny]");
+    if (!button) return;
+    const row = button.closest("[data-conn]");
+    if (!row) return;
+    const connId = row.dataset.conn;
+    if (button.hasAttribute("data-approve")) approvePending(connId);
+    else denyPending(connId);
+  });
   $("#lobbyStartBtn")?.addEventListener("click", startHostedMatch);
   $("#lobbyWaitLeave")?.addEventListener("click", requestLeaveRoom);
   $("#lobbyResumeBtn")?.addEventListener("click", closeLobby);
@@ -5377,13 +5782,16 @@ async function boot() {
     setTimeout(() => {
       const field = $("#lobbyCodeInput");
       if (field) field.value = formatRoomCode(autoRoom);
-      const explicitName = (params.get("name") || "").trim().slice(0, 18);
+      const explicitName = cleanGuestName(params.get("name") || "", "");
+      const explicitPin = normalisePin(params.get("pin") || "");
       if (explicitName) {
-        joinRoom(autoRoom, explicitName);
+        joinRoom(autoRoom, explicitName, explicitPin);
         return;
       }
       const nameField = $("#lobbyNameInput");
       if (nameField && !nameField.value) nameField.value = loadPlayerName();
+      const pinField = $("#lobbyPinInput");
+      if (pinField && params.get("pin")) pinField.value = normalisePin(params.get("pin"));
       showLobby("join");
       setLobbyStatus(nameField?.value ? t("net.joinHint") : t("net.enterName"), "");
       if (nameField?.value) $("#lobbyCodeInput")?.focus();
@@ -5440,20 +5848,29 @@ window.LeabTui = {
       started: Boolean(net.started),
       players: serialiseRoster(),
       peerId: isHost() ? net.host?.id : net.client?.hostId,
+      pending: isHost() ? pendingList() : [],
+      approval: isHost() ? Boolean(net.security?.approval) : null,
+      pinSet: isHost() ? Boolean(net.security?.pinSet) : null,
       lastPublished
     } : null),
     openLobby: () => showLobby(isNetworked() ? (isHost() ? "host" : "waiting") : "menu"),
     closeLobby,
     host: (name) => createHostRoom(name),
-    join: (code, name) => joinRoom(code, name),
+    join: (code, name, pin = "") => joinRoom(code, name, pin),
     start: () => startHostedMatch(),
+    pending: () => pendingList().map((request) => ({ connId: request.connId, name: request.name, at: request.at })),
+    approve: approvePending,
+    deny: denyPending,
+    setApproval: setRoomApproval,
+    setPin: setRoomPin,
     leave: () => leaveRoom(),
     solo: backToSolo,
     selfTest: netSelfTest,
     sanitize: (seat) => sanitizeForSeat(state, seat),
     hydrate: hydrateRemoteState,
     roomCode: () => (net ? formatRoomCode(net.code) : ""),
-    copyInvite
+    copyInvite,
+    roomInfo: roomInfoText
   },
   chat: {
     send: sendChat,

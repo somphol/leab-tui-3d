@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.5.0-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.6.0-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -18,6 +18,7 @@ A bilingual, interactive 3D studio for **เลี๊ยบตุ่ย (Leab-Tu
 
 - **A real trick-taking engine, not a toy.** Leab (single), Tui (pair), Sa Hoo, See Hoo, Ngoh Hoo, Lak Hoo, and the Soldier sets; red-beats-black tie-breaking; face-down submissions; revealed-only comparison; the eight-pile Chuan bonus.
 - **Serverless P2P multiplayer.** Host a room, share a six-character code or invite link, and play with up to three guests over a WebRTC data channel. The host browser is authoritative; each guest receives only their own hand. Two humans are enough to start — empty seats become bots, and a guest who leaves mid-game is replaced by a bot without stopping the table. See **[docs/MULTIPLAYER.md](docs/MULTIPLAYER.md)**.
+- **Host approval and an optional strong PIN.** Guests request a seat; the host approves or denies each one. A generated 20-character PIN (15–64 chars, upper/lower/digit/symbol) is checked against an in-memory SHA-256 digest and never appears in the invite link or saved game. One-click **Copy room info** includes the code, link and PIN; **Copy invite link** never includes the PIN.
 - **Table chat and independent P2P voice.** A collapsible glass chat routes messages through the host; a full-mesh voice call carries audio directly between browsers. **Mute mic** toggles the local track, **Mute others** mutes every remote `<audio>` element, and a green pulse marks the active speaker. No voice is recorded.
 - **Carved 3D Xiangqi tiles.** Every tile is a bevelled cylinder with a procedurally painted Hanzi face, raised rim and a lacquered back. Dealing, flipping, playing and capture sweeps are animated with lerped transforms.
 - **A table you can orbit.** Drag to rotate, scroll to zoom, right-drag to pan. Reset, top view and a cinematic orbit are one click away.
@@ -35,11 +36,12 @@ A bilingual, interactive 3D studio for **เลี๊ยบตุ่ย (Leab-Tu
 
 1. On load, the **Choose how to play** overlay appears: Play solo, Host a table, Join a table, or Resume match when a solo save exists.
 2. Enter **Your name**, then choose **Host a table**. The browser opens a room and shows a code such as `LEAB-ABC-234`.
-3. Send the code or the **Copy invite link** URL to a friend. They open it, enter their own name, and join seat 1, 2 or 3.
-4. As soon as **two humans** are connected, press **Start table**. Empty seats are filled with bots (`Bot 1`, `Bot 2`).
-5. If a guest closes the tab, their hand and score stay in place and a bot takes over the seat. The host can leave with the wine-coloured **Leave room** button in Actions; it confirms first and closes the room for everyone.
-6. Open **Table chat** to type to the room. Chat is delivered through the host and echoed to every guest.
-7. Press **Join voice** to request the microphone. The voice mesh connects active speakers directly; **Mute mic** stops your track without dropping the call, and **Mute others** deafens every remote stream locally.
+3. Send the code or the **Copy invite link** URL to a friend. They open it, enter their own name and the PIN if set, then request a seat. **Copy room info** sends code + PIN + link in one paste.
+4. Approve each guest request in the host lobby. Only approved guests get a seat and game state.
+5. As soon as **two humans** are connected, press **Start table**. Empty seats are filled with bots (`Bot 1`, `Bot 2`).
+6. If a guest closes the tab, their hand and score stay in place and a bot takes over the seat. The host can leave with the wine-coloured **Leave room** button in Actions; it confirms first and closes the room for everyone.
+7. Open **Table chat** to type to the room. Chat is delivered through the host and echoed to every guest.
+8. Press **Join voice** to request the microphone. The voice mesh connects active speakers directly; **Mute mic** stops your track without dropping the call, and **Mute others** deafens every remote stream locally.
 
 The room is peer-to-peer: **no game server**, no account, no database. PeerJS's public broker is used only for the first WebRTC handshake; game traffic then flows directly between browsers. The host runs all rules and AI. Guests receive a redacted state in which every other hand and every hidden centre play is replaced by a face-down placeholder. Full protocol: **[docs/PROTOCOL.md](docs/PROTOCOL.md)** · operations and troubleshooting: **[docs/MULTIPLAYER.md](docs/MULTIPLAYER.md)**.
 
@@ -142,7 +144,7 @@ node scripts/net-check.mjs
 node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?selftest=1"
 ```
 
-The browser self-test is also available at `?selftest=1`; it prints a 36-check report into the page and sets the document title to `SELFTEST PASS 36/36` or `SELFTEST FAIL n/36`. Verification details and the manual checklist are in **[docs/TESTING.md](docs/TESTING.md)**.
+The browser self-test is also available at `?selftest=1`; it prints a 37-check report into the page and sets the document title to `SELFTEST PASS 37/37` or `SELFTEST FAIL n/37`. Verification details and the manual checklist are in **[docs/TESTING.md](docs/TESTING.md)**.
 
 ## Project layout
 
@@ -152,6 +154,7 @@ style.css               dark mahogany visual system, responsive layout, lobby
 script.js               rules engine, AI, 3D scene, audio, i18n, persistence, authority, chat
 peer-manager.js         room codes, PeerJS host/client, loopback test transport
 voice-chat.js           full-mesh media calls, mic mute, deafen, speaking meter
+security.js             PIN policy, generated passphrases, deny-list, SHA-256 digest
 scripts/check.mjs       dependency-free static release check
 scripts/verify.mjs      headless browser verification
 scripts/net-check.mjs   two-client WebRTC verification
@@ -170,6 +173,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 - **The host is authoritative.** Only the host runs the engine, deals, scores and bot decisions. Guests send intent (`lead` / `follow`) and render the state they receive. `sanitizeForSeat` is the single privacy boundary; `hydrateRemoteState` is its counterpart.
 - **The coach is computed, not scripted.** It runs the same combo detector and a deterministic AI recommendation, so its advice stays correct as the rules evolve.
 - **The export format is versioned.** `leab-tui-3d-save` v1 stores tile IDs and combo descriptors; it never stores live Three.js objects.
+- **The lobby is gated, not authenticated.** The host approves every request by default; the optional PIN is a brute-force cost, not identity. Assume the attacker has read this code. See [SECURITY.md](SECURITY.md).
 - **Chat and voice are separate paths.** Chat uses the host's data-channel relay so it can be ordered and attributed; voice uses direct PeerJS media calls, never the host data channel. Muting the mic changes `track.enabled`, so the call stays connected.
 
 ## Known limits
@@ -184,10 +188,11 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 - Symmetric NAT or restrictive corporate firewalls can block WebRTC. The project uses public STUN only; there is no TURN relay.
 - Voice requires microphone permission and a secure page (HTTPS or localhost). Browsers without `getUserMedia` can still play and chat. Voice is full-mesh, so uplink grows with the number of speakers.
 - Chat and voice are not recorded, moderated or authenticated. Play with people you trust.
+- Host approval, PIN complexity, connection/message caps and the voice allowlist reduce abuse but do not make the room DDoS-proof or cheat-proof. A malicious approved guest still controls their own client; a malicious host sees every hand.
 
 ## Credits
 
-Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.5.0**; the original table was 1.0.0.
+Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.6.0**; the original table was 1.0.0.
 
 Rules reference: Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016), linked in [docs/RULES.md](docs/RULES.md). Three.js and PeerJS are MIT-licensed; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

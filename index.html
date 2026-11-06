@@ -256,9 +256,33 @@
             <span data-i18n="net.roomCode">Room code</span>
             <strong id="lobbyRoomCode">—</strong>
             <button id="lobbyCopyBtn" class="btn btn-ghost btn-small" type="button" data-i18n="net.copyLink">Copy invite link</button>
+            <button id="lobbyCopyInfo" class="btn btn-ghost btn-small" type="button" data-i18n="net.copyRoomInfo">Copy room info</button>
           </div>
           <input id="lobbyInvite" class="lobby-invite" readonly hidden aria-label="Invite link" />
           <p class="lobby-note" data-i18n="net.codeHelp">Share this code. Letter case does not matter.</p>
+          <div class="lobby-security">
+            <label class="lobby-check">
+              <input id="hostApproval" type="checkbox" checked />
+              <span data-i18n="net.approvalLabel">Approve each guest before they get a seat</span>
+            </label>
+            <label class="field-label" for="hostPin" data-i18n="net.pinLabel">Room PIN (optional)</label>
+            <div class="room-line pin-line">
+              <input id="hostPin" class="lobby-input pin-input" type="text" inputmode="text" autocomplete="new-password" autocapitalize="off" spellcheck="false" maxlength="64" placeholder="15+ chars: upper, lower, number, symbol" data-i18n-placeholder="net.pinPlaceholder" />
+              <button id="hostPinGenerate" class="btn btn-gold btn-small" type="button" data-i18n="net.pinGenerate">Generate</button>
+              <button id="hostPinSave" class="btn btn-ghost btn-small" type="button" data-i18n="net.pinSave">Save PIN</button>
+            </div>
+            <div id="hostPinReveal" class="pin-reveal" hidden>
+              <span data-i18n="net.pinReveal">PIN to share</span>
+              <code id="hostPinValue"></code>
+              <button id="hostPinCopy" class="mini-btn" type="button" data-i18n="net.pinCopy">Copy PIN</button>
+            </div>
+            <p id="hostSecurityStatus" class="lobby-note"></p>
+            <p class="lobby-note" data-i18n="net.pinPolicy">Use 15–64 characters with upper case, lower case, a number and a symbol. Avoid names, the room code and common passwords.</p>
+            <p class="lobby-note" data-i18n="net.pinHint">Share the PIN separately from the invite link. The link never contains it. The host stores only a SHA-256 digest in memory.</p>
+          </div>
+          <h3 data-i18n="net.pendingTitle">Join requests</h3>
+          <div id="lobbyPending" class="lobby-pending"></div>
+          <button id="lobbyApproveAll" class="btn btn-ghost btn-small" type="button" hidden data-i18n="net.approveAll">Approve all</button>
           <h3 data-i18n="net.roster">Seats</h3>
           <div id="lobbyRoster" class="lobby-roster"></div>
           <p class="lobby-note" data-i18n="net.fourSeats">Leab-Tui is a four-seat game: the host plus up to three guests. Empty seats are filled with bots.</p>
@@ -275,6 +299,8 @@
           <input id="lobbyCodeInput" class="lobby-input code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="LEAB-ABC-234" data-i18n-placeholder="net.codePlaceholder" />
           <label class="field-label" for="lobbyNameInput" data-i18n="net.nameLabel">Your name</label>
           <input id="lobbyNameInput" class="lobby-input" type="text" maxlength="18" autocomplete="nickname" placeholder="Guest" data-i18n-placeholder="net.namePlaceholder" />
+          <label class="field-label" for="lobbyPinInput" data-i18n="net.pinLabel">Room PIN (optional)</label>
+          <input id="lobbyPinInput" class="lobby-input pin-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="64" placeholder="Only if the host set one" data-i18n-placeholder="net.pinGuestPlaceholder" />
           <div class="modal-actions">
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
             <button id="lobbyConnectBtn" class="btn btn-gold" type="button" data-i18n="net.connect">Connect</button>
