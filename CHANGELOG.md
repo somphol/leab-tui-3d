@@ -2,6 +2,32 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] — 2026-11-06
+
+### Added
+
+- **Host-routed P2P text chat.** A collapsible glass panel in the sidebar, message echo through the host, 30-message history on join, 200-character cap, 350 ms guest rate limit, EN/TH copy.
+- **Independent full-mesh P2P voice.** PeerJS media calls between voice-active humans, microphone permission on demand, remote streams attached to hidden `<audio class="remote-player-audio">` elements.
+- **Dual mute controls.** **Mute mic** toggles `localStream.getAudioTracks()[0].enabled` without closing the call; **Mute others** toggles `.muted` on every remote audio element.
+- **Speaking indicator.** A green animated pulse on lobby avatar cards and scoreboard seats when the local or a remote mic is transmitting.
+- Chat/voice state is carried on the existing room roster; `voice-state` updates are relayed by the host.
+- `voice-chat.js` — mesh calls, mute/deafen, analyser meter, synthetic-stream test path.
+- `LeabTui.chat` and `LeabTui.voice` test surfaces.
+- Chat + voice screenshots and 4 new two-browser checks (17 total).
+
+### Changed
+
+- Version bumped to `1.5.0`; save/export version follows.
+- The two-browser harness now uses fake media only for the synthetic voice path; production still requests the real microphone on a user gesture.
+- README, AGENTS, architecture, multiplayer, protocol, testing, controls, security, privacy, browser support, performance, gallery, checklist and state updated.
+
+### Limits
+
+- Voice is full-mesh, so uplink grows with the number of speakers.
+- No TURN relay; symmetric NAT can block media as well as data.
+- No recording, moderation, authentication, noise gate or push-to-talk.
+- Chat and voice are room-scoped and end with the host tab.
+
 ## [1.4.1] — 2026-11-06
 
 ### Added

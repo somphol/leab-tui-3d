@@ -12,6 +12,8 @@
 - Modals can be closed by clicking the backdrop (except the round summary, which requires a choice).
 - The lobby is a labelled dialog with real `<button>` mode cards, labelled inputs, a `role="status"` status line and a four-seat roster. The room code is text, not an image.
 - The header room chip has a `title` and copies the invite link on click; the lobby provides the same action as a labelled button.
+- Chat is a labelled form with a visible **Send** button, live message list and 200-character cap.
+- Voice buttons are labelled with icons plus text; **Mute mic** and **Mute others** use `aria-pressed`. The speaking pulse is decorative and does not replace the text status line.
 - Keyboard `H` for Hint and `Esc` for Clear.
 - `prefers-reduced-motion` collapses CSS animations and transitions to 0.01 ms.
 - Colour is never the only signal: every tile also has a Hanzi, a Thai/English name and a rank number. The inspector spells out the colour.
@@ -22,6 +24,7 @@
 - **No focus trap or focus restore** in modals. `Tab` can reach the page behind an open dialog. A production pass should move focus to the dialog, loop within it, and restore the trigger on close.
 - **No automated axe-core audit.** The DOM was reviewed manually; it has not been screened by a screen reader.
 - **The 3D canvas is not navigable by keyboard.** The hand list is the accessible path; it mirrors the same selection state.
+- **Voice relies on microphone permission and hearing.** There is no captions/transcription fallback; chat is the text alternative.
 - **Live regions are chatty.** The coach updates on every action; a screen reader may queue several messages. Consider `aria-live="off"` on the meta line and a single polite summary.
 - **No dedicated high-contrast mode.** The bright themes improve comfort but are not a certified WCAG AAA mode. Text size helps readability.
 - **The 3D table does not scale** with the text size; it is a fixed spatial scene.

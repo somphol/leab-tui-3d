@@ -20,6 +20,11 @@
 | **Ranks** (top-left HUD) | Show/hide the pictorial rank-order reference |
 | **Multiplayer** (Actions) | Open the lobby: solo / host / join; set your name here |
 | **Leave room** (Actions) | Confirmed exit from a network room; hidden in solo |
+| **Table chat** | Collapsible room chat; type and press Enter |
+| **Join voice** | Request the microphone and join the voice mesh |
+| **Mute mic** | Stop transmitting your mic; the call stays connected |
+| **Mute others** | Deafen every remote voice stream locally |
+| **Leave voice** | Stop tracks and leave the voice mesh |
 | Room chip (header) | Copy the invite link while in a room |
 
 The camera is damped; release the mouse and it glides to a stop. Pan is clamped so the table cannot be lost off-screen.
@@ -40,7 +45,8 @@ The mobile layout puts the table in the top ~90 % of the viewport and the panels
 
 The app is usable without a mouse for the main flow:
 
-- `Tab` / `Shift+Tab` move through the header, action buttons, hand chips and modals.
+- `Tab` / `Shift+Tab` move through the header, action buttons, hand chips, chat and modals.
+- Enter sends a chat message; Enter in the name/code fields starts hosting or joining.
 - `Enter` / `Space` activate buttons and hand chips.
 - `H` hints.
 - `Esc` clears the selection; if a modal is open, it closes the modal (except the round summary, which requires a choice).

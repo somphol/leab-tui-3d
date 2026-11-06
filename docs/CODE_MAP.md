@@ -1,6 +1,6 @@
 # Code map
 
-`script.js` is one module, but it is organised in numbered sections. `peer-manager.js` is the only other runtime module.
+`script.js` is one module, but it is organised in numbered sections. `peer-manager.js` and `voice-chat.js` are the other runtime modules.
 
 ## `script.js`
 
@@ -19,11 +19,11 @@
 | 10. Rendering | 2192–2514 | `renderAll`, `renderHUD`, `renderScoreboard`, `renderHandList`, `renderSelection`, `renderInspector`, `renderLog`, `renderRules`, `renderAbout` |
 | 11. Language/chrome | 2515–2640 | `applyLanguage`, `applyFontSize`, `applyTheme`, `setSound`, `setLanguage` |
 | 12. Persistence/export | 2641–2684 | `buildExport`, `exportGame` |
-| 13. Multiplayer | 2686–3407 | `sanitizeForSeat`, `hydrateRemoteState`, `applyRemoteState`, `publishState`, `createHostRoom`, `joinRoom`, `startHostedMatch`, `convertSeatToBot`, `showLobby`, `renderLobby`, `netSelfTest` |
-| 14. Self-test | 3409–3540 | `selfTest`, network checks via `netSelfTest` |
-| 15. Audio | 3542–3694 | `StudioAudio` |
-| 16. Scene | 3696–4695 | `createScene`, ghost mesh pool, `setViewSeat`, `placementMap`, `handPosition`, `centerPosition`, `capturePosition` |
-| 17. Boot + events | 4697–end | `bindEvents`, `boot`, `window.LeabTui` |
+| 13. Multiplayer | ~2900–3550 | `sanitizeForSeat`, `hydrateRemoteState`, `applyRemoteState`, `publishState`, `createHostRoom`, `joinRoom`, `startHostedMatch`, `convertSeatToBot`, `showLobby`, `renderLobby`, `renderChat`, `hostChat`, `syncVoicePeers`, `renderVoiceState`, `netSelfTest` |
+| 14. Self-test | ~3550–3700 | `selfTest`, network checks via `netSelfTest` |
+| 15. Audio | ~3700–3850 | `StudioAudio` |
+| 16. Scene | ~3850–4850 | `createScene`, ghost mesh pool, `setViewSeat`, `placementMap`, `handPosition`, `centerPosition`, `capturePosition` |
+| 17. Boot + events | ~4850–end | `bindEvents`, `boot`, `window.LeabTui` |
 
 ## `peer-manager.js`
 
@@ -35,6 +35,15 @@
 | Guest | `PeerClient` |
 | Test | `createLoopbackPair`, `protocolEnvelope`, `isProtocolMessage` |
 | Constants | `PROTOCOL_VERSION`, `ROOM_PREFIX`, `ROOM_CODE_LENGTH`, `PEER_MANAGER_INFO` |
+
+## `voice-chat.js`
+
+| Area | Key symbols |
+| --- | --- |
+| Mesh | `VoiceChat.attach`, `setPeers`, `_syncCalls`, `_call`, `_answer` |
+| Media | `join`, `joinWithStream`, `leave`, `_attachRemote`, `_removeRemote` |
+| Controls | `setMicMuted`, `setDeafened`, `snapshot` |
+| Meter | `_addAnalyser`, `_startMeter`, `onSpeaking` |
 
 ## Entry points
 
@@ -60,6 +69,8 @@
 | Change save format | `serializableState`, `loadMatch`, `buildExport`, `docs/DATA_FORMAT.md`, `APP.format`/`version` |
 | Change wire format | `sanitizeForSeat`, `hydrateRemoteState`, `clientMessage`, `hostMessage`, `docs/PROTOCOL.md`, `netSelfTest`, `scripts/net-check.mjs` |
 | Change lobby UI | `index.html` `#lobbyModal`, `renderLobby`, `lobbyRosterHTML`, `style.css` `.lobby-*` |
+| Change chat | `sendChat`, `hostChat`, `appendChat`, `renderChat`, `chatHistory`, `index.html` `#chatPanel`, `docs/PROTOCOL.md` |
+| Change voice | `voice-chat.js`, `syncVoicePeers`, `renderVoiceState`, `serialiseRoster` (`peerId`/`voice`), `index.html` voice bar, docs/MULTIPLAYER.md |
 | Change room codes / PeerJS | `peer-manager.js`, `index.html` CSP, `docs/MULTIPLAYER.md` |
 | Change visuals | `:root` tokens in `style.css`, felt/wood/tile texture functions, `SCENE_THEMES` |
 
@@ -75,3 +86,5 @@
 - `audio.play` must be a no-op until `audio.unlocked`.
 - `isBotSeat` is the only scheduler predicate; guests never run the AI.
 - A guest never calls the engine flow.
+- Chat is appended once on the host and broadcast; guest input is rate-limited and escaped.
+- Voice never uses the data channel; mic mute is `track.enabled`, deafen is `<audio>.muted`.

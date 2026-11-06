@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.4.1",
-  "version": "1.4.1",
+  "projectVersion": "1.5.0",
+  "version": "1.5.0",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-06T12:40:07-08:00",
-    "durationSeconds": 9274,
-    "durationHuman": "2h 34m 34s",
+    "packagedAt": "2026-11-06T13:19:18-08:00",
+    "durationSeconds": 11625,
+    "durationHuman": "3h 13m 45s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.0 P2P work plus 1.4.1 launch/identity/leave refinements: seat refactor, PeerJS transport, lobby, required player names, host authority, per-seat redaction, ghost meshes, seat-relative view, bot fill, disconnect-to-bot, confirmed Leave room, resume card, compact phone room chip, two-browser harness, protocol/multiplayer docs, screenshots, release files and the skill mirror.",
-    "publishedAt": "2026-11-06T20:40:14Z"
+    "includes": "1.4.x P2P work plus 1.5.0 chat and voice: seat refactor, PeerJS transport, lobby, required names, host authority, per-seat redaction, ghost meshes, seat-relative view, bot fill, disconnect-to-bot, confirmed Leave room, resume card, host-routed chat, full-mesh voice with mic mute/deafen and speaking pulse, two-browser harness, docs, screenshots and the skill mirror.",
+    "publishedAt": "2026-11-06T21:19:26Z"
   },
   "tokens": {
-    "input": 440064,
-    "output": 165642,
-    "reasoning": 81189,
-    "cacheRead": 127944064,
+    "input": 953484,
+    "output": 210270,
+    "reasoning": 111188,
+    "cacheRead": 185869568,
     "cacheWrite": 1087,
-    "total": 686895,
-    "totalWithCache": 128632046,
+    "total": 1274942,
+    "totalWithCache": 187145597,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T12:40:07-08:00, covering 1.4.0 multiplayer and 1.4.1 launch/identity/leave refinements. The final state-record commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T13:19:18-08:00, covering 1.4.0–1.5.0. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -70,10 +70,10 @@
     ]
   },
   "verification": {
-    "selfTest": "35/35",
-    "staticCheck": "scripts/check.mjs (301 checks)",
+    "selfTest": "36/36",
+    "staticCheck": "scripts/check.mjs (322 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
-    "multiplayer": "scripts/net-check.mjs — 13/13 host, join, bot fill, privacy, host controls, actions, disconnect",
+    "multiplayer": "scripts/net-check.mjs — 17/17 host, join, bot fill, privacy, controls, chat, voice, mute/deafen, actions, disconnect",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
@@ -133,18 +133,23 @@
       "version": "1.4.1",
       "date": "2026-11-06",
       "summary": "Launch prompt on every normal load with Resume match; required player names for host and guest; invite links ask the guest to confirm their name; dedicated Leave room with confirmation; host Start hidden after kickoff; compact mobile room chip; 13-check two-browser suite."
+    },
+    {
+      "version": "1.5.0",
+      "date": "2026-11-06",
+      "summary": "Host-routed text chat, full-mesh P2P voice, independent mic mute/deafen, remote audio elements, speaking pulse, chat/voice screenshots and 17-check two-browser suite."
     }
   ],
-  "releaseNotes": "1.4.1 makes the launch choice explicit on every normal load (with Resume match), requires each host/guest to confirm their own name, adds a dedicated confirmed Leave room action, and keeps the room chip compact on phones. The four-seat rules contract and multiplayer protocol are unchanged.",
+  "releaseNotes": "1.5.0 adds a collapsible host-routed table chat and an independent full-mesh PeerJS voice channel with separate mic-mute and deafen controls, hidden remote audio elements and a speaking pulse. Chat is escaped and capped; voice is opt-in and never recorded. The four-seat rules contract and data protocol are unchanged.",
   "updates": [
     {
-      "version": "1.4.0/1.4.1",
+      "version": "1.4.0–1.5.0",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-06T12:40:07-08:00",
-      "durationSeconds": 9274,
-      "durationHuman": "2h 34m 34s",
-      "tokensAdded": 686895,
-      "summary": "Serverless WebRTC multiplayer plus the launch name, resume card, confirmed Leave room and mobile room-chip refinements."
+      "completedAt": "2026-11-06T13:19:18-08:00",
+      "durationSeconds": 11625,
+      "durationHuman": "3h 13m 45s",
+      "tokensAdded": 1274942,
+      "summary": "Serverless WebRTC multiplayer, launch/identity/leave refinements, host-routed chat, full-mesh voice with mic mute/deafen, two-browser verification and skill mirror."
     }
   ],
   "multiplayer": {

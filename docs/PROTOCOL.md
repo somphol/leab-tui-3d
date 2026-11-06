@@ -27,7 +27,8 @@ Sent once after a valid `hello`.
   "seat": 1,
   "hostName": "Ana",
   "players": [ { "seat": 0, "name": "Ana", "kind": "host", "connected": true, "bot": false }, ... ],
-  "canStart": true
+  "canStart": true,
+  "chat": [ { "seat": 0, "name": "Ana", "text": "Welcome", "at": 1793989000000 } ]
 }
 ```
 
@@ -42,7 +43,8 @@ Roster update while the room is open.
   "hostName": "Ana",
   "players": [ ... ],
   "canStart": true,
-  "started": false
+  "started": false,
+  "players": [ { "seat": 0, "name": "Ana", "kind": "host", "connected": true, "bot": false, "peerId": "abc123", "voice": true }, ... ]
 }
 ```
 
@@ -225,6 +227,33 @@ The mapping from real tile to ghost mesh is stable for the round. It is assigned
 - `publishState` returns immediately unless `net.started` is true.
 - A disconnected seat becomes a bot; the seat index never changes during a match.
 - `beginMatch` resets the engine but not the lobby roster.
+
+## Text chat
+
+A guest sends `{type:"chat", text}`. The host:
+
+1. finds the sender profile by `connId`;
+2. rejects if the profile is missing or the sender wrote within 350 ms;
+3. normalises whitespace, trims and caps at 200 characters;
+4. appends one entry `{seat,name,text,at}` locally;
+5. sends `{type:"chat", entry}` to every connected guest, including the sender.
+
+The host's own `sendChat` skips step 1–3 and uses seat 0. The host includes the last 30 entries in `welcome.chat`. Rendering escapes text; there is no HTML chat. Chat is memory-only and cleared when the room closes.
+
+## Voice
+
+Voice is **not** an envelope type and never travels over the data channel. It is a full mesh of PeerJS media calls:
+
+- `peer.on("call")` is installed by `VoiceChat.attach`.
+- The lexicographically larger peer ID initiates a call to the smaller one, so both sides agree.
+- Only peers with roster `voice: true` are called.
+- `voice-state` updates the host's roster and is rebroadcast via `lobby`.
+- The incoming media stream is attached to a hidden `<audio autoplay playsinline>` element; no base64 or JSON audio.
+- Mic mute sets `localStream.getAudioTracks()[0].enabled = false`.
+- Deafen sets `.muted = true` on every remote `<audio>`.
+- An analyser per stream drives the speaking pulse; it is not connected to `destination`.
+
+The broker only signals the media call. Game state remains on the data channel and is still host-authoritative.
 
 ## Versioning
 

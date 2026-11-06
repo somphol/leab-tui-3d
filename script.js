@@ -19,11 +19,12 @@ import {
   createLoopbackPair,
   isProtocolMessage
 } from "./peer-manager.js";
+import { VoiceChat } from "./voice-chat.js";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.4.1",
+  version: "1.5.0",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -34,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T12:40:07-08:00",
-    durationHuman: "2h 34m 34s",
-    tokensTotal: "686895",
-    tokensInput: "440064",
-    tokensOutput: "165642",
-    tokensReasoning: "81189",
-    tokensCacheRead: "127944064",
+    packagedAt: "2026-11-06T13:19:18-08:00",
+    durationHuman: "3h 13m 45s",
+    tokensTotal: "1274942",
+    tokensInput: "953484",
+    tokensOutput: "210270",
+    tokensReasoning: "111188",
+    tokensCacheRead: "185869568",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -594,6 +595,29 @@ const I18N = {
     "net.matchInProgress": "Match in progress",
     "net.alreadyStarted": "The match is already running. Use New match for a rematch, or leave the room.",
     "net.joinHint": "Ask the host for the six-character code.",
+    "chat.title": "Table chat",
+    "chat.hide": "hide",
+    "chat.show": "show",
+    "chat.empty": "No messages yet.",
+    "chat.placeholder": "Message the table…",
+    "chat.send": "Send",
+    "voice.off": "Voice off",
+    "voice.join": "Join voice",
+    "voice.on": "Voice on",
+    "voice.micOn": "Mute mic",
+    "voice.micOff": "Unmute mic",
+    "voice.deafen": "Mute others",
+    "voice.undeafen": "Unmute others",
+    "voice.leave": "Leave voice",
+    "voice.micMuted": "Microphone muted",
+    "voice.deafened": "Others muted",
+    "voice.allMuted": "Microphone and incoming voice muted",
+    "voice.active": "Voice connected · {n} remote",
+    "voice.error": "Voice error: {error}",
+    "voice.denied": "Microphone permission was denied.",
+    "voice.unavailable": "Voice needs a secure page and microphone permission.",
+    "voice.peerCount": "{n} remote voice stream(s)",
+    "voice.localOnly": "Voice is peer-to-peer and not recorded.",
     "toast.netGuest": "{name} joined the table.",
     "toast.netGuestLeft": "{name} left the lobby.",
     "toast.netBot": "{name} left — a bot takes the seat.",
@@ -922,6 +946,29 @@ const I18N = {
     "net.matchInProgress": "แมตช์กำลังเล่น",
     "net.alreadyStarted": "แมตช์เริ่มแล้ว ใช้ปุ่มสร้างแมตช์ใหม่เพื่อเล่นอีกครั้ง หรือออกจากห้อง",
     "net.joinHint": "ขอรหัสหกตัวจากเจ้าบ้าน",
+    "chat.title": "แชทโต๊ะ",
+    "chat.hide": "ซ่อน",
+    "chat.show": "แสดง",
+    "chat.empty": "ยังไม่มีข้อความ",
+    "chat.placeholder": "ส่งข้อความถึงโต๊ะ…",
+    "chat.send": "ส่ง",
+    "voice.off": "ปิดเสียงพูด",
+    "voice.join": "เข้าร่วมเสียง",
+    "voice.on": "เสียงเปิด",
+    "voice.micOn": "ปิดไมค์",
+    "voice.micOff": "เปิดไมค์",
+    "voice.deafen": "ปิดเสียงคนอื่น",
+    "voice.undeafen": "เปิดเสียงคนอื่น",
+    "voice.leave": "ออกจากเสียง",
+    "voice.micMuted": "ปิดไมโครโฟน",
+    "voice.deafened": "ปิดเสียงขาเข้า",
+    "voice.allMuted": "ปิดทั้งไมโครโฟนและเสียงขาเข้า",
+    "voice.active": "เชื่อมเสียงแล้ว · ขาเข้า {n}",
+    "voice.error": "ข้อผิดพลาดเสียง: {error}",
+    "voice.denied": "ไม่ได้รับอนุญาตให้ใช้ไมโครโฟน",
+    "voice.unavailable": "เสียงต้องใช้หน้าปลอดภัยและอนุญาตไมโครโฟน",
+    "voice.peerCount": "เสียงขาเข้า {n} สตรีม",
+    "voice.localOnly": "เสียงส่งแบบเพียร์ทูเพียร์และไม่มีการบันทึก",
     "toast.netGuest": "{name} เข้าร่วมโต๊ะ",
     "toast.netGuestLeft": "{name} ออกจากห้องรับแขก",
     "toast.netBot": "{name} ออก — บอทรับที่นั่งแทน",
@@ -1269,7 +1316,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "mahogany", fontSize: "md" });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "mahogany", fontSize: "md", chatOpen: true });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -1294,6 +1341,11 @@ let SEAT_PROFILES = null;
 let net = null;
 let lobbyState = null;
 let resumeAvailable = false;
+let voice = null;
+let voiceActive = false;
+let chatHistory = [];
+let chatOpen = true;
+const speakingSeats = new Set();
 let remoteClock = null;
 let lastPublished = 0;
 let publishTimer = null;
@@ -2260,7 +2312,7 @@ function renderScoreboard() {
     const tag = isBotSeat(seat.id) ? `<span class="seat-tag bot">${escapeHTML(t("net.botBadge"))}</span>`
       : profile?.kind === "host" ? `<span class="seat-tag host">${escapeHTML(t("net.hostBadge"))}</span>`
       : profile?.kind === "human" ? `<span class="seat-tag guest">${escapeHTML(t("net.guestBadge"))}</span>` : "";
-    return `<div class="score-row ${active ? "active" : ""} ${seat.id === MY_SEAT ? "you" : ""} ${profile?.connected === false ? "offline" : ""}">
+    return `<div class="score-row ${active ? "active" : ""} ${seat.id === MY_SEAT ? "you" : ""} ${profile?.connected === false ? "offline" : ""} ${speakingSeats.has(seat.id) ? "speaking" : ""}" data-seat="${seat.id}">
       <span class="score-seat">${seat.wind}</span>
       <span class="score-name">${escapeHTML(seatName(seat.id))}${tag}</span>
       <span class="score-piles">${piles} ${escapeHTML(piles === 1 ? t("score.pile") : t("score.piles"))}</span>
@@ -2619,6 +2671,8 @@ function applyLanguage(lang) {
   $$("[data-i18n-placeholder]").forEach((node) => node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder)));
   const label = $("#langLabel");
   if (label) label.textContent = LANG === "en" ? "ไทย" : "EN";
+  const chatToggle = $("#chatToggle");
+  if (chatToggle) chatToggle.textContent = t(chatOpen ? "chat.hide" : "chat.show");
   const tileToggle = $("#tileListToggle");
   if (tileToggle) {
     tileToggle.textContent = prefs.tileList ? t("handList.hide") : t("handList.show");
@@ -2634,6 +2688,8 @@ function applyLanguage(lang) {
   renderAbout();
   renderAll();
   renderInspector();
+  renderChat();
+  if (voice) renderVoiceState(voice.snapshot());
   if (lobbyState) renderLobby();
   if (scene && state && ["lead", "follow", "roundEnd", "matchEnd"].includes(state.phase)) scene.sync(state);
   if (state?.lastTrick) $("#undoBody").innerHTML = buildUndoExplanation();
@@ -2845,7 +2901,9 @@ function serialiseRoster() {
     name: profile?.name || t("net.emptySeat"),
     kind: profile?.kind || "bot",
     connected: profile?.connected !== false,
-    bot: profile?.kind === "bot" || !profile
+    bot: profile?.kind === "bot" || !profile,
+    peerId: profile?.peerId || null,
+    voice: Boolean(profile?.voice)
   }));
 }
 
@@ -2906,6 +2964,7 @@ function convertSeatToBot(seat, reason = "left") {
     name: nextBotName(),
     kind: "bot",
     connected: true,
+    voice: false,
     replaced: former.name || former.handle,
     since: nowISO()
   };
@@ -2916,6 +2975,7 @@ function convertSeatToBot(seat, reason = "left") {
   renderAll();
   sendLobbyToGuests();
   queuePublish();
+  syncVoicePeers();
   if (state && state.turn === seat && ["lead", "follow"].includes(state.phase)) scheduleAI(700);
 }
 
@@ -2940,6 +3000,8 @@ function acceptGuest(connId, name) {
     kind: "human",
     connected: true,
     connId,
+    peerId: connId,
+    voice: false,
     clientId: `guest-${net.seatSeq}`
   };
   net.host.send(connId, {
@@ -2949,10 +3011,12 @@ function acceptGuest(connId, name) {
     seat,
     hostName: net.name,
     players: serialiseRoster(),
+    chat: chatHistory.slice(-30),
     canStart: SEAT_PROFILES.filter((profile) => profile && profile.connected).length >= 2
   });
   sendLobbyToGuests();
   renderLobby();
+  syncVoicePeers();
   toast(t("toast.netGuest", { name: clean }), "jade");
   audio?.play("click", 0);
 }
@@ -2975,6 +3039,25 @@ function hostMessage({ connId, message }) {
       if (!ok) net.host.send(connId, { type: "rejected", reason: "illegal" });
       break;
     }
+    case "chat": {
+      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      if (!profile) return;
+      const now = Date.now();
+      if (profile.chatAt && now - profile.chatAt < 350) return;
+      const text = normaliseChat(message.text);
+      if (!text) return;
+      profile.chatAt = now;
+      hostChat(profile.seat, text);
+      break;
+    }
+    case "voice-state": {
+      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      if (!profile) return;
+      profile.voice = Boolean(message.active);
+      sendLobbyToGuests();
+      syncVoicePeers();
+      break;
+    }
     case "ping":
       net.host.send(connId, { type: "pong", at: Date.now() });
       break;
@@ -2986,6 +3069,7 @@ function hostMessage({ connId, message }) {
           SEAT_PROFILES[profile.seat] = null;
           sendLobbyToGuests();
           renderLobby();
+          syncVoicePeers();
         }
       }
       break;
@@ -3004,6 +3088,7 @@ function hostConnectionLost({ connId }) {
     SEAT_PROFILES[profile.seat] = null;
     sendLobbyToGuests();
     renderLobby();
+    syncVoicePeers();
     toast(t("toast.netGuestLeft", { name: profile.name }), "wine");
   }
 }
@@ -3028,12 +3113,13 @@ async function createHostRoom(name) {
   try {
     const host = await openHostWithRetry({ name: handle, ...hostHandlers });
     net = { role: "host", host, code: host.code, name: handle, seq: 0, started: false, seatSeq: 0 };
-    SEAT_PROFILES = [{ seat: 0, name: handle, kind: "host", connected: true, host: true }, null, null, null];
+    SEAT_PROFILES = [{ seat: 0, name: handle, kind: "host", connected: true, host: true, peerId: host.id, voice: false }, null, null, null];
     MY_SEAT = 0;
     lobbyState.roomCode = host.code;
     setLobbyStatus(t("net.lobbyOpen"), "jade");
     renderLobby();
     renderNetChrome();
+    syncVoicePeers();
     audio?.play("win", 0);
     savePlayerName(handle);
   } catch (error) {
@@ -3098,6 +3184,9 @@ function clientMessage({ message }) {
       showLobby("waiting");
       renderLobby();
       renderNetChrome();
+      chatHistory = Array.isArray(message.chat) ? message.chat.slice(-30) : [];
+      renderChat();
+      syncVoicePeers();
       audio?.play("win", 0);
       break;
     case "lobby":
@@ -3108,6 +3197,7 @@ function clientMessage({ message }) {
         lobbyState.canStart = Boolean(message.canStart);
       }
       if (lobbyState?.view !== "table") renderLobby();
+      syncVoicePeers();
       break;
     case "start":
       if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
@@ -3116,10 +3206,15 @@ function clientMessage({ message }) {
         lobbyState.status = t("net.dealing");
         renderLobby();
       }
+      syncVoicePeers();
       break;
     case "state":
       if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
       applyRemoteState(message.state);
+      syncVoicePeers();
+      break;
+    case "chat":
+      if (message.entry) appendChat(message.entry);
       break;
     case "rejected":
       setLobbyStatus(t(`net.rejected.${message.reason}`) || t("net.error", { error: message.reason }), "wine");
@@ -3137,6 +3232,13 @@ function clientMessage({ message }) {
 
 function handleHostLost() {
   if (!isClient()) return;
+  if (voice) {
+    voice.leave();
+    voice.destroy();
+    voice = null;
+  }
+  voiceActive = false;
+  clearSpeaking();
   if (lobbyState) {
     lobbyState.view = "lost";
     lobbyState.status = t("net.hostLeft");
@@ -3206,6 +3308,15 @@ function leaveRoom({ silent = false, keepState = false } = {}) {
     host.close();
   }
   if (client) client.close();
+  if (voice) {
+    voice.leave();
+    voice.destroy();
+    voice = null;
+  }
+  voiceActive = false;
+  clearSpeaking();
+  chatHistory = [];
+  renderChat();
   net = null;
   SEAT_PROFILES = null;
   MY_SEAT = 0;
@@ -3291,7 +3402,7 @@ function lobbyRosterHTML(players, options = {}) {
     const connected = player?.connected !== false;
     const label = kind === "host" ? t("net.hostBadge") : kind === "human" ? t("net.guestBadge") : kind === "bot" ? t("net.botBadge") : t("net.emptySeat");
     const name = empty && preview ? t("net.botPreview", { n: seat.id + 1 }) : player?.name || t("net.emptySeat");
-    return `<div class="lobby-seat ${kind} ${connected ? "" : "offline"}">
+    return `<div class="lobby-seat ${kind} ${connected ? "" : "offline"} ${speakingSeats.has(seat.id) ? "speaking" : ""}" data-seat="${seat.id}">
       <span class="lobby-wind">${seat.wind}</span>
       <span class="lobby-seat-copy"><strong>${escapeHTML(name)}</strong><small>${escapeHTML(label)}</small></span>
       <span class="lobby-dot" aria-hidden="true"></span>
@@ -3421,6 +3532,8 @@ function renderNetChrome() {
   if (undo && isClient()) undo.disabled = true;
   const leave = $("#leaveRoomBtn");
   if (leave) leave.hidden = !isNetworked();
+  const chatPanel = $("#chatPanel");
+  if (chatPanel) chatPanel.hidden = !isNetworked();
 }
 
 async function copyInvite() {
@@ -3443,6 +3556,182 @@ async function copyInvite() {
 
 function renderNetChip() {
   renderNetChrome();
+}
+
+function normaliseChat(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, 200);
+}
+
+function chatClock(at) {
+  try {
+    return new Date(at).toLocaleTimeString(LANG === "th" ? "th-TH" : "en-US", { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
+function renderChat() {
+  const list = $("#chatList");
+  if (!list) return;
+  if (!chatHistory.length) {
+    list.innerHTML = `<li class="chat-empty">${escapeHTML(t("chat.empty"))}</li>`;
+    return;
+  }
+  list.innerHTML = chatHistory.slice(-60).map((entry) => `
+    <li class="chat-item ${entry.seat === MY_SEAT ? "self" : ""}">
+      <div class="chat-meta"><b>${escapeHTML(entry.name || seatName(entry.seat))}</b><time>${escapeHTML(chatClock(entry.at))}</time></div>
+      <p>${escapeHTML(entry.text)}</p>
+    </li>`).join("");
+  list.scrollTop = list.scrollHeight;
+}
+
+function appendChat(entry) {
+  if (!entry || !entry.text) return;
+  chatHistory.push({
+    seat: Number(entry.seat) || 0,
+    name: String(entry.name || "").slice(0, 18),
+    text: normaliseChat(entry.text),
+    at: Number(entry.at) || Date.now()
+  });
+  if (chatHistory.length > 80) chatHistory = chatHistory.slice(-80);
+  renderChat();
+}
+
+function hostChat(seat, text) {
+  const entry = { seat, name: seatName(seat), text, at: Date.now() };
+  appendChat(entry);
+  if (!isHost() || !net?.host) return;
+  for (const profile of SEAT_PROFILES || []) {
+    if (profile?.kind === "human" && profile.connId) net.host.send(profile.connId, { type: "chat", entry });
+  }
+}
+
+function sendChat(value) {
+  const text = normaliseChat(value);
+  if (!text || !isNetworked()) return false;
+  if (isClient()) return net.client.send({ type: "chat", text });
+  hostChat(MY_SEAT, text);
+  return true;
+}
+
+function setChatOpen(open) {
+  chatOpen = Boolean(open);
+  prefs.chatOpen = chatOpen;
+  savePrefs();
+  const body = $("#chatBody");
+  if (body) body.hidden = !chatOpen;
+  const button = $("#chatToggle");
+  if (button) {
+    button.textContent = t(chatOpen ? "chat.hide" : "chat.show");
+    button.setAttribute("aria-expanded", String(chatOpen));
+  }
+}
+
+function currentVoicePeer() {
+  if (isHost()) return net?.host?.peer || null;
+  if (isClient()) return net?.client?.peer || null;
+  return null;
+}
+
+function currentVoicePeerId() {
+  if (isHost()) return net?.host?.id || null;
+  if (isClient()) return net?.client?.peer?.id || null;
+  return null;
+}
+
+function voicePeers() {
+  if (!SEAT_PROFILES) return [];
+  return SEAT_PROFILES
+    .filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.peerId)
+    .map((profile) => ({
+      seat: profile.seat,
+      name: profile.name,
+      peerId: profile.peerId,
+      active: Boolean(profile.voice)
+    }));
+}
+
+function ensureVoice() {
+  if (voice) return voice;
+  voice = new VoiceChat({
+    onState: renderVoiceState,
+    onSpeaking: setSpeaking,
+    onError: (error) => {
+      const denied = error?.name === "NotAllowedError" || error?.name === "SecurityError";
+      const text = denied ? t("voice.denied") : t("voice.error", { error: error?.name || error?.message || "unknown" });
+      const node = $("#voiceState");
+      if (node) node.textContent = text;
+      toast(text, "wine");
+    }
+  });
+  return voice;
+}
+
+function syncVoicePeers() {
+  if (!isNetworked()) return;
+  const engine = ensureVoice();
+  engine.attach({
+    peer: currentVoicePeer(),
+    selfPeerId: currentVoicePeerId(),
+    selfSeat: MY_SEAT
+  });
+  engine.setPeers(voicePeers());
+  renderVoiceState(engine.snapshot());
+}
+
+function renderVoiceState(state) {
+  const wasActive = voiceActive;
+  voiceActive = Boolean(state?.joined);
+  const join = $("#voiceJoinBtn");
+  const mic = $("#micBtn");
+  const deafen = $("#deafenBtn");
+  const leave = $("#voiceLeaveBtn");
+  if (join) join.hidden = voiceActive;
+  if (mic) {
+    mic.disabled = !voiceActive;
+    mic.setAttribute("aria-pressed", String(Boolean(state?.micMuted)));
+    const label = mic.querySelector("span");
+    if (label) label.textContent = state?.micMuted ? t("voice.micOff") : t("voice.micOn");
+  }
+  if (deafen) {
+    deafen.disabled = !voiceActive;
+    deafen.setAttribute("aria-pressed", String(Boolean(state?.deafened)));
+    const label = deafen.querySelector("span");
+    if (label) label.textContent = state?.deafened ? t("voice.undeafen") : t("voice.deafen");
+  }
+  if (leave) leave.hidden = !voiceActive;
+  const status = $("#voiceState");
+  if (status) {
+    if (!voiceActive) status.textContent = t("voice.off");
+    else if (state.micMuted && state.deafened) status.textContent = t("voice.allMuted");
+    else if (state.micMuted) status.textContent = t("voice.micMuted");
+    else if (state.deafened) status.textContent = t("voice.deafened");
+    else status.textContent = t("voice.active", { n: state.remotes ?? 0 });
+  }
+  if (wasActive !== voiceActive && isNetworked()) {
+    if (isHost()) {
+      if (SEAT_PROFILES?.[0]) SEAT_PROFILES[0].voice = voiceActive;
+      sendLobbyToGuests();
+      syncVoicePeers();
+    } else if (net?.client) {
+      net.client.send({ type: "voice-state", active: voiceActive });
+    }
+  }
+}
+
+function setSpeaking(seat, on) {
+  const index = Number(seat);
+  if (!Number.isInteger(index) || index < 0) return;
+  if (on) speakingSeats.add(index);
+  else speakingSeats.delete(index);
+  for (const node of document.querySelectorAll(`.lobby-seat[data-seat="${index}"], .score-row[data-seat="${index}"]`)) {
+    node.classList.toggle("speaking", Boolean(on));
+  }
+}
+
+function clearSpeaking() {
+  for (const seat of [...speakingSeats]) setSpeaking(seat, false);
+  speakingSeats.clear();
 }
 
 function netSelfTest() {
@@ -3584,6 +3873,10 @@ function selfTest() {
     const payload = buildExport();
     return Boolean(payload.format && payload.app?.name && payload.credits?.model && payload.game?.scores?.length === 4);
   });
+
+  check("chat text is normalised and bounded", () => (
+    normaliseChat("  hello \n  table  ") === "hello table" && normaliseChat("x".repeat(300)).length === 200
+  ));
 
   for (const result of netSelfTest()) results.push(result);
 
@@ -4895,6 +5188,35 @@ function bindEvents() {
     leaveRoom();
     showLobby("menu");
   });
+  $("#chatToggle")?.addEventListener("click", () => setChatOpen(!chatOpen));
+  $("#chatForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const input = $("#chatInput");
+    if (!input) return;
+    if (sendChat(input.value)) input.value = "";
+    input.focus();
+  });
+  $("#voiceJoinBtn")?.addEventListener("click", async () => {
+    const engine = ensureVoice();
+    engine.attach({
+      peer: currentVoicePeer(),
+      selfPeerId: currentVoicePeerId(),
+      selfSeat: MY_SEAT
+    });
+    engine.setPeers(voicePeers());
+    await engine.join();
+  });
+  $("#micBtn")?.addEventListener("click", () => {
+    if (!voice?.joined) return;
+    voice.setMicMuted(!voice.micMuted);
+    audio?.play("click", 0);
+  });
+  $("#deafenBtn")?.addEventListener("click", () => {
+    if (!voice?.joined) return;
+    voice.setDeafened(!voice.deafened);
+    audio?.play("click", 0);
+  });
+  $("#voiceLeaveBtn")?.addEventListener("click", () => voice?.leave());
   $$("[data-lobby-back]").forEach((button) => button.addEventListener("click", () => {
     if (net) requestLeaveRoom();
     else showLobby("menu");
@@ -4960,6 +5282,7 @@ function bindEvents() {
   window.addEventListener("pointerdown", () => { audio?.resume(); audio?.play("click", 0); }, { once: true });
   window.addEventListener("keydown", () => audio?.resume(), { once: true });
   window.addEventListener("beforeunload", saveMatch);
+  window.addEventListener("pagehide", () => voice?.leave());
   document.addEventListener("visibilitychange", () => { if (document.hidden) saveMatch(); });
 }
 
@@ -4971,6 +5294,9 @@ async function boot() {
   audio = new StudioAudio();
   applyLanguage(LANG);
   bindEvents();
+  chatOpen = prefs.chatOpen !== false;
+  setChatOpen(chatOpen);
+  renderChat();
 
   const params = new URLSearchParams(location.search);
   if (params.get("seed")) {
@@ -5128,6 +5454,22 @@ window.LeabTui = {
     hydrate: hydrateRemoteState,
     roomCode: () => (net ? formatRoomCode(net.code) : ""),
     copyInvite
+  },
+  chat: {
+    send: sendChat,
+    append: appendChat,
+    messages: () => clone(chatHistory),
+    open: setChatOpen,
+    isOpen: () => chatOpen
+  },
+  voice: {
+    join: () => ensureVoice().join(),
+    joinWithStream: (stream) => ensureVoice().joinWithStream(stream),
+    leave: () => voice?.leave(),
+    state: () => (voice ? voice.snapshot() : null),
+    peers: () => voicePeers(),
+    mic: (muted) => voice?.setMicMuted(muted),
+    deafen: (deafened) => voice?.setDeafened(deafened)
   }
 };
 

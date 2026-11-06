@@ -1,6 +1,6 @@
 # Reproduction guide
 
-This is the order that worked. It assumes a blank folder and no framework. The goal is a static, bilingual 3D trick-taking studio with four source files, serverless P2P multiplayer and a verified release.
+This is the order that worked. It assumes a blank folder and no framework. The goal is a static, bilingual 3D trick-taking studio with five source files, serverless P2P multiplayer, text chat and independent voice and a verified release.
 
 ## 0. Write the rules contract before the code
 
@@ -152,6 +152,24 @@ Do this **after** the solo game is correct. Network code magnifies an unstable e
 | Rotating the camera instead of the world | lighting/controls break | rotate a world group; keep lights and camera fixed |
 | Expecting six seats | rules no longer Leab-Tui | four winds, 32 tiles, eight each |
 | Using a public broker in CI | flaky offline tests | keep `net-check.mjs` separate from `verify.mjs` |
+
+### Text chat
+
+Route guest `{type:"chat", text}` through the host. The host finds the sender profile, rate-limits (350 ms), normalises/caps at 200 chars, appends one entry and broadcasts `{type:"chat", entry}` to every guest. Include the last 30 entries in `welcome`. Render with `textContent` or `escapeHTML`. Keep it memory-only.
+
+### Voice
+
+Keep voice **out** of the data channel and out of the host. Add a `VoiceChat` module that:
+
+1. Installs one `peer.on("call")` handler.
+2. Initiates calls only when both sides are voice-active, with the lexicographically larger peer ID calling the smaller.
+3. Requests `getUserMedia({audio:{echoCancellation,noiseSuppression,autoGainControl}})` only after **Join voice**.
+4. Attaches remote streams to hidden `<audio autoplay playsinline>` elements.
+5. Mutes the local track with `track.enabled = false`; deafens with `audio.muted = true`.
+6. Drives a speaking pulse from an analyser that is **not** connected to `destination`.
+7. Relays `voice-state` through the host and puts `peerId`/`voice` in the roster.
+
+Use a synthetic oscillator stream (`joinWithStream`) for the headless test; keep the real `getUserMedia` path for production.
 
 The full message set is in [PROTOCOL.md](PROTOCOL.md); operations are in [MULTIPLAYER.md](MULTIPLAYER.md).
 

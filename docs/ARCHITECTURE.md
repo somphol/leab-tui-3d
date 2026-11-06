@@ -2,13 +2,14 @@
 
 ## Shape of the app
 
-Leab-Tui 3D is a **static single page** with four runtime files:
+Leab-Tui 3D is a **static single page** with five runtime files:
 
 ```text
-index.html        document, import map, static HUD, modals, lobby
-style.css         design tokens, layout, responsive rules, modal system
+index.html        document, import map, static HUD, modals, lobby, chat/voice controls
+style.css         design tokens, layout, responsive rules, modal system, chat/voice
 script.js         one ES module: data → rules → AI → state → flow → 3D → audio → UI → network
 peer-manager.js   room codes, lazy PeerJS loader, host/client endpoints, loopback test pair
+voice-chat.js     full-mesh media calls, mic mute, deafen, remote audio, speaking meter
 ```
 
 There is no bundler, framework, server, database or API key. `script.js` dynamically imports `three@0.160.0` and `OrbitControls` from jsDelivr so the rule engine, coaching, scoring and persistence still initialise if WebGL or the CDN fails. `peer-manager.js` lazily injects the pinned PeerJS UMD bundle only when a room is opened.
@@ -53,6 +54,8 @@ The scene is created **after** the first render so the UI is usable during the T
 | UI | render functions, language, inspector, coach | duplicate rule logic |
 | Persistence | save/load/export | persist live objects |
 | Network | lobby, seats, host authority, redaction, bot takeover | let a guest run the engine |
+| Chat | host relay, attribution, history, rate limit | trust guest HTML |
+| Voice | mesh calls, mute/deafen, analyser pulse | route audio through the data channel |
 | Self-test | rule, conservation and redaction checks | require a GPU or network |
 
 ## Rules model
@@ -125,6 +128,31 @@ host browser                         guest browser
 
 The full message set, redaction table and invariants are in [PROTOCOL.md](PROTOCOL.md); operations and troubleshooting are in [MULTIPLAYER.md](MULTIPLAYER.md).
 
+## Chat and voice
+
+**Text chat** is a host-relayed data-channel feature:
+
+```text
+guest input → {type:"chat", text} → host validates, appends once
+             → {type:"chat", entry} to every guest (including sender)
+host input  → hostChat() → append once → broadcast
+```
+
+`chatHistory` is a 80-entry in-memory ring, capped at 200 characters per message. A guest may send at most one message per 350 ms. The host includes the last 30 entries in `welcome` so a new guest sees context. Messages are rendered with `textContent`/`escapeHTML`; there is no HTML chat.
+
+**Voice** is opt-in and independent of the data channel:
+
+- `VoiceChat` installs one `peer.on("call")` handler and initiates calls to voice-active peers.
+- The lexicographically larger peer ID initiates, so both sides agree without duplicate calls.
+- `join()` requests `getUserMedia({audio:{echoCancellation,noiseSuppression,autoGainControl}})`; a user gesture and HTTPS/localhost are required.
+- `setMicMuted` sets `track.enabled = false`; it never stops the track or closes the call.
+- `setDeafened` sets `.muted` on every remote `<audio>` element; it never changes the local mic.
+- Remote streams are attached to hidden `<audio class="remote-player-audio" autoplay playsinline>` elements in `#remoteAudio`.
+- An `AudioContext` analyser per stream drives a 120 ms RMS meter. The analyser is **not** connected to `destination`; playback is the `<audio>` element. A green `.speaking` pulse is applied to lobby avatars and scoreboard seats.
+- Voice-active state is relayed as `voice-state`; the roster carries `peerId` and `voice`.
+
+Voice is a full mesh: every active speaker calls every other active speaker. With four humans that is six media paths; uplink grows with the number of speakers. No audio is sent through the host data channel or stored.
+
 ## 3D scene
 
 `createScene` returns an API, not a second game model:
@@ -171,7 +199,7 @@ The saved payload is:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "savedAt": "2026-11-06T...",
   "network": false,
   "game": { "phase": "...", "hands": [["r-general-0"], ...], ... }
@@ -213,6 +241,8 @@ The saved payload is:
 - Broker unreachable → host/join status shows a timeout or `peer-unavailable`; the table stays solo.
 - Guest data channel drops → host converts the seat to a bot; guest shows "Table closed".
 - Host closes → guests keep the last rendered state behind a "Table closed" panel; no host migration.
+- Microphone denied or unavailable → chat and the game continue; the voice status explains the failure.
+- A remote voice call fails → its `<audio>` entry is removed; the peer can rejoin voice.
 
 ## Performance notes
 

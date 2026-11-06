@@ -2,7 +2,7 @@
 
 Leab-Tui 3D supports a **serverless, host-authoritative WebRTC table** for two to four humans. Empty seats are filled with bots. There is no game server, account, database or matchmaking service.
 
-The transport lives in [`peer-manager.js`](../peer-manager.js); the authority, lobby and privacy logic live in [`script.js`](../script.js). The wire format is documented in [PROTOCOL.md](PROTOCOL.md).
+The transport lives in [`peer-manager.js`](../peer-manager.js), voice in [`voice-chat.js`](../voice-chat.js), and the authority, lobby, chat and privacy logic live in [`script.js`](../script.js). The wire format is documented in [PROTOCOL.md](PROTOCOL.md).
 
 ## Why four seats, not six
 
@@ -79,6 +79,24 @@ During a network game the Actions panel carries a wine-coloured **Leave room** b
 
 The button is hidden in solo. On phones it sits inside the Actions panel below the table, so it never covers the hand dock; the header room chip shrinks to a status icon.
 
+## Text chat
+
+The sidebar carries a collapsible **Table chat** panel in every room. Messages are host-routed, attributed and capped at 200 characters; guests are rate-limited to one message per 350 ms. A new guest receives the last 30 messages in `welcome`. Chat is memory-only, ends with the room and is never saved.
+
+## Voice chat
+
+Voice is opt-in and independent of the game data channel.
+
+1. Press **Join voice**. The browser asks for microphone permission; this must happen on a user gesture.
+2. Each voice-active human calls every other voice-active human (full mesh). The host only relays presence (`voice`) and PeerJS IDs; it does not carry audio.
+3. Remote streams attach to hidden `<audio class="remote-player-audio" autoplay playsinline>` elements in `#remoteAudio`.
+4. **Mute mic** sets `localStream.getAudioTracks()[0].enabled = false`; the call stays connected.
+5. **Mute others** sets `.muted = true` on every remote audio element; it does not affect your mic.
+6. **Leave voice** stops tracks, closes the calls and removes the audio elements. Leaving the room does this automatically.
+7. A green pulse on the seat avatar/scoreboard row means that mic is transmitting.
+
+Voice requires HTTPS or localhost. Symmetric NAT can block media just as it blocks the data channel; there is no TURN relay. Four speakers make six media paths, so uplink grows with the number of active mics. No audio is recorded.
+
 ## Starting and filling
 
 `startHostedMatch()`:
@@ -154,8 +172,10 @@ Without a TURN relay, symmetric NAT and some corporate firewalls will fail. The 
 | `LeabTui.net.solo()` | Leave and deal a solo table |
 | `LeabTui.net.sanitize(seat)` | Inspect the exact payload for a seat |
 | `LeabTui.net.selfTest()` | Ten protocol/redaction checks |
+| `LeabTui.chat` | `send`, `append`, `messages`, `open`, `isOpen` |
+| `LeabTui.voice` | `join`, `joinWithStream`, `leave`, `state`, `peers`, `mic`, `deafen` |
 
-The **two-client** verification is `node scripts/net-check.mjs`. It uses the real broker and checks: host room, guest join, two-human start, bot fill, own-hand privacy, ghosted other hands, actions in both directions, a resolved trick, and disconnect-to-bot. It is separate from `scripts/verify.mjs` so offline CI stays deterministic. Set `GUEST_SHOT=screenshots/guest-play.png` to capture the guest table during the run.
+The **two-client** verification is `node scripts/net-check.mjs`. It uses the real broker and checks: host room, guest join, two-human start, bot fill, own-hand privacy, ghosted other hands, host controls, text chat, voice mesh attachment, mic mute, deafen, actions in both directions, a resolved trick, and disconnect-to-bot. Voice media is exercised with a synthetic oscillator stream so headless Chrome does not need a real microphone; the production path still uses `getUserMedia`. It is separate from `scripts/verify.mjs` so offline CI stays deterministic. Set `GUEST_SHOT=screenshots/guest-play.png` to capture the guest table during the run.
 
 ## Troubleshooting
 

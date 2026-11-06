@@ -24,6 +24,8 @@ When you host or join a room:
 - **STUN** servers (`stun.l.google.com`) are contacted for NAT traversal. They see your public IP, as any WebRTC application does.
 - Room codes are random and are not published in a directory. Anyone with the code can try to join while the host page is open.
 - The host's handle and the guests' handles are shared with everyone in the room.
+- **Chat** messages are visible to the host and every guest and are kept in memory only.
+- **Voice** is opt-in. The browser asks for microphone permission when you press **Join voice**. Audio flows directly between voice-active peers over encrypted WebRTC media; the host does not relay it and the app does not record it. PeerJS IDs of voice-active peers are shared so the mesh can connect. Public STUN sees your IP.
 - Closing the host tab ends the room. No game data is stored on a server.
 
 The guest's `leabtui.name.v1` handle is never sent anywhere except the room you join. Clearing site data removes it.

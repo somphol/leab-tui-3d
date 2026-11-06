@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Release **1.4.1** of Leab-Tui 3D is built, verified and published. It adds the launch choice and a confirmed Leave room action on top of the 1.4.0 serverless P2P table.
+Release **1.5.0** of Leab-Tui 3D is built, verified and published. It adds host-routed text chat and independent full-mesh voice (mic mute + deafen) on top of the serverless P2P table.
 
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Live: <https://somphol.github.io/leab-tui-3d/>
@@ -19,9 +19,11 @@ Release **1.4.1** of Leab-Tui 3D is built, verified and published. It adds the l
 | 3D | 32 carved tiles, 32 back-only ghost meshes, mahogany table, OrbitControls, deal/flip/capture animations, seat-relative world rotation, portrait framing |
 | UI | Bilingual EN/TH, coach, inspector, hint, undo comparison, rules, summaries, toasts, launch lobby, room chip |
 | Multiplayer | Host-authoritative WebRTC via PeerJS; 2–4 humans; empty seats become bots; disconnects become bots; per-seat redaction; confirmed Leave room |
+| Chat | Host-routed, escaped, 200-char cap, 350 ms guest limit, 30-message history |
+| Voice | Full-mesh PeerJS media, mic mute, deafen, speaking pulse, no recording |
 | Audio | Synthesised shuffle/clack/flip/sweep/win/lose, gesture-unlocked |
 | Persistence | Autosave, solo resume, stats, versioned JSON export; network saves marked non-resumable |
-| Verification | 35/35 self-test, static check, CDP harness, full-round evidence, 13-check two-browser WebRTC suite |
+| Verification | 36/36 self-test, 322-check static check, CDP harness, full-round evidence, 17-check two-browser WebRTC suite |
 | Release docs | README, AGENTS, STATE, rules, architecture, multiplayer, protocol, tests, deployment, reproduction, data format, controls, accessibility, performance, design, browser support, FAQ, roadmap, release checklist, gallery, glossary |
 | Skill | `leab-tui-p2p-studio`, mirrored to `~/Projects/opencode-skills/` and published |
 
@@ -31,9 +33,9 @@ Release **1.4.1** of Leab-Tui 3D is built, verified and published. It adds the l
 node --check script.js                 PASS
 node --check peer-manager.js           PASS
 node scripts/check.mjs                 PASS (292 checks)
-?selftest=1                            SELFTEST PASS 35/35
+?selftest=1                            SELFTEST PASS 36/36
 node scripts/verify.mjs                ALL BROWSER CHECKS PASSED
-node scripts/net-check.mjs             ALL 13 MULTIPLAYER CHECKS PASSED
+node scripts/net-check.mjs             ALL 17 MULTIPLAYER CHECKS PASSED
 full round                             roundEnd, 32 tiles, points sum 0
 host + guest                           2 humans + Bot 1 + Bot 2
 guest privacy                          own 8 real ids, other 24 ghost ids
@@ -58,13 +60,15 @@ console exceptions                     none on either page
 12. **Audio unlock.** Do not create an `AudioContext` before the first user gesture.
 13. **Launch prompt.** Normal loads always ask; a saved solo game appears as Resume match, never as a phantom deal.
 14. **Leave room.** The host exit is destructive and must keep its confirmation; guests keep their seat as a bot.
-15. **Portrait camera.** Mobile needs `(0,14.3,17.2)`, FOV 46 and a compact dock; otherwise the hand is hidden.
+15. **Chat** goes through the host, is escaped, capped at 200 chars and rate-limited; never render HTML chat.
+16. **Voice** is full-mesh and independent of the data channel. Mic mute is `track.enabled`, deafen is `<audio>.muted`; never stop the track or route audio through the host.
+17. **Portrait camera.** Mobile needs `(0,14.3,17.2)`, FOV 46 and a compact dock; otherwise the hand is hidden.
 
 ## If the build is resumed
 
 1. Read `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/MULTIPLAYER.md` and `docs/PROTOCOL.md`.
 2. Run `node scripts/check.mjs`, `node scripts/verify.mjs` and `node scripts/net-check.mjs`.
-3. Open `?selftest=1` and confirm 35/35.
+3. Open `?selftest=1` and confirm 36/36.
 4. If changing rules, update `docs/RULES.md`, `detectCombo`, `allCombos`/`comboPower`, both dictionaries, the rules modal and the self-test together.
 5. If changing the wire format, bump `PROTOCOL_VERSION`, update `docs/PROTOCOL.md`, `sanitizeForSeat`, `hydrateRemoteState`, `netSelfTest` and `scripts/net-check.mjs`.
 6. If changing the save format, bump `APP.version`, update `docs/DATA_FORMAT.md`, add a migration or reject safely.
@@ -74,6 +78,9 @@ console exceptions                     none on either page
 - Host migration or reconnection tokens.
 - A TURN relay for symmetric NAT.
 - Turn timer / idle auto-play.
+- TURN relay for voice and data.
+- Push-to-talk, noise gate, per-peer volume.
+- Chat moderation/reporting.
 - Focus trap and focus restore in modals.
 - Physical iOS/Android verification.
 - Reduced-motion snap mode for Three.js.

@@ -4,12 +4,12 @@
 
 | Layer | Tool | What it proves |
 | --- | --- | --- |
-| Syntax | `node --check script.js` + `peer-manager.js` | both modules parse |
+| Syntax | `node --check script.js` + `peer-manager.js` + `voice-chat.js` | all three modules parse |
 | Repository | `node scripts/check.mjs` | files, links, version, i18n parity, rule constants, serialization policy, CDN pins, redaction guards |
-| Rules + protocol | `?selftest=1` → `selfTest()` | 35 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export, room codes, redaction, hydration, loopback |
+| Rules + protocol | `?selftest=1` → `selfTest()` | 36 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export, chat normalization, room codes, redaction, hydration, loopback |
 | Browser | `node scripts/verify.mjs` | Chrome loads the page, no console exceptions, the table renders, the self-test passes |
 | Flow | CDP playthrough (below) | a complete round, 32-tile conservation |
-| Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, actions, disconnect-to-bot |
+| Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, chat, voice mesh, mute/deafen, actions, disconnect-to-bot |
 | Visual | screenshots in `screenshots/` | desktop EN, desktop TH, rules drawer, 390×844 phone, lobby |
 
 Run the static checks first:
@@ -59,18 +59,19 @@ node scripts/net-check.mjs   # real broker, needs outbound 0.peerjs.com
 | 23 | simulated round conserves tiles | captures = 32 |
 | 24 | i18n keys symmetrical | EN and TH share every key |
 | 25 | export payload shape | app + credits + 4 scores |
-| 26 | room code | six chars from the unambiguous alphabet |
-| 27 | code normalization | `leab-abc-234` → `ABC234` |
-| 28 | incomplete code rejected | `ABC` → `null` |
-| 29 | formatted code | starts with `LEAB-` |
-| 30 | peer id stability | uppercase and dashed codes collide intentionally |
-| 31 | redaction hides another hand | every id is a ghost |
-| 32 | redaction keeps the recipient hand | every id is real |
-| 33 | host-only maps stripped | no `hiddenTags`, no `snapshot` |
-| 34 | ghost hydration | `ghost-2-3` round-trips |
-| 35 | loopback transport | envelope arrives with `__leab: 1` |
+| 26 | chat text | whitespace collapsed, 200-character cap |
+| 27 | room code | six chars from the unambiguous alphabet |
+| 28 | code normalization | `leab-abc-234` → `ABC234` |
+| 29 | incomplete code rejected | `ABC` → `null` |
+| 30 | formatted code | starts with `LEAB-` |
+| 31 | peer id stability | uppercase and dashed codes collide intentionally |
+| 32 | redaction hides another hand | every id is a ghost |
+| 33 | redaction keeps the recipient hand | every id is real |
+| 34 | host-only maps stripped | no `hiddenTags`, no `snapshot` |
+| 35 | ghost hydration | `ghost-2-3` round-trips |
+| 36 | loopback transport | envelope arrives with `__leab: 1` |
 
-Latest result: **SELFTEST PASS 35/35** (Chrome headless, 2026-11-06).
+Latest result: **SELFTEST PASS 36/36** (Chrome headless, 2026-11-06).
 
 ## Recorded flow tests
 
@@ -171,7 +172,7 @@ start                 host + guest + Bot 1 + Bot 2
 guest own hand        8 real tile ids
 other hands           24 ghost ids, no real ids on the wire
 host in-game controls leave button visible, Start hidden, "Match in progress"
-actions               9–13 moves crossed the channel, a trick resolved
+actions               9–12 moves crossed the channel, a trick resolved
 guest tab closed      seat 1 became Bot 3, score/hand preserved
 console               no exceptions on either page
 ```
@@ -232,6 +233,11 @@ The privacy check is the important one: it reads the guest's `LeabTui.getState()
 ### Multiplayer
 
 - [ ] The launch overlay offers Your name, Play solo, Host a table and Join a table, plus Resume match when a save exists.
+- [ ] Table chat receives host and guest messages and survives a language switch.
+- [ ] Join voice prompts for the microphone; remote audio plays.
+- [ ] Mute mic disables the local track but keeps the call connected.
+- [ ] Mute others deafens every remote stream and is independent of the mic.
+- [ ] A green pulse appears on the speaking seat avatar/scoreboard row.
 - [ ] The host Leave room button is visible in Actions, confirms first, and returns to the menu.
 - [ ] Host shows a `LEAB-XXX-XXX` code, a 4-seat roster and a disabled Start until a second human joins.
 - [ ] Copy invite link copies a URL with `?room=...`.
@@ -261,7 +267,9 @@ The privacy check is the important one: it reads the guest's `LeabTui.getState()
 | `screenshots/thai.jpg` | Thai header, labels, coach, inspector and hand list |
 | `screenshots/rules.jpg` | readable modal, hierarchy, calls grid, no overflow |
 | `screenshots/mobile.jpg` | table fits, human hand not hidden by the dock, buttons all reachable |
-| `screenshots/lobby.jpg` | launch overlay, three modes, no clipped copy |
+| `screenshots/lobby.jpg` | launch overlay, name field, three modes, no clipped copy |
+| `screenshots/chat-voice.jpg` | chat messages, voice buttons, leave room, speaking pulse |
+| `screenshots/mobile-chat.jpg` | chat/voice fit at 390 px, hand dock not covered |
 
 A green suite does not prove the table looks right. Inspect the screenshots after any camera, material or dock change.
 
@@ -280,4 +288,4 @@ A green suite does not prove the table looks right. Inspect the screenshots afte
 2. If it is a rule invariant, add it to `scripts/check.mjs` as a string/regex guard too.
 3. If it is a flow, add a CDP expression to `scripts/verify.mjs` and assert on `window.LeabTui.getState()`.
 4. If it is a protocol or redaction invariant, add it to `netSelfTest()` and, when it needs a real channel, to `scripts/net-check.mjs`.
-5. Update this document and the count in the title assertion (`35/35`).
+5. Update this document and the count in the title assertion (`36/36`).

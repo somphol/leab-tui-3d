@@ -104,6 +104,18 @@ A guest's view after the host started: the guest's own hand is at the bottom, th
 
 The host in a room at 390×844: the room chip is now a compact status icon, and **Leave room** spans the Actions grid below the table. It is visible, but it never covers the hand dock. The confirmation modal explains that the host exit closes the room for everyone.
 
+## Table chat and voice
+
+![Table chat and voice controls](../screenshots/chat-voice.jpg)
+
+A hosted room with the glass chat panel open: two messages, the voice controls in the joined state, **Mute mic**, **Mute others** and **Leave voice**, plus the confirmed **Leave room** action above. The green ring on the Host seat is the speaking pulse. The room chip in the header is a compact icon on phones.
+
+## Mobile chat and voice
+
+![Mobile chat and voice](../screenshots/mobile-chat.jpg)
+
+The chat panel at 390×844: **Leave room** is still visible in Actions, the glass chat sits below it, and the voice bar collapses to two columns. The hand dock is below the inspector and is not covered.
+
 ## What is not shown
 
 - The match-end summary and the undo comparison modal. Both use the same card system; capture them if you add release notes about scoring or learning.

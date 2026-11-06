@@ -3,25 +3,35 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.4.1**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.5.0**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.4.1` |
+| App version | `1.5.0` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 35/35) |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 36/36) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js` |
-| Source lines | 7,386 |
-| Source size | 319,623 bytes |
+| Source lines | 8,195 |
+| Source size | 347,358 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.5.0 — table chat and independent voice
+
+Release 1.5.0 adds two communication paths without changing the authoritative game protocol:
+
+- **Table chat** — a collapsible glass panel in the sidebar. Guest messages go to the host, are escaped, whitespace-normalised, capped at 200 characters and rate-limited to one per 350 ms. The host appends one entry and echoes it to every guest. New guests receive the last 30 messages in `welcome`; history is memory-only.
+- **Voice** — opt-in **Join voice** requests the microphone on a user gesture. Voice-active humans form a full PeerJS media mesh; remote streams attach to hidden `<audio class="remote-player-audio" autoplay playsinline>` elements. The host only relays `voice` presence and `peerId`s, never audio.
+- **Independent mute controls** — **Mute mic** toggles `localStream.getAudioTracks()[0].enabled` without dropping the call. **Mute others** toggles `.muted` on every remote `<audio>`; neither affects the other. The buttons show their state and the status line explains "microphone muted", "others muted" or both.
+- **Speaking pulse** — an analyser per local/remote stream drives a green pulse on the seat avatar and scoreboard row. The analyser is not connected to `destination`; playback is the audio element.
+- **Verification** — the two-browser suite now exercises chat round-trip, voice mesh attachment, mic mute and deafen with a synthetic oscillator stream, 17 checks total.
 
 ## Release 1.4.1 — launch choice and a clear exit
 
@@ -62,8 +72,9 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | Verification, state record, commit and publish | 11:17–11:31 | ~14m |
 | Review gap between requests | 11:31–12:14 | idle |
 | 1.4.1 launch name, resume card, Leave room, phone fit | 12:14–12:34 | ~20m |
+| 1.5.0 chat, voice mesh, mute/deafen, screenshots | 12:34–13:15 | ~41m |
 
-**Measured session wall clock:** **2h 34m 34s** (9,274 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **3h 13m 45s** (11,625 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -71,13 +82,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 440,064 |
-| Output | 165,642 |
-| Reasoning | 81,189 |
-| **Total (input + output + reasoning)** | **686,895** |
-| Cache read | 127,944,064 |
+| Input | 953,484 |
+| Output | 210,270 |
+| Reasoning | 111,188 |
+| **Total (input + output + reasoning)** | **1,274,942** |
+| Cache read | 185,869,568 |
 | Cache write | 1,087 |
-| **Total including cache** | **128,632,046** |
+| **Total including cache** | **187,145,597** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.
@@ -92,7 +103,7 @@ Cache figures describe context reuse, not additional generated work. They are re
 - **Bilingual UI** — EN ⇄ TH across 315 dictionary keys, dynamic coach/log/summary strings, tile names, ARIA labels, lobby copy and 3D labels.
 - **Audio** — synthesised shuffle, clack, flip, sweep, win, lose, undo; unlocked on first gesture; no files.
 - **Persistence** — autosaved solo match, preferences and statistics; reload-resume; versioned JSON export with app, credits, stats and game; network saves marked non-resumable.
-- **Verification** — 35-check in-page suite, 301-check static release check, Chrome CDP harness, full-round test, 13-check two-browser WebRTC suite, 9 release screenshots.
+- **Verification** — 36-check in-page suite, 322-check static release check, Chrome CDP harness, full-round test, 17-check two-browser WebRTC suite, 19 release screenshots.
 - **Release** — README, AGENTS handoff, rules, architecture, multiplayer, protocol, testing, deployment, reproduction, data format, controls, accessibility, performance, design, FAQ, roadmap, release checklist, gallery, glossary, browser support, licence, changelog, contribution/security/privacy/support docs, citation, notices, GitHub templates, static-check workflow and a published skill.
 
 ## Verification snapshot
@@ -101,17 +112,17 @@ Cache figures describe context reuse, not additional generated work. They are re
 | --- | --- |
 | `node --check script.js` | pass |
 | `node --check peer-manager.js` | pass |
-| `node scripts/check.mjs` | pass (301) |
-| In-page self-test | **35/35** |
+| `node scripts/check.mjs` | pass (322) |
+| In-page self-test | **36/36** |
 | `node scripts/verify.mjs` | ALL BROWSER CHECKS PASSED |
-| `node scripts/net-check.mjs` | **13/13** multiplayer checks |
+| `node scripts/net-check.mjs` | **17/17** multiplayer checks |
 | Full round through the public API | `roundEnd`, 32 tiles captured, hands empty, points sum 0 |
 | Host + guest | 2 humans + Bot 1 + Bot 2 |
 | Guest privacy | own 8 real ids; other 24 ghost ids |
 | Actions | 11 lead/follow moves crossed the data channel; a trick resolved |
 | Guest close | seat 1 became a bot; hand and score preserved |
 | Console exceptions | none on host or guest |
-| Screenshots | hero, Thai, rules, mobile, lobby, host panel, mobile lobby, mobile leave, guest table |
+| Screenshots | hero, Thai, rules, mobile, lobby, host panel, mobile lobby, mobile leave, guest table, chat/voice |
 
 The detailed evidence is in [docs/TESTING.md](docs/TESTING.md).
 

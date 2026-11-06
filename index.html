@@ -143,6 +143,27 @@
           </div>
         </section>
 
+        <section class="panel chat-panel" id="chatPanel" hidden>
+          <div class="panel-head">
+            <h2 data-i18n="chat.title">Table chat</h2>
+            <button id="chatToggle" class="mini-btn" type="button" aria-expanded="true" data-i18n="chat.hide">hide</button>
+          </div>
+          <div id="chatBody" class="chat-body">
+            <div class="voice-bar" role="group" aria-label="Voice chat">
+              <button id="voiceJoinBtn" class="voice-btn" type="button">🎤 <span data-i18n="voice.join">Join voice</span></button>
+              <button id="micBtn" class="voice-btn" type="button" disabled>🎤 <span data-i18n="voice.micOn">Mute mic</span></button>
+              <button id="deafenBtn" class="voice-btn" type="button" disabled>🔇 <span data-i18n="voice.deafen">Mute others</span></button>
+              <button id="voiceLeaveBtn" class="voice-btn danger" type="button" hidden>✕ <span data-i18n="voice.leave">Leave voice</span></button>
+            </div>
+            <p id="voiceState" class="voice-state" data-i18n="voice.off">Voice off</p>
+            <ol id="chatList" class="chat-list" aria-live="polite"></ol>
+            <form id="chatForm" class="chat-form" autocomplete="off">
+              <input id="chatInput" class="chat-input" type="text" maxlength="200" placeholder="Message the table…" data-i18n-placeholder="chat.placeholder" aria-label="Chat message" />
+              <button class="btn btn-gold chat-send" type="submit" data-i18n="chat.send">Send</button>
+            </form>
+          </div>
+        </section>
+
         <section class="panel inspector-panel" id="inspectorCard">
           <div class="panel-head">
             <h2 data-i18n="inspector.title">Tile inspector</h2>
@@ -389,6 +410,8 @@
       </div>
     </div>
   </div>
+
+  <div id="remoteAudio" class="remote-audio" aria-hidden="true"></div>
 
   <noscript>
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>

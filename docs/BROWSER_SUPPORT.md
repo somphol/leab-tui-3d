@@ -4,7 +4,7 @@
 
 | Browser | Version | Platform | Result |
 | --- | --- | --- | --- |
-| Google Chrome | current stable (headless) | macOS arm64 | ✅ boot, 35/35 self-test, full round, screenshots |
+| Google Chrome | current stable (headless) | macOS arm64 | ✅ boot, 36/36 self-test, full round, screenshots |
 | Google Chrome | 390×844 device metrics | macOS headless | ✅ responsive layout and hand dock |
 
 ## Expected to work
@@ -22,7 +22,8 @@ These use the same standards (ES modules, import maps, WebGL 2, CanvasTexture, W
 - **WebGL 2** for the table. Without it, `#bootError` appears and the DOM panels remain usable.
 - **ES modules + import maps** for the pinned Three.js import. Very old browsers fail to load `script.js`; there is no transpiled fallback.
 - **Network access to `cdn.jsdelivr.net`** for Three.js r160. Multiplayer also loads PeerJS 1.5.4 from the same CDN and contacts `0.peerjs.com` for signalling. No other remote request is made.
-- **WebRTC data channels** for multiplayer. Chrome, Edge, Firefox and Safari support the reliable ordered channel; older Safari may need a recent version. No camera or microphone permission is requested.
+- **WebRTC data channels** for multiplayer. Chrome, Edge, Firefox and Safari support the reliable ordered channel; older Safari may need a recent version.
+- **Microphone/media** is requested only when the player presses **Join voice**. It needs HTTPS or localhost plus `navigator.mediaDevices.getUserMedia`. Denying it leaves chat and the game usable. No camera permission is requested.
 - **localStorage** for autosave; if denied, the game still runs but does not persist.
 - **AudioContext** for sound; browsers require a user gesture before it starts.
 
@@ -43,7 +44,7 @@ These use the same standards (ES modules, import maps, WebGL 2, CanvasTexture, W
 ## Testing a new browser
 
 1. Serve the folder over HTTP.
-2. Open `?selftest=1`; expect `SELFTEST PASS 35/35`.
+2. Open `?selftest=1`; expect `SELFTEST PASS 36/36`.
 3. Open the page, orbit, select a tile, lead/follow one trick.
 4. Check the inspector, rules modal, language toggle, export and reload.
 5. On mobile, check 390×844 and a landscape orientation; confirm the hand is not behind the dock.

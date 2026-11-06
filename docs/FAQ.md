@@ -73,6 +73,14 @@ The host never sends another player's hand, so a guest cannot read the other han
 
 Sometimes. It uses public STUN only, no TURN relay. Symmetric NAT or a restrictive firewall can block the data channel; a phone hotspot often works.
 
+**Is there in-game chat and voice?**
+
+Yes. **Table chat** is host-routed, escaped, capped at 200 characters and kept in memory. **Join voice** requests the microphone and connects a direct full-mesh voice call; **Mute mic** disables your track without dropping the call, and **Mute others** deafens every remote stream. Neither is recorded.
+
+**Why does Join voice do nothing?**
+
+Voice needs HTTPS or localhost and microphone permission. Denying the prompt leaves chat and the game working. Some corporate networks block WebRTC media; there is no TURN relay.
+
 **Can I resume a network match after reload?**
 
 No. The room lives in the host tab and is deliberately not saved. Reloading ends your side; the host converts your seat to a bot. Solo matches do resume automatically.

@@ -2,9 +2,9 @@
 
 ## 1. What this is
 
-A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, four source files, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots). It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
+A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, five source files, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat and independent full-mesh voice chat (mic mute + deafen). It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.4.1**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.5.0**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -23,6 +23,7 @@ python3 -m http.server 8123
 # static verification (no browser, no dependencies)
 node --check script.js
 node --check peer-manager.js
+node --check voice-chat.js
 node scripts/check.mjs
 
 # headless browser verification (Chrome + local server)
@@ -41,7 +42,7 @@ node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?lobby=1" --wait 350
 git push origin main
 ```
 
-`?selftest=1` runs 35 pure-rule, serialization and redaction checks and sets the document title to `SELFTEST PASS 35/35`. `?demo=1` auto-leads one human combination after dealing so a screenshot shows a real trick. `?seed=123` makes the shuffle reproducible.
+`?selftest=1` runs 36 pure-rule, serialization, redaction and chat checks and sets the document title to `SELFTEST PASS 36/36`. `?demo=1` auto-leads one human combination after dealing so a screenshot shows a real trick. `?seed=123` makes the shuffle reproducible.
 
 Launch modes: no parameter or `?lobby=1` shows the lobby on every normal load, including a saved solo game (Resume match); `?mode=solo` skips it; `?mode=host&name=Ana` opens a room; `?room=ABC234` opens the join panel with the code prefilled (guests confirm their name); `&name=Bea` joins immediately. Network rooms are not resumable. The host/guest exit is **Leave room** in Actions, with confirmation.
 
@@ -58,14 +59,16 @@ Load order: `index.html` → `style.css` → `script.js` (module; import map pin
 5. **Flow** — `beginMatch` → `dealRound` → `beginTrick` → `leadTrick` / `submitPlay` → `resolveTrick` → `endRound` / `startNextRound`; `undoLastTrick` restores the pre-trick snapshot and restarts the trick. `isBotSeat(seat)` is the only AI-scheduling predicate.
 6. **3D scene** — `createScene` dynamically imports Three.js. `scene.deal`, `scene.sync`, `scene.collect`, `scene.flipHumanHand`, `scene.setViewSeat` map state to tile targets; the scene never owns rules. The table and tiles live in a rotatable `world` group; 32 back-only ghost meshes draw other players' private hands.
 7. **Audio** — `StudioAudio` synthesises everything; the context is unlocked by the first pointer/key event.
-8. **UI** — `renderAll` → HUD, scoreboard, hand list, selection dock, coach, log, inspector; `applyLanguage` swaps all `data-i18n` text and re-renders the 3D labels. `applyFontSize` sets `--fs-scale` and `applyTheme` sets `data-theme`; both persist in prefs and are exposed in the Display modal. `renderRankReference` builds the pictorial rank ladder; `setRankReference` toggles it.
+8. **UI** — `renderAll` → HUD, scoreboard, hand list, selection dock, coach, log, inspector; `applyLanguage` swaps all `data-i18n` text and re-renders the 3D labels. `renderChat` and `renderVoiceState` own the chat/voice panel. `applyFontSize` sets `--fs-scale` and `applyTheme` sets `data-theme`; both persist in prefs and are exposed in the Display modal. `renderRankReference` builds the pictorial rank ladder; `setRankReference` toggles it.
 9. **Persistence/export** — `saveMatch`, `savePrefs`, `saveStats`, `loadMatch`, `buildExport`, `exportGame`.
-10. **Multiplayer** — `sanitizeForSeat` (privacy boundary), `hydrateRemoteState`, `publishState`, `createHostRoom`, `joinRoom`, `startHostedMatch`, `convertSeatToBot`, `showLobby`, `renderLobby`, `netSelfTest`.
+10. **Multiplayer** — `sanitizeForSeat` (privacy boundary), `hydrateRemoteState`, `publishState`, `createHostRoom`, `joinRoom`, `startHostedMatch`, `convertSeatToBot`, `showLobby`, `renderLobby`, `hostChat`, `sendChat`, `syncVoicePeers`, `netSelfTest`.
 11. **Self-test** — `selfTest()` and `netSelfTest()`; also exposed through `window.LeabTui`.
 
 Boot order: `loadPrefs` → `loadStats` → `applyLanguage` → `bindEvents` → `loadMatch` (resume if valid, else `makeState`) → `createScene` → `dealRound` or resume → optional lobby / `?mode=host` / `?room=`. If the CDN/WebGL fails, `#bootError` appears and the rule/coach panels still work.
 
 `peer-manager.js` owns only transport and room codes: `makeRoomCode`, `normalizeRoomCode`, `peerIdForCode`, `PeerHost`, `PeerClient`, `openHostWithRetry`, `createLoopbackPair`.
+
+`voice-chat.js` owns the independent media mesh: `VoiceChat.join`, `joinWithStream`, `leave`, `setMicMuted`, `setDeafened`, `setPeers`, the analyser meter and remote `<audio>` attachment.
 
 Key constants and formats:
 
@@ -75,7 +78,7 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.4.1"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.5.0"
 prefs: theme mahogany|jade|midnight|parchment|daybreak; fontSize sm|md|lg|xl; CSS --fs-scale 0.9/1/1.12/1.24
 room: LEAB-ABC-234; peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
@@ -97,13 +100,18 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **View rotation.** `scene.setViewSeat(MY_SEAT)` rotates the `world` group by `-SEATS[seat].angle`; lights, camera and floor stay fixed. Do not rotate the camera to fake a seat view.
 - **Disconnect.** A dropped guest keeps their seat, hand, captures and score; the profile becomes a bot and the host schedules AI if it is their turn. Do not delete or reseat mid-match.
 - **No host migration.** A closed host ends the room. Guests see "Table closed". Do not pretend the match resumes.
+- **Chat goes through the host.** `sendChat` → host `hostChat` → append once → broadcast one entry to every guest. Cap at 200 chars and rate-limit guests (350 ms). Never inject chat with `innerHTML`.
+- **Voice does not go through the host.** It is a full mesh of PeerJS media calls between voice-active humans. The host only relays `voice-state` and the roster's `peerId`/`voice` flags. Do not route voice over the data channel.
+- **Mic mute is `track.enabled = false`**, not `track.stop()` and not closing the call. Deafen is `audio.muted` on every remote element, not the local mic.
+- **Voice is opt-in.** Never call `getUserMedia` on load; it must be a user gesture with HTTPS/localhost. Render `<audio autoplay playsinline>` only after a stream arrives.
+- **Speaking meter** uses `AudioContext` analysers and a 120 ms interval; it must not connect to `destination` (playback is the `<audio>` element).
 - **The 3D scene is a view.** `scene.sync(state)` is idempotent; it animates only targets that differ. Never mutate `state` from inside the scene except through the public callbacks (`toggleTile`, `inspect*`).
 - **Camera.** Desktop home is `(0, 10.2, 11.4)` target `(0, 0.22, 0.9)`; portrait is `(0, 14.3, 17.2)` target `(0, 0.18, 0.7)` with FOV 46. The wider portrait framing is required so the human hand is not cropped. The mobile hand dock must stay under ~110 px or it hides the hand.
 - **Audio.** `StudioAudio.play` returns until `unlocked` is true. Never create/resume an `AudioContext` before a user gesture; Chrome logs autoplay warnings otherwise. The graph is `source → filter → gain → panner → master (0.8) → compressor → analyser → destination`. If the context is still suspended at the first play, `play` calls `resume()` and retries; this covers the first-gesture race. Keep the analyser tap: `verify.mjs` measures a real RMS peak. Do not lower the master to the old 0.32 without re-measuring; it was effectively inaudible.
 - **CDN pins.** `three@0.160.0` in the import map and `peerjs@1.5.4` in `peer-manager.js`. Do not float either version. If the CDN fails, the table cannot render and rooms cannot open; that is a documented limitation, not a reason to inline the libraries.
 - **CSP.** `script-src` allows `'unsafe-inline'` only because import maps are inline. `connect-src` allows jsDelivr, `https://0.peerjs.com` and `wss://0.peerjs.com`. The app has no inline event handlers. Do not add remote fonts or analytics.
 - **Display settings.** Font size scales the interface through `--fs-scale` on `html[data-font-size]`, never the 3D table. Five themes are `html[data-theme]` CSS variables plus `SCENE_THEMES`: Mahogany, Jade Court, Midnight Lacquer, Parchment and Daybreak. `scene.setTheme` must dispose the replaced felt/wood/back textures. Never add a theme that only recolours the panels and leaves the 3D scene behind.
-- **No build step.** Keep it four runtime files. Scripts may verify, screenshot, or publish, but must not generate the runtime source.
+- **No build step.** Keep it five runtime files. Scripts may verify, screenshot, or publish, but must not generate the runtime source.
 
 ## 5. Known issues
 
@@ -114,6 +122,7 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - The mobile layout is verified in headless Chrome at 390×844, not on physical iOS/Android hardware. Safe-area insets are not handled.
 - The page requires network access for Three.js. Multiplayer also needs jsDelivr for PeerJS and `0.peerjs.com` for signalling. The HUD and coach work without them; the table and rooms do not.
 - Multiplayer is host-authoritative with no host migration, authentication, turn timer or anti-cheat. A closed host ends the room; an idle guest can stall the table.
+- Voice is full-mesh and needs microphone permission plus HTTPS/localhost; no TURN relay, noise gate, push-to-talk or recording. Chat is unmoderated and not persisted.
 - Public STUN only, no TURN. Symmetric NAT or a strict corporate firewall can block the data channel.
 - Redaction keeps other hands off the wire, but the host browser knows every hand and a guest can inspect their own client. Play with people you trust.
 - The title/meta screenshots use the `?demo=1` seed state; regenerating them changes the hand and may change the coach text.

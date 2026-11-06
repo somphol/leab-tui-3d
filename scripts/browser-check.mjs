@@ -47,6 +47,7 @@ const chrome = spawn(chromePath, [
   `--user-data-dir=${profile}`,
   `--remote-debugging-port=${port}`,
   ...(process.env.AUDIO_TEST ? ["--autoplay-policy=no-user-gesture-required"] : []),
+  ...(process.env.FAKE_MEDIA ? ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"] : []),
   "about:blank"
 ], { stdio: ["ignore", "ignore", "pipe"] });
 

@@ -46,6 +46,8 @@ const chrome = spawn(chromePath, [
   `--user-data-dir=${profile}`,
   `--remote-debugging-port=${port}`,
   "--autoplay-policy=no-user-gesture-required",
+  "--use-fake-device-for-media-stream",
+  "--use-fake-ui-for-media-stream",
   "about:blank"
 ], { stdio: ["ignore", "ignore", "pipe"] });
 let chromeErr = "";
@@ -227,6 +229,57 @@ async function main() {
     fail("host in-game controls: leave visible, start hidden", JSON.stringify(hostControls));
   }
   await host.eval("document.querySelector('#lobbyModal').hidden = true; true");
+
+  await guest.eval("LeabTui.chat.send('Guest says hello'); true");
+  await sleep(800);
+  const hostChat = JSON.parse(await host.eval("JSON.stringify(LeabTui.chat.messages())"));
+  const guestChat = JSON.parse(await guest.eval("JSON.stringify(LeabTui.chat.messages())"));
+  if (hostChat.some((m) => m.text === "Guest says hello") && guestChat.some((m) => m.text === "Guest says hello")) {
+    pass("text chat crossed the data channel", `${hostChat.length} host / ${guestChat.length} guest message(s)`);
+  } else {
+    fail("text chat crossed the data channel", JSON.stringify({ hostChat, guestChat }));
+  }
+
+  const synth = `(async () => {
+    const ctx = new AudioContext();
+    await ctx.resume();
+    const osc = ctx.createOscillator();
+    const dest = ctx.createMediaStreamDestination();
+    osc.connect(dest);
+    osc.start();
+    window.__fakeVoice = { ctx, osc, stream: dest.stream };
+    return dest.stream.getAudioTracks().length;
+  })()`;
+  await host.eval(synth);
+  await guest.eval(synth);
+  await host.eval("LeabTui.voice.joinWithStream(window.__fakeVoice.stream)");
+  await guest.eval("LeabTui.voice.joinWithStream(window.__fakeVoice.stream)");
+  const voiceHost = JSON.parse(await host.waitFor(`window.LeabTui.voice.state()?.remotes >= 1 ? JSON.stringify({
+    state: LeabTui.voice.state(),
+    audio: [...document.querySelectorAll('audio.remote-player-audio')].map((a) => ({ muted: a.muted, hasStream: Boolean(a.srcObject) }))
+  }) : ''`, "host voice stream", 20000));
+  const voiceGuest = JSON.parse(await guest.waitFor(`window.LeabTui.voice.state()?.remotes >= 1 ? JSON.stringify({
+    state: LeabTui.voice.state(),
+    audio: [...document.querySelectorAll('audio.remote-player-audio')].map((a) => ({ muted: a.muted, hasStream: Boolean(a.srcObject) }))
+  }) : ''`, "guest voice stream", 20000));
+  if (voiceHost.state.joined && voiceHost.audio.length >= 1 && voiceHost.audio.every((a) => a.hasStream)
+    && voiceGuest.state.joined && voiceGuest.audio.length >= 1 && voiceGuest.audio.every((a) => a.hasStream)) {
+    pass("voice mesh attached remote audio", `${voiceHost.audio.length}+${voiceGuest.audio.length} stream(s)`);
+  } else {
+    fail("voice mesh attached remote audio", JSON.stringify({ voiceHost, voiceGuest }));
+  }
+
+  const micState = JSON.parse(await host.eval("LeabTui.voice.mic(true); JSON.stringify(LeabTui.voice.state())"));
+  if (micState.micMuted && micState.micEnabled === false) pass("mic mute disables the local track");
+  else fail("mic mute disables the local track", JSON.stringify(micState));
+  await host.eval("LeabTui.voice.mic(false); true");
+
+  await guest.eval("LeabTui.voice.deafen(true); true");
+  await sleep(200);
+  const mutedRemotes = JSON.parse(await guest.eval("JSON.stringify([...document.querySelectorAll('audio.remote-player-audio')].map((a) => a.muted))"));
+  if (mutedRemotes.length >= 1 && mutedRemotes.every(Boolean)) pass("deafen mutes every remote audio element", `${mutedRemotes.length} element(s)`);
+  else fail("deafen mutes every remote audio element", JSON.stringify(mutedRemotes));
+  await guest.eval("LeabTui.voice.deafen(false); true");
 
   // Drive whichever human seat is on turn until a trick resolves. This works
   // regardless of who holds the red General and exercises both directions of

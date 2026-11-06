@@ -7,6 +7,14 @@
 - If the coach says a set cannot beat the table, try **Hint** or play face-down and keep the set for a later lead.
 - For a room, read [docs/MULTIPLAYER.md](docs/MULTIPLAYER.md). The host must keep the tab open; "Room not found" usually means the code is wrong or the host left.
 
+## Chat or voice is not working
+
+- Chat is only available in a room; the panel is hidden in solo.
+- Voice needs HTTPS or localhost and microphone permission. Check the browser's site settings.
+- **Mute mic** should stop your track without dropping the call; **Mute others** only deafens incoming audio.
+- Echo is usually the room, not the app: headphones help. There is no noise gate or push-to-talk.
+- If one peer is silent, leave and rejoin voice; a strict NAT can block media even when game data works.
+
 ## Multiplayer bug reports
 
 Include:

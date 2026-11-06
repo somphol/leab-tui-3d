@@ -37,6 +37,7 @@ const required = [
   "style.css",
   "script.js",
   "peer-manager.js",
+  "voice-chat.js",
   "favicon.svg",
   "README.md",
   "AGENTS.md",
@@ -102,7 +103,9 @@ const required = [
   "screenshots/lobby.jpg",
   "screenshots/lobby-mobile.jpg",
   "screenshots/guest-play.jpg",
-  "screenshots/mobile-leave.jpg"
+  "screenshots/mobile-leave.jpg",
+  "screenshots/chat-voice.jpg",
+  "screenshots/mobile-chat.jpg"
 ];
 
 for (const file of required) {
@@ -113,6 +116,7 @@ const index = read("index.html");
 const css = read("style.css");
 const script = read("script.js");
 const peer = read("peer-manager.js");
+const voice = read("voice-chat.js");
 const readme = read("README.md");
 const agents = read("AGENTS.md");
 const changelog = read("CHANGELOG.md");
@@ -125,6 +129,9 @@ ok(/Content-Security-Policy/.test(index), "index has CSP");
 ok(index.includes("https://0.peerjs.com") && index.includes("wss://0.peerjs.com"), "CSP allows the PeerJS broker");
 ok(index.includes('id="lobbyModal"') && index.includes('id="lobbyHost"') && index.includes('id="lobbyJoin"'), "launch lobby markup exists");
 ok(index.includes('id="netChip"'), "network room chip exists");
+ok(index.includes('id="chatPanel"') && index.includes('id="chatList"') && index.includes('id="chatForm"'), "table chat markup exists");
+ok(index.includes('id="voiceJoinBtn"') && index.includes('id="micBtn"') && index.includes('id="deafenBtn"'), "voice controls exist");
+ok(index.includes('id="remoteAudio"') && css.includes(".remote-audio") && css.includes(".chat-panel"), "remote audio and chat styles exist");
 ok(/type="importmap"/.test(index), "index has an import map");
 ok(index.includes("three@0.160.0/build/three.module.js"), "Three.js r160 is pinned");
 ok(index.includes("three@0.160.0/examples/jsm/"), "OrbitControls addons are pinned");
@@ -168,6 +175,11 @@ ok(peer.includes("peerjs@${PEERJS_VERSION}") && peer.includes('PEERJS_VERSION = 
 ok(peer.includes("export function makeRoomCode") && peer.includes("normalizeRoomCode"), "room code helpers exist");
 ok(peer.includes("class PeerHost") && peer.includes("class PeerClient"), "host and guest transports exist");
 ok(peer.includes("createLoopbackPair"), "loopback transport exists for tests");
+ok(script.includes("function sendChat") && script.includes("function hostChat"), "chat routing exists");
+ok(voice.includes("getUserMedia") && voice.includes("getAudioTracks") && voice.includes("enabled = !this.micMuted"), "mic mute uses the local track");
+ok(voice.includes("audio.muted = this.deafened"), "deafen mutes remote audio elements");
+ok(voice.includes("createMediaStreamSource") && voice.includes("onSpeaking"), "speaking meter exists");
+ok(script.includes("syncVoicePeers") && script.includes("voice-state"), "voice roster sync exists");
 ok(script.includes("function renderRankReference"), "rank reference renderer exists");
 ok(script.includes("function setRankReference"), "rank reference toggle exists");
 ok(index.includes('id="rankReference"') && index.includes('id="rankReferenceBtn"'), "rank reference markup exists");
@@ -201,7 +213,7 @@ ok(script.includes("function selfTest"), "self-test exists");
 // Count the self-test checks to keep the documented count honest.
 const selfTestBody = script.slice(script.indexOf("function netSelfTest()"), script.indexOf("function simulateRound"));
 const selfTestCount = (selfTestBody.match(/check\(/g) || []).length;
-ok(selfTestCount >= 35, "self-test has at least 35 checks", String(selfTestCount));
+ok(selfTestCount >= 36, "self-test has at least 36 checks", String(selfTestCount));
 
 // i18n symmetry
 const enBlock = script.slice(script.indexOf("  en: {"), script.indexOf("  th: {"));
@@ -211,7 +223,7 @@ const enKeys = keys(enBlock);
 const thKeys = keys(thBlock);
 const missingTh = enKeys.filter((key) => !thKeys.includes(key));
 const missingEn = thKeys.filter((key) => !enKeys.includes(key));
-ok(enKeys.length >= 300, "English dictionary is substantial", String(enKeys.length));
+ok(enKeys.length >= 330, "English dictionary is substantial", String(enKeys.length));
 ok(!missingTh.length && !missingEn.length, "i18n dictionaries are symmetrical", `missing TH: ${missingTh.join(",")} | missing EN: ${missingEn.join(",")}`);
 
 // Relative Markdown links must exist.
@@ -253,7 +265,7 @@ const secretPatterns = [
   /AKIA[0-9A-Z]{16}/,
   /sk-[A-Za-z0-9]{20,}/
 ];
-for (const file of ["index.html", "style.css", "script.js", "peer-manager.js", "README.md", "AGENTS.md", "STATE.md", "state.json"]) {
+for (const file of ["index.html", "style.css", "script.js", "peer-manager.js", "voice-chat.js", "README.md", "AGENTS.md", "STATE.md", "state.json"]) {
   if (!exists(file)) continue;
   for (const pattern of secretPatterns) {
     ok(!pattern.test(read(file)), `possible secret in ${file}`, pattern.source);
@@ -272,6 +284,13 @@ try {
   ok(true, "peer-manager.js parses");
 } catch (error) {
   ok(false, "peer-manager.js parses", error.message);
+}
+
+try {
+  execFileSync(process.execPath, ["--check", join(root, "voice-chat.js")], { stdio: "pipe" });
+  ok(true, "voice-chat.js parses");
+} catch (error) {
+  ok(false, "voice-chat.js parses", error.message);
 }
 
 if (failures.length) {

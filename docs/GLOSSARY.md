@@ -51,3 +51,10 @@
 | **DTLS** | The encryption WebRTC data channels use in transit. |
 | **STUN** | A service that helps peers discover their public address for NAT traversal. |
 | **TURN** | A relay for peers that cannot connect directly; not configured in this release. |
+| **Chat relay** | The host appends guest chat once and echoes it to every guest. |
+| **Voice mesh** | Every voice-active human calls every other voice-active human directly. |
+| **Mic mute** | `localStream.getAudioTracks()[0].enabled = false`; the call stays connected. |
+| **Deafen** | `.muted = true` on every remote `<audio>` element; the local mic is unchanged. |
+| **Speaking meter** | Per-stream `AnalyserNode` RMS that drives the green voice pulse. |
+| **`getUserMedia`** | The browser API that asks for microphone permission and returns a MediaStream. |
+| **DTLS-SRTP** | The encryption used by WebRTC media and data channels in transit. |

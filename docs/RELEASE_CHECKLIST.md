@@ -9,13 +9,15 @@
 - [ ] `STATE.md` reflects the same numbers and the actual verification results.
 - [ ] `node --check script.js` and `node --check peer-manager.js` pass.
 - [ ] `node scripts/check.mjs` passes.
-- [ ] `?selftest=1` shows `SELFTEST PASS 35/35`.
+- [ ] `?selftest=1` shows `SELFTEST PASS 36/36`.
 - [ ] `node scripts/verify.mjs` passes (boot, scene, full round, no exceptions).
-- [ ] `node scripts/net-check.mjs` passes on a real network (host, join, redaction, disconnect-to-bot).
+- [ ] `node scripts/net-check.mjs` passes on a real network (host, join, redaction, chat, voice, mic mute, deafen, disconnect-to-bot).
 - [ ] A full round, undo, next round and reload were exercised manually.
 - [ ] EN and TH screenshots regenerated if UI or copy changed.
 - [ ] Lobby screenshot regenerated if the multiplayer UI changed.
 - [ ] Two-browser smoke test: host + guest on different networks, one guest disconnect, seat becomes a bot.
+- [ ] Microphone permission and voice mesh tested in at least two real browsers; mute and deafen checked independently.
+- [ ] Chat text escaped, length-capped and visible to host and guest.
 - [ ] Mobile screenshot at 390×844 checked; hand not hidden by the dock.
 - [ ] Rules modal checked in both languages.
 - [ ] No console errors and no autoplay warnings.
@@ -30,7 +32,7 @@
 git status
 git diff --stat
 git add -A
-git commit -m "Release Leab-Tui 3D 1.4.1"
+git commit -m "Release Leab-Tui 3D 1.5.0"
 git push origin main
 ```
 
@@ -43,7 +45,7 @@ Use one release commit if possible. Do not commit `node_modules`, local saves, s
 - [ ] Open the live URL and repeat the smoke test: boot, selftest, one trick, language toggle, export.
 - [ ] Check the live page over HTTPS and confirm there is no mixed content.
 - [ ] Confirm the repository is public and contains no secrets.
-- [ ] Tag the release: `git tag -a v1.4.1 -m "Leab-Tui 3D 1.4.1" && git push origin v1.4.1`.
+- [ ] Tag the release: `git tag -a v1.5.0 -m "Leab-Tui 3D 1.5.0" && git push origin v1.5.0`.
 - [ ] Create a GitHub release with the changelog and the hero screenshot.
 - [ ] Verify the Open Graph image path resolves on Pages.
 - [ ] Update the README “Live demo” link if the Pages URL changed.
@@ -61,6 +63,6 @@ Use one release commit if possible. Do not commit `node_modules`, local saves, s
 
 - `screenshots/hero.jpg`, `thai.jpg`, `mobile.jpg`, `rules.jpg`, `lobby.jpg`.
 - The exact commands and output of `scripts/check.mjs`, `scripts/verify.mjs` and `scripts/net-check.mjs`.
-- The self-test title (`SELFTEST PASS 35/35`).
+- The self-test title (`SELFTEST PASS 36/36`).
 - `state.json` with the measured duration and tokens.
 - The live URL and the commit SHA.

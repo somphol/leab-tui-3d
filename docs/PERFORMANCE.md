@@ -56,6 +56,7 @@ A desktop GPU should hold 60 fps comfortably. Headless SwiftShader is slower; no
 5. **Avoid `clone` on large state** in the snapshot. The state is small (32 tiles + logs), but `structuredClone` on every trick is still a measurable allocation. A shallow ID snapshot would be cheaper.
 6. **Instanced tiles** would cut draw calls, but 32 meshes is not the bottleneck; the complexity is not justified.
 7. **Reduce texture size for the felt** to 512 on mobile; the medallion is soft anyway.
+8. **Gate the voice meter when deafened** or when the chat panel is collapsed if you need to shave a few percent of CPU.
 
 ## Memory
 
