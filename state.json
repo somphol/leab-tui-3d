@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-06T11:28:01-08:00",
-    "durationSeconds": 4948,
-    "durationHuman": "1h 22m 28s",
+    "packagedAt": "2026-11-06T11:31:30-08:00",
+    "durationSeconds": 5157,
+    "durationHuman": "1h 25m 57s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update). The final state commit and push add a small amount.",
     "includes": "1.4.0 P2P work: seat refactor, PeerJS transport, lobby, host authority, per-seat redaction, ghost meshes, seat-relative view, bot fill, disconnect-to-bot, two-browser harness, protocol/multiplayer docs, screenshots, release files and the skill mirror.",
-    "publishedAt": "2026-11-06T19:20:00Z"
+    "publishedAt": "2026-11-06T19:31:40Z"
   },
   "tokens": {
-    "input": 356683,
-    "output": 129802,
-    "reasoning": 55207,
-    "cacheRead": 76970368,
+    "input": 361358,
+    "output": 132347,
+    "reasoning": 55836,
+    "cacheRead": 80757504,
     "cacheWrite": 1087,
-    "total": 541692,
-    "totalWithCache": 77513147,
+    "total": 549541,
+    "totalWithCache": 81308132,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T11:28:01-08:00, covering the 1.4.0 multiplayer build and release."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T11:31:30-08:00, after the 1.4.0 commit and Pages verification. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -135,10 +135,10 @@
     {
       "version": "1.4.0",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-06T11:28:01-08:00",
-      "durationSeconds": 4948,
-      "durationHuman": "1h 22m 28s",
-      "tokensAdded": 541692,
+      "completedAt": "2026-11-06T11:31:30-08:00",
+      "durationSeconds": 5157,
+      "durationHuman": "1h 25m 57s",
+      "tokensAdded": 549541,
       "summary": "Serverless WebRTC multiplayer, seat refactor, redaction, ghost meshes, lobby, disconnect-to-bot, protocol docs, two-browser harness, screenshots and skill mirror."
     }
   ],

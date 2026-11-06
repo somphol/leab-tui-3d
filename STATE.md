@@ -50,7 +50,7 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | Docs set, protocol, release files, screenshots | 11:04–11:17 | ~13m |
 | Verification, state record, commit and publish | 11:17–… | final |
 
-**Measured session wall clock:** **1h 22m 28s** (4,948 s) from the OpenCode session record at the last token measurement. The final commit and push add a small amount.
+**Measured session wall clock:** **1h 25m 57s** (5,157 s) from the OpenCode session record at the last token measurement. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -58,13 +58,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T11
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 356,683 |
-| Output | 129,802 |
-| Reasoning | 55,207 |
-| **Total (input + output + reasoning)** | **541,692** |
-| Cache read | 76,970,368 |
+| Input | 361,358 |
+| Output | 132,347 |
+| Reasoning | 55,836 |
+| **Total (input + output + reasoning)** | **549,541** |
+| Cache read | 80,757,504 |
 | Cache write | 1,087 |
-| **Total including cache** | **77,513,147** |
+| **Total including cache** | **81,308,132** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.
