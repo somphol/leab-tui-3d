@@ -74,6 +74,30 @@ Pale blue-white panels, navy ink and a teal table — the second bright theme.
 
 The stress case: 390×844, 1.24× text and the Jade Court palette. The header drops the About icon (it moves to the sidebar footer), the HUD wraps to two rows, the action buttons wrap to two rows, and the hand is still visible.
 
+## Multiplayer lobby
+
+![Multiplayer lobby](../screenshots/lobby.jpg)
+
+The launch overlay: **Play solo**, **Host a table** and **Join a table**, with a short privacy note. The dimmed table behind is the solo deal, so the 3D scene is already warm when the player chooses.
+
+## Host panel
+
+![Host panel](../screenshots/lobby-host.jpg)
+
+A live room: the branded code, copy-invite field, the host seat and three bot-preview seats. The Start button stays disabled with a clear "Need 2 humans" reason. The code in the screenshot is from a live broker session and is no longer open.
+
+## Multiplayer lobby — phone
+
+![Multiplayer lobby on a phone](../screenshots/lobby-mobile.jpg)
+
+The same overlay at 390×844: one mode per row, full-width touch targets, and the privacy note still readable without scrolling the card.
+
+## Guest table
+
+![Guest table](../screenshots/guest-play.jpg)
+
+A guest's view after the host started: the guest's own hand is at the bottom, the host is on the left, bots are opposite and right, and the room chip shows `LEAB-JUG-MPF`. The other hands are back-only ghost meshes; the wire never carried their tile ids. This capture came from `scripts/net-check.mjs` with `GUEST_SHOT` set.
+
 ## What is not shown
 
 - The match-end summary and the undo comparison modal. Both use the same card system; capture them if you add release notes about scoring or learning.
@@ -93,6 +117,8 @@ node scripts/browser-check.mjs \
   --out screenshots/hero.png
 
 node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?demo=1" --width 390 --height 844 --wait 16000 --out screenshots/mobile.png
+
+node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?lobby=1" --wait 3500 --out screenshots/lobby.png
 ```
 
 Then convert with `sips -s format jpeg -s formatOptions 86 screenshots/hero.png --out screenshots/hero.jpg` (or any image tool). The PNGs are working files; the repository ships the JPGs.

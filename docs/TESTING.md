@@ -4,17 +4,19 @@
 
 | Layer | Tool | What it proves |
 | --- | --- | --- |
-| Syntax | `node --check script.js` | the module parses |
-| Repository | `node scripts/check.mjs` | files, links, version, i18n parity, rule constants, serialization policy, CDN pin, release identity |
-| Rules | `?selftest=1` → `selfTest()` | 25 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export |
+| Syntax | `node --check script.js` + `peer-manager.js` | both modules parse |
+| Repository | `node scripts/check.mjs` | files, links, version, i18n parity, rule constants, serialization policy, CDN pins, redaction guards |
+| Rules + protocol | `?selftest=1` → `selfTest()` | 35 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export, room codes, redaction, hydration, loopback |
 | Browser | `node scripts/verify.mjs` | Chrome loads the page, no console exceptions, the table renders, the self-test passes |
-| Flow | CDP playthrough (below) | a complete round, undo, next round, reload-resume, 32-tile conservation |
-| Visual | screenshots in `screenshots/` | desktop EN, desktop TH, rules drawer, 390×844 phone layout |
+| Flow | CDP playthrough (below) | a complete round, 32-tile conservation |
+| Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, actions, disconnect-to-bot |
+| Visual | screenshots in `screenshots/` | desktop EN, desktop TH, rules drawer, 390×844 phone, lobby |
 
 Run the static checks first:
 
 ```bash
 node --check script.js
+node --check peer-manager.js
 node scripts/check.mjs
 ```
 
@@ -23,11 +25,12 @@ Start a server for browser checks:
 ```bash
 python3 -m http.server 8123 &
 node scripts/verify.mjs
+node scripts/net-check.mjs   # real broker, needs outbound 0.peerjs.com
 ```
 
-`scripts/verify.mjs` starts its own server on port 8123 if one is not already running, launches Chrome through `scripts/browser-check.mjs`, reads `window.__selftest`, and fails on any console exception.
+`scripts/verify.mjs` starts its own server on port 8123 if one is not already running, launches Chrome through `scripts/browser-check.mjs`, reads `window.__selftest`, and fails on any console exception. `scripts/net-check.mjs` is separate because it depends on the public broker; it launches two pages in one headless Chrome.
 
-## The 25 self-checks
+## The 35 self-checks
 
 | # | Check | Expected |
 | --- | --- | --- |
@@ -54,10 +57,20 @@ node scripts/verify.mjs
 | 21 | deal gives four hands of eight | 4 × 8, 32 unique |
 | 22 | scoring table | `-2,-1,0,1,2,3,4,5,16` |
 | 23 | simulated round conserves tiles | captures = 32 |
-| 24 | i18n keys symmetrical | EN and TH both 245 keys |
+| 24 | i18n keys symmetrical | EN and TH share every key |
 | 25 | export payload shape | app + credits + 4 scores |
+| 26 | room code | six chars from the unambiguous alphabet |
+| 27 | code normalization | `leab-abc-234` → `ABC234` |
+| 28 | incomplete code rejected | `ABC` → `null` |
+| 29 | formatted code | starts with `LEAB-` |
+| 30 | peer id stability | uppercase and dashed codes collide intentionally |
+| 31 | redaction hides another hand | every id is a ghost |
+| 32 | redaction keeps the recipient hand | every id is real |
+| 33 | host-only maps stripped | no `hiddenTags`, no `snapshot` |
+| 34 | ghost hydration | `ghost-2-3` round-trips |
+| 35 | loopback transport | envelope arrives with `__leab: 1` |
 
-Latest result: **SELFTEST PASS 25/25** (Chrome headless, 2026-11-04).
+Latest result: **SELFTEST PASS 35/35** (Chrome headless, 2026-11-06).
 
 ## Recorded flow tests
 
@@ -145,6 +158,25 @@ stored: true
 
 The saved game survived the reload and the scene re-synced. A saved `roundEnd` or `matchEnd` reopens the summary.
 
+### Multiplayer, two real browsers
+
+`node scripts/net-check.mjs` opens a host page (`?mode=host`) and a guest page
+(`?room=CODE&name=Guest`) in the same headless Chrome, then asserts:
+
+```text
+host room             LEAB-ABC-234   (branded, six-char code)
+guest seat            1
+lobby humans          2
+start                 host + guest + Bot 1 + Bot 2
+guest own hand        8 real tile ids
+other hands           24 ghost ids, no real ids on the wire
+actions               9–13 moves crossed the channel, a trick resolved
+guest tab closed      seat 1 became Bot 3, score/hand preserved
+console               no exceptions on either page
+```
+
+The privacy check is the important one: it reads the guest's `LeabTui.getState()` and asserts that every id outside the guest's own seat starts with `ghost-`. That value comes from the actual data channel, not from a unit stub.
+
 ## Manual checklist
 
 ### First load
@@ -187,6 +219,21 @@ The saved game survived the reload and the scene re-synced. A saved `roundEnd` o
 - [ ] **Export JSON** downloads `leab_tui_3d_game.json` with `format`, `version`, `app`, `credits`, `stats` and `game`.
 - [ ] Cleared site data starts a new match without an error.
 
+### Multiplayer
+
+- [ ] The launch overlay offers Play solo, Host a table and Join a table.
+- [ ] Host shows a `LEAB-XXX-XXX` code, a 4-seat roster and a disabled Start until a second human joins.
+- [ ] Copy invite link copies a URL with `?room=...`.
+- [ ] Guest enters the code and a name; the waiting panel shows the same roster.
+- [ ] Host Start fills empty seats with bots and deals immediately on both screens.
+- [ ] Each guest sees their own hand face-up and the other three hands face-down.
+- [ ] A guest's own seat appears at the bottom of their table (the world rotates).
+- [ ] Guest actions are reflected on the host and all other guests within a second.
+- [ ] A guest closing the tab leaves their score and hand in place; a bot takes over and play continues.
+- [ ] Host leaving shows "Table closed" to guests with a Play solo escape.
+- [ ] `?mode=solo` and a resumed solo save never show the launch overlay.
+- [ ] A blocked PeerJS CDN leaves solo play unaffected.
+
 ### Responsive
 
 - [ ] 1440×900: sidebar visible, hand dock fits, inspector readable.
@@ -203,6 +250,7 @@ The saved game survived the reload and the scene re-synced. A saved `roundEnd` o
 | `screenshots/thai.jpg` | Thai header, labels, coach, inspector and hand list |
 | `screenshots/rules.jpg` | readable modal, hierarchy, calls grid, no overflow |
 | `screenshots/mobile.jpg` | table fits, human hand not hidden by the dock, buttons all reachable |
+| `screenshots/lobby.jpg` | launch overlay, three modes, no clipped copy |
 
 A green suite does not prove the table looks right. Inspect the screenshots after any camera, material or dock change.
 
@@ -212,10 +260,13 @@ A green suite does not prove the table looks right. Inspect the screenshots afte
 - No automated axe-core pass. The DOM uses semantic headings, buttons, `aria-live` for the coach and toast layer, and labelled icon buttons, but this has not been audited by a screen reader.
 - No physical iOS/Android testing. The mobile layout is verified at 390×844 under Chrome device metrics only.
 - The AI is not benchmarked for strength; only its legality and conservation are tested.
+- `scripts/net-check.mjs` needs outbound access to `0.peerjs.com`; it is not part of the default `verify.mjs` run.
+- Redaction is tested from the guest's JavaScript state, not by inspecting every packet. The host is trusted by design.
 
 ## Adding a test
 
 1. Add the pure check to `selfTest()` in `script.js`; use `check("name", () => ...)`.
 2. If it is a rule invariant, add it to `scripts/check.mjs` as a string/regex guard too.
 3. If it is a flow, add a CDP expression to `scripts/verify.mjs` and assert on `window.LeabTui.getState()`.
-4. Update this document and the count in the title assertion (`25/25`).
+4. If it is a protocol or redaction invariant, add it to `netSelfTest()` and, when it needs a real channel, to `scripts/net-check.mjs`.
+5. Update this document and the count in the title assertion (`35/35`).

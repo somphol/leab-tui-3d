@@ -3,116 +3,102 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release 1.1.0: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.4.0**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.3.2` |
+| App version | `1.4.0` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 25/25) |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 35/35) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
-| Source files | `index.html`, `style.css`, `script.js` |
-| Source lines | 5,256 |
-| Source size | 234,492 bytes (~229 KB) |
-| Runtime dependency | Three.js r160 from jsDelivr (pinned) |
+| Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js` |
+| Source lines | 7,163 |
+| Source size | 310,181 bytes |
+| Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
+| Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
-## Release 1.1.0 — display settings
+## Release 1.4.0 — serverless P2P multiplayer
 
-Added a **Display** panel (`Aa` in the stage toolbar) with four interface text sizes — Small (0.9×), Default (1×), Large (1.12×), Extra large (1.24×) — and the original three themes:
+Release 1.4.0 adds a **host-authoritative WebRTC table** without a game server:
 
-- **Mahogany** — the original burgundy felt, brass and lacquer red.
-- **Jade Court** — deep green felt, cool brass and a jade glow.
-- **Midnight Lacquer** — blue-black felt, silver inlay and a cold table light.
+- **Launch lobby** — Play solo, Host a table, Join a table. Six-character `LEAB-ABC-234` codes, copy-invite, four-seat roster.
+- **Two-human start** — the host can start as soon as one guest is connected. Every empty seat becomes `Bot n`.
+- **Host authority** — only the host deals, scores, runs the AI and validates actions. Guests send one `action` message and render the state they receive.
+- **Per-seat redaction** — `sanitizeForSeat` replaces other hands and unrevealed centre/log/last-trick plays with stable `ghost-<seat>-<index>` ids. The host-only tag map and undo snapshot never leave the browser.
+- **Ghost meshes** — 32 back-only meshes let a guest see a believable face-down hand without knowing any tile identity.
+- **Seat-relative view** — the table world rotates so the guest's own seat is at the bottom; the camera and lights stay fixed.
+- **Disconnect-to-bot** — a guest who leaves keeps their seat, hand, captures and score. A bot takes over and play continues.
+- **No host migration** — a closed host ends the room; guests get a "Table closed" escape to solo.
 
-Audio was also rebalanced: master 0.8, a dynamics compressor, higher per-effect gains, an analyser tap for verification, and a first-gesture `resume()` retry. Themes recolour both the CSS panels and the 3D scene: felt, wood, rim, brass/silver inlay, floor, key/rim/warm lights, point lights and tile side/edge/back. Old procedural textures are disposed on switch. Text size scales the interface only, by design; the 3D table stays fixed. Both preferences persist in `localStorage` and are covered by the browser verification.
-
-## Release 1.2.0 — brighter themes
-
-Added **Parchment** (warm ivory UI, olive felt) and **Daybreak** (pale blue-white UI, teal felt). Both are full palettes across the panels, controls, modals and the 3D table. The Display panel now shows five theme cards in a two-column grid.
-
-## Release 1.3.0 — rank-order quick reference
-
-Added a **Ranks** control at the top-left HUD. It opens a pictorial hierarchy of all seven ranks with red and black Hanzi, Thai/English names, rank numbers, highest/lowest markers and the red/earlier-play tie rules. It closes by toggle, close button, `Esc` or outside click, and follows the active theme and language.
-
-## Release 1.3.1 — larger rank sheet
-
-Enlarged the reference to a near-full-stage sheet (980 px desktop) with 44 px tile medallions, 17 px names and a larger note. Phones use a two-column grid so all seven ranks fit without horizontal scrolling.
-
-## Release 1.3.2 — large Hanzi
-
-The rank-sheet glyphs were being overridden by the secondary-name rule and rendered at 11 px. Fixed the selector so the red/black characters are **44 px on 76 px medallions** on desktop (36 px on 64 px on phones), stacked vertically for easy comparison with the table.
+The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The original request mentioned a six-player table (a poker-template assumption); six seats would require a different deck and rules, so the release documents the deviation rather than faking the game. See [docs/MULTIPLAYER.md](docs/MULTIPLAYER.md).
 
 ## Build timeline
 
 | Milestone | Time (local) | Elapsed |
 | --- | --- | --- |
-| Session opened | 2026-11-04 00:16:43 | 0m |
-| Rules research and interpretation | 00:16–00:24 | ~8m |
-| Rules engine, AI, state, UI, 3D scene written | 00:24–00:40 | ~16m |
-| First headless run; canvas, render and audio fixes | 00:40–00:50 | ~10m |
-| Full round, undo, next-round and reload tests | 00:50–00:58 | ~8m |
-| Screenshots (EN, TH, rules, mobile) | 00:58–01:03 | ~5m |
-| Documentation, release files, state record | 01:03–01:15 | ~12m |
-| GitHub publication, Pages and skill catalog | 01:15–01:21 | ~6m |
-| **1.1.0 display + audio update** | 08:02–08:31 | 29m 0s |
-| **Audio test + chevron removal** | 16:37–16:57 | 20m 0s |
-| **Bright themes + verification** | 16:57–17:07 | 10m 25s |
-| **Rank quick reference** | 17:22–17:32 | 10m 31s |
-| **Rank sheet enlargement** | 17:32–17:40 | 8m 0s |
-| **Large Hanzi fix** | 17:40–18:00 | 20m 0s |
+| Session opened | 2026-11-06 10:05:33 | 0m |
+| Repository and architecture read | 10:05–10:12 | ~7m |
+| Transport module, seat refactor, lobby markup | 10:12–10:38 | ~26m |
+| First browser boot, lobby and host-room test | 10:38–10:44 | ~6m |
+| Two-browser harness; privacy, action and disconnect fixes | 10:44–11:04 | ~20m |
+| Docs set, protocol, release files, screenshots | 11:04–11:17 | ~13m |
+| Verification, state record, commit and publish | 11:17–… | final |
 
-**Measured active build estimate:** **~2h 33m** across the initial build, display/audio update, chevron removal, bright themes, the rank quick reference and the large-glyph fix. Session wall clock is much longer because it includes idle gaps between requests.
+**Measured session wall clock:** **1h 22m 28s** (4,948 s) from the OpenCode session record at the last token measurement. The final commit and push add a small amount.
 
 ## Token consumption
 
-Measured from the OpenCode session record `ses_e5a5e419dffedJGEsMy3mKV3ey` at 2026-11-04 18:00:36 (-08:00), including display settings, five themes, the audio rebalance, the chevron removal and the rank reference:
+Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T11:17:17-08:00 (-08:00):
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 546,686 |
-| Output | 221,205 |
-| Reasoning | 175,044 |
-| **Total (input + output + reasoning)** | **942,935** |
-| Cache read | 101,512,832 |
-| Cache write | 1,639 |
-| **Total including cache** | **102,457,406** |
+| Input | 356,683 |
+| Output | 129,802 |
+| Reasoning | 55,207 |
+| **Total (input + output + reasoning)** | **541,692** |
+| Cache read | 76,970,368 |
+| Cache write | 1,087 |
+| **Total including cache** | **77,513,147** |
 | Cost | $0.00 (as reported) |
 
-The cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. These are session totals. The final state-file commit and Pages rebuild add a small number of tokens; the session ID allows re-measurement from `opencode.db`.
+Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.
 
 ## What shipped
 
 - **Rules engine** — 32-tile deck, nine combination types, strict comparison, red-beats-black tie-break, earlier-play tie, 8-pile Chuan scoring.
-- **Four-seat game** — human South plus three heuristic AI seats; dealing, leading, face-down submission, optional reveal, trick capture, next leader, round and match end.
-- **3D table** — 32 bevelled cylindrical tiles with procedural Hanzi faces and lacquered backs, mahogany felt table, soft shadows, seat rings, floating labels, dust, dealing/flip/capture animations, OrbitControls, reset/top/cinematic cameras, portrait framing.
-- **Learning tools** — tile inspector (Thai/English/rank/copies), live bilingual coach, deterministic Hint, Undo & Learn comparison, full rules drawer.
-- **Bilingual UI** — EN ⇄ TH across 245 dictionary keys, dynamic coach/log/summary strings, tile names, ARIA labels and 3D score labels.
+- **Four-seat game** — human South plus three heuristic AI seats in solo; host + up to three guests in P2P.
+- **3D table** — 32 bevelled cylindrical tiles plus 32 ghost meshes, procedural Hanzi faces and lacquered backs, mahogany felt, soft shadows, seat rings, labels, dust, deal/flip/capture animations, OrbitControls, reset/top/cinematic cameras, portrait framing, seat-relative world rotation.
+- **Learning tools** — tile inspector, live bilingual coach, deterministic Hint, Undo & Learn comparison, full rules drawer.
+- **Multiplayer** — lobby, room codes, invite links, host authority, redaction, ghost meshes, bot fill, disconnect-to-bot, room chip, guest table.
+- **Bilingual UI** — EN ⇄ TH across 315 dictionary keys, dynamic coach/log/summary strings, tile names, ARIA labels, lobby copy and 3D labels.
 - **Audio** — synthesised shuffle, clack, flip, sweep, win, lose, undo; unlocked on first gesture; no files.
-- **Persistence** — autosaved match, preferences and statistics; reload-resume; versioned JSON export with app, credits, stats and game.
-- **Verification** — 25-check in-page suite, dependency-free static check, Chrome CDP harness, full-round/undo/next-round/reload tests, four release screenshots.
-- **Release** — README, AGENTS handoff, rules, architecture, testing, deployment, reproduction, data format, controls, accessibility, performance, design, FAQ, roadmap, release checklist, gallery, glossary, browser support, licence, changelog, contribution/security/privacy/support docs, citation, notices, GitHub templates and a static-check workflow.
+- **Persistence** — autosaved solo match, preferences and statistics; reload-resume; versioned JSON export with app, credits, stats and game; network saves marked non-resumable.
+- **Verification** — 35-check in-page suite, 299-check static release check, Chrome CDP harness, full-round test, 12-check two-browser WebRTC suite, 8 release screenshots.
+- **Release** — README, AGENTS handoff, rules, architecture, multiplayer, protocol, testing, deployment, reproduction, data format, controls, accessibility, performance, design, FAQ, roadmap, release checklist, gallery, glossary, browser support, licence, changelog, contribution/security/privacy/support docs, citation, notices, GitHub templates, static-check workflow and a published skill.
 
 ## Verification snapshot
 
 | Test | Result |
 | --- | --- |
 | `node --check script.js` | pass |
-| `node scripts/check.mjs` | pass |
-| In-page self-test | **25/25** |
-| Full round through the public API | `roundEnd`, 6 tricks, 32 tiles captured, hands empty, points `[-1,-2,1,2]` sum 0 |
-| Undo at round end | pre-trick position restored, 32 tiles accounted for, stats reverted |
-| Next round | round 2, eight tiles each, scores preserved |
-| Reload mid-trick | phase `follow`, turn 0, hands `[8,7,7,7]`, centre 3, lead/best restored |
-| Display settings | XL applies 1.24×; bright Parchment theme reaches UI + 3D scene; prefs survive reload; 4 sizes + 5 themes exposed |
-| Audio | context running after a gesture; clack peak ≈ 0.11 RMS; **Test sound** action added; no autoplay warning |
-| Console exceptions | none during boot, self-test or full round |
-| Screenshots | 1440×900 EN, 1440×900 TH, 1440×900 rules, 390×844 mobile |
+| `node --check peer-manager.js` | pass |
+| `node scripts/check.mjs` | pass (299) |
+| In-page self-test | **35/35** |
+| `node scripts/verify.mjs` | ALL BROWSER CHECKS PASSED |
+| `node scripts/net-check.mjs` | **12/12** multiplayer checks |
+| Full round through the public API | `roundEnd`, 32 tiles captured, hands empty, points sum 0 |
+| Host + guest | 2 humans + Bot 1 + Bot 2 |
+| Guest privacy | own 8 real ids; other 24 ghost ids |
+| Actions | 11 lead/follow moves crossed the data channel; a trick resolved |
+| Guest close | seat 1 became a bot; hand and score preserved |
+| Console exceptions | none on host or guest |
+| Screenshots | hero, Thai, rules, mobile, lobby, host panel, mobile lobby, guest table |
 
 The detailed evidence is in [docs/TESTING.md](docs/TESTING.md).
 
@@ -123,24 +109,28 @@ The detailed evidence is in [docs/TESTING.md](docs/TESTING.md).
 | Design, implementation, verification, documentation | **OpenCode 2.2.5** with **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`) |
 | Rules reference | Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016) |
 | 3D engine | Three.js r160, MIT |
+| Multiplayer transport | PeerJS 1.5.4, MIT; public broker and STUN |
 | Xiangqi tile names | Thai Wikipedia, หมากรุกจีน |
 | Type | System fonts only (Iowan Old Style / Palatino / Thonburi / Sarabun fallbacks) |
 
 ## Known issues
 
-- Three dark themes only; no light or high-contrast theme yet.
+- Four-player only; the two- and three-player variants are not implemented. Four seats is the rules contract, not a missing poker seat.
+- No host migration or reconnect token: a closed host ends the room.
+- Public STUN only, no TURN; symmetric NAT or a strict firewall can block the data channel.
+- No turn timer; an idle guest can stall the hosted table.
+- Redaction protects the wire, not the host browser or a guest's own client. No authentication or anti-cheat.
 - Text size scales the interface, not the 3D table (intentional).
-- Four-player only; the two- and three-player variants are not implemented.
 - The source is ambiguous about Ngoh Hoo and the Lak Hoo colour rule; the interpretation is documented in [docs/RULES.md](docs/RULES.md).
-- Undo is a one-trick rewind and is not restored after a reload.
+- Undo is a one-trick rewind and is not restored after a reload; it is host-only in multiplayer.
 - The AI is heuristic; it is not a search engine and does not model hidden hands.
 - Mobile is verified under Chrome device emulation at 390×844, not on physical hardware.
-- Three.js is loaded from a CDN; the table cannot render without network access.
+- Three.js and PeerJS are loaded from a CDN; the table and rooms cannot start without network access.
 
 ## Continuity
 
 - Local master: `~/Projects/leab-tui-3d`
 - Live: <https://somphol.github.io/leab-tui-3d/>
-- Skill: `leab-tui-studio` (local `~/.config/opencode/skills/`, public mirror `~/Projects/opencode-skills/`)
+- Skill: `leab-tui-p2p-studio` (local `~/.config/opencode/skills/`, public mirror `~/Projects/opencode-skills/`)
 - Full agent handoff: [AGENTS.md](AGENTS.md)
 - Reproduction guide: [docs/REPRODUCTION.md](docs/REPRODUCTION.md)

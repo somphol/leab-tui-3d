@@ -5,6 +5,17 @@
 - Read the in-app **Rules** drawer (`?` in the header).
 - Read [docs/RULES.md](docs/RULES.md) and [docs/FAQ.md](docs/FAQ.md).
 - If the coach says a set cannot beat the table, try **Hint** or play face-down and keep the set for a later lead.
+- For a room, read [docs/MULTIPLAYER.md](docs/MULTIPLAYER.md). The host must keep the tab open; "Room not found" usually means the code is wrong or the host left.
+
+## Multiplayer bug reports
+
+Include:
+
+1. Who was host and who was guest.
+2. The room code (a dead code is fine).
+3. Network type (home Wi-Fi, hotspot, corporate) and whether the two players were on different networks.
+4. The lobby status text and any console error (`peer-unavailable`, `network`, `server-error`).
+5. Whether the failure was joining, starting, a play, or a disconnect.
 
 ## I found a bug
 

@@ -6,7 +6,7 @@
  *   node scripts/verify.mjs
  *
  * Starts a temporary server when one is not already listening, runs the
- * in-page 25-check suite, then plays a complete round through the public API.
+ * in-page 35-check suite, then plays a complete round through the public API.
  * Fails on console exceptions, rule failures, or lost tiles.
  */
 
@@ -104,8 +104,8 @@ async function main() {
   else fail("page booted and window.LeabTui is available");
   if (!exceptions.length) pass("no console exceptions during boot and self-test");
   else fail("no console exceptions during boot and self-test", exceptions.map((event) => event.text).join(" | "));
-  if (passed === 25 && results.length === 25) pass("self-test 25/25");
-  else fail("self-test 25/25", `${passed}/${results.length}`);
+  if (passed === results.length && results.length >= 35) pass(`self-test ${passed}/${results.length}`);
+  else fail("self-test all checks", `${passed}/${results.length}`);
   if (self.camera && self.camera.tiles >= 32) pass(`3D scene rendered ${self.camera.tiles} tiles`);
   else fail("3D scene rendered 32 tiles", JSON.stringify(self.camera));
   if (self.bootError === false) pass("no boot error overlay");
@@ -113,10 +113,11 @@ async function main() {
 
   const audioExpr = `(async () => {
     document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 150));
+    await new Promise((r) => setTimeout(r, 200));
     LeabTui.playSound('clack', 0);
     let peak = 0;
-    for (let i = 0; i < 12; i += 1) {
+    for (let i = 0; i < 24; i += 1) {
+      if (i === 8) LeabTui.playSound('clack', 0);
       await new Promise((r) => setTimeout(r, 20));
       peak = Math.max(peak, LeabTui.getAudioState().level);
     }

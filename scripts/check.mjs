@@ -36,6 +36,7 @@ const required = [
   "index.html",
   "style.css",
   "script.js",
+  "peer-manager.js",
   "favicon.svg",
   "README.md",
   "AGENTS.md",
@@ -64,11 +65,14 @@ const required = [
   ".github/workflows/static-check.yml",
   "scripts/check.mjs",
   "scripts/verify.mjs",
+  "scripts/net-check.mjs",
   "scripts/browser-check.mjs",
   "docs/README.md",
   "docs/RULES.md",
   "docs/ARCHITECTURE.md",
   "docs/CODE_MAP.md",
+  "docs/MULTIPLAYER.md",
+  "docs/PROTOCOL.md",
   "docs/TESTING.md",
   "docs/DEPLOYMENT.md",
   "docs/REPRODUCTION.md",
@@ -94,7 +98,10 @@ const required = [
   "screenshots/mobile-xl.jpg",
   "screenshots/parchment.jpg",
   "screenshots/daybreak.jpg",
-  "screenshots/ranks.jpg"
+  "screenshots/ranks.jpg",
+  "screenshots/lobby.jpg",
+  "screenshots/lobby-mobile.jpg",
+  "screenshots/guest-play.jpg"
 ];
 
 for (const file of required) {
@@ -104,6 +111,7 @@ for (const file of required) {
 const index = read("index.html");
 const css = read("style.css");
 const script = read("script.js");
+const peer = read("peer-manager.js");
 const readme = read("README.md");
 const agents = read("AGENTS.md");
 const changelog = read("CHANGELOG.md");
@@ -113,6 +121,9 @@ ok(/<meta charset="utf-8"/i.test(index), "index has charset");
 ok(/name="viewport"/i.test(index), "index has viewport");
 ok(/name="description"/i.test(index), "index has description");
 ok(/Content-Security-Policy/.test(index), "index has CSP");
+ok(index.includes("https://0.peerjs.com") && index.includes("wss://0.peerjs.com"), "CSP allows the PeerJS broker");
+ok(index.includes('id="lobbyModal"') && index.includes('id="lobbyHost"') && index.includes('id="lobbyJoin"'), "launch lobby markup exists");
+ok(index.includes('id="netChip"'), "network room chip exists");
 ok(/type="importmap"/.test(index), "index has an import map");
 ok(index.includes("three@0.160.0/build/three.module.js"), "Three.js r160 is pinned");
 ok(index.includes("three@0.160.0/examples/jsm/"), "OrbitControls addons are pinned");
@@ -122,7 +133,7 @@ ok(index.includes('type="module"'), "script.js is a module");
 const indexForRemote = index
   .replace(/https:\/\/somphol\.github\.io[^" ]*/g, "")
   .replace(/https:\/\/github\.com\/somphol\/leab-tui-3d/g, "");
-ok(!/https?:\/\/(?!cdn\.jsdelivr\.net)/.test(indexForRemote), "index has no unexpected remote dependency");
+ok(!/https?:\/\/(?!cdn\.jsdelivr\.net|0\.peerjs\.com)/.test(indexForRemote), "index has no unexpected remote dependency");
 
 const appVersion = (script.match(/version:\s*"([0-9]+\.[0-9]+\.[0-9]+)"/) || [])[1];
 ok(/^\d+\.\d+\.\d+$/.test(appVersion || ""), "APP.version is semver", appVersion || "missing");
@@ -142,6 +153,20 @@ ok(script.includes("copy.captures = source.captures.map"), "serialization conver
 ok(script.includes("serializeCombo"), "combination serializer exists");
 ok(!/localStorage\.setItem\([^,]+,\s*JSON\.stringify\(state\)/.test(script), "live state is not written to localStorage");
 ok(script.includes("window.LeabTui"), "public test surface exists");
+ok(script.includes("function sanitizeForSeat"), "per-seat redaction exists");
+ok(script.includes("hiddenTags"), "host-only tile tags exist");
+ok(script.includes("delete base.hiddenTags"), "redaction map is stripped from saves");
+ok(script.includes("function hydrateRemoteState"), "guest state hydration exists");
+ok(script.includes("function startHostedMatch"), "host start path exists");
+ok(script.includes("function convertSeatToBot"), "disconnect-to-bot path exists");
+ok(script.includes("sendNetAction"), "guest action forwarding exists");
+ok(script.includes("if (!net.started) return;"), "state is not published before the match starts");
+ok(peer.includes('host: "0.peerjs.com"') && peer.includes("secure: true"), "PeerJS uses the public secure broker");
+ok(peer.includes("stun:stun.l.google.com:19302"), "STUN fallback is configured");
+ok(peer.includes("peerjs@${PEERJS_VERSION}") && peer.includes('PEERJS_VERSION = "1.5.4"'), "PeerJS version is pinned");
+ok(peer.includes("export function makeRoomCode") && peer.includes("normalizeRoomCode"), "room code helpers exist");
+ok(peer.includes("class PeerHost") && peer.includes("class PeerClient"), "host and guest transports exist");
+ok(peer.includes("createLoopbackPair"), "loopback transport exists for tests");
 ok(script.includes("function renderRankReference"), "rank reference renderer exists");
 ok(script.includes("function setRankReference"), "rank reference toggle exists");
 ok(index.includes('id="rankReference"') && index.includes('id="rankReferenceBtn"'), "rank reference markup exists");
@@ -173,9 +198,9 @@ ok(script.includes("function simulateRound"), "round simulation exists");
 ok(script.includes("function selfTest"), "self-test exists");
 
 // Count the self-test checks to keep the documented count honest.
-const selfTestBody = script.slice(script.indexOf("function selfTest()"), script.indexOf("function simulateRound"));
+const selfTestBody = script.slice(script.indexOf("function netSelfTest()"), script.indexOf("function simulateRound"));
 const selfTestCount = (selfTestBody.match(/check\(/g) || []).length;
-ok(selfTestCount >= 25, "self-test has at least 25 checks", String(selfTestCount));
+ok(selfTestCount >= 35, "self-test has at least 35 checks", String(selfTestCount));
 
 // i18n symmetry
 const enBlock = script.slice(script.indexOf("  en: {"), script.indexOf("  th: {"));
@@ -185,7 +210,7 @@ const enKeys = keys(enBlock);
 const thKeys = keys(thBlock);
 const missingTh = enKeys.filter((key) => !thKeys.includes(key));
 const missingEn = thKeys.filter((key) => !enKeys.includes(key));
-ok(enKeys.length >= 230, "English dictionary is substantial", String(enKeys.length));
+ok(enKeys.length >= 300, "English dictionary is substantial", String(enKeys.length));
 ok(!missingTh.length && !missingEn.length, "i18n dictionaries are symmetrical", `missing TH: ${missingTh.join(",")} | missing EN: ${missingEn.join(",")}`);
 
 // Relative Markdown links must exist.
@@ -227,7 +252,7 @@ const secretPatterns = [
   /AKIA[0-9A-Z]{16}/,
   /sk-[A-Za-z0-9]{20,}/
 ];
-for (const file of ["index.html", "style.css", "script.js", "README.md", "AGENTS.md", "STATE.md", "state.json"]) {
+for (const file of ["index.html", "style.css", "script.js", "peer-manager.js", "README.md", "AGENTS.md", "STATE.md", "state.json"]) {
   if (!exists(file)) continue;
   for (const pattern of secretPatterns) {
     ok(!pattern.test(read(file)), `possible secret in ${file}`, pattern.source);
@@ -239,6 +264,13 @@ try {
   ok(true, "script.js parses");
 } catch (error) {
   ok(false, "script.js parses", error.message);
+}
+
+try {
+  execFileSync(process.execPath, ["--check", join(root, "peer-manager.js")], { stdio: "pipe" });
+  ok(true, "peer-manager.js parses");
+} catch (error) {
+  ok(false, "peer-manager.js parses", error.message);
 }
 
 if (failures.length) {

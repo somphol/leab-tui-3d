@@ -13,7 +13,7 @@
   <meta property="og:description" content="Learn and play เลี๊ยบตุ่ย with carved 3D Xiangqi tiles, bilingual coaching, synthesis audio and a full trick-taking rules engine." />
   <meta property="og:image" content="screenshots/hero.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; font-src 'self' data:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://0.peerjs.com wss://0.peerjs.com; font-src 'self' data:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="style.css" />
   <script type="importmap">
@@ -45,6 +45,7 @@
         <button id="soundToggle" class="icon-btn" type="button" aria-pressed="true" aria-label="Sound on" title="Sound">
           <span id="soundIcon" aria-hidden="true">♪</span>
         </button>
+        <button id="netChip" class="pill net-chip" type="button" hidden aria-label="Room code">—</button>
         <button id="rulesBtn" class="icon-btn" type="button" aria-label="Rules" title="Rules">
           <span aria-hidden="true">?</span>
         </button>
@@ -137,6 +138,7 @@
             <button id="nextRoundBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.nextRound">Next round</button>
             <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo trick</button>
             <button id="exportBtn" class="btn btn-ghost" type="button" data-i18n="actions.export">Export JSON</button>
+            <button id="lobbyBtn" class="btn btn-ghost" type="button" data-i18n="net.openLobby">Multiplayer</button>
           </div>
         </section>
 
@@ -183,6 +185,88 @@
       <h2 data-i18n="error.webglTitle">The 3D table could not start</h2>
       <p data-i18n="error.webglBody">Three.js needs WebGL 2 and a network connection to the CDN. The rules, score and coaching panels still work.</p>
       <button class="btn btn-gold" type="button" data-close-boot data-i18n="actions.continue">Continue</button>
+    </div>
+
+    <div id="lobbyModal" class="modal lobby-modal" hidden role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
+      <div class="modal-card modal-wide lobby-card">
+        <div class="lobby-head">
+          <span class="lobby-seal" aria-hidden="true">帥</span>
+          <div class="lobby-heading">
+            <span class="lobby-kicker" data-i18n="net.menuKicker">Serverless table</span>
+            <h2 id="lobbyTitle" data-i18n="net.launchTitle">Choose how to play</h2>
+          </div>
+          <button class="modal-close" type="button" data-close="lobbyModal" aria-label="Close">×</button>
+        </div>
+
+        <section id="lobbyMenu" class="lobby-view">
+          <p class="lobby-lead" data-i18n="net.launchBody">Set up a direct WebRTC table. The host browser runs the rules and the bots; guests only need the invite code.</p>
+          <div class="lobby-modes">
+            <button id="lobbySolo" class="lobby-mode" type="button">
+              <span class="lobby-mode-icon" aria-hidden="true">一</span>
+              <b data-i18n="net.solo">Play solo</b>
+              <span data-i18n="net.soloDesc">One human seat, three AI seats.</span>
+            </button>
+            <button id="lobbyHost" class="lobby-mode" type="button">
+              <span class="lobby-mode-icon" aria-hidden="true">◉</span>
+              <b data-i18n="net.host">Host a table</b>
+              <span data-i18n="net.hostDesc">Create a room code and invite up to three guests.</span>
+            </button>
+            <button id="lobbyJoin" class="lobby-mode" type="button">
+              <span class="lobby-mode-icon" aria-hidden="true">◇</span>
+              <b data-i18n="net.join">Join a table</b>
+              <span data-i18n="net.joinDesc">Enter a six-character room code.</span>
+            </button>
+          </div>
+          <p class="lobby-note" data-i18n="net.menuNote">No game server and no account. PeerJS brokers only the first handshake.</p>
+        </section>
+
+        <section id="lobbyHostPanel" class="lobby-view" hidden>
+          <div class="room-line">
+            <span data-i18n="net.roomCode">Room code</span>
+            <strong id="lobbyRoomCode">—</strong>
+            <button id="lobbyCopyBtn" class="btn btn-ghost btn-small" type="button" data-i18n="net.copyLink">Copy invite link</button>
+          </div>
+          <input id="lobbyInvite" class="lobby-invite" readonly hidden aria-label="Invite link" />
+          <p class="lobby-note" data-i18n="net.codeHelp">Share this code. Letter case does not matter.</p>
+          <h3 data-i18n="net.roster">Seats</h3>
+          <div id="lobbyRoster" class="lobby-roster"></div>
+          <p class="lobby-note" data-i18n="net.fourSeats">Leab-Tui is a four-seat game: the host plus up to three guests. Empty seats are filled with bots.</p>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
+            <button id="lobbyStartBtn" class="btn btn-gold" type="button" disabled data-i18n="net.startTable">Start table</button>
+          </div>
+          <p id="lobbyStartHint" class="lobby-hint"></p>
+        </section>
+
+        <section id="lobbyJoinPanel" class="lobby-view" hidden>
+          <p class="lobby-lead" data-i18n="net.joinHint">Ask the host for the six-character code.</p>
+          <label class="field-label" for="lobbyCodeInput" data-i18n="net.codeLabel">Room code</label>
+          <input id="lobbyCodeInput" class="lobby-input code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="LEAB-ABC-234" data-i18n-placeholder="net.codePlaceholder" />
+          <label class="field-label" for="lobbyNameInput" data-i18n="net.nameLabel">Your name</label>
+          <input id="lobbyNameInput" class="lobby-input" type="text" maxlength="18" autocomplete="nickname" placeholder="Guest" data-i18n-placeholder="net.namePlaceholder" />
+          <div class="modal-actions">
+            <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
+            <button id="lobbyConnectBtn" class="btn btn-gold" type="button" data-i18n="net.connect">Connect</button>
+          </div>
+        </section>
+
+        <section id="lobbyWaitPanel" class="lobby-view" hidden>
+          <h3 id="lobbyWaitTitle" data-i18n="net.waitingHost">Waiting for the host</h3>
+          <div class="room-line">
+            <span data-i18n="net.roomCode">Room code</span>
+            <strong id="lobbyWaitCode">—</strong>
+          </div>
+          <div id="lobbyWaitRoster" class="lobby-roster"></div>
+          <div class="modal-actions">
+            <button id="lobbyWaitLeave" class="btn btn-ghost" type="button" data-i18n="net.leave">Leave room</button>
+            <button id="lobbyResumeBtn" class="btn btn-gold" type="button" hidden data-i18n="net.resume">Back to table</button>
+            <button id="lobbySoloFromLost" class="btn btn-gold" type="button" data-i18n="net.solo">Play solo</button>
+          </div>
+        </section>
+
+        <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
+        <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
+      </div>
     </div>
 
     <div id="displayModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="displayTitle">

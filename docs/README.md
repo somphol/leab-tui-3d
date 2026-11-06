@@ -6,6 +6,8 @@ Start here depending on what you need:
 | --- | --- |
 | [RULES.md](RULES.md) | The rule contract: equipment, hierarchy, calls, comparisons, flow, scoring, interpretation choices |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Layers, state machine, 3D mapping, serialization, camera, audio, failure model |
+| [MULTIPLAYER.md](MULTIPLAYER.md) | Serverless P2P rooms, seat model, bots, privacy, NAT, troubleshooting |
+| [PROTOCOL.md](PROTOCOL.md) | Wire envelopes, seat assignment, redaction and authority invariants |
 | [CODE_MAP.md](CODE_MAP.md) | Where every important function lives |
 | [TESTING.md](TESTING.md) | Self-test, browser harness, recorded flow tests, manual checklist |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Local server, GitHub Pages, CSP, cache busting |

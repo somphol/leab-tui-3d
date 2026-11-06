@@ -38,3 +38,16 @@
 | **OrbitControls** | The camera controller from `three/addons/`. |
 | **CanvasTexture** | Procedural textures drawn on `<canvas>` for felt, wood and tile faces. |
 | **Chuan bonus** | The 16-point score for eight piles. |
+| **P2P** | Peer-to-peer. Game traffic flows directly between browsers; no game server. |
+| **PeerJS** | The WebRTC wrapper pinned at `1.5.4`; its public broker performs the initial handshake. |
+| **Room code** | The six-character `LEAB-XXX-XXX` code that identifies a host peer. |
+| **Host** | Seat 0; the only browser that runs the rules, deals and AI. |
+| **Guest** | Seat 1–3; sends intent and renders the host's redacted state. |
+| **Bot fill** | Empty seats are filled with heuristic AI before a network match starts. |
+| **Ghost tile** | A back-only placeholder (`ghost-<seat>-<index>`) used for another player's private hand. |
+| **Redaction** | Replacing private tile ids and combos before sending state to a guest. |
+| **`sanitizeForSeat`** | The only function allowed to cross the privacy boundary. |
+| **`hiddenTags`** | The host-only map from real tile id to ghost mesh id; stripped from saves and messages. |
+| **DTLS** | The encryption WebRTC data channels use in transit. |
+| **STUN** | A service that helps peers discover their public address for NAT traversal. |
+| **TURN** | A relay for peers that cannot connect directly; not configured in this release. |

@@ -13,8 +13,9 @@ There are two JSON files with different jobs:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.1.0",
-  "savedAt": "2026-11-04T01:03:16.000Z",
+  "version": "1.4.0",
+  "savedAt": "2026-11-06T10:00:00.000Z",
+  "network": false,
   "game": { "...": "see Game" }
 }
 ```
@@ -35,19 +36,21 @@ Preferences shape:
 }
 ```
 
-`theme` is `mahogany`, `jade`, `midnight`, `parchment` or `daybreak`; `fontSize` is `sm`, `md`, `lg` or `xl`. Invalid values fall back to `mahogany` and `md`. The 1.0.0 → 1.1.0 update adds these two fields but does not change the match or export schema.
+`theme` is `mahogany`, `jade`, `midnight`, `parchment` or `daybreak`; `fontSize` is `sm`, `md`, `lg` or `xl`. Invalid values fall back to `mahogany` and `md`. The display fields were added in 1.1.0; 1.4.0 adds the `network` flag. Neither changes the core game schema.
 
-The autosave is written after every action, on `visibilitychange` when hidden, and on `beforeunload`.
+The autosave is written after every action, on `visibilitychange` when hidden, and on `beforeunload`. `network: true` marks a hosted room; `loadMatch` rejects it because a WebRTC room cannot be restored after a reload. A guest never writes the autosave.
+
+`hiddenTags` (the host-only tile→ghost map) and `snapshot` (the undo record) are stripped by `serializableState` and never appear in an autosave or export.
 ## Export
 
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.1.0",
+  "version": "1.4.0",
   "exportedAt": "2026-11-04T01:10:00.000Z",
   "app": {
     "name": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-    "version": "1.1.0",
+    "version": "1.4.0",
     "repository": "https://github.com/somphol/leab-tui-3d",
     "live": "https://somphol.github.io/leab-tui-3d/",
     "license": "MIT"
@@ -65,6 +68,8 @@ The autosave is written after every action, on `visibilitychange` when hidden, a
 ```
 
 Filename: `leab_tui_3d_game.json`. MIME type: `application/json`. The download is created with a `Blob` and a temporary object URL; nothing is uploaded.
+
+A guest's export is intentionally partial: it contains that guest's own hand and public information, with other hands as `ghost-<seat>-<index>` ids. Export from the host for a complete record.
 ## Game
 
 ```json
@@ -177,4 +182,4 @@ Undo snapshots are **not** persisted. A reload can resume the live game but cann
 
 ## Versioning
 
-`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code in 1.1.0; the loader is strict and falls back to a new match. New preference fields are additive and validated on load.
+`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code as of 1.4.0; the loader is strict and falls back to a new match. New preference fields are additive and validated on load.

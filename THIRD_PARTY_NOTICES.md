@@ -12,6 +12,18 @@
 
 Three.js is not bundled; it is imported from jsDelivr under its own licence. A copy of the MIT licence is included with the upstream package. No modifications were made to Three.js.
 
+## PeerJS
+
+- Project: <https://peerjs.com/> · <https://github.com/peers/peerjs>
+- Version: `1.5.4`
+- Files loaded at runtime (only when a room is opened):
+  - `https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js`
+- Signalling broker: the free public PeerJS cloud at `0.peerjs.com` (not operated by this project)
+- Licence: MIT
+- Copyright: © 2015 Michelle Bu and Eric Zhang, and the PeerJS contributors
+
+PeerJS is not bundled. The host and guest must use compatible versions; the app sends `protocol: 1` in the connection metadata and in every envelope. The broker is a shared community service with no uptime guarantee; see `docs/MULTIPLAYER.md` for self-hosting and TURN notes.
+
 ## Fonts
 
 The application uses system font stacks only: Iowan Old Style, Palatino Linotype, Noto Serif Thai, Thonburi, Georgia, Avenir Next, Avenir, Sarabun, Noto Sans Thai, system-ui, SFMono-Regular, Cascadia Mono, Menlo, Consolas. No font files are redistributed and no remote font service is used.

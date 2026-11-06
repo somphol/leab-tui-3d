@@ -18,6 +18,8 @@
 | Camera buttons (top-right) | Reset view · top view · cinematic orbit |
 | **Aa** (stage toolbar) | Display settings: text size and theme |
 | **Ranks** (top-left HUD) | Show/hide the pictorial rank-order reference |
+| **Multiplayer** (Actions) | Open the lobby: solo / host / join |
+| Room chip (header) | Copy the invite link while in a room |
 
 The camera is damped; release the mouse and it glides to a stop. Pan is clamped so the table cannot be lost off-screen.
 
@@ -31,7 +33,7 @@ The camera is damped; release the mouse and it glides to a stop. Pan is clamped 
 | Tap a tile | Select it (human hand) or inspect it |
 | Tap a chip | Select / deselect |
 
-The mobile layout puts the table in the top ~90 % of the viewport and the panels below. The hand dock is deliberately compact: title, one line of advice and the action buttons. On narrow screens, the button row scrolls horizontally rather than covering the hand.
+The mobile layout puts the table in the top ~90 % of the viewport and the panels below. The hand dock is deliberately compact: title, one line of advice and the action buttons. On narrow screens, the button row scrolls horizontally rather than covering the hand. The lobby switches to one mode card per row and a single-column roster.
 
 ## Keyboard
 

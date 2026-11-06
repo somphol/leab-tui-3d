@@ -11,18 +11,33 @@ In this browser's `localStorage`:
 | `leabtui.match.v1` | current match: hands, captures, centre, scores, log, history |
 | `leabtui.prefs.v1` | language, sound, coach, tile-list visibility, cinema preference |
 | `leabtui.stats.v1` | lifetime matches, wins, losses, draws, rounds, streaks, last 40 round summaries |
+| `leabtui.name.v1` | the last multiplayer handle you typed (local only) |
 
-This data never leaves the browser unless you press **Export JSON**, which writes a file locally. There is no upload.
+This data never leaves the browser unless you press **Export JSON**, which writes a file locally, or you play a network match. There is no upload to a game server.
+
+## Multiplayer
+
+When you host or join a room:
+
+- The **host** sends a redacted game state over a WebRTC data channel. Other hands are replaced by face-down placeholders; the host still sees every hand in its own browser.
+- The **PeerJS public broker** (`0.peerjs.com`) is used only to exchange the initial WebRTC handshake. It sees connection metadata (peer IDs, IP-level metadata normal for signalling), not the game payload once the data channel is open.
+- **STUN** servers (`stun.l.google.com`) are contacted for NAT traversal. They see your public IP, as any WebRTC application does.
+- Room codes are random and are not published in a directory. Anyone with the code can try to join while the host page is open.
+- The host's handle and the guests' handles are shared with everyone in the room.
+- Closing the host tab ends the room. No game data is stored on a server.
+
+The guest's `leabtui.name.v1` handle is never sent anywhere except the room you join. Clearing site data removes it.
 
 ## Network requests
 
 The page requests:
 
-1. Its own `index.html`, `style.css`, `script.js`, `favicon.svg`.
+1. Its own `index.html`, `style.css`, `script.js`, `peer-manager.js`, `favicon.svg`.
 2. `https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js`.
 3. `https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js` (and its internal imports).
+4. Only when you open a room: `https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js`, then `https://0.peerjs.com` / `wss://0.peerjs.com` and public STUN.
 
-There are no fonts, images, audio files, analytics or third-party APIs. The CDN sees the request metadata it normally sees (IP address, user agent, referrer); that is a consequence of using a CDN, not a feature of this app.
+There are no fonts, images, audio files, analytics or third-party APIs. The CDN and broker see the request metadata they normally see (IP address, user agent, referrer); that is a consequence of using them, not a feature of this app.
 
 ## Clearing your data
 

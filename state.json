@@ -1,39 +1,39 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.3.2",
-  "version": "1.3.2",
+  "projectVersion": "1.4.0",
+  "version": "1.4.0",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 from a pinned CDN.",
+  "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
   "liveDemo": "https://somphol.github.io/leab-tui-3d/",
   "build": {
-    "sessionStartedAt": "2026-11-04T00:16:43-08:00",
-    "startedAt": "2026-11-04T00:16:43-08:00",
-    "packagedAt": "2026-11-04T18:00:36-08:00",
-    "durationSeconds": 9180,
-    "durationHuman": "2h 33m 0s",
-    "timezone": "UTC-08:00",
-    "note": "Active build estimate across the session, excluding long idle gaps. Final state-file commit adds a small amount.",
-    "includes": "Rules research and interpretation; pure rules engine; heuristic AI; four-seat game flow; undo snapshots; 3D table with 32 carved tiles and procedural textures; OrbitControls; responsive portrait camera; bilingual EN/TH copy; coach, inspector and hint; synthesised Web Audio; localStorage autosave; JSON export; self-test; CDP verification harness; screenshots; release documentation.",
-    "publishedAt": "2026-11-04T01:23:25Z"
+    "sessionStartedAt": "2026-11-06T10:05:33-08:00",
+    "startedAt": "2026-11-06T10:05:33-08:00",
+    "packagedAt": "2026-11-06T11:28:01-08:00",
+    "durationSeconds": 4948,
+    "durationHuman": "1h 22m 28s",
+    "timezone": "-08:00",
+    "note": "Wall clock from the OpenCode session record (time_created to the last measured token update). The final state commit and push add a small amount.",
+    "includes": "1.4.0 P2P work: seat refactor, PeerJS transport, lobby, host authority, per-seat redaction, ghost meshes, seat-relative view, bot fill, disconnect-to-bot, two-browser harness, protocol/multiplayer docs, screenshots, release files and the skill mirror.",
+    "publishedAt": "2026-11-06T19:20:00Z"
   },
   "tokens": {
-    "input": 546686,
-    "output": 221205,
-    "reasoning": 175044,
-    "cacheRead": 101512832,
-    "cacheWrite": 1639,
-    "total": 942935,
-    "totalWithCache": 102457406,
+    "input": 356683,
+    "output": 129802,
+    "reasoning": 55207,
+    "cacheRead": 76970368,
+    "cacheWrite": 1087,
+    "total": 541692,
+    "totalWithCache": 77513147,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e5a5e419dffedJGEsMy3mKV3ey at 2026-11-04T18:00:36-08:00, including display settings, five themes, audio rebalance, chevron removal, rank reference and glyph enlargement."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T11:28:01-08:00, covering the 1.4.0 multiplayer build and release."
   },
   "cost": {
     "usd": 0.0,
     "note": "As reported by the OpenCode session record."
   },
-  "sessionId": "ses_e5a5e419dffedJGEsMy3mKV3ey",
-  "sessionTitle": "Leab-Tui 3D Xiangqi Studio",
+  "sessionId": "ses_e4df670e0ffeOm01DFj236fffs",
+  "sessionTitle": "PeerJS WebRTC poker multiplayer",
   "model": {
     "name": "DeepSeek V4.1 Flash",
     "providerID": "opencode-go",
@@ -55,6 +55,12 @@
       "OrbitControls r160",
       "CanvasTexture"
     ],
+    "network": [
+      "PeerJS 1.5.4",
+      "WebRTC reliable data channel",
+      "public PeerJS signalling",
+      "public STUN"
+    ],
     "audio": [
       "Web Audio API synthesis"
     ],
@@ -64,22 +70,22 @@
     ]
   },
   "verification": {
-    "selfTest": "25/25",
+    "selfTest": "35/35",
+    "staticCheck": "scripts/check.mjs (299 checks)",
+    "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
+    "multiplayer": "scripts/net-check.mjs — 12/12 host, join, bot fill, privacy, actions, disconnect",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
-    "undo": "restored pre-trick position, 32 tiles, stats reverted",
-    "nextRound": "round 2 dealt, scores preserved",
-    "reload": "mid-trick state resumed from localStorage",
-    "staticCheck": "scripts/check.mjs",
-    "browserCheck": "scripts/verify.mjs",
-    "liveSelfTest": "25/25 at https://somphol.github.io/leab-tui-3d/?selftest=1",
-    "liveTiles": "32 visible, no console exceptions",
-    "pages": "published",
-    "displaySettings": "XL scale 1.24, Jade theme reaches UI + scene, preferences persist, 4 sizes + 3 themes exposed"
+    "privacy": "guest own 8 real ids; other 24 ghost ids",
+    "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
+    "consoleExceptions": "none on host or guest",
+    "screenshots": "hero, Thai, rules, mobile, lobby, lobby-host, lobby-mobile, guest-play",
+    "pages": "published"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
     "rules": "Navee Angsuputiphant (2016), กฏกติกาการเล่น เลี๊ยบตุ่ย",
     "engine": "Three.js r160, MIT",
+    "network": "PeerJS 1.5.4, MIT; public broker and STUN",
     "fonts": "system fonts only"
   },
   "releaseHistory": [
@@ -117,18 +123,37 @@
       "version": "1.3.2",
       "date": "2026-11-04",
       "summary": "Fixed the rank-sheet Hanzi size (44 px/36 px) and stacked the red/black medallions for table comparison."
+    },
+    {
+      "version": "1.4.0",
+      "date": "2026-11-06",
+      "summary": "Serverless host-authoritative WebRTC multiplayer: lobby, room codes, 2–4 humans, bot fill, per-seat redaction, seat-relative view, disconnect-to-bot and two-browser verification."
     }
   ],
-  "releaseNotes": "1.1.0 adds a Display panel with Small/Default/Large/Extra large text and Mahogany/Jade Court/Midnight Lacquer themes. Theme changes recolor the panels, felt, wood, inlay and lighting; text size scales the interface only.",
+  "releaseNotes": "1.4.0 adds a serverless, host-authoritative WebRTC table: launch lobby, six-character room codes, 2–4 humans, bot fill, per-seat redaction, seat-relative 3D view, disconnect-to-bot and a two-browser verification harness. The four-seat rules contract and solo mode are unchanged.",
   "updates": [
     {
-      "version": "1.1.0",
-      "startedAt": "2026-11-04T08:02:38-08:00",
-      "completedAt": "2026-11-04T18:00:36-08:00",
-      "durationSeconds": 1740,
-      "durationHuman": "29m 0s",
-      "tokensAdded": 391310,
-      "summary": "Display panel, five themes, audio rebalance, chevron removal, rank-order quick reference, enlarged sheet and large Hanzi glyphs, docs and verification."
+      "version": "1.4.0",
+      "startedAt": "2026-11-06T10:05:33-08:00",
+      "completedAt": "2026-11-06T11:28:01-08:00",
+      "durationSeconds": 4948,
+      "durationHuman": "1h 22m 28s",
+      "tokensAdded": 541692,
+      "summary": "Serverless WebRTC multiplayer, seat refactor, redaction, ghost meshes, lobby, disconnect-to-bot, protocol docs, two-browser harness, screenshots and skill mirror."
     }
-  ]
+  ],
+  "multiplayer": {
+    "transport": "WebRTC data channel via PeerJS 1.5.4",
+    "signalling": "public PeerJS cloud at 0.peerjs.com:443 (secure)",
+    "topology": "host-authoritative, four seats, no game server",
+    "seatModel": "host + up to three guests; empty seats filled with bots",
+    "privacy": "per-seat redaction; other hands and unrevealed plays replaced by ghost ids",
+    "disconnect": "seat becomes a bot, hand/score preserved",
+    "limits": [
+      "no host migration",
+      "no TURN relay",
+      "no authentication or anti-cheat",
+      "network rooms are not resumable"
+    ]
+  }
 }

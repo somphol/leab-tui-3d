@@ -2,12 +2,28 @@
    Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
    Vanilla ES module. Three.js is imported dynamically so the rule engine,
    coaching, scoring and persistence still work if WebGL or the CDN fails.
+   PeerJS is loaded lazily by peer-manager.js; the solo table needs no network
+   beyond the pinned Three.js CDN.
    ========================================================================== */
+
+import {
+  PROTOCOL_VERSION,
+  ROOM_PREFIX,
+  makeRoomCode,
+  normalizeRoomCode,
+  formatRoomCode,
+  peerIdForCode,
+  inviteUrl,
+  openHostWithRetry,
+  PeerClient,
+  createLoopbackPair,
+  isProtocolMessage
+} from "./peer-manager.js";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.3.2",
+  version: "1.4.0",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -17,15 +33,15 @@ const APP = Object.freeze({
   live: "https://somphol.github.io/leab-tui-3d/",
   license: "MIT",
   build: {
-    startedAt: "2026-11-04T00:16:43-08:00",
-    packagedAt: "2026-11-04T17:32:31-08:00",
-    durationHuman: "2h 5m 0s",
-    tokensTotal: "900146",
-    tokensInput: "522500",
-    tokensOutput: "211891",
-    tokensReasoning: "165755",
-    tokensCacheRead: "90081152",
-    sessionId: "ses_e5a5e419dffedJGEsMy3mKV3ey",
+    startedAt: "2026-11-06T10:05:33-08:00",
+    packagedAt: "2026-11-06T11:28:01-08:00",
+    durationHuman: "1h 22m 28s",
+    tokensTotal: "541692",
+    tokensInput: "356683",
+    tokensOutput: "129802",
+    tokensReasoning: "55207",
+    tokensCacheRead: "76970368",
+    sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
   }
@@ -58,6 +74,11 @@ const SEATS = Object.freeze([
   { id: 2, key: "north", wind: "北", angle: Math.PI,       en: "North", th: "อุดร",       short: "N" },
   { id: 3, key: "west",  wind: "西", angle: -Math.PI / 2,  en: "West",  th: "ประจิม",     short: "W" }
 ]);
+
+const TABLE_SEATS = SEATS.length;
+const MAX_HUMAN_SEATS = TABLE_SEATS;
+const GHOST_PREFIX = "ghost-";
+const NET_TICK_MS = 40;
 
 const FONT_SIZES = Object.freeze([
   { id: "sm", scale: 0.9, labelKey: "display.small" },
@@ -466,7 +487,7 @@ const I18N = {
     "undo.whySet": "The set value decides: {winning} is the stronger straight or same-rank set.",
     "undo.whyUnknown": "The winner's revealed combination outranks your entry for this call.",
     "undo.noTrick": "No completed trick is stored yet.",
-    "about.intro": "A bilingual, single-page studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. It is a teaching table, not a gambling app, tournament server or complete historical rulebook.",
+    "about.intro": "A bilingual, single-page studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. It plays solo against three bots or hosts a serverless WebRTC table for up to four humans. It is a teaching table, not a gambling app, tournament server or complete historical rulebook.",
     "about.how": "Thirty-two carved tiles, four seats, eight tiles each. The holder of the red General leads. Each trick calls a shape — Leab, Tui, Sa Hoo, See Hoo, Ngoh Hoo or Lak Hoo — and everyone sends that many tiles. Revealed sets compete; face-down sets never do. The winner takes 4×N tiles and leads next.",
     "about.credits": "Credits",
     "about.harness": "Harness",
@@ -474,7 +495,7 @@ const I18N = {
     "about.build": "Build record",
     "about.tech": "Technology",
     "about.privacy": "Privacy",
-    "about.privacyBody": "No account, no analytics, no network calls except the pinned Three.js CDN. Match state, preferences and statistics stay in this browser's localStorage. Export writes a JSON file locally.",
+    "about.privacyBody": "No account and no analytics. Solo play calls only the pinned Three.js CDN. A network room also loads PeerJS from the same CDN and contacts the public PeerJS broker and STUN servers for the handshake; game data then flows directly between browsers. Match state, preferences and statistics stay in this browser's localStorage. Export writes a JSON file locally.",
     "about.license": "Licence",
     "about.licenseBody": "MIT. The Three.js library is distributed under its own MIT licence. See THIRD_PARTY_NOTICES.md.",
     "about.source": "Source and live demo",
@@ -499,7 +520,77 @@ const I18N = {
     "rules.points": "Points",
     "rules.beginner": "Beginner guard",
     "rules.beginnerBody": "Undo trick restores the position before the last trick and explains the comparison. The coach panel names the best lead or challenge in your hand, but never plays for you.",
-    "rules.footnote": "This is an independent, open-source teaching implementation. It is not affiliated with any publisher or standards body."
+    "rules.footnote": "This is an independent, open-source teaching implementation. It is not affiliated with any publisher or standards body.",
+    "net.menuKicker": "Serverless table",
+    "net.launchTitle": "Choose how to play",
+    "net.launchBody": "Set up a direct WebRTC table. The host browser runs the rules and the bots; guests only need the invite code.",
+    "net.menuNote": "No game server and no account. PeerJS brokers only the first handshake.",
+    "net.solo": "Play solo",
+    "net.soloDesc": "One human seat, three AI seats.",
+    "net.host": "Host a table",
+    "net.hostDesc": "Create a room code and invite up to three guests.",
+    "net.join": "Join a table",
+    "net.joinDesc": "Enter a six-character room code.",
+    "net.hostTitle": "Host a table",
+    "net.roomCode": "Room code",
+    "net.codeHelp": "Share this code. Letter case does not matter.",
+    "net.copyLink": "Copy invite link",
+    "net.roster": "Seats",
+    "net.startTable": "Start table",
+    "net.startHint": "At least two humans are connected. Empty seats become bots.",
+    "net.needTwo": "Need 2 humans",
+    "net.needTwoLong": "At least two humans must be connected. Empty seats become bots.",
+    "net.joinTitle": "Join a table",
+    "net.codeLabel": "Room code",
+    "net.codePlaceholder": "LEAB-ABC-234",
+    "net.nameLabel": "Your name",
+    "net.namePlaceholder": "Guest",
+    "net.connect": "Connect",
+    "net.connecting": "Connecting…",
+    "net.handshake": "Connected. Waiting for the host…",
+    "net.connectedWaiting": "Connected. The host will start when ready.",
+    "net.lobbyOpen": "Room open. Share the code or invite link.",
+    "net.dealing": "Table starting…",
+    "net.waitingHost": "Waiting for the host",
+    "net.hostBadge": "Host",
+    "net.guestBadge": "Guest",
+    "net.botBadge": "Bot",
+    "net.emptySeat": "Empty",
+    "net.botPreview": "Bot seat {n}",
+    "net.startingHost": "Opening the room…",
+    "net.hostDefault": "Host",
+    "net.guestDefault": "Guest",
+    "net.error": "Connection error: {error}",
+    "net.hostFailed": "Could not open the room: {error}",
+    "net.joinFailed": "Could not join: {error}",
+    "net.roomNotFound": "Room not found. Check the code and that the host page is open.",
+    "net.badCode": "A room code is six letters or digits.",
+    "net.versionMismatch": "Protocol mismatch. Both pages must run protocol {version}.",
+    "net.hostLeft": "The host left the table. You can join another room or play solo.",
+    "net.reconnecting": "Signalling connection lost. Reconnecting…",
+    "net.hostOnly": "Only the host can undo a networked trick.",
+    "net.chipHint": "Your room. Click to copy the invite link.",
+    "net.modeSolo": "Solo",
+    "net.modeHost": "Host",
+    "net.modeClient": "Guest",
+    "net.leave": "Leave room",
+    "net.back": "Back",
+    "net.resume": "Back to table",
+    "net.lostTitle": "Table closed",
+    "net.fourSeats": "Leab-Tui is a four-seat game: the host plus up to three guests. Empty seats are filled with bots.",
+    "net.localOnly": "No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.",
+    "net.rejected.in-progress": "The match already started.",
+    "net.rejected.full": "The table is full (four seats).",
+    "net.rejected.illegal": "That play was not legal.",
+    "net.openLobby": "Multiplayer",
+    "net.joinHint": "Ask the host for the six-character code.",
+    "toast.netGuest": "{name} joined the table.",
+    "toast.netGuestLeft": "{name} left the lobby.",
+    "toast.netBot": "{name} left — a bot takes the seat.",
+    "toast.netStarted": "Table {code} started.",
+    "toast.netLeft": "Left the table.",
+    "toast.netCopied": "Invite link copied.",
+    "toast.solo": "Solo table ready."
   },
   th: {
     "app.title": "เลี๊ยบตุ่ย 3 มิติ",
@@ -713,7 +804,7 @@ const I18N = {
     "undo.whySet": "ค่าของชุดตัดสิน: {winning} เป็นชุดเรียงหรือชุดเดียวกันที่แข็งกว่า",
     "undo.whyUnknown": "ชุดที่ผู้ชนะเปิดมีศักดิ์ใหญ่กว่าชุดของคุณสำหรับตานี้",
     "undo.noTrick": "ยังไม่มีตาที่จบให้ย้อน",
-    "about.intro": "สตูดิโอหน้าเดียวสองภาษาสำหรับเลี๊ยบตุ่ย เกมกินกองไทยที่เล่นด้วยหมากรุกจีน 32 ตัว เป็นโต๊ะสอนเล่น ไม่ใช่แอพพนัน เซิร์ฟเวอร์ทัวร์นาเมนต์ หรือกติกาประวัติศาสตร์ฉบับสมบูรณ์",
+    "about.intro": "สตูดิโอหน้าเดียวสองภาษาสำหรับเลี๊ยบตุ่ย เกมกินกองไทยที่เล่นด้วยหมากรุกจีน 32 ตัว เล่นคนเดียวกับบอทสามตัว หรือเปิดโต๊ะ WebRTC แบบไม่มีเซิร์ฟเวอร์สำหรับมนุษย์ไม่เกินสี่คน เป็นโต๊ะสอนเล่น ไม่ใช่แอพพนัน เซิร์ฟเวอร์ทัวร์นาเมนต์ หรือกติกาประวัติศาสตร์ฉบับสมบูรณ์",
     "about.how": "หมากแกะสลัก 32 ตัว สี่ที่นั่ง คนละแปดตัว คนถือตี่แดงนำก่อน แต่ละตาเรียกชุด เลี๊ยบ ตุ่ย ซาฮู้ สี่ฮู้ ห้าฮู้ หรือหลักฮู้ แล้วทุกคนส่งจำนวนเท่ากัน ชุดที่เปิดเท่านั้นแข่งขัน ชุดคว่ำไม่แข่งขัน ผู้ชนะกิน 4×N ตัวและนำตาถัดไป",
     "about.credits": "เครดิต",
     "about.harness": "เครื่องมือ",
@@ -721,7 +812,7 @@ const I18N = {
     "about.build": "บันทึกการสร้าง",
     "about.tech": "เทคโนโลยี",
     "about.privacy": "ความเป็นส่วนตัว",
-    "about.privacyBody": "ไม่มีบัญชี ไม่มีการวิเคราะห์ และไม่มีการเรียกเครือข่ายนอกจาก Three.js CDN ที่ปักหมุดไว้ สถานะแมตช์ การตั้งค่า และสถิติเก็บใน localStorage ของเบราว์เซอร์นี้ การส่งออกเขียนไฟล์ JSON ในเครื่อง",
+    "about.privacyBody": "ไม่มีบัญชีและไม่มีการวิเคราะห์ การเล่นคนเดียวเรียกเฉพาะ Three.js CDN ที่ปักหมุดไว้ ห้องออนไลน์โหลด PeerJS จาก CDN เดียวกันและติดต่อ broker/STUN สาธารณะเพื่อจับมือ จากนั้นข้อมูลเกมไหลระหว่างเบราว์เซอร์โดยตรง สถานะแมตช์ การตั้งค่า และสถิติเก็บใน localStorage ของเบราว์เซอร์นี้ การส่งออกเขียนไฟล์ JSON ในเครื่อง",
     "about.license": "สัญญาอนุญาต",
     "about.licenseBody": "MIT ส่วน Three.js เผยแพร่ภายใต้ MIT ของตัวเอง ดู THIRD_PARTY_NOTICES.md",
     "about.source": "ซอร์สและเดโม",
@@ -746,7 +837,77 @@ const I18N = {
     "rules.points": "แต้ม",
     "rules.beginner": "ตัวช่วยผู้เริ่มต้น",
     "rules.beginnerBody": "ปุ่มย้อนตาจะคืนตำแหน่งก่อนตาสุดท้ายและอธิบายการเปรียบเทียบ แผงโค้ชบอกชุดนำหรือชุดสู้ที่ดีที่สุดในมือ แต่จะไม่เล่นแทนคุณ",
-    "rules.footnote": "นี่คือimplementation สอนเล่นโอเพนซอร์สอิสระ ไม่ได้เกี่ยวข้องกับสำนักพิมพ์หรือองค์กรมาตรฐานใด"
+    "rules.footnote": "นี่คือimplementation สอนเล่นโอเพนซอร์สอิสระ ไม่ได้เกี่ยวข้องกับสำนักพิมพ์หรือองค์กรมาตรฐานใด",
+    "net.menuKicker": "โต๊ะแบบเพียร์ทูเพียร์",
+    "net.launchTitle": "เลือกวิธีเล่น",
+    "net.launchBody": "ตั้งโต๊ะผ่าน WebRTC โดยตรง เบราว์เซอร์เจ้าบ้านคิดกติกาและบอท ผู้เล่นอื่นใช้เพียงรหัสห้อง",
+    "net.menuNote": "ไม่มีเซิร์ฟเวอร์เกมและไม่มีบัญชี PeerJS ใช้เพียงจับมือครั้งแรก",
+    "net.solo": "เล่นคนเดียว",
+    "net.soloDesc": "หนึ่งที่นั่งมนุษย์ กับสามที่นั่งบอท",
+    "net.host": "เปิดโต๊ะ",
+    "net.hostDesc": "สร้างรหัสห้องและเชิญแขกได้ถึงสามคน",
+    "net.join": "เข้าร่วมโต๊ะ",
+    "net.joinDesc": "กรอกรหัสห้องหกตัว",
+    "net.hostTitle": "เปิดโต๊ะ",
+    "net.roomCode": "รหัสห้อง",
+    "net.codeHelp": "แชร์รหัสนี้ ตัวพิมพ์เล็กใหญ่ไม่มีผล",
+    "net.copyLink": "คัดลอกลิงก์เชิญ",
+    "net.roster": "ที่นั่ง",
+    "net.startTable": "เริ่มโต๊ะ",
+    "net.startHint": "มีมนุษย์อย่างน้อยสองคน ที่นั่งว่างจะกลายเป็นบอท",
+    "net.needTwo": "ต้องมีมนุษย์ 2 คน",
+    "net.needTwoLong": "ต้องมีมนุษย์อย่างน้อยสองคน ที่นั่งที่เหลือจะเป็นบอท",
+    "net.joinTitle": "เข้าร่วมโต๊ะ",
+    "net.codeLabel": "รหัสห้อง",
+    "net.codePlaceholder": "LEAB-ABC-234",
+    "net.nameLabel": "ชื่อของคุณ",
+    "net.namePlaceholder": "แขก",
+    "net.connect": "เชื่อมต่อ",
+    "net.connecting": "กำลังเชื่อมต่อ…",
+    "net.handshake": "เชื่อมต่อแล้ว กำลังรอเจ้าบ้าน…",
+    "net.connectedWaiting": "เชื่อมต่อแล้ว เจ้าบ้านจะเริ่มเมื่อพร้อม",
+    "net.lobbyOpen": "ห้องเปิดอยู่ แชร์รหัสหรือลิงก์เชิญ",
+    "net.dealing": "กำลังเริ่มโต๊ะ…",
+    "net.waitingHost": "รอเจ้าบ้าน",
+    "net.hostBadge": "เจ้าบ้าน",
+    "net.guestBadge": "แขก",
+    "net.botBadge": "บอท",
+    "net.emptySeat": "ว่าง",
+    "net.botPreview": "ที่นั่งบอท {n}",
+    "net.startingHost": "กำลังเปิดห้อง…",
+    "net.hostDefault": "เจ้าบ้าน",
+    "net.guestDefault": "แขก",
+    "net.error": "ข้อผิดพลาดการเชื่อมต่อ: {error}",
+    "net.hostFailed": "เปิดห้องไม่ได้: {error}",
+    "net.joinFailed": "เข้าร่วมไม่ได้: {error}",
+    "net.roomNotFound": "ไม่พบห้อง ตรวจรหัสและหน้าเจ้าบ้าน",
+    "net.badCode": "รหัสห้องมีหกตัวอักษรหรือตัวเลข",
+    "net.versionMismatch": "โปรโตคอลไม่ตรงกัน ต้องใช้รุ่น {version}",
+    "net.hostLeft": "เจ้าบ้านออกจากโต๊ะแล้ว คุณสามารถเข้าห้องอื่นหรือเล่นคนเดียว",
+    "net.reconnecting": "การเชื่อมต่อสัญญาณขาด กำลังเชื่อมใหม่…",
+    "net.hostOnly": "เฉพาะเจ้าบ้านจึงจะย้อนตาในเกมออนไลน์ได้",
+    "net.chipHint": "ห้องของคุณ คลิกเพื่อคัดลอกลิงก์เชิญ",
+    "net.modeSolo": "คนเดียว",
+    "net.modeHost": "เจ้าบ้าน",
+    "net.modeClient": "แขก",
+    "net.leave": "ออกจากห้อง",
+    "net.back": "กลับ",
+    "net.resume": "กลับโต๊ะ",
+    "net.lostTitle": "โต๊ะปิดแล้ว",
+    "net.fourSeats": "เลี๊ยบตุ่ยเป็นเกมสี่ที่นั่ง: เจ้าบ้านและแขกไม่เกินสามคน ที่นั่งว่างจะเติมด้วยบอท",
+    "net.localOnly": "ไม่ต้องมีบัญชี ช่องข้อมูล WebRTC เข้ารหัสระหว่างทาง (DTLS) แต่เจ้าบ้านเห็นไพ่ทุกมือ",
+    "net.rejected.in-progress": "แมตช์เริ่มแล้ว",
+    "net.rejected.full": "โต๊ะเต็ม (สี่ที่นั่ง)",
+    "net.rejected.illegal": "ชุดนั้นไม่ถูกกติกา",
+    "net.openLobby": "ผู้เล่นหลายคน",
+    "net.joinHint": "ขอรหัสหกตัวจากเจ้าบ้าน",
+    "toast.netGuest": "{name} เข้าร่วมโต๊ะ",
+    "toast.netGuestLeft": "{name} ออกจากห้องรับแขก",
+    "toast.netBot": "{name} ออก — บอทรับที่นั่งแทน",
+    "toast.netStarted": "โต๊ะ {code} เริ่มแล้ว",
+    "toast.netLeft": "ออกจากโต๊ะแล้ว",
+    "toast.netCopied": "คัดลอกลิงก์เชิญแล้ว",
+    "toast.solo": "โต๊ะคนเดียวพร้อมแล้ว"
   }
 };
 
@@ -778,6 +939,8 @@ function colorName(color, lang = LANG) {
 }
 
 function seatName(seat, lang = LANG) {
+  const profile = SEAT_PROFILES?.[seat];
+  if (profile?.name) return profile.name;
   return lang === "th" ? SEATS[seat].th : SEATS[seat].en;
 }
 
@@ -1097,8 +1260,60 @@ let actionTimer = null;
 let actionToken = 0;
 let newMatchGuard = false;
 
-function makeState(seed) {
-  return {
+/*
+ * Multiplayer identity.
+ * MY_SEAT is the seat this browser controls. In solo it is 0 and seats 1–3 are
+ * bots. In a hosted room it is 0; a guest gets the seat assigned by the host.
+ * SEAT_PROFILES is null in solo, so every historical seat label and AI path is
+ * unchanged.
+ */
+let MY_SEAT = 0;
+let SEAT_PROFILES = null;
+let net = null;
+let lobbyState = null;
+let remoteClock = null;
+let lastPublished = 0;
+let publishTimer = null;
+const PLAYER_NAME_KEY = "leabtui.name.v1";
+const LAUNCH_KEY = "leabtui.launch.v1";
+
+function isNetworked() {
+  return Boolean(net && (net.role === "host" || net.role === "client") && SEAT_PROFILES);
+}
+
+function isHost() {
+  return Boolean(net && net.role === "host");
+}
+
+function isClient() {
+  return Boolean(net && net.role === "client");
+}
+
+function isBotSeat(seat) {
+  if (seat === MY_SEAT) return false;
+  if (SEAT_PROFILES) {
+    const kind = SEAT_PROFILES[seat]?.kind;
+    return kind !== "host" && kind !== "human";
+  }
+  return seat !== 0;
+}
+
+function isLocalSeat(seat) {
+  return seat === MY_SEAT;
+}
+
+function isHumanSeat(seat) {
+  if (!SEAT_PROFILES) return seat === 0;
+  const kind = SEAT_PROFILES[seat]?.kind;
+  return kind === "host" || kind === "human";
+}
+
+function seatProfile(seat) {
+  if (SEAT_PROFILES?.[seat]) return SEAT_PROFILES[seat];
+  return { seat, name: seatName(seat), kind: seat === 0 ? "host" : "bot", connected: seat === 0 };
+}
+
+function makeState(seed) {  return {
     phase: "dealing",
     round: 1,
     trick: 0,
@@ -1124,7 +1339,9 @@ function makeState(seed) {
     handCounts: [0, 0, 0, 0],
     seed: seed ?? Math.floor(Math.random() * 1e9),
     fast: false,
-    language: prefs.lang
+    language: prefs.lang,
+    /* Host-only: tileId → ghost mesh id. Stripped before every wire message. */
+    hiddenTags: [[], [], [], []]
   };
 }
 
@@ -1147,6 +1364,7 @@ function serializableState(source = state) {
   const base = { ...source };
   delete base.snapshot;
   delete base.fast;
+  delete base.hiddenTags;
   const copy = clone(base);
   copy.hands = source.hands.map((hand) => hand.map((tile) => typeof tile === "string" ? tile : tile.id));
   copy.captures = source.captures.map((pile) => pile.map((tile) => typeof tile === "string" ? tile : tile.id));
@@ -1180,14 +1398,17 @@ function saveStats() {
 
 function saveMatch() {
   if (!state) return;
+  if (isClient()) return; // a guest view is not a resumable game
   try {
     localStorage.setItem(APP.storageKey, JSON.stringify({
       format: APP.format,
       version: APP.version,
       savedAt: nowISO(),
+      network: isNetworked(),
       game: serializableState()
     }));
   } catch { /* ignore */ }
+  if (isHost()) queuePublish();
 }
 
 function loadPrefs() {
@@ -1216,6 +1437,7 @@ function loadMatch() {
     if (!raw) return false;
     const parsed = JSON.parse(raw);
     if (!parsed || parsed.format !== APP.format || !parsed.game) return false;
+    if (parsed.network) return false; // network rooms are not restorable across reloads
     const game = parsed.game;
     if (!Array.isArray(game.hands) || game.hands.length !== 4) return false;
     if (!Array.isArray(game.scores) || game.scores.length !== 4) return false;
@@ -1286,7 +1508,7 @@ function beginTrick() {
     endRound();
     return;
   }
-  state.snapshot = { game: serializableState(state), stats: clone(stats), at: Date.now() };
+  state.snapshot = { game: serializableState(state), stats: clone(stats), hiddenTags: clone(state.hiddenTags), at: Date.now() };
   state.trick += 1;
   state.center = [];
   state.lead = null;
@@ -1299,10 +1521,10 @@ function beginTrick() {
   updateUndoButton();
   renderAll();
   saveMatch();
-  if (state.turn === 0) {
+  if (isLocalSeat(state.turn)) {
     audio?.play("flip", 0);
     coachTick();
-  } else {
+  } else if (isBotSeat(state.turn)) {
     scheduleAI(1100);
   }
   if (scene) scene.sync(state);
@@ -1310,14 +1532,15 @@ function beginTrick() {
 
 function scheduleAI(delay = 1000) {
   clearTimeout(actionTimer);
-  if (!state || state.turn === 0) return;
+  if (!state) return;
+  if (!isBotSeat(state.turn)) return;
   if (!["lead", "follow"].includes(state.phase)) return;
   const token = ++actionToken;
   const seat = state.turn;
   actionTimer = setTimeout(() => {
     if (!state || token !== actionToken) return;
     if (!["lead", "follow"].includes(state.phase) || state.turn !== seat) return;
-    if (seat === 0) return;
+    if (!isBotSeat(seat)) return;
     if (state.phase === "lead") aiLead(seat);
     else aiFollow(seat);
   }, state.fast ? 5 : delay);
@@ -1332,6 +1555,11 @@ function dealRound(leaderHint = null) {
   const hands = [[], [], [], []];
   for (let i = 0; i < 32; i += 1) hands[i % 4].push(deck[i]);
   state.hands = hands;
+  state.hiddenTags = hands.map((hand, seat) => {
+    const tags = {};
+    hand.forEach((tile, index) => { tags[tile.id] = `${GHOST_PREFIX}${seat}-${index}`; });
+    return tags;
+  });
   state.captures = [[], [], [], []];
   state.center = [];
   state.lead = null;
@@ -1398,6 +1626,10 @@ function beginMatch(options = {}) {
 }
 
 function startNextRound() {
+  if (isClient()) {
+    toast(t("net.hostOnly"));
+    return;
+  }
   if (!state || state.phase === "matchEnd") return;
   clearTimeout(actionTimer);
   state.round += 1;
@@ -1440,7 +1672,7 @@ function leadTrick(seat, tileIds, comboOverride = null) {
   if (scene) scene.sync(state);
   coachTick();
 
-  if (state.turn !== 0) scheduleAI(1200);
+  if (isBotSeat(state.turn)) scheduleAI(1200);
   return true;
 }
 
@@ -1470,8 +1702,9 @@ function submitPlay(seat, tileIds, reveal) {
 
   if (state.center.length === 4) {
     resolveTrick();
-  } else if (state.turn === 0) {
-    // Human is next.
+  } else if (!isBotSeat(state.turn)) {
+    // A local or remote human is next; wait for their action.
+    coachTick();
   } else {
     scheduleAI(900);
   }
@@ -1485,7 +1718,7 @@ function resolveTrick() {
   const winningCombo = state.best.combo;
   const captured = state.center.reduce((sum, entry) => sum + entry.tiles.length, 0);
   const allTiles = state.center.flatMap((entry) => entry.tiles);
-  const humanEntry = state.center.find((entry) => entry.seat === 0);
+  const localEntry = state.center.find((entry) => entry.seat === MY_SEAT);
   state.captures[winner].push(...allTiles);
   state.lastTrick = {
     winner,
@@ -1495,14 +1728,14 @@ function resolveTrick() {
       revealed: entry.revealed,
       combo: entry.combo ? clone(entry.combo) : null
     })),
-    humanSeat: 0,
-    humanWon: winner === 0,
-    humanRevealed: Boolean(humanEntry?.revealed),
-    humanCombo: humanEntry?.combo ? clone(humanEntry.combo) : null,
-    humanTiles: humanEntry ? humanEntry.tiles.map((tile) => tile.id) : [],
+    humanSeat: MY_SEAT,
+    humanWon: winner === MY_SEAT,
+    humanRevealed: Boolean(localEntry?.revealed),
+    humanCombo: localEntry?.combo ? clone(localEntry.combo) : null,
+    humanTiles: localEntry ? localEntry.tiles.map((tile) => tile.id) : [],
     captured
   };
-  state.log.push({ kind: "win", trick: state.trick, seat: winner, combo: clone(winningCombo), count: captured, human: winner === 0 });
+  state.log.push({ kind: "win", trick: state.trick, seat: winner, combo: clone(winningCombo), count: captured, human: winner === MY_SEAT });
   state.center = [];
   state.selected = [];
   state.handCounts = handCounts();
@@ -1512,9 +1745,9 @@ function resolveTrick() {
   saveMatch();
 
   if (scene) scene.collect(state, winner, allTiles);
-  audio?.play(winner === 0 ? "win" : "sweep", winner);
-  if (winner === 0) {
-    toast(t("coach.trickWon", { combo: comboSummary(winningCombo), piles: scoredPilesFromTiles(state.captures[0]) }), "gold");
+  audio?.play(winner === MY_SEAT ? "win" : "sweep", winner);
+  if (winner === MY_SEAT) {
+    toast(t("coach.trickWon", { combo: comboSummary(winningCombo), piles: scoredPilesFromTiles(state.captures[MY_SEAT]) }), "gold");
   } else {
     toast(t("coach.trickLost", { seat: seatName(winner), combo: comboSummary(winningCombo), why: t("coach.whyUnknown") }), "");
   }
@@ -1541,9 +1774,9 @@ function endRound() {
   state.phase = "roundEnd";
   state.handCounts = [0, 0, 0, 0];
 
-  const humanPoints = points[0];
+  const localPoints = points[MY_SEAT];
   stats.rounds += 1;
-  stats.currentStreak = humanPoints > 0 ? stats.currentStreak + 1 : 0;
+  stats.currentStreak = localPoints > 0 ? stats.currentStreak + 1 : 0;
   stats.bestStreak = Math.max(stats.bestStreak, stats.currentStreak);
   stats.lastPlayed = nowISO();
   stats.history.unshift({
@@ -1552,7 +1785,7 @@ function endRound() {
     points: points.slice(),
     scores: state.scores.slice(),
     piles: piles.slice(),
-    human: humanPoints
+    human: localPoints
   });
   stats.history = stats.history.slice(0, 40);
 
@@ -1574,7 +1807,7 @@ function endRound() {
     state.winner = leaders.length === 1 ? leaders[0] : -1;
     state.phase = "matchEnd";
     stats.matches += 1;
-    if (state.winner === 0) stats.wins += 1;
+    if (state.winner === MY_SEAT) stats.wins += 1;
     else if (state.winner === -1) stats.draws += 1;
     else stats.losses += 1;
   }
@@ -1584,12 +1817,16 @@ function endRound() {
   renderAll();
   updateUndoButton();
   if (scene) scene.sync(state);
-  audio?.play(state.winner === 0 || (state.phase === "roundEnd" && humanPoints > 0) ? "win" : "lose", 0);
+  audio?.play(state.winner === MY_SEAT || (state.phase === "roundEnd" && localPoints > 0) ? "win" : "lose", 0);
   showRoundSummary(finished);
   if (state.phase === "matchEnd") toast(t("summary.match"), "gold");
 }
 
 function undoLastTrick() {
+  if (isClient()) {
+    toast(t("net.hostOnly"));
+    return false;
+  }
   if (!state || !state.snapshot) {
     toast(t("toast.noUndo"));
     return false;
@@ -1606,6 +1843,11 @@ function undoLastTrick() {
   state.phase = "lead";
   state.turn = state.leader;
   state.snapshot = null;
+  state.hiddenTags = snapshot.hiddenTags || state.hands.map((hand, seat) => {
+    const tags = {};
+    hand.forEach((tile, index) => { tags[tile.id] = `${GHOST_PREFIX}${seat}-${index}`; });
+    return tags;
+  });
   stats = clone(snapshot.stats);
   saveStats();
   hideAllModals();
@@ -1640,21 +1882,29 @@ function aiFollow(seat) {
    -------------------------------------------------------------------------- */
 
 function humanLead() {
-  if (!state || state.phase !== "lead" || state.turn !== 0) return;
+  if (!state || state.phase !== "lead" || state.turn !== MY_SEAT) return;
   const tiles = selectedTiles();
   const combo = detectCombo(tiles);
   if (!combo) {
     toast(t("coach.invalidLead"), "wine");
     return;
   }
-  if (leadTrick(0, tiles.map((tile) => tile.id))) {
-    audio?.play("clack", 0);
+  if (isClient()) {
+    if (sendNetAction("lead", tiles.map((tile) => tile.id), false)) {
+      state.selected = [];
+      renderAll();
+      scene?.setSelected([]);
+    }
+    return;
+  }
+  if (leadTrick(MY_SEAT, tiles.map((tile) => tile.id))) {
+    audio?.play("clack", MY_SEAT);
     coachTick();
   }
 }
 
 function humanFollow(reveal) {
-  if (!state || state.phase !== "follow" || state.turn !== 0 || !state.lead) return;
+  if (!state || state.phase !== "follow" || state.turn !== MY_SEAT || !state.lead) return;
   const tiles = selectedTiles();
   if (tiles.length !== state.lead.combo.count) {
     toast(t("coach.selectMore", { n: state.lead.combo.count, m: tiles.length }), "wine");
@@ -1667,18 +1917,27 @@ function humanFollow(reveal) {
       return;
     }
   }
-  submitPlay(0, tiles.map((tile) => tile.id), reveal);
+  if (isClient()) {
+    if (sendNetAction("follow", tiles.map((tile) => tile.id), Boolean(reveal))) {
+      state.selected = [];
+      renderAll();
+      scene?.setSelected([]);
+    }
+    return;
+  }
+  submitPlay(MY_SEAT, tiles.map((tile) => tile.id), reveal);
 }
 
 function selectedTiles() {
   if (!state) return [];
-  return state.selected.map((id) => state.hands[0].find((tile) => tile.id === id)).filter(Boolean);
+  return state.selected.map((id) => state.hands[MY_SEAT].find((tile) => tile.id === id)).filter(Boolean);
 }
 
 function toggleTile(id, options = {}) {
   if (!state) return;
-  if (!["lead", "follow"].includes(state.phase) || state.turn !== 0) return;
-  if (!state.hands[0].some((tile) => tile.id === id)) return;
+  if (isClient() && !["lead", "follow"].includes(state.phase)) return;
+  if (!["lead", "follow"].includes(state.phase) || state.turn !== MY_SEAT) return;
+  if (!state.hands[MY_SEAT].some((tile) => tile.id === id)) return;
   const index = state.selected.indexOf(id);
   if (index >= 0) state.selected.splice(index, 1);
   else {
@@ -1704,14 +1963,14 @@ function clearSelection() {
 }
 
 function applyHint() {
-  if (!state || !["lead", "follow"].includes(state.phase) || state.turn !== 0) return;
+  if (!state || !["lead", "follow"].includes(state.phase) || state.turn !== MY_SEAT) return;
   if (state.phase === "lead") {
-    const combo = chooseLead(state.hands[0], { jitter: false });
+    const combo = chooseLead(state.hands[MY_SEAT], { jitter: false });
     if (!combo) return;
     state.selected = combo.tiles.map((tile) => tile.id);
     toast(t("toast.hint"), "jade");
   } else {
-    const recommendation = recommendedFollow(state.hands[0], state.lead.combo, state.best.combo);
+    const recommendation = recommendedFollow(state.hands[MY_SEAT], state.lead.combo, state.best.combo);
     if (recommendation.kind === "beat") {
       state.selected = recommendation.combo.tiles.map((tile) => tile.id);
     } else {
@@ -1748,36 +2007,36 @@ function coachMessage() {
   if (!state) return t("coach.welcome");
   if (state.phase === "dealing") return t("coach.dealing");
   if (state.phase === "resolving") {
-    return t("coach.trickWon", { combo: comboSummary(state.best?.combo), piles: scoredPilesFromTiles(state.captures[0]) });
+    return t("coach.trickWon", { combo: comboSummary(state.best?.combo), piles: scoredPilesFromTiles(state.captures[MY_SEAT]) });
   }
   if (state.phase === "roundEnd") {
-    return t("coach.roundEnd", { points: state.roundPoints[0], score: state.scores[0] });
+    return t("coach.roundEnd", { points: state.roundPoints[MY_SEAT], score: state.scores[MY_SEAT] });
   }
   if (state.phase === "matchEnd") {
-    const winner = state.winner === 0 ? t("summary.win") : state.winner === -1 ? t("summary.draw") : t("summary.lose", { seat: seatName(state.winner) });
+    const winner = state.winner === MY_SEAT ? t("summary.win") : state.winner === -1 ? t("summary.draw") : t("summary.lose", { seat: seatName(state.winner) });
     return `${winner} ${t("coach.rematch")}`;
   }
 
-  const humanHand = state.hands[0];
-  const left = humanHand.length;
-  if (left === 0) return t("coach.roundEnd", { points: state.roundPoints[0], score: state.scores[0] });
+  const localHand = state.hands[MY_SEAT];
+  const left = localHand.length;
+  if (left === 0) return t("coach.roundEnd", { points: state.roundPoints[MY_SEAT], score: state.scores[MY_SEAT] });
 
-  if (state.phase === "lead" && state.turn === 0) {
+  if (state.phase === "lead" && state.turn === MY_SEAT) {
     const selected = detectCombo(selectedTiles());
     if (selected) return t("coach.followReady", { combo: comboSummary(selected), best: t("dock.leadTitle"), tiles: selected.count * 4 });
     if (state.selected.length) return t("coach.invalidLead");
-    const combo = chooseLead(humanHand, { jitter: false });
+    const combo = chooseLead(localHand, { jitter: false });
     return t("coach.hintLead", { combo: comboSummary(combo), why: coachWhy(combo) });
   }
 
-  if (state.phase === "lead" && state.turn !== 0) {
+  if (state.phase === "lead" && state.turn !== MY_SEAT) {
     return t("coach.aiLead", { seat: seatName(state.turn) });
   }
 
   if (state.phase === "follow") {
     const lead = state.lead;
     if (!lead) return t("coach.welcome");
-    if (state.turn !== 0) {
+    if (state.turn !== MY_SEAT) {
       return t("coach.follow", { seat: seatName(state.turn), combo: comboSummary(lead.combo), n: lead.combo.count });
     }
     const needed = lead.combo.count;
@@ -1800,13 +2059,13 @@ function coachMessage() {
 function coachMeta() {
   if (!state) return "";
   const counts = state.hands.map((hand) => hand.length);
-  const left = counts[0];
+  const left = counts[MY_SEAT];
   const pieces = [`${t("coach.tilesLeft", { n: left })}`];
   if (state.phase === "follow" && state.lead) {
     const bestSeat = state.best?.seat;
     pieces.push(`${t("hud.trick")} ${state.trick} · ${comboName(state.lead.combo.type)} ×${state.lead.combo.count}`);
     if (bestSeat !== undefined) pieces.push(`${seatName(bestSeat)}: ${comboSummary(state.best.combo)}`);
-  } else if (state.phase === "lead" && state.turn === 0) {
+  } else if (state.phase === "lead" && state.turn === MY_SEAT) {
     pieces.push(t("coach.youLead"));
   } else if (state.phase === "lead") {
     pieces.push(t("coach.otherLead", { seat: seatName(state.turn) }));
@@ -1854,17 +2113,17 @@ function showRoundSummary(matchEnded) {
   $("#summaryTitle").textContent = isMatch ? t("summary.match") : t("summary.round", { n: state.round });
   const scoreRows = SEATS.map((seat) => `
     <tr>
-      <td>${escapeHTML(seatName(seat.id))}${seat.id === 0 ? " ★" : ""}</td>
+      <td>${escapeHTML(seatName(seat.id))}${seat.id === MY_SEAT ? " ★" : ""}${isBotSeat(seat.id) ? ` <span class="mini-tag">${escapeHTML(t("net.botBadge"))}</span>` : ""}</td>
       <td class="num">${state.lastRound?.piles?.[seat.id] ?? 0}</td>
       <td class="num">${state.lastRound?.points?.[seat.id] ?? 0}</td>
       <td class="num">${state.scores[seat.id]}</td>
     </tr>`).join("");
   const chuan = state.lastRound?.chuan ? `<div class="summary-note">${escapeHTML(t("summary.chuan"))} — 16 ${escapeHTML(t("summary.points"))}.</div>` : "";
   const winnerLine = isMatch
-    ? `<div class="summary-note">${escapeHTML(state.winner === 0 ? t("summary.win") : state.winner === -1 ? t("summary.draw") : t("summary.lose", { seat: seatName(state.winner) }))}</div>`
+    ? `<div class="summary-note">${escapeHTML(state.winner === MY_SEAT ? t("summary.win") : state.winner === -1 ? t("summary.draw") : t("summary.lose", { seat: seatName(state.winner) }))}</div>`
     : "";
   $("#summaryBody").innerHTML = `
-    <div class="summary-hero"><strong>${state.lastRound?.points?.[0] ?? 0}</strong><span>${escapeHTML(t("summary.roundPoints"))} · ${escapeHTML(t("summary.you"))}</span></div>
+    <div class="summary-hero"><strong>${state.lastRound?.points?.[MY_SEAT] ?? 0}</strong><span>${escapeHTML(t("summary.roundPoints"))} · ${escapeHTML(seatName(MY_SEAT))}</span></div>
     <table class="summary-table">
       <thead><tr><th>${escapeHTML(t("score.title"))}</th><th class="num">${escapeHTML(t("summary.piles"))}</th><th class="num">${escapeHTML(t("summary.points"))}</th><th class="num">${escapeHTML(t("summary.total"))}</th></tr></thead>
       <tbody>${scoreRows}</tbody>
@@ -1873,10 +2132,10 @@ function showRoundSummary(matchEnded) {
     ${winnerLine}
     <div class="summary-note">${escapeHTML(t("summary.note"))}</div>
     <div class="summary-note">${escapeHTML(t("summary.streak", { n: stats.currentStreak }))} · ${escapeHTML(t("summary.targetReached", { target: state.target }))}</div>`;
-  $("#summaryPrimary").textContent = isMatch ? t("summary.newMatch") : t("summary.next");
-  $("#summaryPrimary").dataset.action = isMatch ? "new" : "next";
-  $("#summarySecondary").textContent = isMatch ? t("actions.export") : t("summary.newMatch");
-  $("#summarySecondary").dataset.action = isMatch ? "export" : "new";
+  $("#summaryPrimary").textContent = isClient() ? t("net.resume") : isMatch ? t("summary.newMatch") : t("summary.next");
+  $("#summaryPrimary").dataset.action = isClient() ? "close" : isMatch ? "new" : "next";
+  $("#summarySecondary").textContent = isClient() ? t("net.solo") : isMatch ? t("actions.export") : t("summary.newMatch");
+  $("#summarySecondary").dataset.action = isClient() ? "solo" : isMatch ? "export" : "new";
   modal.hidden = false;
 }
 
@@ -1906,7 +2165,7 @@ function buildUndoExplanation() {
   return `
     <p>${escapeHTML(t("undo.intro"))}</p>
     <div class="undo-compare">
-      <div class="undo-side"><span>${escapeHTML(t("undo.youPlayed"))}</span><b>${escapeHTML(youPlayed)}</b><span>${trick.humanSeat === 0 ? escapeHTML(t("seat.you")) : ""}</span></div>
+      <div class="undo-side"><span>${escapeHTML(t("undo.youPlayed"))}</span><b>${escapeHTML(youPlayed)}</b><span>${trick.humanSeat === MY_SEAT ? escapeHTML(t("summary.you")) : ""}</span></div>
       <div class="undo-vs">VS</div>
       <div class="undo-side"><span>${escapeHTML(t("undo.winnerPlayed", { seat: winner }))}</span><b>${escapeHTML(winnerPlayed)}</b><span>${escapeHTML(winner)}</span></div>
     </div>
@@ -1946,11 +2205,12 @@ function renderAll() {
   renderInspector();
   updateUndoButton();
   const nextRound = $("#nextRoundBtn");
-  if (nextRound) nextRound.hidden = state.phase !== "roundEnd";
+  if (nextRound) nextRound.hidden = state.phase !== "roundEnd" || isClient();
   const streak = $("#streakChip");
   if (streak) streak.textContent = `×${stats.currentStreak}`;
   const target = $("#scoreTarget");
   if (target) target.textContent = state.target;
+  renderNetChrome();
 }
 
 function renderHUD() {
@@ -1972,9 +2232,13 @@ function renderScoreboard() {
   board.innerHTML = SEATS.map((seat) => {
     const active = ["lead", "follow", "resolving"].includes(state.phase) && state.turn === seat.id;
     const piles = scoredPilesFromTiles(state.captures[seat.id]);
-    return `<div class="score-row ${active ? "active" : ""} ${seat.id === 0 ? "you" : ""}">
+    const profile = SEAT_PROFILES?.[seat.id];
+    const tag = isBotSeat(seat.id) ? `<span class="seat-tag bot">${escapeHTML(t("net.botBadge"))}</span>`
+      : profile?.kind === "host" ? `<span class="seat-tag host">${escapeHTML(t("net.hostBadge"))}</span>`
+      : profile?.kind === "human" ? `<span class="seat-tag guest">${escapeHTML(t("net.guestBadge"))}</span>` : "";
+    return `<div class="score-row ${active ? "active" : ""} ${seat.id === MY_SEAT ? "you" : ""} ${profile?.connected === false ? "offline" : ""}">
       <span class="score-seat">${seat.wind}</span>
-      <span class="score-name">${escapeHTML(seatName(seat.id))}</span>
+      <span class="score-name">${escapeHTML(seatName(seat.id))}${tag}</span>
       <span class="score-piles">${piles} ${escapeHTML(piles === 1 ? t("score.pile") : t("score.piles"))}</span>
       <span class="score-points">${state.scores[seat.id]}</span>
     </div>`;
@@ -1984,7 +2248,7 @@ function renderScoreboard() {
 function renderHandList() {
   const list = $("#tileList");
   if (!list) return;
-  const hand = state.hands[0];
+  const hand = state.hands[MY_SEAT];
   if (!hand.length) {
     list.innerHTML = `<span class="tile-list-empty">${escapeHTML(t("handList.empty"))}</span>`;
     return;
@@ -2014,7 +2278,7 @@ function renderSelection() {
   const clearBtn = $("#clearBtn");
   if (!title) return;
 
-  const humanTurn = state.turn === 0 && ["lead", "follow"].includes(state.phase);
+  const humanTurn = state.turn === MY_SEAT && ["lead", "follow"].includes(state.phase);
   hintBtn.disabled = !humanTurn;
   clearBtn.disabled = !state.selected.length;
 
@@ -2224,7 +2488,7 @@ function renderAbout() {
     <div class="credit-grid">
       <div class="credit-card"><b>${escapeHTML(t("about.harness"))}</b><span>${escapeHTML(build.harness)}</span></div>
       <div class="credit-card"><b>${escapeHTML(t("about.model"))}</b><span>${escapeHTML(build.model)}</span></div>
-      <div class="credit-card"><b>${escapeHTML(t("about.tech"))}</b><span>Three.js r160 · HTML5 · CSS3 · ES2022</span></div>
+      <div class="credit-card"><b>${escapeHTML(t("about.tech"))}</b><span>Three.js r160 · PeerJS 1.5.4 · HTML5 · CSS3 · ES2022</span></div>
       <div class="credit-card"><b>${escapeHTML(t("about.license"))}</b><span>${escapeHTML(APP.license)}</span></div>
     </div>
     <h3>${escapeHTML(t("about.build"))}</h3>
@@ -2328,6 +2592,7 @@ function applyLanguage(lang) {
     else node.textContent = text;
   });
   $$("[data-i18n-aria]").forEach((node) => node.setAttribute("aria-label", t(node.dataset.i18nAria)));
+  $$("[data-i18n-placeholder]").forEach((node) => node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder)));
   const label = $("#langLabel");
   if (label) label.textContent = LANG === "en" ? "ไทย" : "EN";
   const tileToggle = $("#tileListToggle");
@@ -2345,6 +2610,7 @@ function applyLanguage(lang) {
   renderAbout();
   renderAll();
   renderInspector();
+  if (lobbyState) renderLobby();
   if (scene && state && ["lead", "follow", "roundEnd", "matchEnd"].includes(state.phase)) scene.sync(state);
   if (state?.lastTrick) $("#undoBody").innerHTML = buildUndoExplanation();
   savePrefs();
@@ -2412,7 +2678,740 @@ function exportGame() {
 }
 
 /* --------------------------------------------------------------------------
-   13. Self-test
+   13. Serverless multiplayer (host-authoritative WebRTC)
+   -------------------------------------------------------------------------- */
+
+function isGhostTileId(id) {
+  return typeof id === "string" && id.startsWith(GHOST_PREFIX);
+}
+
+function sendNetAction(kind, tileIds, reveal = false) {
+  if (!isClient() || !net?.client) return false;
+  return net.client.send({ type: "action", kind, tiles: tileIds, reveal: Boolean(reveal) });
+}
+
+function makeGhostTile(id) {
+  const match = /^ghost-(\d)-(\d+)$/.exec(id);
+  return {
+    id,
+    rank: "soldier",
+    power: 1,
+    color: "b",
+    hanzi: "?",
+    hidden: true,
+    ghostSeat: match ? Number(match[1]) : 0
+  };
+}
+
+function tileFromWire(id) {
+  return TILE_BY_ID[id] || makeGhostTile(id);
+}
+
+function ensureHiddenTags(source = state) {
+  if (!source) return;
+  if (!Array.isArray(source.hiddenTags) || source.hiddenTags.length !== TABLE_SEATS) {
+    source.hiddenTags = [[], [], [], []];
+  }
+  source.hands.forEach((hand, seat) => {
+    const tags = source.hiddenTags[seat] && !Array.isArray(source.hiddenTags[seat]) ? source.hiddenTags[seat] : {};
+    hand.forEach((tile, index) => {
+      if (!tags[tile.id]) tags[tile.id] = `${GHOST_PREFIX}${seat}-${index}`;
+    });
+    source.hiddenTags[seat] = tags;
+  });
+}
+
+function hiddenTag(seat, tileId, source = state) {
+  return source?.hiddenTags?.[seat]?.[tileId] || `${GHOST_PREFIX}${seat}-0`;
+}
+
+/**
+ * The only function allowed to cross the privacy boundary.
+ *
+ * Hands and face-down centre plays that belong to another seat become ghost
+ * mesh ids; their real tile ids and combination values never leave the host.
+ * Captures are public, so they keep real ids. The host's undo snapshot and the
+ * tile→ghost map are stripped by serializableState.
+ */
+function sanitizeForSeat(source, seat) {
+  if (!source) return null;
+  ensureHiddenTags(source);
+  const raw = serializableState(source);
+  raw.hands = raw.hands.map((hand, handSeat) => (
+    handSeat === seat ? hand : hand.map((tileId) => hiddenTag(handSeat, tileId, source))
+  ));
+  raw.center = raw.center.map((entry) => {
+    if (entry.revealed || entry.seat === seat) return entry;
+    return {
+      ...entry,
+      tiles: entry.tiles.map((tileId) => hiddenTag(entry.seat, tileId, source)),
+      combo: null
+    };
+  });
+  raw.log = (raw.log || []).map((entry) => {
+    if (entry.kind === "hidden" && entry.seat !== seat) return { ...entry, combo: null };
+    return entry;
+  });
+  if (raw.lastTrick) {
+    const entries = (raw.lastTrick.entries || []).map((entry) => (
+      entry.revealed || entry.seat === seat ? entry : { ...entry, combo: null }
+    ));
+    const localEntry = entries.find((entry) => entry.seat === seat) || null;
+    raw.lastTrick = {
+      ...raw.lastTrick,
+      entries,
+      humanSeat: seat,
+      humanWon: raw.lastTrick.winner === seat,
+      humanRevealed: Boolean(localEntry?.revealed),
+      humanCombo: localEntry?.combo || null,
+      humanTiles: []
+    };
+  }
+  raw.selected = [];
+  return raw;
+}
+
+function hydrateRemoteState(raw) {
+  if (!raw) return null;
+  const game = { ...raw };
+  game.hands = (raw.hands || []).map((hand) => hand.map(tileFromWire));
+  game.captures = (raw.captures || [[], [], [], []]).map((pile) => pile.map(tileFromWire));
+  game.center = (raw.center || []).map((entry) => ({
+    ...entry,
+    tiles: (entry.tiles || []).map(tileFromWire),
+    combo: entry.combo || null
+  }));
+  game.lead = raw.lead ? { seat: raw.lead.seat, combo: raw.lead.combo || null } : null;
+  game.best = raw.best ? { seat: raw.best.seat, combo: raw.best.combo || null } : null;
+  game.selected = [];
+  game.snapshot = null;
+  game.fast = false;
+  game.language = LANG;
+  game.hiddenTags = [[], [], [], []];
+  return game;
+}
+
+function applyRemoteState(raw) {
+  if (!raw) return;
+  const next = hydrateRemoteState(raw);
+  const previousSelected = state && next.hands[MY_SEAT] ? state.selected || [] : [];
+  const inHand = new Set(next.hands[MY_SEAT].map((tile) => tile.id));
+  next.selected = ["lead", "follow"].includes(next.phase) && next.turn === MY_SEAT
+    ? previousSelected.filter((id) => inHand.has(id))
+    : [];
+  state = next;
+  if (scene) scene.setViewSeat?.(MY_SEAT);
+  renderAll();
+  if (scene) {
+    scene.sync(state);
+    scene.setSelected(state.selected);
+  }
+  if (next.phase === "roundEnd" || next.phase === "matchEnd") showRoundSummary(next.phase === "matchEnd");
+  if (next.phase === "dealing") scene?.flipHumanHand?.(state);
+  if (lobbyState?.view === "waiting") {
+    lobbyState.view = "table";
+    closeLobby();
+  }
+}
+
+function serialiseRoster() {
+  return SEAT_PROFILES.map((profile, seat) => ({
+    seat,
+    name: profile?.name || t("net.emptySeat"),
+    kind: profile?.kind || "bot",
+    connected: profile?.connected !== false,
+    bot: profile?.kind === "bot" || !profile
+  }));
+}
+
+function queuePublish() {
+  if (!isHost()) return;
+  clearTimeout(publishTimer);
+  publishTimer = setTimeout(publishState, NET_TICK_MS);
+}
+
+function publishState() {
+  if (!isHost() || !state || !net?.host) return;
+  if (!net.started) return;
+  const roster = serialiseRoster();
+  net.seq = (net.seq || 0) + 1;
+  for (const profile of SEAT_PROFILES) {
+    if (!profile || profile.kind !== "human" || !profile.connId) continue;
+    const payload = sanitizeForSeat(state, profile.seat);
+    net.host.send(profile.connId, {
+      type: "state",
+      roomCode: net.code,
+      seq: net.seq,
+      seat: profile.seat,
+      players: roster,
+      hostName: net.name,
+      state: payload
+    });
+  }
+  lastPublished = Date.now();
+}
+
+function sendLobbyToGuests() {
+  if (!isHost() || !net?.host) return;
+  const roster = serialiseRoster();
+  const humans = SEAT_PROFILES.filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.connected).length;
+  for (const profile of SEAT_PROFILES) {
+    if (!profile || profile.kind !== "human" || !profile.connId) continue;
+    net.host.send(profile.connId, {
+      type: "lobby",
+      roomCode: net.code,
+      hostName: net.name,
+      players: roster,
+      canStart: humans >= 2,
+      started: Boolean(net.started)
+    });
+  }
+}
+
+function nextBotName() {
+  const used = SEAT_PROFILES ? SEAT_PROFILES.filter((profile) => profile?.kind === "bot").length : 0;
+  return `Bot ${used + 1}`;
+}
+
+function convertSeatToBot(seat, reason = "left") {
+  if (!SEAT_PROFILES?.[seat]) return;
+  const former = SEAT_PROFILES[seat];
+  SEAT_PROFILES[seat] = {
+    seat,
+    name: nextBotName(),
+    kind: "bot",
+    connected: true,
+    replaced: former.name || former.handle,
+    since: nowISO()
+  };
+  if (state) {
+    // The seat stays occupied; the hand and score are untouched.
+  }
+  toast(t("toast.netBot", { name: former.name || seatName(seat) }), "wine");
+  renderAll();
+  sendLobbyToGuests();
+  queuePublish();
+  if (state && state.turn === seat && ["lead", "follow"].includes(state.phase)) scheduleAI(700);
+}
+
+function acceptGuest(connId, name) {
+  const clean = String(name || "").trim().slice(0, 18) || `Guest ${net.seatSeq + 1}`;
+  if (net.started) {
+    net.host.send(connId, { type: "rejected", reason: "in-progress" });
+    return;
+  }
+  let seat = -1;
+  for (let index = 1; index < TABLE_SEATS; index += 1) {
+    if (!SEAT_PROFILES[index]) { seat = index; break; }
+  }
+  if (seat < 0) {
+    net.host.send(connId, { type: "rejected", reason: "full" });
+    return;
+  }
+  net.seatSeq += 1;
+  SEAT_PROFILES[seat] = {
+    seat,
+    name: clean,
+    kind: "human",
+    connected: true,
+    connId,
+    clientId: `guest-${net.seatSeq}`
+  };
+  net.host.send(connId, {
+    type: "welcome",
+    roomCode: net.code,
+    protocol: PROTOCOL_VERSION,
+    seat,
+    hostName: net.name,
+    players: serialiseRoster(),
+    canStart: SEAT_PROFILES.filter((profile) => profile && profile.connected).length >= 2
+  });
+  sendLobbyToGuests();
+  renderLobby();
+  toast(t("toast.netGuest", { name: clean }), "jade");
+  audio?.play("click", 0);
+}
+
+function hostMessage({ connId, message }) {
+  if (!isProtocolMessage(message)) return;
+  switch (message.type) {
+    case "hello":
+      acceptGuest(connId, message.name);
+      break;
+    case "action": {
+      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      if (!profile) return;
+      const tiles = Array.isArray(message.tiles) ? message.tiles.filter((id) => typeof id === "string").slice(0, 6) : [];
+      const ok = message.kind === "lead"
+        ? leadTrick(profile.seat, tiles)
+        : message.kind === "follow"
+          ? submitPlay(profile.seat, tiles, Boolean(message.reveal))
+          : false;
+      if (!ok) net.host.send(connId, { type: "rejected", reason: "illegal" });
+      break;
+    }
+    case "ping":
+      net.host.send(connId, { type: "pong", at: Date.now() });
+      break;
+    case "leave": {
+      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      if (profile) {
+        if (net.started && state) convertSeatToBot(profile.seat);
+        else {
+          SEAT_PROFILES[profile.seat] = null;
+          sendLobbyToGuests();
+          renderLobby();
+        }
+      }
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+function hostConnectionLost({ connId }) {
+  const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+  if (!profile) return;
+  if (net?.started && state) {
+    convertSeatToBot(profile.seat, "disconnected");
+  } else {
+    SEAT_PROFILES[profile.seat] = null;
+    sendLobbyToGuests();
+    renderLobby();
+    toast(t("toast.netGuestLeft", { name: profile.name }), "wine");
+  }
+}
+
+async function createHostRoom(name) {
+  if (net) leaveRoom({ silent: true });
+  const handle = String(name || "").trim().slice(0, 18) || t("net.hostDefault");
+  lobbyState = { view: "host", roomCode: "", status: t("net.startingHost"), error: "", players: [], hostName: handle, started: false };
+  showLobby("host");
+  const hostHandlers = {
+    onConnection: () => {},
+    onMessage: hostMessage,
+    onClose: hostConnectionLost,
+    onError: ({ type }) => {
+      if (type === "unavailable-id") return;
+      setLobbyStatus(t("net.error", { error: type }), "wine");
+    },
+    onStatus: ({ state: status }) => {
+      if (status === "reconnecting") setLobbyStatus(t("net.reconnecting"), "wine");
+    }
+  };
+  try {
+    const host = await openHostWithRetry({ name: handle, ...hostHandlers });
+    net = { role: "host", host, code: host.code, name: handle, seq: 0, started: false, seatSeq: 0 };
+    SEAT_PROFILES = [{ seat: 0, name: handle, kind: "host", connected: true, host: true }, null, null, null];
+    MY_SEAT = 0;
+    lobbyState.roomCode = host.code;
+    setLobbyStatus(t("net.lobbyOpen"), "jade");
+    renderLobby();
+    renderNetChrome();
+    audio?.play("win", 0);
+    savePlayerName(handle);
+  } catch (error) {
+    setLobbyStatus(t("net.hostFailed", { error: error?.type || error?.message || "unknown" }), "wine");
+  }
+}
+
+function startHostedMatch() {
+  if (!isHost()) return;
+  const humans = SEAT_PROFILES.filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.connected).length;
+  if (humans < 2) {
+    toast(t("net.needTwo"), "wine");
+    return;
+  }
+  let botIndex = 1;
+  SEAT_PROFILES = [0, 1, 2, 3].map((seat) => {
+    const profile = SEAT_PROFILES[seat];
+    if (profile && (profile.kind === "host" || profile.kind === "human") && profile.connected) return profile;
+    return { seat, name: `Bot ${botIndex++}`, kind: "bot", connected: true };
+  });
+  net.started = true;
+  net.seq = 0;
+  const roster = serialiseRoster();
+  for (const profile of SEAT_PROFILES) {
+    if (profile.kind !== "human" || !profile.connId) continue;
+    net.host.send(profile.connId, {
+      type: "start",
+      roomCode: net.code,
+      seat: profile.seat,
+      players: roster,
+      hostName: net.name
+    });
+  }
+  closeLobby();
+  beginMatch();
+  toast(t("toast.netStarted", { code: formatRoomCode(net.code) }), "gold");
+  sendLobbyToGuests();
+  publishState();
+}
+
+function clientMessage({ message }) {
+  if (!isProtocolMessage(message)) return;
+  switch (message.type) {
+    case "welcome":
+      MY_SEAT = Number(message.seat) || 1;
+      SEAT_PROFILES = message.players.map((player) => ({ ...player }));
+      net.seat = MY_SEAT;
+      net.name = message.players?.[MY_SEAT]?.name || net.name;
+      lobbyState = {
+        view: "waiting",
+        roomCode: message.roomCode,
+        hostName: message.hostName,
+        players: message.players,
+        status: t("net.connectedWaiting"),
+        started: false
+      };
+      showLobby("waiting");
+      renderLobby();
+      renderNetChrome();
+      audio?.play("win", 0);
+      break;
+    case "lobby":
+      if (SEAT_PROFILES && message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
+      if (lobbyState) {
+        lobbyState.players = message.players || lobbyState.players;
+        lobbyState.started = Boolean(message.started);
+        lobbyState.canStart = Boolean(message.canStart);
+      }
+      if (lobbyState?.view !== "table") renderLobby();
+      break;
+    case "start":
+      if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
+      if (lobbyState) {
+        lobbyState.started = true;
+        lobbyState.status = t("net.dealing");
+        renderLobby();
+      }
+      break;
+    case "state":
+      if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
+      applyRemoteState(message.state);
+      break;
+    case "rejected":
+      setLobbyStatus(t(`net.rejected.${message.reason}`) || t("net.error", { error: message.reason }), "wine");
+      break;
+    case "closed":
+      handleHostLost();
+      break;
+    case "pong":
+      remoteClock = Date.now() - Number(message.at || Date.now());
+      break;
+    default:
+      break;
+  }
+}
+
+function handleHostLost() {
+  if (!isClient()) return;
+  if (lobbyState) {
+    lobbyState.view = "lost";
+    lobbyState.status = t("net.hostLeft");
+  } else {
+    lobbyState = { view: "lost", roomCode: net?.code || "", status: t("net.hostLeft"), players: SEAT_PROFILES || [], started: true };
+  }
+  showLobby("lost");
+}
+
+async function joinRoom(code, name) {
+  if (net) leaveRoom({ silent: true });
+  const normalized = normalizeRoomCode(code);
+  if (!normalized) {
+    setLobbyStatus(t("net.badCode"), "wine");
+    return;
+  }
+  const handle = String(name || "").trim().slice(0, 18) || t("net.guestDefault");
+  MY_SEAT = 0;
+  SEAT_PROFILES = null;
+  lobbyState = { view: "join", roomCode: normalized, status: t("net.connecting"), error: "", players: [], hostName: "", started: false, name: handle };
+  showLobby("join");
+  let client = null;
+  try {
+    client = new PeerClient({
+      code: normalized,
+      name: handle,
+      onMessage: clientMessage,
+      onOpen: () => {
+        client.send({ type: "hello", name: handle, protocol: PROTOCOL_VERSION });
+        setLobbyStatus(t("net.handshake"), "jade");
+      },
+      onClose: () => {
+        if (net?.role === "client" && net.client === client) handleHostLost();
+      },
+      onError: ({ type }) => {
+        if (type === "peer-unavailable") setLobbyStatus(t("net.roomNotFound"), "wine");
+        else if (type === "protocol") setLobbyStatus(t("net.versionMismatch", { version: PROTOCOL_VERSION }), "wine");
+        else setLobbyStatus(t("net.error", { error: type }), "wine");
+      },
+      onStatus: ({ state: status }) => {
+        if (status === "dialing") setLobbyStatus(t("net.connecting"), "wine");
+      }
+    });
+    net = { role: "client", client, code: normalized, name: handle, seq: 0, started: false };
+    await client.connect();
+    savePlayerName(handle);
+  } catch (error) {
+    if (net?.client === client) net = null;
+    const type = error?.type || error?.message || "unknown";
+    setLobbyStatus(type === "peer-unavailable" ? t("net.roomNotFound") : t("net.joinFailed", { error: type }), "wine");
+  }
+}
+
+function leaveRoom({ silent = false, keepState = false } = {}) {
+  clearTimeout(publishTimer);
+  actionToken += 1;
+  const role = net?.role;
+  const host = net?.host;
+  const client = net?.client;
+  const roster = SEAT_PROFILES;
+  if (host) {
+    for (const profile of roster || []) {
+      if (profile?.kind === "human" && profile.connId) {
+        host.send(profile.connId, { type: "closed", reason: "host-left" });
+      }
+    }
+    host.close();
+  }
+  if (client) client.close();
+  net = null;
+  SEAT_PROFILES = null;
+  MY_SEAT = 0;
+  lobbyState = null;
+  if (!keepState) {
+    state = null;
+    renderAll();
+  }
+  if (!silent) {
+    hideAllModals();
+    toast(t("toast.netLeft"), "wine");
+    audio?.play("click", 0);
+  }
+  if (role) renderNetChrome();
+}
+
+function backToSolo() {
+  leaveRoom({ silent: true });
+  closeLobby();
+  beginMatch();
+  toast(t("toast.solo"), "jade");
+}
+
+function setLobbyStatus(text, tone = "") {
+  const node = $("#lobbyStatus");
+  if (node) {
+    node.textContent = text;
+    node.dataset.tone = tone;
+  }
+  const wait = $("#lobbyWaitStatus");
+  if (wait) {
+    wait.textContent = text;
+    wait.dataset.tone = tone;
+  }
+  if (lobbyState) lobbyState.status = text;
+}
+
+function savePlayerName(name) {
+  try { localStorage.setItem(PLAYER_NAME_KEY, name); } catch { /* ignore */ }
+}
+
+function loadPlayerName() {
+  try { return localStorage.getItem(PLAYER_NAME_KEY) || ""; } catch { return ""; }
+}
+
+function lobbyRosterHTML(players, options = {}) {
+  const preview = options.preview !== false;
+  return SEATS.map((seat) => {
+    const player = players?.[seat.id];
+    const empty = !player || (!player.kind && !player.name);
+    const kind = empty && preview ? "bot" : player?.kind || "empty";
+    const connected = player?.connected !== false;
+    const label = kind === "host" ? t("net.hostBadge") : kind === "human" ? t("net.guestBadge") : kind === "bot" ? t("net.botBadge") : t("net.emptySeat");
+    const name = empty && preview ? t("net.botPreview", { n: seat.id + 1 }) : player?.name || t("net.emptySeat");
+    return `<div class="lobby-seat ${kind} ${connected ? "" : "offline"}">
+      <span class="lobby-wind">${seat.wind}</span>
+      <span class="lobby-seat-copy"><strong>${escapeHTML(name)}</strong><small>${escapeHTML(label)}</small></span>
+      <span class="lobby-dot" aria-hidden="true"></span>
+    </div>`;
+  }).join("");
+}
+
+function renderLobby() {
+  const modal = $("#lobbyModal");
+  if (!modal) return;
+  const view = lobbyState?.view || "menu";
+  const views = { menu: $("#lobbyMenu"), host: $("#lobbyHostPanel"), join: $("#lobbyJoinPanel"), waiting: $("#lobbyWaitPanel"), lost: $("#lobbyWaitPanel") };
+  Object.entries(views).forEach(([key, node]) => {
+    if (node) node.hidden = key !== view;
+  });
+  if (view === "menu") {
+    if ($("#lobbyTitle")) $("#lobbyTitle").textContent = t("net.launchTitle");
+    return;
+  }
+  const title = $("#lobbyTitle");
+  if (title) {
+    title.textContent = view === "host" ? t("net.hostTitle")
+      : view === "join" ? t("net.joinTitle")
+      : view === "lost" ? t("net.lostTitle")
+      : view === "waiting" ? t("net.waitingHost")
+      : t("net.launchTitle");
+  }
+  const players = lobbyState?.players || [];
+  const code = lobbyState?.roomCode || net?.code || "";
+  const formatted = code ? formatRoomCode(code) : "—";
+  const humans = (SEAT_PROFILES || []).filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.connected).length;
+  const canStart = view === "host" ? humans >= 2 : Boolean(lobbyState?.canStart);
+
+  if ($("#lobbyRoomCode")) $("#lobbyRoomCode").textContent = formatted;
+  const invite = code ? inviteUrl(code) : "";
+  if ($("#lobbyInvite")) {
+    $("#lobbyInvite").value = invite;
+    $("#lobbyInvite").hidden = !invite;
+  }
+  if ($("#lobbyRoster")) $("#lobbyRoster").innerHTML = lobbyRosterHTML(SEAT_PROFILES || players);
+  if ($("#lobbyWaitCode")) $("#lobbyWaitCode").textContent = formatted;
+  if ($("#lobbyWaitRoster")) $("#lobbyWaitRoster").innerHTML = lobbyRosterHTML(SEAT_PROFILES || players);
+  if ($("#lobbyWaitTitle")) {
+    $("#lobbyWaitTitle").textContent = view === "lost" ? t("net.lostTitle") : view === "waiting" ? t("net.waitingHost") : t("net.joinTitle");
+  }
+  const start = $("#lobbyStartBtn");
+  if (start) {
+    start.disabled = !canStart;
+    start.textContent = canStart ? t("net.startTable") : t("net.needTwo");
+  }
+  const hint = $("#lobbyStartHint");
+  if (hint) hint.textContent = canStart ? t("net.startHint") : t("net.needTwoLong");
+  const status = $("#lobbyStatus");
+  if (status && lobbyState?.status) status.textContent = lobbyState.status;
+  const waitStatus = $("#lobbyWaitStatus");
+  if (waitStatus && lobbyState?.status) waitStatus.textContent = lobbyState.status;
+  const back = $("#lobbyBackBtn");
+  if (back) back.hidden = view !== "host" && view !== "join";
+  const resume = $("#lobbyResumeBtn");
+  if (resume) resume.hidden = !(state && view === "waiting");
+  const soloFromLost = $("#lobbySoloFromLost");
+  if (soloFromLost) soloFromLost.hidden = !(view === "lost" || view === "join");
+  const waitLeave = $("#lobbyWaitLeave");
+  if (waitLeave) waitLeave.hidden = view === "lost";
+  const copyBtn = $("#lobbyCopyBtn");
+  if (copyBtn) copyBtn.disabled = !code;
+}
+
+function showLobby(view = "menu") {
+  const modal = $("#lobbyModal");
+  if (!modal) return;
+  hideAllModals();
+  modal.hidden = false;
+  if (!lobbyState) lobbyState = { view, players: [], status: "", roomCode: "" };
+  lobbyState.view = view;
+  if ($("#lobbyNameInput") && !$("#lobbyNameInput").value) $("#lobbyNameInput").value = loadPlayerName();
+  renderLobby();
+}
+
+function closeLobby() {
+  const modal = $("#lobbyModal");
+  if (modal) modal.hidden = true;
+}
+
+function renderNetChrome() {
+  const chip = $("#netChip");
+  if (chip) {
+    if (isNetworked()) {
+      chip.hidden = false;
+      chip.dataset.mode = net.role;
+      chip.textContent = `${isHost() ? "◉" : "◇"} ${formatRoomCode(net.code)}`;
+      chip.title = t("net.chipHint");
+    } else {
+      chip.hidden = true;
+      chip.textContent = "";
+    }
+  }
+  const mode = $("#modeChip");
+  if (mode) {
+    mode.textContent = isNetworked() ? (isHost() ? t("net.modeHost") : t("net.modeClient")) : t("net.modeSolo");
+  }
+  const undo = $("#undoBtn");
+  if (undo && isClient()) undo.disabled = true;
+}
+
+async function copyInvite() {
+  const code = lobbyState?.roomCode || net?.code;
+  if (!code) return;
+  const text = inviteUrl(code);
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(t("toast.netCopied"), "jade");
+  } catch {
+    const field = $("#lobbyInvite");
+    if (field) {
+      field.hidden = false;
+      field.focus();
+      field.select();
+      try { document.execCommand("copy"); toast(t("toast.netCopied"), "jade"); } catch { toast(text); }
+    }
+  }
+}
+
+function renderNetChip() {
+  renderNetChrome();
+}
+
+function netSelfTest() {
+  const results = [];
+  const check = (name, fn) => {
+    try {
+      const value = fn();
+      results.push({ name, pass: Boolean(value), detail: value === true ? "" : String(value) });
+    } catch (error) {
+      results.push({ name, pass: false, detail: error.message });
+    }
+  };
+
+  check("room code is six unambiguous characters", () => {
+    const code = makeRoomCode(() => 0.42);
+    return /^[A-HJ-NP-Z2-9]{6}$/.test(code) && code.length === 6;
+  });
+  check("room code normalization accepts LEAB and separators", () => normalizeRoomCode("leab-abc-234") === "ABC234");
+  check("room code rejects an incomplete code", () => normalizeRoomCode("ABC") === null);
+  check("formatted room code is branded", () => formatRoomCode("abc234").startsWith(ROOM_PREFIX));
+  check("peer id is stable and lowercase", () => peerIdForCode("ABC234") === peerIdForCode("abc-234"));
+  check("sanitized state hides another hand", () => {
+    if (!state) return "no state";
+    const raw = sanitizeForSeat(state, 1);
+    const hidden = raw.hands[0].every((id) => isGhostTileId(id));
+    const realLeak = raw.hands[0].some((id) => TILE_BY_ID[id]);
+    return hidden && !realLeak;
+  });
+  check("sanitized state keeps the recipient's hand", () => {
+    if (!state) return "no state";
+    const raw = sanitizeForSeat(state, 1);
+    return raw.hands[1].every((id) => TILE_BY_ID[id]);
+  });
+  check("sanitized state strips host-only maps", () => {
+    if (!state) return "no state";
+    const raw = sanitizeForSeat(state, 1);
+    return !("hiddenTags" in raw) && !("snapshot" in raw);
+  });
+  check("ghost tiles hydrate and round-trip", () => {
+    const ghost = makeGhostTile("ghost-2-3");
+    return ghost.hidden === true && ghost.ghostSeat === 2 && tileFromWire(ghost.id).id === "ghost-2-3";
+  });
+  check("loopback transport carries envelopes", () => {
+    const pair = createLoopbackPair();
+    let received = null;
+    pair.b.onMessage(({ message }) => { received = message; });
+    pair.a.send({ type: "ping", at: 1 });
+    pair.flush();
+    return received?.type === "ping" && received.__leab === PROTOCOL_VERSION;
+  });
+
+  return results;
+}
+
+/* --------------------------------------------------------------------------
+   14. Self-test
    -------------------------------------------------------------------------- */
 
 function selfTest() {
@@ -2499,6 +3498,8 @@ function selfTest() {
     return Boolean(payload.format && payload.app?.name && payload.credits?.model && payload.game?.scores?.length === 4);
   });
 
+  for (const result of netSelfTest()) results.push(result);
+
   return results;
 }
 
@@ -2543,7 +3544,7 @@ function simulateRound(seed = 42) {
 }
 
 /* --------------------------------------------------------------------------
-   14. Audio
+   15. Audio
    -------------------------------------------------------------------------- */
 
 class StudioAudio {
@@ -2697,7 +3698,7 @@ class StudioAudio {
 }
 
 /* --------------------------------------------------------------------------
-   15. Three.js scene
+   16. Three.js scene
    -------------------------------------------------------------------------- */
 
 function createCanvasTexture(THREE, draw, size = 512) {
@@ -2955,6 +3956,13 @@ async function createScene() {
   scene.background = new THREE.Color(scenePalette.background);
   scene.fog = new THREE.Fog(scenePalette.fog ?? scenePalette.background, 15, 34);
 
+  /* Table and tiles live in a rotatable world so every guest sees their own
+     seat at the bottom of the screen. Lights, floor and dust stay fixed. */
+  const world = new THREE.Group();
+  scene.add(world);
+  let viewSeat = MY_SEAT || 0;
+  let viewAngle = -SEATS[viewSeat].angle;
+
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 80);
   const portrait = window.matchMedia("(max-width: 640px)").matches;
   camera.fov = portrait ? 46 : 40;
@@ -3057,7 +4065,7 @@ async function createScene() {
   foot.receiveShadow = true;
   table.add(foot);
 
-  scene.add(table);
+  world.add(table);
 
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(20, 72),
@@ -3132,7 +4140,7 @@ async function createScene() {
     root.visible = false;
     root.rotation.y = 0;
     tilt.rotation.x = Math.PI;
-    scene.add(root);
+    world.add(root);
 
     const record = {
       id: tile.id,
@@ -3149,6 +4157,64 @@ async function createScene() {
     tileObjects.set(tile.id, record);
   }
 
+  /*
+   * Ghost tiles are back-only meshes used on guest clients for another
+   * player's private hand and face-down centre plays. The host sends ids such
+   * as "ghost-2-5"; every client owns the same 32-mesh pool, so no real tile
+   * identity is required to draw a believable card back.
+   */
+  const ghostGeometry = new THREE.CylinderGeometry(TILE_RADIUS, TILE_RADIUS, TILE_THICKNESS, 32);
+  for (let seat = 0; seat < TABLE_SEATS; seat += 1) {
+    for (let index = 0; index < 8; index += 1) {
+      const id = `${GHOST_PREFIX}${seat}-${index}`;
+      const root = new THREE.Group();
+      const lift = new THREE.Group();
+      const tilt = new THREE.Group();
+      root.add(lift);
+      lift.add(tilt);
+      const body = new THREE.Mesh(ghostGeometry, sideMaterial);
+      body.castShadow = true;
+      body.receiveShadow = true;
+      body.userData.tileId = id;
+      tilt.add(body);
+      hitMeshes.push(body);
+      const back = new THREE.Mesh(new THREE.CircleGeometry(TILE_RADIUS * 0.965, 32), backMaterial);
+      back.rotation.x = Math.PI / 2;
+      back.position.y = -TILE_THICKNESS / 2 - 0.0015;
+      back.userData.tileId = id;
+      tilt.add(back);
+      const bevel = new THREE.Mesh(new THREE.TorusGeometry(TILE_RADIUS * 0.975, 0.016, 8, 32), edgeMaterial);
+      bevel.rotation.x = Math.PI / 2;
+      bevel.position.y = TILE_THICKNESS / 2;
+      tilt.add(bevel);
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(TILE_RADIUS * 1.08, 0.018, 6, 32),
+        new THREE.MeshBasicMaterial({ color: 0xf0d49a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })
+      );
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = -TILE_THICKNESS / 2 - 0.005;
+      root.add(ring);
+      root.position.set(0, TABLE_Y + 0.4, 0);
+      root.visible = false;
+      root.rotation.y = 0;
+      tilt.rotation.x = Math.PI;
+      world.add(root);
+      tileObjects.set(id, {
+        id,
+        tile: null,
+        ghost: true,
+        root,
+        lift,
+        tilt,
+        ring,
+        faceUp: false,
+        anim: null,
+        faceAnim: null,
+        seat
+      });
+    }
+  }
+
   const seatRings = [];
   const labels = [];
   const labelCanvases = [];
@@ -3160,7 +4226,7 @@ async function createScene() {
     );
     ring.rotation.x = -Math.PI / 2;
     ring.position.set(pos.x, TABLE_Y + 0.004, pos.z);
-    scene.add(ring);
+    world.add(ring);
     seatRings.push(ring);
 
     const canvas = document.createElement("canvas");
@@ -3175,7 +4241,7 @@ async function createScene() {
     sprite.scale.set(1.95, 0.61, 1);
     sprite.renderOrder = 4;
     sprite.visible = seat.id !== 0;
-    scene.add(sprite);
+    world.add(sprite);
     labels.push(sprite);
     labelCanvases.push({ canvas, texture });
   }
@@ -3265,10 +4331,11 @@ async function createScene() {
 
   function placementMap(gameState) {
     const map = new Map();
+    const localSeat = Number.isInteger(gameState.mySeat) ? gameState.mySeat : (Number.isInteger(MY_SEAT) ? MY_SEAT : 0);
     gameState.hands.forEach((hand, seat) => {
-      const ordered = seat === 0 ? hand.slice().sort((a, b) => b.power - a.power || (a.color === "r" ? -1 : 1)) : hand.slice();
+      const ordered = seat === localSeat ? hand.slice().sort((a, b) => b.power - a.power || (a.color === "r" ? -1 : 1)) : hand.slice();
       ordered.forEach((tile, index) => {
-        map.set(tile.id, { kind: "hand", seat, index, count: ordered.length, up: seat === 0, angle: handPosition(seat, index, ordered.length).angle });
+        map.set(tile.id, { kind: "hand", seat, index, count: ordered.length, up: seat === localSeat, angle: handPosition(seat, index, ordered.length).angle });
       });
     });
     gameState.center.forEach((entry) => {
@@ -3357,7 +4424,8 @@ async function createScene() {
 
   function flipHumanHand(gameState) {
     if (!gameState) return;
-    gameState.hands[0].forEach((tile, index) => {
+    const localSeat = Number.isInteger(gameState.mySeat) ? gameState.mySeat : (Number.isInteger(MY_SEAT) ? MY_SEAT : 0);
+    gameState.hands[localSeat].forEach((tile, index) => {
       const record = tileObjects.get(tile.id);
       if (!record) return;
       setTimeout(() => setFace(record, true, 260), index * 38);
@@ -3396,8 +4464,9 @@ async function createScene() {
       hoverId = id;
       canvas.classList.toggle("is-hovering-tile", Boolean(id));
       if (record) {
-        const stateHasHumanTurn = currentState && currentState.turn === 0;
-        if (record.faceUp || (currentState && currentState.hands[0].some((tile) => tile.id === record.id))) {
+        const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
+        const stateHasHumanTurn = currentState && currentState.turn === localSeat;
+        if (record.faceUp || (currentState && currentState.hands[localSeat]?.some((tile) => tile.id === record.id))) {
           inspectTile(record.id);
         } else if (stateHasHumanTurn) {
           inspectHidden();
@@ -3426,8 +4495,9 @@ async function createScene() {
     if (dragging || moved > 7 || elapsed > 900) return;
     const record = pick(event);
     if (!record) return;
-    const humanHand = currentState?.hands?.[0] || [];
-    if (humanHand.some((tile) => tile.id === record.id) && currentState?.turn === 0 && ["lead", "follow"].includes(currentState.phase)) {
+    const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
+    const humanHand = currentState?.hands?.[localSeat] || [];
+    if (humanHand.some((tile) => tile.id === record.id) && currentState?.turn === localSeat && ["lead", "follow"].includes(currentState.phase)) {
       toggleTile(record.id);
     } else if (record.faceUp) {
       inspectTile(record.id);
@@ -3531,6 +4601,11 @@ async function createScene() {
 
     if (controls.target.length() > 4.2) controls.target.setLength(4.2);
     controls.update();
+    const desiredAngle = -SEATS[viewSeat].angle;
+    let deltaAngle = desiredAngle - world.rotation.y;
+    while (deltaAngle > Math.PI) deltaAngle -= Math.PI * 2;
+    while (deltaAngle < -Math.PI) deltaAngle += Math.PI * 2;
+    if (Math.abs(deltaAngle) > 0.001) world.rotation.y += deltaAngle * Math.min(0.22, dt / 180);
     dust.rotation.y += 0.00025;
     dust.position.y = Math.sin(now / 4200) * 0.05;
     renderer.render(scene, camera);
@@ -3581,12 +4656,19 @@ async function createScene() {
     updateLabels(currentState);
   }
 
+  function setViewSeat(seat) {
+    const next = clamp(Number(seat) || 0, 0, TABLE_SEATS - 1);
+    viewSeat = next;
+    labels.forEach((sprite, index) => { sprite.visible = index !== next; });
+  }
+
   const api = {
     deal,
     sync,
     collect,
     flipHumanHand,
     setSelected,
+    setViewSeat,
     setTheme: applySceneTheme,
     reset(gameState) {
       currentState = gameState;
@@ -3606,6 +4688,7 @@ async function createScene() {
         topView,
         cinema,
         theme: currentThemeId,
+        viewSeat,
         background: scene.background?.getHexString?.(),
         fog: scene.fog?.color?.getHexString?.(),
         tiles: [...tileObjects.values()].filter((record) => record.root.visible).length
@@ -3616,7 +4699,7 @@ async function createScene() {
 }
 
 /* --------------------------------------------------------------------------
-   16. Boot and events
+   17. Boot and events
    -------------------------------------------------------------------------- */
 
 function bindEvents() {
@@ -3652,6 +4735,44 @@ function bindEvents() {
   $("#hintBtn")?.addEventListener("click", applyHint);
   $("#clearBtn")?.addEventListener("click", clearSelection);
 
+  $("#lobbyBtn")?.addEventListener("click", () => {
+    if (isNetworked()) {
+      if (lobbyState) showLobby(lobbyState.view === "table" ? "waiting" : lobbyState.view);
+      else showLobby(isHost() ? "host" : "waiting");
+    } else {
+      showLobby("menu");
+    }
+    audio?.play("click", 0);
+  });
+  $("#netChip")?.addEventListener("click", copyInvite);
+  $("#lobbySolo")?.addEventListener("click", backToSolo);
+  $("#lobbyHost")?.addEventListener("click", () => createHostRoom($("#lobbyNameInput")?.value || loadPlayerName() || t("net.hostDefault")));
+  $("#lobbyJoin")?.addEventListener("click", () => {
+    showLobby("join");
+    if (normalizeRoomCode($("#lobbyCodeInput")?.value || "")) $("#lobbyNameInput")?.focus();
+    else $("#lobbyCodeInput")?.focus();
+  });
+  $("#lobbyConnectBtn")?.addEventListener("click", () => joinRoom($("#lobbyCodeInput")?.value || "", $("#lobbyNameInput")?.value || ""));
+  $("#lobbyCodeInput")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") joinRoom($("#lobbyCodeInput").value, $("#lobbyNameInput")?.value || "");
+  });
+  $("#lobbyNameInput")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      const joinView = !$("#lobbyJoinPanel")?.hidden;
+      if (joinView) joinRoom($("#lobbyCodeInput")?.value || "", $("#lobbyNameInput").value);
+      else createHostRoom($("#lobbyNameInput").value);
+    }
+  });
+  $("#lobbyCopyBtn")?.addEventListener("click", copyInvite);
+  $("#lobbyStartBtn")?.addEventListener("click", startHostedMatch);
+  $("#lobbyWaitLeave")?.addEventListener("click", () => { leaveRoom(); showLobby("menu"); });
+  $("#lobbyResumeBtn")?.addEventListener("click", closeLobby);
+  $("#lobbySoloFromLost")?.addEventListener("click", backToSolo);
+  $$("[data-lobby-back]").forEach((button) => button.addEventListener("click", () => {
+    if (net) leaveRoom();
+    showLobby("menu");
+  }));
+
   $("#newMatchBtn")?.addEventListener("click", () => { openModal("confirmModal"); });
   $("#nextRoundBtn")?.addEventListener("click", startNextRound);
   $("#undoBtn")?.addEventListener("click", () => {
@@ -3663,17 +4784,24 @@ function bindEvents() {
   $("#undoCancel")?.addEventListener("click", () => closeModal("undoModal"));
   $("#exportBtn")?.addEventListener("click", exportGame);
 
-  $("#confirmYes")?.addEventListener("click", () => { closeModal("confirmModal"); beginMatch(); toast(t("toast.newMatch"), "gold"); });
+  $("#confirmYes")?.addEventListener("click", () => {
+    closeModal("confirmModal");
+    if (isClient()) leaveRoom({ silent: true });
+    beginMatch();
+    toast(t("toast.newMatch"), "gold");
+  });
   $("#confirmNo")?.addEventListener("click", () => closeModal("confirmModal"));
 
   $("#summaryPrimary")?.addEventListener("click", (event) => {
     const action = event.currentTarget.dataset.action;
+    if (action === "close") { closeModal("summaryModal"); return; }
     if (action === "new") { closeModal("summaryModal"); beginMatch(); }
     else { closeModal("summaryModal"); startNextRound(); }
   });
   $("#summarySecondary")?.addEventListener("click", (event) => {
     const action = event.currentTarget.dataset.action;
-    if (action === "export") exportGame();
+    if (action === "solo") { closeModal("summaryModal"); backToSolo(); }
+    else if (action === "export") exportGame();
     else { closeModal("summaryModal"); beginMatch(); }
   });
 
@@ -3744,10 +4872,12 @@ async function boot() {
   if (!restored) {
     dealRound();
   } else if (state.phase === "lead" || state.phase === "follow") {
-    if (state.turn !== 0) scheduleAI(900);
+    if (isBotSeat(state.turn)) scheduleAI(900);
     else coachTick();
     if (scene) scene.sync(state);
   }
+
+  if (scene) scene.setViewSeat?.(MY_SEAT);
 
   if (params.get("selftest") === "1") {
     const results = selfTest();
@@ -3765,16 +4895,33 @@ async function boot() {
     // Keep the table in a readable mid-game state for screenshots.
     state.fast = false;
     setTimeout(() => {
-      if (!state || state.phase !== "lead" || state.turn !== 0) return;
-      const combo = chooseLead(state.hands[0], { jitter: false });
+      if (!state || state.phase !== "lead" || state.turn !== MY_SEAT) return;
+      const combo = chooseLead(state.hands[MY_SEAT], { jitter: false });
       if (!combo) return;
       state.selected = combo.tiles.map((tile) => tile.id);
       renderAll();
       scene?.setSelected(state.selected);
       setTimeout(() => {
-        if (state && state.phase === "lead" && state.turn === 0) humanLead();
+        if (state && state.phase === "lead" && state.turn === MY_SEAT) humanLead();
       }, 500);
     }, 2600);
+  }
+
+  const autoRoom = normalizeRoomCode(params.get("room") || "");
+  const autoHost = params.get("mode") === "host" || params.get("host") === "1";
+  const skipLaunch = autoRoom || autoHost || params.get("mode") === "solo"
+    || params.get("selftest") === "1" || params.get("demo") === "1" || restored;
+  if (!skipLaunch) {
+    setTimeout(() => showLobby("menu"), 450);
+  } else if (autoRoom) {
+    setTimeout(() => {
+      const field = $("#lobbyCodeInput");
+      if (field) field.value = formatRoomCode(autoRoom);
+      const name = params.get("name") || loadPlayerName() || t("net.guestDefault");
+      joinRoom(autoRoom, name);
+    }, 350);
+  } else if (autoHost) {
+    setTimeout(() => createHostRoom(params.get("name") || loadPlayerName() || t("net.hostDefault")), 300);
   }
 }
 
@@ -3787,8 +4934,14 @@ window.LeabTui = {
   setLanguage,
   newMatch: (options = {}) => beginMatch(options),
   nextRound: startNextRound,
-  lead: (ids) => leadTrick(0, ids || []),
-  follow: (ids, reveal = false) => submitPlay(0, ids || [], reveal),
+  lead: (ids) => {
+    if (isClient()) return sendNetAction("lead", ids || [], false);
+    return leadTrick(MY_SEAT, ids || []);
+  },
+  follow: (ids, reveal = false) => {
+    if (isClient()) return sendNetAction("follow", ids || [], Boolean(reveal));
+    return submitPlay(MY_SEAT, ids || [], reveal);
+  },
   toggleTile,
   clearSelection,
   hint: applyHint,
@@ -3809,7 +4962,30 @@ window.LeabTui = {
   inspectHidden,
   resetView: () => scene?.resetView(),
   topView: () => scene?.toggleTopView(),
-  setFast: (value) => { if (state) state.fast = Boolean(value); }
+  setFast: (value) => { if (state) state.fast = Boolean(value); },
+  net: {
+    getState: () => (isNetworked() ? {
+      role: net.role,
+      code: formatRoomCode(net.code),
+      mySeat: MY_SEAT,
+      started: Boolean(net.started),
+      players: serialiseRoster(),
+      peerId: isHost() ? net.host?.id : net.client?.hostId,
+      lastPublished
+    } : null),
+    openLobby: () => showLobby(isNetworked() ? "waiting" : "menu"),
+    closeLobby,
+    host: (name) => createHostRoom(name),
+    join: (code, name) => joinRoom(code, name),
+    start: () => startHostedMatch(),
+    leave: () => leaveRoom(),
+    solo: backToSolo,
+    selfTest: netSelfTest,
+    sanitize: (seat) => sanitizeForSeat(state, seat),
+    hydrate: hydrateRemoteState,
+    roomCode: () => (net ? formatRoomCode(net.code) : ""),
+    copyInvite
+  }
 };
 
 if (document.readyState === "loading") {

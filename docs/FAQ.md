@@ -49,16 +49,33 @@ Press **Ranks** at the top-left HUD (next to Round). It opens the pictorial hier
 Open **Aa** → **Test sound**. You should hear a wooden clack. The same sound plays when you lead a tile; if the test is silent, check the tab/device volume, the speaker icon, and the browser console.
 
 **Where is my data?**  
-In this browser's `localStorage` (`leabtui.match.v1`, `leabtui.prefs.v1`, `leabtui.stats.v1`). **Export JSON** writes a file; nothing is uploaded.
+In this browser's `localStorage` (`leabtui.match.v1`, `leabtui.prefs.v1`, `leabtui.stats.v1`, `leabtui.name.v1`). **Export JSON** writes a file; a network match sends redacted state directly to the other players, never to a game server.
 
 **Can I play offline?**  
-The rule engine, coach and panels work without the CDN, but the 3D table needs Three.js from jsDelivr. There is no service worker or bundled copy.
+The rule engine, coach and panels work without the CDN, but the 3D table needs Three.js from jsDelivr. Multiplayer also needs PeerJS and the `0.peerjs.com` broker. There is no service worker or bundled copy.
 
 **Does it work on my phone?**  
 The layout is built for 390×844 and verified in headless Chrome. Physical iOS/Android testing is still on the roadmap. Landscape is not specially tuned.
 
-**Why is there no online multiplayer?**  
-The release is deliberately static and serverless. Online play would require a backend, matchmaking and anti-cheat, which is out of scope.
+**Is there online multiplayer?**
+
+Yes — a serverless host/guest table over WebRTC. The host shares a six-character code, two humans are enough to start, empty seats become bots, and a guest who leaves is replaced by a bot. See [MULTIPLAYER.md](MULTIPLAYER.md).
+
+**Why only four seats?**
+
+Leab-Tui is played with 32 tiles and four winds, eight tiles each. Six seats would need a different deck and rules. The request that inspired this feature mentioned six players, inherited from a poker template; this project keeps the game's actual table. See [MULTIPLAYER.md](MULTIPLAYER.md#why-four-seats-not-six).
+
+**Can guests cheat?**
+
+The host never sends another player's hand, so a guest cannot read the other hands from the network. But the host browser knows every hand, and a guest can inspect their own client. There is no anti-cheat or authentication. Play with people you trust.
+
+**Does multiplayer work through a corporate firewall?**
+
+Sometimes. It uses public STUN only, no TURN relay. Symmetric NAT or a restrictive firewall can block the data channel; a phone hotspot often works.
+
+**Can I resume a network match after reload?**
+
+No. The room lives in the host tab and is deliberately not saved. Reloading ends your side; the host converts your seat to a bot. Solo matches do resume automatically.
 
 **Can I use this commercially?**  
 The code is MIT. The name and the traditional game are not owned by this project; check the rules source and local cultural considerations before commercial use.

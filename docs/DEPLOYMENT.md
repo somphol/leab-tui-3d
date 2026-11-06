@@ -10,7 +10,9 @@ python3 -m http.server 8123
 
 `script.js` is an ES module, so it must be served over HTTP. Opening `index.html` with `file://` will be blocked by the browser's module/CORS rules in most cases.
 
-The page needs `https://cdn.jsdelivr.net/npm/three@0.160.0/...` for the 3D table. Everything else is local: no fonts, no images, no audio files, no analytics, no API.
+The page needs `https://cdn.jsdelivr.net/npm/three@0.160.0/...` for the 3D table. Multiplayer also needs `https://cdn.jsdelivr.net/npm/peerjs@1.5.4/...` and the public broker at `https://0.peerjs.com` / `wss://0.peerjs.com`. Everything else is local: no fonts, no images, no audio files, no analytics, no API.
+
+WebRTC data channels work on `http://127.0.0.1` and on any HTTPS origin. Pages is HTTPS, so no extra certificate work is needed.
 
 ## GitHub Pages
 
@@ -21,7 +23,7 @@ The repository is published from **`main` / repository root**.
 3. Wait for the Pages build; the site is at `https://somphol.github.io/leab-tui-3d/`.
 4. `.nojekyll` is present so files beginning with `_` are served verbatim and Jekyll does not process the site.
 
-The included workflow `.github/workflows/static-check.yml` runs `node --check script.js` and `node scripts/check.mjs` on pushes and pull requests. It does not deploy; Pages deploys from the branch, which keeps the release simple and avoids a second source of truth.
+The included workflow `.github/workflows/static-check.yml` runs `node --check script.js`, `node --check peer-manager.js` and `node scripts/check.mjs` on pushes and pull requests. It does not run `net-check.mjs` because the public broker is an external dependency; run it before a multiplayer release. It does not deploy; Pages deploys from the branch, which keeps the release simple and avoids a second source of truth.
 
 If you prefer Actions-based Pages deployment, add `actions/configure-pages`, `actions/upload-pages-artifact` and `actions/deploy-pages`; the artifact path is the repository root. If you do, remove the branch deployment in Settings to avoid two publishers.
 
@@ -45,7 +47,7 @@ default-src 'self';
 script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
 style-src 'self' 'unsafe-inline';
 img-src 'self' data: blob:;
-connect-src 'self' https://cdn.jsdelivr.net;
+connect-src 'self' https://cdn.jsdelivr.net https://0.peerjs.com wss://0.peerjs.com;
 font-src 'self' data:;
 media-src 'self' data: blob:;
 object-src 'none';
@@ -58,6 +60,18 @@ form-action 'none'
 `style-src 'unsafe-inline'` is required for the few inline `style` attributes in generated HTML (for example the muted rank colour in the rules list). If you remove those, tighten it too.
 
 GitHub Pages cannot set custom response headers. The meta CSP is the only policy; it is enforced by modern browsers for the document. Do not add a service worker or remote font without updating the policy and the verification.
+
+## Multiplayer deployment
+
+No server is deployed. The host's browser is the authoritative game process; PeerJS only performs signalling.
+
+1. Deploy the same static files to Pages.
+2. Confirm `peer-manager.js` is served (it is imported by `script.js`).
+3. Confirm the CSP allows jsDelivr scripts and `0.peerjs.com` in `connect-src`.
+4. Open the live page in two different networks (for example Wi-Fi and a phone hotspot) and run a two-human start.
+5. Keep the host tab open for the whole match. Network rooms are deliberately not resumable after a reload.
+
+If the public broker is unavailable, self-host a PeerJS server and change `host`/`port`/`secure` in `defaultPeerOptions()` and the CSP. The host and guest must use the same broker. A TURN relay must be added to `iceServers` for symmetric NAT; public STUN alone is the documented limit.
 
 ## Custom domain
 

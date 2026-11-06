@@ -2,12 +2,14 @@
 
 ## Deliberately out of scope
 
-- Online multiplayer, accounts, leaderboards and server-side saves.
+- Accounts, leaderboards, matchmaking and server-side saves.
 - Gambling, betting, chips or real-money play.
 - A complete tournament rules authority. The source is a community description; the studio documents its interpretation.
 - Two- and three-player variants.
 - An engine-strength AI or a search over hidden information.
 - Photo-real tile scanning or licensed Xiangqi artwork.
+
+P2P multiplayer is now implemented as a serverless, host-authoritative WebRTC table. It is deliberately limited to four seats, one host, no authentication and no anti-cheat; see [MULTIPLAYER.md](MULTIPLAYER.md).
 
 ## Next candidates
 
@@ -16,6 +18,9 @@
 | P1 | **Focus trap and restore for modals** | The main accessibility gap; straightforward and high value |
 | P1 | **Physical mobile testing** | Current verification is Chrome emulation only |
 | P1 | **Reduced-motion “snap” mode** | Three.js animations still run under `prefers-reduced-motion` |
+| P2 | **Host migration or reconnect** | A dropped host ends the room; a reconnect token would need a new authority handshake |
+| P2 | **TURN relay** | Public STUN fails on symmetric NAT; a configurable TURN server would widen reach |
+| P2 | **Turn timer / idle auto-play** | A guest who never acts stalls the hosted table |
 | P2 | **2- and 3-player variants** | Explicitly described in the source; needs deck trimming and scoring changes |
 | P2 | **Stronger AI** | Track unseen tiles, estimate challenge probabilities, add a small determinized search |
 | P2 | **Round-by-round scoreboard chart** | The history is stored but only the latest round is shown |
@@ -28,10 +33,11 @@
 
 ## Non-goals for 1.x
 
-- Framework migration. The three-file constraint is the product.
+- Framework migration. The small-file constraint is the product.
 - A build step or bundler.
 - Remote fonts or analytics.
 - Automatic reveal. The face-down decision is the game.
+- A game server. PeerJS brokers the handshake only; the host browser is the authority.
 
 ## How to propose a change
 

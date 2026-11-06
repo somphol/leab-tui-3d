@@ -12,3 +12,4 @@ build/
 screenshots/*.png
 leab_tui_3d_game.json
 /tmp/
+state-metrics.env

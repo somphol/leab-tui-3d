@@ -2,15 +2,16 @@
 
 ## Shape of the app
 
-Leab-Tui 3D is a **static single page** with three runtime files:
+Leab-Tui 3D is a **static single page** with four runtime files:
 
 ```text
-index.html   document, import map, static HUD, modals
-style.css    design tokens, layout, responsive rules, modal system
-script.js    one ES module: data → rules → AI → state → flow → 3D → audio → UI
+index.html        document, import map, static HUD, modals, lobby
+style.css         design tokens, layout, responsive rules, modal system
+script.js         one ES module: data → rules → AI → state → flow → 3D → audio → UI → network
+peer-manager.js   room codes, lazy PeerJS loader, host/client endpoints, loopback test pair
 ```
 
-There is no bundler, framework, server, database or API key. `script.js` dynamically imports `three@0.160.0` and `OrbitControls` from jsDelivr so the rule engine, coaching, scoring and persistence still initialise if WebGL or the CDN fails.
+There is no bundler, framework, server, database or API key. `script.js` dynamically imports `three@0.160.0` and `OrbitControls` from jsDelivr so the rule engine, coaching, scoring and persistence still initialise if WebGL or the CDN fails. `peer-manager.js` lazily injects the pinned PeerJS UMD bundle only when a room is opened.
 
 ## Construction order
 
@@ -31,6 +32,7 @@ boot()
   createScene()            dynamic import; may throw → #bootError
   dealRound()              shuffle, deal, animate, beginTrick()
   optional ?selftest / ?demo / ?seed
+  optional launch overlay / ?mode=host / ?room=
 ```
 
 The scene is created **after** the first render so the UI is usable during the Three.js download. `dealRound` waits for the scene's deal promise before `beginTrick`, but falls back to a timeout if `scene` is null.
@@ -48,7 +50,8 @@ The scene is created **after** the first render so the UI is usable during the T
 | Audio | synthesised effects | create a context before a gesture |
 | UI | render functions, language, inspector, coach | duplicate rule logic |
 | Persistence | save/load/export | persist live objects |
-| Self-test | rule and conservation checks | require a GPU |
+| Network | lobby, seats, host authority, redaction, bot takeover | let a guest run the engine |
+| Self-test | rule, conservation and redaction checks | require a GPU or network |
 
 ## Rules model
 
@@ -95,22 +98,48 @@ dealing ──► lead ──► follow ──► resolving ──► lead (next
 - `endRound` computes piles → points, updates scores/stats/history, saves, and opens the summary.
 - `startNextRound` rotates the dealer, uses the last trick winner as the next leader, and re-deals.
 
+## Multiplayer architecture
+
+The network layer is a **host-authoritative projection**, not a lockstep engine.
+
+```text
+host browser                         guest browser
+┌──────────────────────────┐         ┌──────────────────────────┐
+│ lobby + seat profiles    │         │ lobby view               │
+│ engine (deal/AI/score)   │         │ no engine                │
+│ sanitizeForSeat(state, s)│──state──►│ hydrateRemoteState(raw)  │
+│ publishState per guest   │         │ scene.sync(state)        │
+│ handleRemoteAction(seat) │◄─action──│ humanLead/humanFollow    │
+└──────────────────────────┘         └──────────────────────────┘
+```
+
+- `MY_SEAT` replaces the hard-coded seat 0 in the UI, coach, hand list, scene and pointer handling. In solo it is 0; a guest receives it in `welcome`.
+- `SEAT_PROFILES` is `null` in solo, so `isBotSeat(seat)` falls back to the historical "seat 0 is human, 1–3 are AI" rule. In a room it carries `host|human|bot` and the handle.
+- `isBotSeat` is the only scheduler predicate. `scheduleAI` returns unless the current seat is a bot. Remote humans are waited on; disconnected humans are converted to bots.
+- `saveMatch` is the publication point: it writes localStorage on the host and calls `queuePublish()`. `publishState` builds one redacted payload per connected guest. It is throttled by `NET_TICK_MS` (40 ms) and refuses to run before `net.started`.
+- `sanitizeForSeat` is the **only** privacy boundary. `serializableState` runs first, then other hands and unrevealed centre/log/last-trick entries become `ghost-<seat>-<index>` ids. The host-only `hiddenTags` map is deleted by `serializableState`.
+- Guests own the same 32 back-only ghost meshes. The tag map is stable for a round, so a face-down card moves from hand to centre as the same mesh.
+- `scene.setViewSeat(MY_SEAT)` rotates the table world group by `-SEATS[seat].angle`, putting the local seat at the bottom of the screen. Camera, lights and floor stay fixed.
+
+The full message set, redaction table and invariants are in [PROTOCOL.md](PROTOCOL.md); operations and troubleshooting are in [MULTIPLAYER.md](MULTIPLAYER.md).
+
 ## 3D scene
 
 `createScene` returns an API, not a second game model:
 
 ```js
-{ deal, sync, collect, flipHumanHand, setSelected, reset,
+{ deal, sync, collect, flipHumanHand, setSelected, setViewSeat, reset,
   resetView, toggleTopView, toggleCinema, getState }
 ```
 
-`placementMap(state)` decides every tile's location:
+`placementMap(state)` decides every tile's location. `gameState.mySeat ?? MY_SEAT` is the local seat; its fan is sorted and face-up, other hands are face-down.
 
 | Placement | Position | Face |
 | --- | --- | --- |
-| hand | polar fan around the seat, radius 4.12; human fan wider | up for seat 0, down for AI |
+| hand | polar fan around the seat, radius 4.12; local fan wider | up for the local seat, down for everyone else |
 | centre | 1–3 in a row, 4–6 in a grid, at radius 2.05 toward the seat | `entry.revealed` |
 | capture | 2×4 grid of four-tile stacks at radius 3.36 | up |
+| ghost | same positions, back-only mesh pool | down |
 
 The scene stores `root → lift → tilt` groups:
 
@@ -133,20 +162,21 @@ The scene stores `root → lift → tilt` groups:
 
 - hands/captures/centre tiles → IDs;
 - every combo → `{type, count, tiles:[id], score, color, set, dup, key}`;
-- removes `fast` and `snapshot`.
+- removes `fast`, `snapshot` and `hiddenTags`.
 
 The saved payload is:
 
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.1.0",
-  "savedAt": "2026-11-04T...",
+  "version": "1.4.0",
+  "savedAt": "2026-11-06T...",
+  "network": false,
   "game": { "phase": "...", "hands": [["r-general-0"], ...], ... }
 }
 ```
 
-`loadMatch` validates the format, four hands of ≤8 valid IDs, four scores, and a known phase; then rebuilds tile objects and centre combos with `detectCombo`. A saved `roundEnd`/`matchEnd` keeps its phase and reopens the summary. Undo snapshots are intentionally not persisted.
+`loadMatch` rejects a payload with `network: true` (a peer room cannot be restored) and validates the format, four hands of ≤8 valid IDs, four scores and a known phase; then rebuilds tile objects and centre combos with `detectCombo`. A saved `roundEnd`/`matchEnd` keeps its phase and reopens the summary. Undo snapshots are intentionally not persisted.
 
 ## Display and themes
 
@@ -177,10 +207,14 @@ The saved payload is:
 - Invalid saved game → silently start a new match.
 - `localStorage` denied (private mode) → saves are skipped; the game still runs.
 - Lost CDN → no table; the page does not crash.
+- PeerJS CDN blocked → the lobby reports a load error; solo still works.
+- Broker unreachable → host/join status shows a timeout or `peer-unavailable`; the table stays solo.
+- Guest data channel drops → host converts the seat to a bot; guest shows "Table closed".
+- Host closes → guests keep the last rendered state behind a "Table closed" panel; no host migration.
 
 ## Performance notes
 
-- 32 tiles, one 96-segment table, 4 seat rings, 4 sprites, 220 dust points. No post-processing, no instancing (the tile count is small enough).
+- 32 tiles plus 32 back-only ghost meshes, one 96-segment table, 4 seat rings, 4 sprites, 220 dust points. No post-processing, no instancing (the tile count is small enough). Ghost meshes share side/back/edge materials, so theme changes cover them.
 - 14 face textures (rank × colour) are cached; one shared back texture; one felt texture; one wood texture.
 - Shadow maps: 2048 for the key light, 1024 for the warm spot. Pixel ratio capped at 2.
 - The render loop uses a single `setAnimationLoop`; `dt` is clamped to 80 ms for stable lift damping.
@@ -188,4 +222,4 @@ The saved payload is:
 
 ## Why no framework
 
-The deliverable is one offline-friendly page with three readable source files. A framework would add a build step, a dependency tree and a runtime layer that does not help the rules or the small scene. The cost is that UI rendering is manual; the `renderAll` boundary keeps that manageable.
+The deliverable is one offline-friendly page with four readable source files. A framework would add a build step, a dependency tree and a runtime layer that does not help the rules or the small scene. The cost is that UI rendering is manual; the `renderAll` boundary keeps that manageable. WebRTC is kept in a separate module so the solo game never downloads PeerJS.

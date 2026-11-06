@@ -10,6 +10,8 @@
 - Modals use `role="dialog" aria-modal="true"` and `aria-labelledby`, with a visible close button and an `Esc` handler. Focus is not trapped; this is a known gap.
 - The hand list is a set of real `<button>` elements with `aria-pressed` and a tooltip naming the tile.
 - Modals can be closed by clicking the backdrop (except the round summary, which requires a choice).
+- The lobby is a labelled dialog with real `<button>` mode cards, labelled inputs, a `role="status"` status line and a four-seat roster. The room code is text, not an image.
+- The header room chip has a `title` and copies the invite link on click; the lobby provides the same action as a labelled button.
 - Keyboard `H` for Hint and `Esc` for Clear.
 - `prefers-reduced-motion` collapses CSS animations and transitions to 0.01 ms.
 - Colour is never the only signal: every tile also has a Hanzi, a Thai/English name and a rank number. The inspector spells out the colour.
@@ -33,9 +35,10 @@
 1. Run axe-core or Lighthouse Accessibility against `http://127.0.0.1:8123/`.
 2. Tab through: header → HUD (not focusable) → camera tools → hand dock → panels → hand chips → footer.
 3. Open the rules modal, tab, press `Esc`, confirm focus returns to the trigger (currently it does not; fix before claiming WCAG conformance).
-4. Turn on VoiceOver/NVDA and play one trick using only the hand list and action buttons.
-5. Enable Reduce Motion at the OS level and confirm the UI does not jump.
-6. Test at 200 % browser zoom and at 390×844.
+4. Open the lobby, tab through solo/host/join, start a room, read the status line, then close with `Esc`.
+5. Turn on VoiceOver/NVDA and play one trick using only the hand list and action buttons.
+6. Enable Reduce Motion at the OS level and confirm the UI does not jump.
+7. Test at 200 % browser zoom and at 390×844.
 
 ## Improvement backlog
 

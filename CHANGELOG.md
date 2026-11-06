@@ -2,6 +2,33 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] — 2026-11-06
+
+### Added
+
+- **Serverless P2P multiplayer over WebRTC.** Host a table, share a six-character `LEAB-ABC-234` code or invite link, and play with up to three guests. PeerJS 1.5.4 is loaded lazily from jsDelivr; the public `0.peerjs.com` broker handles only the initial handshake.
+- **Launch lobby** with Play solo, Host a table and Join a table. A four-seat roster, copy-invite action, join panel and "table closed" recovery panel.
+- **Dynamic bot fill.** Two connected humans are enough to start; every empty seat becomes `Bot n`.
+- **Host authority and per-seat redaction.** `sanitizeForSeat` replaces other hands and hidden centre/log/last-trick plays with stable `ghost-<seat>-<index>` ids. Guests hydrate those into back-only 3D meshes.
+- **Disconnect-to-bot.** A guest who leaves keeps their seat, hand and score; a bot takes over and play continues.
+- **Seat-relative view.** Guests see their own seat at the bottom; the table world rotates, not the camera.
+- `peer-manager.js` — room codes, PeerJS host/client, retry allocation and a loopback test transport.
+- `docs/MULTIPLAYER.md`, `docs/PROTOCOL.md` and `scripts/net-check.mjs` (two real browsers, 12 checks).
+- Ten new self-tests for room codes, redaction, hydration and the loopback transport (35 total).
+
+### Changed
+
+- `MY_SEAT` and `SEAT_PROFILES` replace hard-coded seat 0 across coach, hand list, pointer, scoreboard and public API. Solo behaviour is unchanged.
+- The 3D scene wraps the table, tiles, rings and labels in a rotatable `world` group and adds 32 back-only ghost meshes.
+- CSP `connect-src` now allows `https://0.peerjs.com` and `wss://0.peerjs.com`.
+- Version bumped to `1.4.0`; save/export version follows. Network saves are marked `network: true` and are not resumable.
+- README, AGENTS, architecture, testing, deployment, data format, privacy, security, browser support, FAQ, roadmap, controls, accessibility, gallery, checklist and notices updated.
+
+### Fixed
+
+- Seat labels, round summaries, undo explanations and coach lines now follow the local seat rather than assuming seat 0.
+- The last-trick payload no longer carries the host's hidden combination to other guests.
+
 ## [1.3.2] — 2026-11-04
 
 ### Fixed

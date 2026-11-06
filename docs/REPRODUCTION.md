@@ -1,6 +1,6 @@
 # Reproduction guide
 
-This is the order that worked. It assumes a blank folder and no framework. The goal is a static, bilingual 3D trick-taking studio with three source files and a verified release.
+This is the order that worked. It assumes a blank folder and no framework. The goal is a static, bilingual 3D trick-taking studio with four source files, serverless P2P multiplayer and a verified release.
 
 ## 0. Write the rules contract before the code
 
@@ -17,6 +17,7 @@ The rules are the product. A beautiful table with a guessed ruleset is a reskin.
 index.html
 style.css
 script.js
+peer-manager.js
 docs/
 screenshots/
 scripts/
@@ -122,22 +123,54 @@ The hand dock overlays the bottom of the stage. On a 390×844 phone, the desktop
 
 Synthesise everything with oscillators, a shared noise buffer, biquad filters and stereo panners. Do **not** create the `AudioContext` until the first pointer/key event; Chrome logs an autoplay warning otherwise. `play()` must return until `unlocked` is true.
 
-## 6. Bilingual copy
+## 6. Serverless multiplayer
+
+Do this **after** the solo game is correct. Network code magnifies an unstable engine.
+
+1. **Generalise the local seat first.** Replace every hard-coded `seat === 0` in UI, coach, hand list, pointer picking and AI scheduling with `MY_SEAT`. In solo `MY_SEAT = 0`; add `SEAT_PROFILES = null` and make `isBotSeat(seat)` fall back to `seat !== 0`. This one refactor is the difference between a reskin and a real guest seat.
+2. **Create `peer-manager.js`.** Room codes, lazy PeerJS loading, `PeerHost`, `PeerClient`, and an in-memory loopback pair. Keep game rules out of it.
+3. **Lobby before game.** A modal with three modes: solo, host, join. Host shows the code and a four-seat roster; Start is disabled until two humans are connected. Fill empty seats with bot profiles before `beginMatch`.
+4. **Host authority.** The host runs the existing engine unchanged. Guests call `sendNetAction(kind, ids, reveal)` instead of `leadTrick`/`submitPlay`. The host re-validates through the same functions.
+5. **Publish from `saveMatch`.** Host-only, throttled (~40 ms), guarded by `net.started`. Build a separate payload per guest.
+6. **Redact per recipient.** `sanitizeForSeat(state, seat)` is the only privacy boundary. Replace other hands and unrevealed centre/log/last-trick entries with stable `ghost-<seat>-<index>` ids; null their combos; strip `hiddenTags`, `snapshot`, `selected`, `fast`.
+7. **Hydrate.** `hydrateRemoteState` maps real ids through `TILE_BY_ID`, ghost ids to back-only proxy tiles, and clears selection.
+8. **Ghost meshes.** Create 32 back-only meshes (`ghost-0-0` … `ghost-3-7`) sharing the side/back/edge materials. A face-down card then moves as the same mesh from hand to centre.
+9. **Rotate the view.** Put the table, tiles, rings and labels in a `world` group. `setViewSeat(MY_SEAT)` rotates it by `-SEATS[seat].angle` so the guest's seat is at the bottom.
+10. **Disconnect to bot.** On connection close, keep the seat, hand and score; replace the profile with `{kind:'bot'}`; if it is their turn, `scheduleAI(700)`.
+11. **Reload is not resumable.** Mark host saves `network: true`; `loadMatch` rejects them. A guest never saves.
+
+### Multiplayer traps
+
+| Trap | Symptom | Fix |
+| --- | --- | --- |
+| Seat 0 still hard-coded | guest sees the host hand / cannot act | `MY_SEAT` everywhere; grep for `turn === 0` and `hands[0]` |
+| Sending host state as-is | guest can read all hands in devtools | `sanitizeForSeat` per recipient |
+| Reusing hand index as ghost id | cards visibly reshuffle when one is played | assign stable tags at deal and restore them on undo |
+| Publishing during the lobby | guest receives the host's solo game | `if (!net.started) return;` |
+| AI scheduling remote humans | guest's turn is auto-played | `isBotSeat` is the only predicate |
+| Guest calls `leadTrick` locally | silent desync | route the public API through `sendNetAction` |
+| Rotating the camera instead of the world | lighting/controls break | rotate a world group; keep lights and camera fixed |
+| Expecting six seats | rules no longer Leab-Tui | four winds, 32 tiles, eight each |
+| Using a public broker in CI | flaky offline tests | keep `net-check.mjs` separate from `verify.mjs` |
+
+The full message set is in [PROTOCOL.md](PROTOCOL.md); operations are in [MULTIPLAYER.md](MULTIPLAYER.md).
+
+## 7. Bilingual copy
 
 - Use a flat dictionary with `{placeholders}` and a `t(key, vars)` function.
 - Mark static DOM with `data-i18n`; dynamic strings are composed in `coachMessage`, `comboSummary`, `renderLog` and summaries.
-- Add a self-test that both dictionaries have the same keys. This build has 211 keys per language.
+- Add a self-test that both dictionaries have the same keys. This build has more than 300 keys per language.
 - Translate tile names, colour names, seat names, combo names, button labels and ARIA labels.
 - Re-render 3D score labels after a language switch.
 
-## 7. Persistence and export
+## 8. Persistence and export
 
 - `localStorage` keys: match, prefs, stats. Separate them so preferences survive a new match.
 - Autosave after every action; save on `visibilitychange` and `beforeunload`.
 - Validate a restored game: format, four hands of ≤8 valid IDs, four scores, known phase. Reject silently to a new match.
 - Export a versioned JSON with `app`, `credits`, `stats` and the ID-based `game`. See [DATA_FORMAT.md](DATA_FORMAT.md).
 
-## 8. Verify with a real browser, no dependencies
+## 9. Verify with a real browser, no dependencies
 
 Write a Chrome DevTools Protocol harness (`scripts/browser-check.mjs`) using Node's built-in `WebSocket` and `fetch`. It should:
 
@@ -148,9 +181,9 @@ Write a Chrome DevTools Protocol harness (`scripts/browser-check.mjs`) using Nod
 5. Capture console exceptions and a screenshot.
 6. Fail loudly if the CDP method is missing or the target is wrong.
 
-Use `?selftest=1` for the rule suite and a `window.LeabTui` playthrough for the flow. Add `--reload` to prove resume. The harness in this repository is reusable; see [TESTING.md](TESTING.md).
+Use `?selftest=1` for the rule suite and a `window.LeabTui` playthrough for the flow. Add `--reload` to prove resume. For multiplayer, add a second page through `/json/new` and drive both sessions; see `scripts/net-check.mjs`. The harness in this repository is reusable; see [TESTING.md](TESTING.md).
 
-## 9. Screenshots
+## 10. Screenshots
 
 - Desktop 1440×900 with `?demo=1`, wait ~16 s, then `LeabTui.hint()` and `LeabTui.inspect(id)`.
 - Thai: `LeabTui.setLanguage('th')`, wait for the toast to clear.
@@ -159,20 +192,20 @@ Use `?selftest=1` for the rule suite and a `window.LeabTui` playthrough for the 
 
 Wait for animations before capturing. A screenshot taken 100 ms after opening a modal shows it half-transparent; a screenshot taken right after a hint shows the toast.
 
-## 10. Documentation and release
+## 11. Documentation and release
 
 Write, in this order:
 
 1. `README.md` — what it is, live link, features, rules summary, run/verify, screenshots, credits, limits.
 2. `AGENTS.md` — what, commands, architecture, decisions, known issues, continuity. This is the file another agent reads first.
-3. `docs/RULES.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`, `docs/DATA_FORMAT.md`.
+3. `docs/RULES.md`, `docs/ARCHITECTURE.md`, `docs/MULTIPLAYER.md`, `docs/PROTOCOL.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`, `docs/DATA_FORMAT.md`.
 4. `docs/REPRODUCTION.md` — this file.
 5. `STATE.md` + `state.json` — duration, tokens, model, harness, verification.
 6. Licence, changelog, contribution/security/privacy/support, citation, notices, GitHub templates.
 
 Run every check, push, enable Pages, and verify the live URL. Then write the skill.
 
-## 11. Measure the build
+## 12. Measure the build
 
 For an OpenCode session, the state lives in `~/.local/share/opencode/opencode.db`:
 
@@ -186,7 +219,7 @@ from session_v2 where id = 'ses_...';
 
 `total = input + output + reasoning`. Report cache reads separately. Use `time_created` → `time_updated` for the wall-clock duration, and state clearly that the final publishing turns add a small amount. Write the numbers into `state.json` and `STATE.md`, and credit OpenCode + the model in the README, About modal and footer.
 
-## 12. Publish without repeated Keychain prompts
+## 13. Publish without repeated Keychain prompts
 
 On macOS, `gh` may be absent and repeated `git` calls can trigger Keychain dialogs. The approach that avoided that:
 

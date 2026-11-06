@@ -4,13 +4,13 @@
 
 | Resource | Count | Notes |
 | --- | --- | --- |
-| Tiles | 32 | one shared cylinder geometry; 14 cached face textures (7 ranks × 2 colours); one shared back texture |
+| Tiles | 32 + 32 ghost back-only meshes | one shared cylinder geometry; 14 cached face textures (7 ranks × 2 colours); one shared back texture |
 | Table | 1 top + rim + inlay + pedestal + foot + floor | 96-segment cylinder, 120-segment torus |
 | Lights | 1 hemisphere, 1 ambient, 1 key directional (shadow), 1 rim directional, 1 spot (shadow), 2 points | 2048 and 1024 shadow maps |
 | Sprites | 3 AI labels + 1 hidden human label | canvas textures, redrawn on score change |
 | Particles | 220 dust points | one buffer geometry |
-| Animations | 32 tile records | position + flip records, no tween library |
-| Draw calls | roughly 60–90 | no post-processing |
+| Animations | 32 real + 32 ghost tile records | position + flip records, no tween library |
+| Draw calls | roughly 60–120 | no post-processing |
 
 The scene is tiny by WebGL standards. The dominant costs are the two shadow maps and the 2048 px key light, not the tile count.
 
@@ -24,6 +24,13 @@ The scene is tiny by WebGL standards. The dominant costs are the two shadow maps
 - The table uses `MeshStandardMaterial`; no transmission, no clearcoat, no environment map.
 - `prefers-reduced-motion` only affects CSS; Three.js timings are already short (≈520–760 ms).
 - Theme changes regenerate three 1024²/512² CanvasTextures once and dispose the old maps. Text size is pure CSS (`--fs-scale`) with no render-loop cost.
+
+## Network
+
+- State payload per guest is a JSON snapshot of ~6–12 KB, sent on each host action (throttled to 40 ms). At normal trick speed this is a few KB/s.
+- The host serialises and sanitises once per connected guest; with four humans that is three payloads per action.
+- Guests do not run the AI or the scene deal; they hydrate and animate. Rendering cost is the same as solo.
+- PeerJS + the broker are loaded only when a room opens. A solo page never requests them.
 
 ## Measured
 
