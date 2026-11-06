@@ -316,7 +316,7 @@ export class PeerHost {
 
 /** Client endpoint. One host, one data channel, JSON envelopes. */
 export class PeerClient {
-  constructor({ code, name = "Guest", onOpen, onMessage, onClose, onError, onStatus, options = {} } = {}) {
+  constructor({ code, name = "Guest", onOpen, onMessage, onClose, onError, onStatus, options = {}, connectTimeoutMs = 12000 } = {}) {
     this.code = normalizeRoomCode(code);
     this.name = name;
     this.hostId = peerIdForCode(this.code);
@@ -326,9 +326,11 @@ export class PeerClient {
     this.onError = onError || (() => {});
     this.onStatus = onStatus || (() => {});
     this.options = { ...defaultPeerOptions(), ...options };
+    this.connectTimeoutMs = connectTimeoutMs;
     this.peer = null;
     this.connection = null;
     this.closed = false;
+    this.stage = "starting";
   }
 
   async connect() {
@@ -336,6 +338,7 @@ export class PeerClient {
     const Peer = await loadPeerJS();
     return new Promise((resolve, reject) => {
       let settled = false;
+      let peerOpened = false;
       const settle = (fn, value) => {
         if (settled) return;
         settled = true;
@@ -343,6 +346,8 @@ export class PeerClient {
       };
       this.peer = new Peer(this.options);
       this.peer.on("open", () => {
+        peerOpened = true;
+        this.stage = "broker-open";
         this.onStatus?.({ state: "dialing", code: this.code });
         const connection = this.peer.connect(this.hostId, {
           reliable: true,
@@ -351,9 +356,20 @@ export class PeerClient {
         });
         this.connection = connection;
         connection.on("open", () => {
+          this.stage = "data-open";
           this.onStatus?.({ state: "open", code: this.code });
           settle(resolve, this);
           this.onOpen({ code: this.code });
+        });
+        connection.on("iceStateChanged", (state) => {
+          this.stage = `ice-${state}`;
+          if (state === "failed") {
+            const error = new Error("WebRTC ICE failed");
+            error.code = "ice-failed";
+            error.stage = this.stage;
+            this.onError({ scope: "client", type: "ice-failed", error });
+            settle(reject, error);
+          }
         });
         connection.on("data", (data) => {
           if (data && data.__leab === PROTOCOL_VERSION) this.onMessage({ message: data });
@@ -371,12 +387,23 @@ export class PeerClient {
       this.peer.on("error", (error) => {
         const text = peerErrorText(error);
         this.onError({ scope: "client", type: text, error });
-        if (!settled) settle(reject, error);
+        if (!settled) {
+          error.code = text;
+          error.stage = this.stage;
+          settle(reject, error);
+        }
       });
-      this.peer.on("disconnected", () => this.onStatus?.({ state: "signalling-lost", code: this.code }));
+      this.peer.on("disconnected", () => {
+        this.stage = "signalling-lost";
+        this.onStatus?.({ state: "signalling-lost", code: this.code });
+      });
       setTimeout(() => {
-        if (!settled) settle(reject, new Error("PeerJS client timed out"));
-      }, 22000);
+        if (settled) return;
+        const error = new Error(peerOpened ? "Host did not answer" : "Signalling broker did not open");
+        error.code = peerOpened ? "host-timeout" : "broker-timeout";
+        error.stage = this.stage;
+        settle(reject, error);
+      }, this.connectTimeoutMs);
     });
   }
 

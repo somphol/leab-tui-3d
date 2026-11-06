@@ -261,6 +261,11 @@
           </div>
           <input id="lobbyInvite" class="lobby-invite" readonly hidden aria-label="Invite link" />
           <p class="lobby-note" data-i18n="net.codeHelp">Share this code. Letter case does not matter.</p>
+          <div class="host-live" role="status" aria-live="polite">
+            <span class="host-live-dot" aria-hidden="true"></span>
+            <span id="hostListening" data-i18n="net.listening">Listening for guests…</span>
+          </div>
+          <p class="lobby-note" data-i18n="net.hostKeepOpen">Keep this host tab open and awake. If it closes or sleeps, guests cannot connect.</p>
           <div class="lobby-security">
             <label class="lobby-check">
               <input id="hostApproval" type="checkbox" checked />

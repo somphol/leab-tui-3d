@@ -36,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T15:24:06-08:00",
-    durationHuman: "5h 18m 32s",
-    tokensTotal: "1572765",
-    tokensInput: "1120947",
-    tokensOutput: "293604",
-    tokensReasoning: "158214",
-    tokensCacheRead: "317776640",
+    packagedAt: "2026-11-06T15:59:40-08:00",
+    durationHuman: "5h 54m 7s",
+    tokensTotal: "1624824",
+    tokensInput: "1150166",
+    tokensOutput: "304762",
+    tokensReasoning: "169896",
+    tokensCacheRead: "341903488",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -607,9 +607,18 @@ const I18N = {
     "net.pendingCount": "{n} waiting",
     "net.connect": "Connect",
     "net.connecting": "Connecting…",
+    "net.retrying": "Connection attempt {n} of 2…",
+    "net.retry": "Retry",
+    "net.brokerTimeout": "Could not reach the PeerJS broker. Check Wi-Fi/mobile data and try again.",
+    "net.hostTimeout": "The host did not answer. Check the host tab is still open on this room code, or try another network.",
+    "net.iceFailed": "WebRTC could not find a direct path. Try another network or a phone hotspot.",
     "net.handshake": "Connected. Waiting for the host…",
     "net.connectedWaiting": "Connected. The host will start when ready.",
     "net.lobbyOpen": "Room open. Share the code or invite link.",
+    "net.listening": "Listening for guests…",
+    "net.hostKeepOpen": "Keep this host tab open and awake. If it closes or sleeps, guests cannot connect.",
+    "net.guestConnecting": "A guest is connecting…",
+    "net.readyToStart": "Ready to start · {n} humans",
     "net.dealing": "Table starting…",
     "net.waitingHost": "Waiting for the host",
     "net.hostBadge": "Host",
@@ -1013,9 +1022,18 @@ const I18N = {
     "net.pendingCount": "รอ {n} คน",
     "net.connect": "เชื่อมต่อ",
     "net.connecting": "กำลังเชื่อมต่อ…",
+    "net.retrying": "พยายามเชื่อมต่อครั้งที่ {n} จาก 2…",
+    "net.retry": "ลองใหม่",
+    "net.brokerTimeout": "ติดต่อ PeerJS broker ไม่ได้ ตรวจ Wi-Fi/ข้อมูลมือถือแล้วลองใหม่",
+    "net.hostTimeout": "เจ้าบ้านไม่ตอบ ตรวจว่าแท็บเจ้าบ้านยังเปิดด้วยรหัสห้องนี้ หรือลองเครือข่ายอื่น",
+    "net.iceFailed": "WebRTC หาเส้นทางตรงไม่ได้ ลองเครือข่ายอื่นหรือฮอตสปอตมือถือ",
     "net.handshake": "เชื่อมต่อแล้ว กำลังรอเจ้าบ้าน…",
     "net.connectedWaiting": "เชื่อมต่อแล้ว เจ้าบ้านจะเริ่มเมื่อพร้อม",
     "net.lobbyOpen": "ห้องเปิดอยู่ แชร์รหัสหรือลิงก์เชิญ",
+    "net.listening": "กำลังรอแขก…",
+    "net.hostKeepOpen": "เปิดแท็บเจ้าบ้านไว้และอย่าให้เครื่องหลับ ถ้าปิดหรือหลับ แขกจะเชื่อมต่อไม่ได้",
+    "net.guestConnecting": "แขกกำลังเชื่อมต่อ…",
+    "net.readyToStart": "พร้อมเริ่ม · มนุษย์ {n} คน",
     "net.dealing": "กำลังเริ่มโต๊ะ…",
     "net.waitingHost": "รอเจ้าบ้าน",
     "net.hostBadge": "เจ้าบ้าน",
@@ -1459,6 +1477,8 @@ let chatOpen = true;
 let pendingRequests = new Map();
 const pendingTimers = new Map();
 let roomPinPlain = "";
+let joinToken = 0;
+let hostWakeLock = null;
 const speakingSeats = new Set();
 let remoteClock = null;
 let lastPublished = 0;
@@ -3355,6 +3375,19 @@ function hostConnectionLost({ connId }) {
   }
 }
 
+async function acquireHostWakeLock() {
+  if (!isHost() || !("wakeLock" in navigator) || hostWakeLock) return;
+  try {
+    hostWakeLock = await navigator.wakeLock.request("screen");
+    hostWakeLock.addEventListener("release", () => { hostWakeLock = null; });
+  } catch { hostWakeLock = null; }
+}
+
+function releaseHostWakeLock() {
+  try { hostWakeLock?.release(); } catch { /* ignore */ }
+  hostWakeLock = null;
+}
+
 async function createHostRoom(name) {
   if (net) leaveRoom({ silent: true });
   roomPinPlain = "";
@@ -3362,7 +3395,10 @@ async function createHostRoom(name) {
   lobbyState = { view: "host", roomCode: "", status: t("net.startingHost"), error: "", players: [], hostName: handle, started: false };
   showLobby("host");
   const hostHandlers = {
-    onConnection: () => {},
+    onConnection: () => {
+      setLobbyStatus(t("net.guestConnecting"), "");
+      renderLobby();
+    },
     onMessage: hostMessage,
     onClose: hostConnectionLost,
     onError: ({ type }) => {
@@ -3393,6 +3429,7 @@ async function createHostRoom(name) {
     renderLobby();
     renderNetChrome();
     syncVoicePeers();
+    acquireHostWakeLock();
     audio?.play("win", 0);
     savePlayerName(handle);
   } catch (error) {
@@ -3560,15 +3597,22 @@ async function joinRoom(code, name, pin = "") {
   }
   const handle = cleanGuestName(name, t("net.guestDefault"));
   const roomPin = normalisePin(pin);
+  const token = ++joinToken;
   MY_SEAT = 0;
   SEAT_PROFILES = null;
   lobbyState = { view: "join", roomCode: normalized, status: t("net.connecting"), error: "", players: [], hostName: "", started: false, name: handle };
   showLobby("join");
+  const connectButton = $("#lobbyConnectBtn");
+  if (connectButton) {
+    connectButton.disabled = true;
+    connectButton.textContent = t("net.connecting");
+  }
   let client = null;
-  try {
+  const makeClient = () => {
     client = new PeerClient({
       code: normalized,
       name: handle,
+      connectTimeoutMs: 11000,
       onMessage: clientMessage,
       onOpen: () => {
         client.send({ type: "hello", name: handle, pin: roomPin, protocol: PROTOCOL_VERSION });
@@ -3579,31 +3623,63 @@ async function joinRoom(code, name, pin = "") {
         if (net?.role === "client" && net.client === client) handleHostLost();
       },
       onError: ({ type }) => {
-        if (type === "peer-unavailable") setLobbyStatus(t("net.roomNotFound"), "wine");
-        else if (type === "protocol") setLobbyStatus(t("net.versionMismatch", { version: PROTOCOL_VERSION }), "wine");
-        else setLobbyStatus(t("net.error", { error: type }), "wine");
+        if (type === "protocol") setLobbyStatus(t("net.versionMismatch", { version: PROTOCOL_VERSION }), "wine");
       },
       onStatus: ({ state: status }) => {
-        if (status === "dialing") setLobbyStatus(t("net.connecting"), "wine");
+        if (status === "dialing" && token === joinToken) setLobbyStatus(t("net.connecting"), "wine");
       }
     });
     net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false };
-    await client.connect();
-    savePlayerName(handle);
-  } catch (error) {
-    if (net?.client === client) net = null;
-    const type = error?.type || error?.message || "unknown";
-    setLobbyStatus(type === "peer-unavailable" ? t("net.roomNotFound") : t("net.joinFailed", { error: type }), "wine");
+    return client;
+  };
+  try {
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      if (token !== joinToken) return;
+      makeClient();
+      try {
+        await client.connect();
+        if (token !== joinToken) return;
+        savePlayerName(handle);
+        if (connectButton) {
+          connectButton.disabled = false;
+          connectButton.textContent = t("net.connect");
+        }
+        return;
+      } catch (error) {
+        const failedClient = client;
+        try { failedClient?.close(); } catch { /* ignore */ }
+        if (net?.client === failedClient) net = null;
+        if (attempt === 1) {
+          if (token !== joinToken) return;
+          setLobbyStatus(t("net.retrying", { n: 2 }), "");
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          continue;
+        }
+        const type = error?.code || error?.type || error?.message || "unknown";
+        if (type === "peer-unavailable") setLobbyStatus(t("net.roomNotFound"), "wine");
+        else if (type === "broker-timeout") setLobbyStatus(t("net.brokerTimeout"), "wine");
+        else if (type === "host-timeout") setLobbyStatus(t("net.hostTimeout"), "wine");
+        else if (type === "ice-failed") setLobbyStatus(t("net.iceFailed"), "wine");
+        else setLobbyStatus(t("net.joinFailed", { error: type }), "wine");
+      }
+    }
+  } finally {
+    if (token === joinToken && connectButton) {
+      connectButton.disabled = false;
+      if (connectButton.textContent === t("net.connecting")) connectButton.textContent = t("net.retry");
+    }
   }
 }
 
 function leaveRoom({ silent = false, keepState = false } = {}) {
   clearTimeout(publishTimer);
   actionToken += 1;
+  joinToken += 1;
   const role = net?.role;
   const host = net?.host;
   const client = net?.client;
   const roster = SEAT_PROFILES;
+  releaseHostWakeLock();
   if (host) {
     for (const profile of roster || []) {
       if (profile?.kind === "human" && profile.connId) {
@@ -3844,6 +3920,14 @@ function renderLobby() {
   }
   const hostBack = $("#lobbyHostPanel [data-lobby-back]");
   if (hostBack) hostBack.textContent = started ? t("net.leave") : t("net.back");
+  const hostListening = $("#hostListening");
+  if (hostListening) {
+    if (started) hostListening.textContent = t("net.matchInProgress");
+    else if (pendingRequests.size) hostListening.textContent = t("net.pendingCount", { n: pendingRequests.size });
+    else if (humans >= 2) hostListening.textContent = t("net.readyToStart", { n: humans });
+    else if (net?.host?.connectionCount?.() > 0) hostListening.textContent = t("net.guestConnecting");
+    else hostListening.textContent = t("net.listening");
+  }
   const status = $("#lobbyStatus");
   if (status && lobbyState?.status) status.textContent = lobbyState.status;
   const waitStatus = $("#lobbyWaitStatus");
@@ -5775,7 +5859,10 @@ function bindEvents() {
   window.addEventListener("keydown", () => audio?.resume(), { once: true });
   window.addEventListener("beforeunload", saveMatch);
   window.addEventListener("pagehide", () => voice?.leave());
-  document.addEventListener("visibilitychange", () => { if (document.hidden) saveMatch(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) saveMatch();
+    else if (isHost()) acquireHostWakeLock();
+  });
 }
 
 async function boot() {

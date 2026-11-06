@@ -16,8 +16,8 @@
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js` |
-| Source lines | 9,015 |
-| Source size | 383,739 bytes |
+| Source lines | 9,155 |
+| Source size | 390,028 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
@@ -30,6 +30,8 @@
 - **Share invite + PIN** uses the native share sheet where available and falls back to the clipboard.
 - **Paste** on the guest PIN field extracts `PIN:`/`Passcode:`/`รหัส:` from the host's message, or accepts the passcode alone.
 - The link still never contains the PIN; only the shared text does.
+- The host panel now shows **Listening for guests**, **A guest is connecting**, waiting count or **Ready to start**, and warns to keep the host tab open/awake.
+- Join failures distinguish broker, host and ICE timeouts, retry once, and turn Connect into Retry.
 
 ## Release 1.6.0 — room hardening
 
@@ -94,7 +96,7 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | 1.6.0 approval, PIN policy, caps, security docs | 13:15–14:30 | ~75m |
 | 1.6.1 one-paste invite + PIN sharing, auto PIN UI | 14:30–15:20 | ~50m |
 
-**Measured session wall clock:** **5h 18m 32s** (19,112 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **5h 54m 7s** (21,247 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -102,13 +104,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 1,120,947 |
-| Output | 293,604 |
-| Reasoning | 158,214 |
-| **Total (input + output + reasoning)** | **1,572,765** |
-| Cache read | 317,776,640 |
+| Input | 1,150,166 |
+| Output | 304,762 |
+| Reasoning | 169,896 |
+| **Total (input + output + reasoning)** | **1,624,824** |
+| Cache read | 341,903,488 |
 | Cache write | 1,087 |
-| **Total including cache** | **319,350,492** |
+| **Total including cache** | **343,529,399** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.

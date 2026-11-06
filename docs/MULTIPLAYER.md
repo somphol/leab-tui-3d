@@ -190,6 +190,10 @@ Without a TURN relay, symmetric NAT and some corporate firewalls will fail. The 
 | `LeabTui.chat` | `send`, `append`, `messages`, `open`, `isOpen` |
 | `LeabTui.voice` | `join`, `joinWithStream`, `leave`, `state`, `peers`, `mic`, `deafen` |
 
+The host panel shows **Listening for guests…** until a guest's data channel actually opens. A guest stuck at “PeerJS client timed out” never reached the host, so there is no pending request to approve. The host should keep the tab open and awake; mobile backgrounding can suspend it.
+
+A failed join retries once automatically and turns **Connect** into **Retry**. The status line distinguishes broker, host and ICE failures rather than showing a generic timeout.
+
 The **two-client** verification is `node scripts/net-check.mjs`. It uses the real broker and checks: host room, guest join, two-human start, bot fill, own-hand privacy, ghosted other hands, host controls, text chat, voice mesh attachment, mic mute, deafen, actions in both directions, a resolved trick, and disconnect-to-bot. Voice media is exercised with a synthetic oscillator stream so headless Chrome does not need a real microphone; the production path still uses `getUserMedia`. It is separate from `scripts/verify.mjs` so offline CI stays deterministic. Set `GUEST_SHOT=screenshots/guest-play.png` to capture the guest table during the run.
 
 ## Troubleshooting
@@ -197,7 +201,10 @@ The **two-client** verification is `node scripts/net-check.mjs`. It uses the rea
 | Symptom | Likely cause | Action |
 | --- | --- | --- |
 | "Room not found" | wrong code, host tab closed, different broker | recheck code; host must keep the tab open |
-| Stuck at "Connecting…" | broker blocked, CSP, firewall | open the browser console; check `0.peerjs.com` is reachable |
+| Stuck at "Connecting…" | broker blocked, CSP, firewall | the app retries once; if it still fails, check `0.peerjs.com` on that network |
+| "Could not reach the PeerJS broker" | mobile data/Wi-Fi blocked signalling | switch network, disable VPN, retry |
+| "The host did not answer" | host tab closed, wrong code, or NAT blocked ICE | keep the host tab open; retry; try another network/hotspot |
+| "WebRTC could not find a direct path" | symmetric NAT / strict firewall | use a hotspot or a network with less restrictive NAT; no TURN is bundled |
 | Both connected, start disabled | only one human | invite a second human |
 | Start works but guest sees a blank table | Three.js CDN blocked on guest | guest needs jsDelivr too |
 | Guest cannot play | not their turn, or selection count wrong | the dock says whose turn it is; use Hint |

@@ -10,6 +10,9 @@ All notable changes to Leab-Tui 3D are documented here. The format follows [Keep
 - **Copy invite + PIN** — one paste carries the URL and the generated passcode together. The label switches from “Copy room info” when a PIN is set.
 - **Share invite + PIN** — native `navigator.share` where available, with clipboard fallback.
 - **Paste** on the guest PIN field — extracts `PIN:`/`Passcode:`/`รหัส:` from the host's message, or accepts the passcode alone.
+- **Host listening state** — “Listening for guests…”, “A guest is connecting…”, pending count and “Ready to start” make it clear that a guest has not reached the host yet.
+- **Staged join retry** — broker, host and ICE failures are distinguished; the client retries once and turns Connect into Retry.
+- **Host wake lock** — where supported, hosting requests a screen wake lock; the UI warns to keep the tab open and awake.
 - Self-test for passcode extraction (38 total).
 
 ### Changed

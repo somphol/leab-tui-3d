@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-06T15:24:06-08:00",
-    "durationSeconds": 19112,
-    "durationHuman": "5h 18m 32s",
+    "packagedAt": "2026-11-06T15:59:40-08:00",
+    "durationSeconds": 21247,
+    "durationHuman": "5h 54m 7s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-06T23:24:11Z"
+    "publishedAt": "2026-11-06T23:59:52Z"
   },
   "tokens": {
-    "input": 1120947,
-    "output": 293604,
-    "reasoning": 158214,
-    "cacheRead": 317776640,
+    "input": 1150166,
+    "output": 304762,
+    "reasoning": 169896,
+    "cacheRead": 341903488,
     "cacheWrite": 1087,
-    "total": 1572765,
-    "totalWithCache": 319350492,
+    "total": 1624824,
+    "totalWithCache": 343529399,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T15:24:06-08:00, covering 1.4.0–1.6.1. The final state-record commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T15:59:40-08:00, covering 1.4.0–1.6.1. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -155,11 +155,11 @@
     {
       "version": "1.4.0–1.6.1",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-06T15:24:06-08:00",
-      "durationSeconds": 19112,
-      "durationHuman": "5h 18m 32s",
-      "tokensAdded": 1572765,
-      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, strong PIN, abuse caps, one-paste sharing and skill mirrors."
+      "completedAt": "2026-11-06T15:59:40-08:00",
+      "durationSeconds": 21247,
+      "durationHuman": "5h 54m 7s",
+      "tokensAdded": 1624824,
+      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, strong PIN, abuse caps, one-paste sharing, host listening/retry diagnostics and skill mirrors."
     }
   ],
   "multiplayer": {

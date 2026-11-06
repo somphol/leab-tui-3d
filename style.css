@@ -1609,3 +1609,24 @@ a:hover { text-decoration: underline; }
 @media (max-width: 640px) {
   .pin-ready .mini-btn { min-height: 30px; }
 }
+
+.host-live {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 2px 0 8px;
+  color: #a8d8bd;
+  font-size: calc(10.5px * var(--fs-scale));
+}
+.host-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7fbf9a;
+  box-shadow: 0 0 8px rgba(127, 191, 154, 0.7);
+  animation: hostPulse 1.6s ease-in-out infinite;
+}
+@keyframes hostPulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
