@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.1";
-import { VoiceChat } from "./voice-chat.js?v=1.9.1";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.1";
+} from "./peer-manager.js?v=1.9.2";
+import { VoiceChat } from "./voice-chat.js?v=1.9.2";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.2";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.1",
+  version: "1.9.2",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -584,8 +584,9 @@ const I18N = {
     "rules.scoring": "Scoring",
     "rules.pilesMode": "Most piles",
     "rules.bidMode": "Bid piles",
+
     "rules.goal": "Goal",
-    "rules.goalBody": "Capture piles of four tiles. Two piles at the end of a round is par (0 points). Every pile above or below par is one point; capturing all eight piles is a 16-point Chuan. The first player to the match target (20 points by default) wins.",
+    "rules.goalBody": "Capture piles of four tiles. Two piles at the end of a round is par (0 points). Every pile above or below par is one point; capturing all eight piles is a 16-point Chuan. A player with seven piles and the last Soldier in hand may reveal it to take the final trick and complete the Chuan. The first player to the match target (20 points by default) wins.",
     "rules.equipment": "Equipment",
     "rules.equipmentBody": "The 32 tiles of a Chinese chess set: 16 red and 16 black. Each colour has one General, two Advisors, two Elephants, two Chariots, two Horses, two Cannons and five Soldiers. Four players take eight tiles each.",
     "rules.hierarchy": "Hierarchy",
@@ -1116,8 +1117,9 @@ const I18N = {
     "rules.scoring": "การคิดแต้ม",
     "rules.pilesMode": "กองมากที่สุด",
     "rules.bidMode": "ประเมินกอง",
+
     "rules.goal": "เป้าหมาย",
-    "rules.goalBody": "เก็บกองละสี่ตัว สองกองเมื่อจบรอบคือทุน (0 แต้ม) เกินหรือขาดกองละหนึ่งแต้ม และแปดกองคือช้วน 16 แต้ม ผู้ที่ถึงเป้าแมตช์ก่อน (ค่าเริ่มต้น 20 แต้ม) ชนะ",
+    "rules.goalBody": "เก็บกองละสี่ตัว สองกองเมื่อจบรอบคือทุน (0 แต้ม) เกินหรือขาดกองละหนึ่งแต้ม และแปดกองคือช้วน 16 แต้ม ถ้าเหลือ 7 กองและตัวสุดท้ายในมือเป็นจุก เปิดโชว์เพื่อกินตาสุดท้ายและปิดช้วนได้ ผู้ที่ถึงเป้าแมตช์ก่อน (ค่าเริ่มต้น 20 แต้ม) ชนะ",
     "rules.equipment": "อุปกรณ์",
     "rules.equipmentBody": "หมากรุกจีน 32 ตัว แดง 16 ดำ 16 แต่ละสีมีตี่ 1 สือ 2 เฉีย 2 กือ 2 แบ้ 2 เผ่า 2 จุก 5 ผู้เล่นสี่คนได้คนละแปดตัว",
     "rules.hierarchy": "ลำดับศักดิ์",

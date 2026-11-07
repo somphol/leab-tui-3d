@@ -2,6 +2,14 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.2] — 2026-11-07
+
+### Docs
+
+- Clarified that **Chuan is a standard Leab-Tui rule**, not a house rule. Both routes — the clean sweep and seven piles plus the last Soldier — are in the source and always enabled.
+- The in-app rules text now states the seven-piles-plus-last-Soldier claim.
+- The house-rule note is limited to “Soldier beats General” (จุกกินตี่), which the source does not contain.
+
 ## [1.9.1] — 2026-11-07
 
 ### Changed

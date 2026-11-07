@@ -128,9 +128,13 @@ This is an independent, open-source teaching implementation. It is not affiliate
 - **Redraw (โละ):** before the first play, a seat with no tile from the red Elephant up may redeal. The requester leads; the round scores ×2, ×3 … per redraw.
 - **Chuan special:** with seven piles and the last Soldier, the final follower may reveal it and take the last trick, reaching eight piles for 16.
 
-## “Soldier beats General” — interpretation
+## Chuan and “Soldier beats General”
 
-The Navee 2016 source gives a strict order: **General > Advisor > Elephant >
+**Chuan is a standard Leab-Tui rule, not a house rule.** Both routes are in the
+Navee 2016 source: a clean sweep of all eight piles, and the seven-piles-plus-
+last-Soldier claim. The app implements both; there is no toggle.
+
+The Navee source gives a strict order: **General > Advisor > Elephant >
 Chariot > Horse > Cannon > Soldier**, with red over black and the earlier reveal
 winning ties. It contains **no** general Soldier-over-General exception.
 
@@ -139,8 +143,9 @@ already holds seven piles and has the **last Soldier** in hand may reveal it to
 take the final trick and complete the eighth pile. That is a final-trick
 allowance for the Chuan, not a permanent reversal of rank.
 
-Some local descriptions (including Facebook posts) say “จุกกินตี่” as if the
-Soldier beats the General in every comparison. That creates a cycle — Soldier >
+The house-rule question concerns only **“จุกกินตี่”** (Soldier beats General),
+which is not part of Chuan. Some local descriptions (including Facebook posts)
+say it as if the Soldier beats the General in every comparison. That creates a cycle — Soldier >
 General > every other rank > Soldier — which contradicts the source and changes
 the value of the General for the whole round. The app therefore keeps the source
 order on every turn.
