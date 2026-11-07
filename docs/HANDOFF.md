@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Release **1.7.2** of Leab-Tui 3D is built, verified and published. It adds version/reload controls, connection diagnostics and mobile join restore, and hardens the room with host approval, an auto-generated strong PIN with memory-only digest, connection/message caps and a voice allowlist, on top of chat and full-mesh voice.
+Release **1.8.0** of Leab-Tui 3D is built, verified and published. It adds version/reload controls, connection diagnostics and mobile join restore, and hardens the room with host approval, an auto-generated strong PIN with memory-only digest, connection/message caps and a voice allowlist, on top of chat and full-mesh voice.
 
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Live: <https://somphol.github.io/leab-tui-3d/>
@@ -23,7 +23,7 @@ Release **1.7.2** of Leab-Tui 3D is built, verified and published. It adds versi
 | Voice | Full-mesh PeerJS media, mic mute, deafen, speaking pulse, no recording |
 | Audio | Synthesised shuffle/clack/flip/sweep/win/lose, gesture-unlocked |
 | Persistence | Autosave, solo resume, stats, versioned JSON export; network saves marked non-resumable |
-| Verification | 38/38 self-test, 342-check static check, CDP harness, full-round evidence, 21-check two-browser WebRTC suite |
+| Verification | 38/38 self-test, 342-check static check, CDP harness, full-round evidence, 23-check two-browser WebRTC suite |
 | Release docs | README, AGENTS, STATE, rules, architecture, multiplayer, protocol, tests, deployment, reproduction, data format, controls, accessibility, performance, design, browser support, FAQ, roadmap, release checklist, gallery, glossary |
 | Skill | `leab-tui-p2p-studio`, mirrored to `~/Projects/opencode-skills/` and published |
 

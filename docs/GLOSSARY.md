@@ -15,13 +15,13 @@
 | **Chuan** | ช้วน, capturing all eight piles in a round; worth 16 points. |
 | **Pile** | A group of four captured tiles. Two piles is par. |
 | **Par** | Two piles at the end of a round; scores 0 points. |
-| **General** | ตี่, 帥 / 將, rank 7, one per colour. Cannot pair. |
-| **Advisor** | บิน / สือ, 仕 / 士, rank 6, two per colour. |
-| **Elephant** | ช้าง / เฉียว, 相 / 象, rank 5, two per colour. |
-| **Chariot** | กือ / เรือ, 俥 / 車, rank 4, two per colour. |
-| **Horse** | เบ๊ / ม้า, 傌 / 馬, rank 3, two per colour. |
-| **Cannon** | เผ่า / ปืนใหญ่, 炮 / 包, rank 2, two per colour. |
-| **Soldier** | จุก / ทหาร, 兵 / 卒, rank 1, five per colour. |
+| **General** | ตี่ (แดง อั้งตี่ · ดำ โอวตี่) / แม่ทัพ, 帥 / 將, rank 7, one per colour. Cannot pair. |
+| **Advisor** | สือ / องครักษ์, 仕 / 士, rank 6, two per colour. |
+| **Elephant** | เฉีย / ช้าง, 相 / 象, rank 5, two per colour. |
+| **Chariot** | กือ / รถศึก, 車 / 車, rank 4, two per colour. |
+| **Horse** | แบ้ / ม้า, 馬 / 馬, rank 3, two per colour. |
+| **Cannon** | เผ่า / ปืนใหญ่, 炮 / 砲, rank 2, two per colour. |
+| **Soldier** | จุก / พลทหาร, 兵 / 卒, rank 1, five per colour. |
 | **Face-down** | Tiles sent without revealing. They cannot win. |
 | **Reveal / challenge** | Show a legal set of the called type that beats the current best. |
 | **Leader** | The player who calls the type and starts the trick. |

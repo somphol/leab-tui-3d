@@ -242,6 +242,19 @@ A guest sends `{type:"chat", text}`. The host:
 
 The host's own `sendChat` skips step 1–3 and uses seat 0. The host includes the last 30 entries in `welcome.chat`. Rendering escapes text; there is no HTML chat. Chat is memory-only and cleared when the room closes.
 
+## Hand arrangement
+
+The order and position of a player's hand are visual, but every seat should see the same arrangement. Positions travel as coordinates only; tile identities never do.
+
+A guest sends `{type:"hand-layout", slots}`. The host:
+
+1. finds the sender profile by `connId` and ignores the message before `start`;
+2. clamps each slot to the felt (radius `0.8 .. HAND_RADIUS + 0.55`, angle normalised) and caps the array at eight;
+3. applies it to the sender's seat;
+4. relays `{type:"hand-layout", seat, slots}` to the other guests.
+
+`slots: null` clears the arrangement (the **Tidy hand** button). Slots are in **raw hand order**, so they map to the same hidden tiles on every client; after a play the owner republishes because the indices shift. Layouts are memory-only and cleared at every deal.
+
 ## Voice
 
 Voice is **not** an envelope type and never travels over the data channel. It is a full mesh of PeerJS media calls:

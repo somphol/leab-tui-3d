@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en" data-lang="en">
+<html lang="en" data-lang="en" data-theme="daybreak">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio</title>
   <meta name="description" content="A bilingual, offline-friendly 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with 32 Chinese chess tiles. Vanilla HTML, CSS and Three.js." />
-  <meta name="theme-color" content="#180c0e" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#e8f0f2" />
+  <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio" />
@@ -14,8 +14,17 @@
   <meta property="og:image" content="screenshots/hero.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://0.peerjs.com wss://0.peerjs.com; font-src 'self' data:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
+  <script>
+    try {
+      const saved = JSON.parse(localStorage.getItem("leabtui.prefs.v1") || "null");
+      const themes = ["mahogany", "jade", "midnight", "parchment", "daybreak"];
+      document.documentElement.dataset.theme = saved && themes.includes(saved.theme) ? saved.theme : "daybreak";
+    } catch {
+      document.documentElement.dataset.theme = "daybreak";
+    }
+  </script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=1.7.2" />
+  <link rel="stylesheet" href="style.css?v=1.8.0" />
   <script type="importmap">
     {
       "imports": {
@@ -34,13 +43,21 @@
       <a class="brand" href="#main" aria-label="Leab-Tui 3D home">
         <span class="brand-seal" aria-hidden="true">帥</span>
         <span class="brand-copy">
-          <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
+          <span class="brand-line">
+            <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
+            <span id="brandVersion" class="brand-version">(v1.8.0)</span>
+          </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
       </a>
       <nav class="top-actions" aria-label="Application controls">
         <button id="langToggle" class="pill" type="button" aria-label="Switch language" title="Switch language">
           <span class="pill-icon" aria-hidden="true">文</span><span id="langLabel">ไทย</span>
+        </button>
+        <button id="appUpdateBtn" class="pill update-pill" type="button" title="Reload to get the latest version">
+          <span class="update-icon" aria-hidden="true">↻</span>
+          <span data-update-label>Update</span>
+          <span id="updateDot" class="update-dot" hidden aria-hidden="true"></span>
         </button>
         <button id="soundToggle" class="icon-btn" type="button" aria-pressed="true" aria-label="Sound on" title="Sound">
           <span id="soundIcon" aria-hidden="true">♪</span>
@@ -64,6 +81,10 @@
         <canvas id="scene" aria-label="3D Leab-Tui table" role="img"></canvas>
         <div class="stage-hint" data-i18n="camera.hint">Drag to orbit · scroll to zoom · right-drag to pan</div>
         <div class="hud-strip">
+          <button id="topViewBtn" class="hud-chip view-toggle" type="button" aria-pressed="true" data-i18n-aria="view.switch" title="Switch view">
+            <span class="view-toggle-icon" aria-hidden="true">⇄</span>
+            <span data-i18n="view.top">Top view</span>
+          </button>
           <div class="quick-ref-wrap">
             <button id="rankReferenceBtn" class="quick-ref-btn" type="button" aria-expanded="false" aria-controls="rankReference" aria-label="Rank order">
               <span class="quick-ref-icon" aria-hidden="true">帥</span><span data-i18n="rankRef.open">Ranks</span>
@@ -83,13 +104,13 @@
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Trick</span><strong id="trickChip">0</strong></span>
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.target">Target</span><strong id="targetChip">20</strong></span>
             <span class="hud-chip hud-turn"><span class="hud-label" data-i18n="hud.turn">Turn</span><strong id="turnChip">You</strong></span>
+            <span class="hud-chip call-chip" id="callChip" hidden></span>
           </div>
         </div>
 
         <div class="stage-tools" aria-label="Camera controls">
           <button id="chatToolBtn" class="tool-btn chat-tool" type="button" hidden title="Table chat" aria-label="Table chat" data-i18n-aria="chat.title">💬<span id="chatBadge" class="chat-badge" hidden>0</span></button>
           <button id="resetViewBtn" class="tool-btn" type="button" title="Reset camera" aria-label="Reset camera">⤾</button>
-          <button id="topViewBtn" class="tool-btn" type="button" title="Top view" aria-label="Top view">⌖</button>
           <button id="cinemaBtn" class="tool-btn" type="button" title="Cinematic orbit" aria-label="Cinematic orbit" aria-pressed="false">◉</button>
           <button id="displayBtn" class="tool-btn" type="button" title="Display settings" aria-label="Display settings">Aa</button>
         </div>
@@ -106,8 +127,12 @@
             <div id="selectionPips" class="pips" aria-hidden="true"></div>
           </div>
           <div class="dock-actions">
+            <button id="redrawBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.redraw">Redraw (โละ)</button>
+            <button id="chuanBtn" class="btn btn-gold" type="button" hidden data-i18n="actions.chuan">Chuan</button>
+            <div id="bidRow" class="bid-row" role="group" aria-label="Bid piles" hidden></div>
             <button id="hintBtn" class="btn btn-ghost" type="button" data-i18n="actions.hint">Hint</button>
             <button id="clearBtn" class="btn btn-ghost" type="button" data-i18n="actions.clear">Clear</button>
+            <button id="tidyHandBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.tidy">Tidy hand</button>
             <button id="leadBtn" class="btn btn-gold" type="button" disabled data-i18n="actions.lead">Lead</button>
             <button id="revealBtn" class="btn btn-jade" type="button" hidden data-i18n="actions.reveal">Reveal &amp; challenge</button>
             <button id="facedownBtn" class="btn btn-wine" type="button" hidden data-i18n="actions.facedown">Play face-down</button>
@@ -203,7 +228,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.7.2</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.8.0</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -299,6 +324,28 @@
             <label for="lobbyPlayerName" data-i18n="net.yourName">Your name</label>
             <input id="lobbyPlayerName" class="lobby-input lobby-player-name" type="text" maxlength="18" autocomplete="nickname" placeholder="Your name" data-i18n-placeholder="net.yourNamePlaceholder" />
             <span class="lobby-name-hint" data-i18n="net.yourNameHint">Shown to other players.</span>
+          </div>
+
+          <div class="rule-row">
+            <label class="rule-field"><span data-i18n="rules.target">Play to</span>
+              <select id="targetSelect" data-rule="target">
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
+            <label class="rule-field"><span data-i18n="rules.direction">Turn order</span>
+              <select id="directionSelect" data-rule="direction">
+                <option value="cw" data-i18n="rules.cw">Clockwise</option>
+                <option value="ccw" data-i18n="rules.ccw">Counter-clockwise</option>
+              </select>
+            </label>
+            <label class="rule-field"><span data-i18n="rules.scoring">Scoring</span>
+              <select id="modeSelect" data-rule="mode">
+                <option value="piles" data-i18n="rules.pilesMode">Most piles</option>
+                <option value="bid" data-i18n="rules.bidMode">Bid piles</option>
+              </select>
+            </label>
           </div>
 
           <label class="lobby-check auto-audio-check">
@@ -413,7 +460,7 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.7.2</span>
+          <span class="version-chip version-label">v1.8.0</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
@@ -534,6 +581,18 @@
       </div>
     </div>
 
+    <div id="pileModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="pileTitle">
+      <div class="modal-card modal-small">
+        <button class="modal-close" type="button" data-close="pileModal" aria-label="Close">×</button>
+        <h2 id="pileTitle" data-i18n="pile.title">Captured pile</h2>
+        <p id="pileMeta" class="lobby-note"></p>
+        <div id="pileTiles" class="pile-tiles"></div>
+        <div class="modal-actions">
+          <button class="btn btn-gold" type="button" data-close="pileModal" data-i18n="actions.continue">Continue</button>
+        </div>
+      </div>
+    </div>
+
     <div id="leaveModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="leaveTitle">
       <div class="modal-card modal-small">
         <h2 id="leaveTitle" data-i18n="net.leaveTitle">Leave the room?</h2>
@@ -563,6 +622,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.7.2"></script>
+  <script type="module" src="script.js?v=1.8.0"></script>
 </body>
 </html>

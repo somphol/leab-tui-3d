@@ -19,13 +19,13 @@ A Chinese chess set has 32 tiles. Each colour has:
 
 | Rank | Red Hanzi | Black Hanzi | Copies per colour | Thai name |
 | --- | --- | --- | --- | --- |
-| General (7) | 帥 | 將 | 1 | ตี่ |
-| Advisor (6) | 仕 | 士 | 2 | บิน / สือ |
-| Elephant (5) | 相 | 象 | 2 | ช้าง / เฉียว |
-| Chariot (4) | 俥 | 車 | 2 | กือ / เรือ |
-| Horse (3) | 傌 | 馬 | 2 | เบ๊ / ม้า |
-| Cannon (2) | 炮 | 包 | 2 | เผ่า |
-| Soldier (1) | 兵 | 卒 | 5 | จุก |
+| General (7) | 帥 | 將 | 1 | ตี่ (แดง อั้งตี่ · ดำ โอวตี่) / แม่ทัพ |
+| Advisor (6) | 仕 | 士 | 2 | สือ / องครักษ์ |
+| Elephant (5) | 相 | 象 | 2 | เฉีย / ช้าง |
+| Chariot (4) | 車 | 車 | 2 | กือ / รถศึก |
+| Horse (3) | 馬 | 馬 | 2 | แบ้ / ม้า |
+| Cannon (2) | 炮 | 砲 | 2 | เผ่า / ปืนใหญ่ |
+| Soldier (1) | 兵 | 卒 | 5 | จุก / พลทหาร |
 
 16 red + 16 black = 32. Four players take eight tiles each.
 
@@ -41,7 +41,7 @@ The hierarchy applies to rank-based sets. Straight sets and same-rank Soldier se
 
 ## Calls and combinations
 
-The leader chooses one call and plays a matching set face-up.
+The leader chooses one call and sends a matching set face-down.
 
 | Call | Thai | Count | Shape |
 | --- | --- | --- | --- |
@@ -71,14 +71,15 @@ A set only competes if it matches the **called type**. A pair cannot beat a sing
 
 ## How a trick runs
 
-1. The leader calls a type and plays a legal set of that type face-up.
+1. The leader calls a type and sends a legal set of that type **face-down**.
 2. Every other player, in clockwise order, sends **exactly the same number of tiles**, face-down.
-3. The leader's set is revealed first and is the current best.
-4. In turn, each player may reveal a legal set of the called type that **strictly beats** the current best. If they cannot or choose not to, their tiles stay face-down.
-5. The highest revealed set wins all `4 × N` tiles. Unrevealed tiles never compete, even if they could have won.
+3. Once all four have sent, the leader reveals first and becomes the current best.
+4. In turn, each following player may reveal a legal set of the called type that **strictly beats** the current best. If they cannot or choose not to, their tiles stay face-down.
+5. The highest revealed set wins all `4 × N` tiles. Unrevealed tiles never compete, even if they could have won, and they stay face-down when they are swept into the winner's pile.
+6. Clicking a captured pile opens it: tiles are shown left to right, face-up tiles with their carved face and hidden tiles as backs.
 6. The winner leads the next trick.
 
-In this studio the human selects the required number of tiles and chooses **Reveal & challenge** or **Play face-down**. The AI follows the same rule. The leader must be able to form the called set.
+In this studio followers select the required number of tiles and send them with **Send face-down**. After all four have sent, the leader is revealed automatically; each follower then chooses **Show & win** or **Keep hidden** in turn. The AI follows the same rule. The leader must be able to form the called set.
 
 ### First lead and next round
 
@@ -103,7 +104,7 @@ Because every trick awards `4 × N` tiles, the four players' round points always
 These are deliberate interface choices, not rule changes:
 
 - You may always send tiles face-down, even when you hold a legal beating set. This preserves the bluffing and conservation core of the game.
-- A set must be revealed to compete. The interface never auto-reveals for you.
+- A set must be revealed to compete. The interface never auto-reveals for you, except for the leader at the showdown, as the source requires.
 - The leader must be able to form the called set. The UI disables **Lead** for illegal selections.
 - **Hint** uses a deterministic version of the AI heuristic. It is advice, not an auto-play.
 - **Undo trick** restores the position before the last trick and restarts it. It is a learning tool, not a competitive feature.
@@ -117,3 +118,12 @@ These are deliberate interface choices, not rule changes:
 ## Licence and independence
 
 This is an independent, open-source teaching implementation. It is not affiliated with any publisher, temple fair, gambling operator or standards body. The rule text above is original prose; the source is cited for the historical game.
+
+
+## Four-player table options
+
+- **Target:** 20, 50 or 100 points (the source suggests 100 or a fixed number of rounds).
+- **Direction:** clockwise (default) or counter-clockwise, by agreement.
+- **Scoring:** most piles (default) or **bid piles**. In bid piles each seat bids 0–8; the last bidder may not make the total exactly 8. A hit scores bid + 5 (zero bid + 3); a miss scores minus the difference.
+- **Redraw (โละ):** before the first play, a seat with no tile from the red Elephant up may redeal. The requester leads; the round scores ×2, ×3 … per redraw.
+- **Chuan special:** with seven piles and the last Soldier, the final follower may reveal it and take the last trick, reaching eight piles for 16.

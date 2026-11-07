@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.7.2",
-  "version": "1.7.2",
+  "projectVersion": "1.8.0",
+  "version": "1.8.0",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-07T00:52:24-08:00",
-    "durationSeconds": 53211,
-    "durationHuman": "14h 46m 51s",
+    "packagedAt": "2026-11-07T03:19:23-08:00",
+    "durationSeconds": 62030,
+    "durationHuman": "17h 13m 50s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-07T08:52:32Z"
+    "publishedAt": "2026-11-07T11:19:47Z"
   },
   "tokens": {
-    "input": 4038669,
-    "output": 454308,
-    "reasoning": 334004,
-    "cacheRead": 538906624,
+    "input": 4954537,
+    "output": 525761,
+    "reasoning": 446534,
+    "cacheRead": 621505152,
     "cacheWrite": 1087,
-    "total": 4826981,
-    "totalWithCache": 543734692,
+    "total": 5926832,
+    "totalWithCache": 627433071,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-07T00:52:24-08:00, covering 1.4.0–1.7.2. The final state-record commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-07T03:19:23-08:00, covering 1.4.0–1.8.0. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -73,7 +73,7 @@
     "selfTest": "38/38",
     "staticCheck": "scripts/check.mjs (345 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
-    "multiplayer": "scripts/net-check.mjs — 21/21 PIN, approval, wrong PIN, probe, host, join, bot fill, privacy, controls, chat, voice, mute/deafen, actions, disconnect",
+    "multiplayer": "scripts/net-check.mjs — 23/23 PIN, approval, wrong PIN, probe, host, join, bot fill, privacy, controls, hand-layout relay, chat, voice, mute/deafen, showdown actions, disconnect",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
@@ -188,18 +188,23 @@
       "version": "1.7.2",
       "date": "2026-11-07",
       "summary": "Unprefixed room numbers, big Reload version bar, throttled self-update."
+    },
+    {
+      "version": "1.8.0",
+      "date": "2026-11-07",
+      "summary": "Top-view default with a 3D toggle, and free hand arrangement by dragging."
     }
   ],
-  "releaseNotes": "1.7.2 hides the LEAB- prefix, pins a large Reload version button in every launch dialog, checks for updates once per 5 minutes and self-updates from the launch menu.",
+  "releaseNotes": "1.8.0 opens in a fitted top-down view with a labelled 3D toggle, and lets players drag their hand tiles into any arrangement.",
   "updates": [
     {
-      "version": "1.4.0–1.7.2",
+      "version": "1.4.0–1.8.0",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-07T00:52:24-08:00",
-      "durationSeconds": 53211,
-      "durationHuman": "14h 46m 51s",
-      "tokensAdded": 4826981,
-      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, PIN, abuse caps, sharing, version/reload, diagnostics, join restore, numeric room numbers, iPad layout, panel rail, tile tooltip, persistent prompt, simpler host panel, friendlier launch flow, one-tap Join audio, in-dialog EN/TH, theme-aware chat colours, automatic audio join and self-updating launch."
+      "completedAt": "2026-11-07T03:19:23-08:00",
+      "durationSeconds": 62030,
+      "durationHuman": "17h 13m 50s",
+      "tokensAdded": 5926832,
+      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, PIN, abuse caps, sharing, version/reload, diagnostics, join restore, numeric room numbers, iPad layout, panel rail, tile tooltip, persistent prompt, friendlier launch flow, one-tap Join audio, in-dialog EN/TH, theme-aware chat colours, automatic audio join, top-down default with a 3D toggle, free hand arrangement with layout relay, face-down showdown order, hidden captured tiles, pile inspector, target/direction settings, bid-pile mode, redraw and the Chuan special."
     }
   ],
   "multiplayer": {

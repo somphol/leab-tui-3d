@@ -54,7 +54,7 @@ The **Ranks** shortcut at the top-left HUD: seven cards, red and black Hanzi, Th
 
 ![Rank order in Thai](../screenshots/ranks-th.jpg)
 
-The same ladder in Thai on the Parchment theme: ตี่ > บิน > ช้าง > กือ > เบ๊ > เผ่า > จุก, with the tie rules underneath.
+The same ladder in Thai on the Parchment theme: ตี่ > สือ > เฉีย > กือ > แบ้ > เผ่า > จุก, with the tie rules underneath.
 
 ## Parchment
 

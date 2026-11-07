@@ -101,7 +101,7 @@ The animation is functional: it shows where a tile came from and who owns it. It
 ## Copy
 
 - English is plain and specific: “Your Red Elephant beats Black Elephant. Reveal to capture 4 tiles, or play face-down to keep it.”
-- Thai uses the traditional names first (ตี่ บิน ช้าง กือ เบ๊ เผ่า จุก) and the English/alternate in the inspector.
+- Thai uses the Teochew readings first (ตี่ สือ เฉีย กือ แบ้ เผ่า จุก) with the Thai meaning beside them; the inspector also shows the English rank.
 - The coach never says “good luck” or “nice move”; it names the rule and the consequence.
 - The UI calls the game “Leab-Tui 3D” and the game “เลี๊ยบตุ่ย”; it does not translate the name into an English invention.
 

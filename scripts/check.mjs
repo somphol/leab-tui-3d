@@ -206,7 +206,7 @@ ok(script.includes("createDynamicsCompressor"), "audio compressor exists");
 ok(script.includes("this.analyser"), "audio analyser tap exists");
 ok(script.includes("ctx.resume().then"), "first-gesture audio retry exists");
 ok(script.includes("scene.fog.color.set"), "scene fog follows the theme");
-ok(script.includes('theme: "mahogany"') && script.includes('fontSize: "md"'), "display preferences have defaults");
+ok(script.includes('theme: "daybreak"') && script.includes('fontSize: "md"'), "display preferences have defaults");
 ok(index.includes('id="displayModal"'), "display modal exists");
 ok(index.includes('data-font-size="xl"'), "font size control exists");
 ok(index.includes('data-theme-choice="jade"') && index.includes('data-theme-choice="parchment"') && index.includes('data-theme-choice="daybreak"'), "theme controls exist");

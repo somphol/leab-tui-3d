@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.7.2-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.8.0-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -55,7 +55,7 @@ The room is peer-to-peer: **no game server**, no account, no database. PeerJS's 
 | **Players** | 1 human + 3 AI in solo; host + up to 3 guests in P2P, bots fill empty seats |
 | **Tiles** | 32 Xiangqi tiles: 16 red, 16 black |
 | **Deal** | 8 tiles each |
-| **Hierarchy** | General 帥/將 > Advisor 仕/士 > Elephant 相/象 > Chariot 俥/車 > Horse 傌/馬 > Cannon 炮/包 > Soldier 兵/卒 |
+| **Hierarchy** | General 帥/將 > Advisor 仕/士 > Elephant 相/象 > Chariot 車/車 > Horse 馬/馬 > Cannon 炮/砲 > Soldier 兵/卒 |
 | **Tie-break** | Red beats black at equal rank; equal rank + colour keeps the earlier play |
 | **Calls** | Leab ×1, Tui ×2, Sa Hoo ×3, See Hoo ×4, Ngoh Hoo ×5, Lak Hoo ×6, Soldier sets ×3–5 |
 | **Trick** | Everyone sends the called number of tiles. Only revealed sets compete. The winner takes all 4×N tiles and leads next |
@@ -193,7 +193,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 
 ## Credits
 
-Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.7.2**; the original table was 1.0.0.
+Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.8.0**; the original table was 1.0.0.
 
 Rules reference: Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016), linked in [docs/RULES.md](docs/RULES.md). Three.js and PeerJS are MIT-licensed; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

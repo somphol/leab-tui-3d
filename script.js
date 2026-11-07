@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.7.2";
-import { VoiceChat } from "./voice-chat.js?v=1.7.2";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.7.2";
+} from "./peer-manager.js?v=1.8.0";
+import { VoiceChat } from "./voice-chat.js?v=1.8.0";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.0";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.7.2",
+  version: "1.8.0",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T00:52:24-08:00",
-    durationHuman: "14h 46m 51s",
-    tokensTotal: "4826981",
-    tokensInput: "4038669",
-    tokensOutput: "454308",
-    tokensReasoning: "334004",
-    tokensCacheRead: "538906624",
+    packagedAt: "2026-11-07T03:19:23-08:00",
+    durationHuman: "17h 13m 50s",
+    tokensTotal: "5926832",
+    tokensInput: "4954537",
+    tokensOutput: "525761",
+    tokensReasoning: "446534",
+    tokensCacheRead: "621505152",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -58,13 +58,13 @@ const COLORS = Object.freeze({
 });
 
 const RANKS = Object.freeze([
-  { id: "soldier",  power: 1, copies: 5, en: "Soldier",  th: "จุก",  thAlt: "ทหาร",     red: "兵", black: "卒", note: { en: "The only rank with five copies; it can form same-rank sets.", th: "ฐานันดรเดียวที่มีห้าตัว จึงสร้างชุดตัวเหมือนได้" } },
-  { id: "cannon",   power: 2, copies: 2, en: "Cannon",   th: "เผ่า",  thAlt: "ปืนใหญ่",  red: "炮", black: "包", note: { en: "Low straight member; pairs and straights are its value.", th: "ตัวเล็กในชุดเรียง มีค่าเมื่อจับคู่หรือเรียง" } },
-  { id: "horse",    power: 3, copies: 2, en: "Horse",    th: "เบ๊",  thAlt: "ม้า",      red: "傌", black: "馬", note: { en: "Middle of the small straight Chariot–Horse–Cannon.", th: "ตัวกลางของชุดเล็ก เรือ–ม้า–เผ่า" } },
-  { id: "chariot",  power: 4, copies: 2, en: "Chariot",  th: "กือ",  thAlt: "เรือ",     red: "俥", black: "車", note: { en: "Top of the small straight; a red Chariot pair is strong.", th: "หัวชุดเล็ก คู่กือแดงแข็งแรง" } },
-  { id: "elephant", power: 5, copies: 2, en: "Elephant", th: "ช้าง", thAlt: "เฉียว",    red: "相", black: "象", note: { en: "Foot of the big straight; only Advisors and Generals outrank it.", th: "ท้ายชุดใหญ่ มีเพียงบินและตี่ที่ใหญ่กว่า" } },
-  { id: "advisor",  power: 6, copies: 2, en: "Advisor",  th: "บิน",  thAlt: "สือ",      red: "仕", black: "士", note: { en: "Second only to the General; red Advisor pairs are the top pair.", th: "รองจากตี่ คู่บินแดงคือคู่ที่ใหญ่ที่สุด" } },
-  { id: "general",  power: 7, copies: 1, en: "General",  th: "ตี่",  thAlt: "กษัตริย์", red: "帥", black: "將", note: { en: "One per colour. It cannot form a pair, but wins every single.", th: "สีละหนึ่งตัว สร้างคู่ไม่ได้ แต่ชนะเลี๊ยบทุกตัว" } }
+  { id: "soldier",  power: 1, copies: 5, en: "Soldier",  th: "จุก",  thMeaning: "พลทหาร",  red: "兵", black: "卒", note: { en: "The only rank with five copies; it can form same-rank sets.", th: "ฐานันดรเดียวที่มีห้าตัว จึงสร้างชุดตัวเหมือนได้" } },
+  { id: "cannon",   power: 2, copies: 2, en: "Cannon",   th: "เผ่า", thMeaning: "ปืนใหญ่", red: "炮", black: "砲", note: { en: "Low straight member; pairs and straights are its value.", th: "ตัวเล็กในชุดเรียง มีค่าเมื่อจับคู่หรือเรียง" } },
+  { id: "horse",    power: 3, copies: 2, en: "Horse",    th: "แบ้",  thMeaning: "ม้า",     red: "馬", black: "馬", note: { en: "Middle of the small straight Chariot–Horse–Cannon.", th: "ตัวกลางของชุดเล็ก รถศึก–ม้า–เผ่า" } },
+  { id: "chariot",  power: 4, copies: 2, en: "Chariot",  th: "กือ",  thMeaning: "รถศึก",   red: "車", black: "車", note: { en: "Top of the small straight; a red Chariot pair is strong.", th: "หัวชุดเล็ก คู่กือแดงแข็งแรง" } },
+  { id: "elephant", power: 5, copies: 2, en: "Elephant", th: "เฉีย", thMeaning: "ช้าง",     red: "相", black: "象", note: { en: "Foot of the big straight; only Advisors and Generals outrank it.", th: "ท้ายชุดใหญ่ มีเพียงสือและตี่ที่ใหญ่กว่า" } },
+  { id: "advisor",  power: 6, copies: 2, en: "Advisor",  th: "สือ",  thMeaning: "องครักษ์", red: "仕", black: "士", note: { en: "Second only to the General; red Advisor pairs are the top pair.", th: "รองจากตี่ คู่สือแดงคือคู่ที่ใหญ่ที่สุด" } },
+  { id: "general",  power: 7, copies: 1, en: "General",  th: "ตี่",  thMeaning: "แม่ทัพ",   thRed: "อั้งตี่", thBlack: "โอวตี่", red: "帥", black: "將", note: { en: "One per colour. It cannot form a pair, but wins every single. Red reads อั้งตี่, black reads โอวตี่.", th: "สีละหนึ่งตัว สร้างคู่ไม่ได้ แต่ชนะเลี๊ยบทุกตัว แดงเรียกอั้งตี่ ดำเรียกโอวตี่" } }
 ]);
 
 const RANK_BY_ID = Object.fromEntries(RANKS.map((r) => [r.id, r]));
@@ -283,19 +283,32 @@ const I18N = {
     "hud.trick": "Trick",
     "hud.target": "Target",
     "hud.turn": "Turn",
+    "hud.call": "Call",
     "dock.select": "Select your tiles",
     "dock.leadTitle": "Choose a combination to lead",
     "dock.leadHelp": "Click carved tiles on the table. Tap Hint if you want a suggestion.",
     "dock.leadReady": "Ready to lead {combo}. {n} tile(s) selected.",
     "dock.followTitle": "{seat} led {combo}",
-    "dock.followHelp": "Select exactly {n} tile(s). A legal {type} that beats the table can be revealed; anything else must go face-down.",
+    "dock.followHelp": "Pick exactly {n} tile(s) of the called shape. Everyone sends face-down; the leader reveals first.",
+    "dock.followHidden": "Send these {n} tiles face-down. The leader reveals first once all four have sent.",
+    "dock.showdown": "Showdown",
+    "dock.showdownTitle": "Show or keep hidden?",
+    "dock.showdownCan": "Your {combo} beats {best}. Show it to take the trick.",
+    "dock.showdownWait": "Only a revealed set can win. If yours cannot beat the table, keep it hidden.",
     "dock.waiting": "{seat} is thinking…",
     "dock.pick": "Select {n} tile(s) for this trick.",
     "dock.selected": "{n} selected.",
     "actions.hint": "Hint",
     "actions.clear": "Clear",
     "actions.lead": "Lead",
-    "actions.reveal": "Reveal & challenge",
+    "actions.reveal": "Show & win",
+    "actions.showWin": "Show & win",
+    "actions.redraw": "Redraw (โละ)",
+    "actions.chuan": "Chuan",
+    "actions.sendHidden": "Send face-down",
+    "actions.keepHidden": "Keep hidden",
+    "actions.tidy": "Tidy hand",
+    "actions.revealLog": "showed",
     "actions.facedown": "Play face-down",
     "actions.title": "Actions",
     "actions.newMatch": "New match",
@@ -336,7 +349,10 @@ const I18N = {
     "rankRef.close": "Close rank order",
     "rankRef.highest": "Highest",
     "rankRef.lowest": "Lowest",
-    "camera.hint": "Drag to orbit · scroll to zoom · right-drag to pan",
+    "camera.hint": "Drag to orbit · scroll to zoom · drag one of your tiles to arrange",
+    "view.top": "Top view",
+    "view.3d": "3D view",
+    "view.switch": "Switch between top and 3D view",
     "coach.title": "Coach",
     "coach.live": "live",
     "score.title": "Match",
@@ -344,6 +360,9 @@ const I18N = {
     "score.points": "points",
     "score.pile": "pile",
     "score.piles": "piles",
+    "pile.title": "{seat} · pile {n}",
+    "pile.meta": "{n} tiles · {up} face-up",
+    "pile.hidden": "Face-down tile",
     "inspector.title": "Tile inspector",
     "inspector.hover": "hover",
     "inspector.empty": "Hover or click a carved tile to see its Thai name, English name and rank.",
@@ -402,6 +421,11 @@ const I18N = {
     "phase.dealing": "Dealing",
     "phase.lead": "Lead",
     "phase.follow": "Follow",
+    "phase.bid": "Bid",
+    "bid.kicker": "Auction",
+    "bid.title": "How many piles will you take?",
+    "bid.waiting": "{seat} is bidding…",
+    "bid.help": "Bids so far total {total}. The last bidder may not make the total exactly 8.",
     "phase.resolving": "Resolving",
     "phase.roundEnd": "Round over",
     "phase.matchEnd": "Match over",
@@ -415,10 +439,14 @@ const I18N = {
     "coach.yourLead": "Your lead. {n} tiles in hand. Choose a single, a pair, a straight or a Soldier set.",
     "coach.aiLead": "{seat} is choosing a lead…",
     "coach.follow": "{seat} led {combo}. Select exactly {n} tile(s).",
-    "coach.followBeat": "{seat} led {combo}. You can beat it with {yours} — reveal and take the trick.",
+    "coach.followBeat": "{seat} played {combo}. You can beat it with {yours}. Show it to win the trick.",
     "coach.followNoBeat": "Your best {type} is {yours}, but {best} still wins. Send {n} tiles face-down and keep your strength.",
-    "coach.followNoCombo": "You have no legal {type}. Send {n} tiles face-down; an unrevealed set cannot win.",
-    "coach.followReady": "Your {combo} beats {best}. Reveal to capture {tiles} tiles, or play face-down to keep it.",
+    "coach.followNoCombo": "You have no legal {type}. Send {n} tiles face-down — hidden tiles cannot win.",
+    "coach.followHidden": "Send these {n} tiles face-down. Everyone sends hidden; the leader reveals first.",
+    "coach.showdownYou": "The leader has revealed. Show your set if it beats the table, or keep it hidden.",
+    "coach.showdownWait": "Showdown: {seat} is deciding whether to reveal.",
+    "coach.allHidden": "all hidden",
+    "coach.followReady": "Your {combo} beats {best}. Show it to win the trick and take the {tiles} tiles — or play face-down and keep them hidden.",
     "coach.followLose": "Your {combo} does not beat {best}. Play it face-down and save the tiles for a later lead.",
     "coach.invalidLead": "That mix is not a legal combination. A lead is 1 tile, 2 identical tiles, a 3–6 tile straight, or 3–5 identical Soldiers.",
     "coach.invalidFollow": "That selection is not a legal {type}. You may still send {n} tiles face-down.",
@@ -457,6 +485,10 @@ const I18N = {
     "toast.selectFirst": "Select the required tiles first.",
     "toast.notLegal": "That set cannot be revealed for this call.",
     "toast.copied": "Copied.",
+    "toast.handTidied": "Hand tidied back into an arc.",
+    "toast.modeNext": "Scoring changes apply to the next match.",
+    "toast.redraw": "Redraw {n}: this round scores ×{n}.",
+    "toast.chuan": "Chuan! Seven piles plus the last Soldier.",
     "toast.lang": "Language switched to English.",
     "summary.round": "Round {n} complete",
     "summary.match": "Match complete",
@@ -507,6 +539,13 @@ const I18N = {
     "rules.sourceBody": "The rules are modelled on the traditional Thai description compiled by Navee Angsuputiphant (2016), with the five-tile Ngoh Hoo included and the two- and three-player variants left out. Where the source is ambiguous, this studio documents its interpretation in docs/RULES.md.",
     "rules.digital": "Digital table conventions",
     "rules.digitalBody": "You may always send tiles face-down, even when you hold a legal set. A set must be revealed to compete. The leader must be able to form the called combination. The holder of the red General leads the opening trick; the winner of a trick leads the next.",
+    "rules.target": "Play to",
+    "rules.direction": "Turn order",
+    "rules.cw": "Clockwise",
+    "rules.ccw": "Counter-clockwise",
+    "rules.scoring": "Scoring",
+    "rules.pilesMode": "Most piles",
+    "rules.bidMode": "Bid piles",
     "rules.goal": "Goal",
     "rules.goalBody": "Capture piles of four tiles. Two piles at the end of a round is par (0 points). Every pile above or below par is one point; capturing all eight piles is a 16-point Chuan. The first player to the match target (20 points by default) wins.",
     "rules.equipment": "Equipment",
@@ -686,6 +725,8 @@ const I18N = {
     "dock.expand": "Expand hand dock",
     "dock.collapse": "Collapse hand dock",
     "version.reload": "Reload version",
+    "version.update": "Update",
+    "version.updateShort": "Update v{version}",
     "version.updateTo": "Update to v{version}",
     "version.autoUpdating": "New version v{version}. Updating…",
     "version.reloadHint": "Force reload the app and its scripts",
@@ -734,19 +775,32 @@ const I18N = {
     "hud.trick": "ตา",
     "hud.target": "เป้า",
     "hud.turn": "ตาเดิน",
+    "hud.call": "เรียก",
     "dock.select": "เลือกหมากของคุณ",
     "dock.leadTitle": "เลือกชุดที่จะนำ",
     "dock.leadHelp": "คลิกหมากบนโต๊ะ หรือกด “ใบ้” เพื่อขอคำแนะนำ",
     "dock.leadReady": "พร้อมนำ {combo} เลือกแล้ว {n} ตัว",
     "dock.followTitle": "{seat} เรียก {combo}",
-    "dock.followHelp": "เลือกให้ครบ {n} ตัว ถ้าเป็น {type} ที่ใหญ่กว่าบนโต๊ะจึงเปิดสู้ได้ ไม่เช่นนั้นต้องลงคว่ำ",
+    "dock.followHelp": "เลือกให้ครบ {n} ตัวตามชนิดที่เรียก ทุกคนส่งคว่ำก่อน แล้วคนเรียกจะเปิดก่อน",
+    "dock.followHidden": "ส่ง {n} ตัวนี้แบบคว่ำ คนเรียกจะเปิดก่อนเมื่อทุกคนส่งครบ",
+    "dock.showdown": "เปิดไพ่",
+    "dock.showdownTitle": "จะเปิดหรือเก็บคว่ำ?",
+    "dock.showdownCan": "{combo} ของคุณชนะ {best} เปิดเพื่อกินกองนี้",
+    "dock.showdownWait": "เปิดแล้วชนะเท่านั้น ถ้าสู้โต๊ะไม่ได้ให้เก็บคว่ำไว้",
     "dock.waiting": "{seat} กำลังคิด…",
     "dock.pick": "เลือก {n} ตัวสำหรับตานี้",
     "dock.selected": "เลือกแล้ว {n} ตัว",
     "actions.hint": "ใบ้",
     "actions.clear": "ล้าง",
     "actions.lead": "นำ",
-    "actions.reveal": "เปิดสู้",
+    "actions.reveal": "เปิดเพื่อชนะ",
+    "actions.showWin": "เปิดเพื่อชนะ",
+    "actions.redraw": "โละแจกใหม่",
+    "actions.chuan": "ช้วน",
+    "actions.sendHidden": "ส่งแบบคว่ำ",
+    "actions.keepHidden": "เก็บคว่ำไว้",
+    "actions.tidy": "จัดมือ",
+    "actions.revealLog": "เปิด",
     "actions.facedown": "ลงคว่ำ",
     "actions.title": "การกระทำ",
     "actions.newMatch": "แมตช์ใหม่",
@@ -783,11 +837,14 @@ const I18N = {
     "toast.soundTest": "ทดสอบเสียง — เสียงไม้กระทบ",
     "rankRef.open": "ลำดับศักดิ์",
     "rankRef.title": "ลำดับศักดิ์",
-    "rankRef.note": "ตี่ > บิน > ช้าง > กือ > เบ๊ > เผ่า > จุก · แดงชนะดำเมื่อศักดิ์เท่ากัน · ถ้าศักดิ์กับสีเท่ากัน คนที่ลงก่อนชนะ",
+    "rankRef.note": "ตี่ > สือ > เฉีย > กือ > แบ้ > เผ่า > จุก · แดงชนะดำเมื่อศักดิ์เท่ากัน · ถ้าศักดิ์กับสีเท่ากัน คนที่ลงก่อนชนะ",
     "rankRef.close": "ปิดลำดับศักดิ์",
     "rankRef.highest": "สูงสุด",
     "rankRef.lowest": "ต่ำสุด",
-    "camera.hint": "ลากเพื่อหมุน · เลื่อนเพื่อซูม · ลากขวาเพื่อเลื่อนฉาก",
+    "camera.hint": "ลากเพื่อหมุน · เลื่อนเพื่อซูม · ลากไพ่ในมือเพื่อจัดวาง",
+    "view.top": "มุมมองด้านบน",
+    "view.3d": "มุมมอง 3D",
+    "view.switch": "สลับมุมมองด้านบนและ 3D",
     "coach.title": "โค้ช",
     "coach.live": "สด",
     "score.title": "คะแนน",
@@ -795,6 +852,9 @@ const I18N = {
     "score.points": "แต้ม",
     "score.pile": "กอง",
     "score.piles": "กอง",
+    "pile.title": "{seat} · กอง {n}",
+    "pile.meta": "{n} ตัว · เปิด {up} ตัว",
+    "pile.hidden": "ไพ่คว่ำ",
     "inspector.title": "ตรวจหมาก",
     "inspector.hover": "ชี้",
     "inspector.empty": "ชี้หรือคลิกหมากเพื่อดูชื่อไทย ชื่ออังกฤษ และอันดับ",
@@ -804,7 +864,7 @@ const I18N = {
     "inspector.hidden": "หมากคว่ำ",
     "inspector.hiddenNote": "หน้าหมากถูกซ่อน ในเลี๊ยบตุ่ยหมากที่ไม่เปิดจะชนะไม่ได้ แม้จะมีศักดิ์ใหญ่กว่า",
     "inspector.selected": "เลือกเพื่อลง",
-    "inspector.note": "ลำดับศักดิ์: ตี่ > บิน > ช้าง > กือ > เบ๊ > เผ่า > จุก สีแดงชนะสีดำเมื่อศักดิ์เท่ากัน และถ้าศักดิ์กับสีเท่ากัน คนที่ลงก่อนชนะ",
+    "inspector.note": "ลำดับศักดิ์: ตี่ > สือ > เฉีย > กือ > แบ้ > เผ่า > จุก สีแดงชนะสีดำเมื่อศักดิ์เท่ากัน และถ้าศักดิ์กับสีเท่ากัน คนที่ลงก่อนชนะ",
     "handList.title": "หมากในมือ",
     "handList.hide": "ซ่อน",
     "handList.show": "แสดง",
@@ -839,20 +899,25 @@ const I18N = {
     "combo.triple.desc": "จุกสามตัวสีเดียวกัน",
     "combo.quad.desc": "จุกสี่ตัวสีเดียวกัน",
     "combo.quint.desc": "จุกทั้งห้าตัวสีเดียวกัน",
-    "combo.sahoo.desc": "ชุดเรียงสามตัว: ชุดใหญ่ (ตี่–บิน–ช้าง) หรือชุดเล็ก (กือ–เบ๊–เผ่า) สีเดียวกัน",
+    "combo.sahoo.desc": "ชุดเรียงสามตัว: ชุดใหญ่ (ตี่–สือ–เฉีย) หรือชุดเล็ก (กือ–แบ้–เผ่า) สีเดียวกัน",
     "combo.seehoo.desc": "ซาฮู้บวกตัวซ้ำหนึ่งตัว คู่ที่ซ้ำเป็นตัวตัดสิน",
     "combo.ngohoo.desc": "ซาฮู้ที่มีสองฐานันดรซ้ำ คู่สูงสุดตัดสินก่อน แล้วจึงคู่ถัดไป",
-    "combo.lakhoo.desc": "คู่กือ–เบ๊–เผ่าครบทั้งสามคู่ หกตัว สีเป็นตัวตัดสิน",
+    "combo.lakhoo.desc": "คู่กือ–แบ้–เผ่าครบทั้งสามคู่ หกตัว สีเป็นตัวตัดสิน",
     "rank.1": "จุก",
     "rank.2": "เผ่า",
-    "rank.3": "เบ๊",
+    "rank.3": "แบ้",
     "rank.4": "กือ",
-    "rank.5": "ช้าง",
-    "rank.6": "บิน",
+    "rank.5": "เฉีย",
+    "rank.6": "สือ",
     "rank.7": "ตี่",
     "phase.dealing": "แจกหมาก",
     "phase.lead": "นำ",
     "phase.follow": "ตาม",
+    "phase.bid": "ประเมิน",
+    "bid.kicker": "ประเมินกอง",
+    "bid.title": "คุณจะได้กี่กอง?",
+    "bid.waiting": "{seat} กำลังประเมิน…",
+    "bid.help": "ประเมินรวมแล้ว {total} คนสุดท้ายห้ามทำให้รวมเป็น 8 พอดี",
     "phase.resolving": "ตัดสิน",
     "phase.roundEnd": "จบรอบ",
     "phase.matchEnd": "จบแมตช์",
@@ -866,10 +931,14 @@ const I18N = {
     "coach.yourLead": "ตาคุณนำ เหลือ {n} ตัวในมือ เลือกเลี๊ยบ ตุ่ย ชุดเรียง หรือชุดจุก",
     "coach.aiLead": "{seat} กำลังเลือกชุดนำ…",
     "coach.follow": "{seat} เรียก {combo} เลือกให้ครบ {n} ตัว",
-    "coach.followBeat": "{seat} เรียก {combo} คุณสู้ได้ด้วย {yours} — เปิดเพื่อกินกองนี้",
+    "coach.followBeat": "{seat} ลง {combo} คุณชนะได้ด้วย {yours} เปิดไพ่เพื่อชนะตัก",
     "coach.followNoBeat": "{type} ที่ดีที่สุดของคุณคือ {yours} แต่ {best} ยังใหญ่กว่า ส่ง {n} ตัวลงคว่ำและเก็บของดีไว้",
-    "coach.followNoCombo": "คุณไม่มี {type} ที่ถูกกติกา ส่ง {n} ตัวลงคว่ำ หมากที่ไม่เปิดจะชนะไม่ได้",
-    "coach.followReady": "{combo} ของคุณชนะ {best} เปิดเพื่อกิน {tiles} ตัว หรือลงคว่ำเพื่อเก็บไว้",
+    "coach.followNoCombo": "คุณไม่มี {type} ที่ถูกกติกา ส่ง {n} ตัวลงคว่ำ — ไพ่ที่คว่ำชนะไม่ได้",
+    "coach.followHidden": "ส่ง {n} ตัวนี้แบบคว่ำ ทุกคนส่งคว่ำก่อน แล้วคนเรียกจะเปิดก่อน",
+    "coach.showdownYou": "คนเรียกเปิดแล้ว ถ้าชุดคุณชนะโต๊ะให้เปิด ไม่งั้นเก็บคว่ำไว้",
+    "coach.showdownWait": "เปิดไพ่: {seat} กำลังตัดสินใจจะเปิดหรือไม่",
+    "coach.allHidden": "ทุกคนคว่ำ",
+    "coach.followReady": "{combo} ของคุณชนะ {best} เปิดเพื่อชนะตักและเก็บ {tiles} ตัว หรือจะคว่ำไว้ก็ได้ แต่ไพ่ที่คว่ำชนะไม่ได้",
     "coach.followLose": "{combo} ของคุณไม่ชนะ {best} ลงคว่ำแล้วเก็บไว้ใช้ตอนนำ",
     "coach.invalidLead": "ชุดนี้ไม่ถูกกติกา การนำต้องเป็น 1 ตัว, 2 ตัวเหมือนกัน, ชุดเรียง 3–6 ตัว หรือจุกเหมือนกัน 3–5 ตัว",
     "coach.invalidFollow": "ชุดนี้ไม่ใช่ {type} ที่เรียก แต่ยังส่ง {n} ตัวลงคว่ำได้",
@@ -908,6 +977,10 @@ const I18N = {
     "toast.selectFirst": "เลือกหมากให้ครบก่อน",
     "toast.notLegal": "ชุดนี้เปิดสู้กับตานี้ไม่ได้",
     "toast.copied": "คัดลอกแล้ว",
+    "toast.handTidied": "จัดมือกลับเป็นพัดแล้ว",
+    "toast.modeNext": "การคิดแต้มใหม่จะมีผลในแมตช์ถัดไป",
+    "toast.redraw": "โละครั้งที่ {n}: รอบนี้คิดแต้มคูณ {n}",
+    "toast.chuan": "ช้วน! เจ็ดกองกับจุกตัวสุดท้าย",
     "toast.lang": "เปลี่ยนภาษาเป็นไทยแล้ว",
     "summary.round": "จบรอบที่ {n}",
     "summary.match": "จบแมตช์",
@@ -958,10 +1031,17 @@ const I18N = {
     "rules.sourceBody": "กติกาอิงคำอธิบายไทยโดย นาวี อ. (2559) โดยเพิ่มห้าฮู้และตัดรูปแบบสองกับสามผู้เล่นออก หากต้นฉบับกำกวม สตูดิโอนี้อธิบายการตีความไว้ใน docs/RULES.md",
     "rules.digital": "ข้อตกลงของโต๊ะดิจิทัล",
     "rules.digitalBody": "ส่งหมากคว่ำได้เสมอแม้จะมีชุดถูกกติกา ชุดต้องเปิดจึงจะแข่งขันได้ ผู้นำต้องสร้างชุดที่เรียกได้ คนถือตี่แดงนำตแรก และผู้ชนะตาก่อนนำตาถัดไป",
+    "rules.target": "เล่นถึง",
+    "rules.direction": "ทิศทางวน",
+    "rules.cw": "ตามเข็มนาฬิกา",
+    "rules.ccw": "ทวนเข็มนาฬิกา",
+    "rules.scoring": "การคิดแต้ม",
+    "rules.pilesMode": "กองมากที่สุด",
+    "rules.bidMode": "ประเมินกอง",
     "rules.goal": "เป้าหมาย",
     "rules.goalBody": "เก็บกองละสี่ตัว สองกองเมื่อจบรอบคือทุน (0 แต้ม) เกินหรือขาดกองละหนึ่งแต้ม และแปดกองคือช้วน 16 แต้ม ผู้ที่ถึงเป้าแมตช์ก่อน (ค่าเริ่มต้น 20 แต้ม) ชนะ",
     "rules.equipment": "อุปกรณ์",
-    "rules.equipmentBody": "หมากรุกจีน 32 ตัว แดง 16 ดำ 16 แต่ละสีมีตี่ 1 บิน 2 ช้าง 2 กือ 2 เบ๊ 2 เผ่า 2 จุก 5 ผู้เล่นสี่คนได้คนละแปดตัว",
+    "rules.equipmentBody": "หมากรุกจีน 32 ตัว แดง 16 ดำ 16 แต่ละสีมีตี่ 1 สือ 2 เฉีย 2 กือ 2 แบ้ 2 เผ่า 2 จุก 5 ผู้เล่นสี่คนได้คนละแปดตัว",
     "rules.hierarchy": "ลำดับศักดิ์",
     "rules.color": "สีและการเสมอ",
     "rules.colorBody": "ศักดิ์เท่ากัน แดงชนะดำ ถ้าทั้งศักดิ์และสีเท่ากัน คนที่ลงก่อนรักษากองไว้ ชุดที่เหมือนกันทุกประการและลงทีหลังจะแซงไม่ได้",
@@ -1137,6 +1217,8 @@ const I18N = {
     "dock.expand": "ขยายแถบมือ",
     "dock.collapse": "ย่อแถบมือ",
     "version.reload": "โหลดเวอร์ชันใหม่",
+    "version.update": "อัปเดต",
+    "version.updateShort": "อัปเดต v{version}",
     "version.updateTo": "อัปเดตเป็น v{version}",
     "version.autoUpdating": "มีเวอร์ชันใหม่ v{version} กำลังอัปเดต…",
     "version.reloadHint": "บังคับโหลดแอปและสคริปต์ใหม่",
@@ -1198,9 +1280,19 @@ function rankName(power, lang = LANG) {
   return lang === "th" ? rank.th : rank.en;
 }
 
+function rankReading(rank) {
+  if (!rank) return "";
+  return rank.thRed && rank.thBlack ? `${rank.thRed} / ${rank.thBlack}` : rank.th;
+}
+
 function tileName(tile, lang = LANG) {
   if (!tile) return "";
-  return rankName(tile.power, lang);
+  const rank = RANK_BY_ID[tile.rank] || RANK_BY_POWER[tile.power];
+  if (!rank) return "";
+  if (lang === "th") {
+    return (tile.color === "r" ? rank.thRed : rank.thBlack) || rank.th;
+  }
+  return rank.en;
 }
 
 function colorName(color, lang = LANG) {
@@ -1516,7 +1608,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "mahogany", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles" });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -1589,6 +1681,11 @@ function isBotSeat(seat) {
   return seat !== 0;
 }
 
+function nextSeat(seat) {
+  const dir = state?.direction === "ccw" ? -1 : 1;
+  return (seat + dir + TABLE_SEATS) % TABLE_SEATS;
+}
+
 function isLocalSeat(seat) {
   return seat === MY_SEAT;
 }
@@ -1613,6 +1710,7 @@ function makeState(seed) {  return {
     turn: 0,
     hands: [[], [], [], []],
     captures: [[], [], [], []],
+    captureHidden: [[], [], [], []],
     center: [],
     lead: null,
     best: null,
@@ -1620,6 +1718,13 @@ function makeState(seed) {  return {
     scores: [0, 0, 0, 0],
     roundPoints: [0, 0, 0, 0],
     target: 20,
+    direction: "cw",
+    mode: "piles",
+    multiplier: 1,
+    redraws: 0,
+    bids: null,
+    bidOrder: null,
+    bidTurn: 0,
     history: [],
     log: [],
     snapshot: null,
@@ -1659,6 +1764,9 @@ function serializableState(source = state) {
   const copy = clone(base);
   copy.hands = source.hands.map((hand) => hand.map((tile) => typeof tile === "string" ? tile : tile.id));
   copy.captures = source.captures.map((pile) => pile.map((tile) => typeof tile === "string" ? tile : tile.id));
+  copy.captureHidden = [0, 1, 2, 3].map((seat) => (
+    (source.captures[seat] || []).map((_, index) => Boolean(source.captureHidden?.[seat]?.[index]))
+  ));
   copy.center = source.center.map((entry) => ({
     seat: entry.seat,
     revealed: Boolean(entry.revealed),
@@ -1709,7 +1817,10 @@ function loadPrefs() {
   } catch { prefs = { ...DEFAULT_PREFS }; }
   LANG = prefs.lang === "th" ? "th" : "en";
   if (!FONT_SIZES.some((entry) => entry.id === prefs.fontSize)) prefs.fontSize = "md";
-  if (!THEMES.some((entry) => entry.id === prefs.theme)) prefs.theme = "mahogany";
+  if (!THEMES.some((entry) => entry.id === prefs.theme)) prefs.theme = "daybreak";
+  if (![20, 50, 100].includes(Number(prefs.target))) prefs.target = 20;
+  if (!["cw", "ccw"].includes(prefs.direction)) prefs.direction = "cw";
+  if (!["piles", "bid"].includes(prefs.mode)) prefs.mode = "piles";
 }
 
 function loadStats() {
@@ -1732,7 +1843,7 @@ function loadMatch() {
     const game = parsed.game;
     if (!Array.isArray(game.hands) || game.hands.length !== 4) return false;
     if (!Array.isArray(game.scores) || game.scores.length !== 4) return false;
-    if (!["lead", "follow", "roundEnd", "matchEnd"].includes(game.phase)) return false;
+    if (!["lead", "follow", "showdown", "roundEnd", "matchEnd"].includes(game.phase)) return false;
     const tileIds = new Set(DECK.map((tile) => tile.id));
     for (const hand of game.hands) {
       if (!Array.isArray(hand) || hand.length > 8) return false;
@@ -1742,6 +1853,9 @@ function loadMatch() {
     state = { ...makeState(game.seed), ...game, fast: false };
     state.hands = state.hands.map((hand) => hand.map((id) => TILE_BY_ID[id]).filter(Boolean));
     state.captures = (state.captures || [[], [], [], []]).map((pile) => pile.map((id) => TILE_BY_ID[id]).filter(Boolean));
+    state.captureHidden = [0, 1, 2, 3].map((seat) => (
+      (state.captures[seat] || []).map((_, index) => Boolean(game.captureHidden?.[seat]?.[index]))
+    ));
     state.center = (state.center || []).map((entry) => ({
       ...entry,
       tiles: entry.tiles.map((id) => TILE_BY_ID[id]).filter(Boolean),
@@ -1792,6 +1906,121 @@ function currentSeatName(seat) {
   return seatName(seat);
 }
 
+function handHasHigh(hand) {
+  return (hand || []).some((tile) => tile.power >= 5 && (tile.color === "r" || tile.power >= 6));
+}
+
+function canRedraw(seat) {
+  if (!state || !["lead", "bid"].includes(state.phase)) return false;
+  if (state.trick !== 0 && state.phase !== "bid") return false;
+  if (state.center.length || state.lead) return false;
+  if (state.phase === "bid" && state.bidTurn > 0) return false;
+  if (state.phase === "lead" && state.bids?.some((value) => Number.isInteger(value))) return false;
+  const hand = state.hands?.[seat] || [];
+  return hand.length === 8 && !handHasHigh(hand);
+}
+
+function applyRedraw(seat) {
+  if (!canRedraw(seat)) return false;
+  state.redraws = (state.redraws || 0) + 1;
+  state.multiplier = 1 + state.redraws;
+  state.log.push({ kind: "redraw", trick: 0, seat, count: state.redraws });
+  audio?.play("shuffle", seat);
+  toast(t("toast.redraw", { n: state.redraws + 1 }), "gold");
+  dealRound(seat);
+  return true;
+}
+
+function canClaimChuan(seat) {
+  if (!state || state.phase !== "follow" || state.turn !== seat) return false;
+  if (state.center.length !== 3) return false;
+  const hand = state.hands?.[seat] || [];
+  return hand.length === 1 && hand[0].power === 1 && (state.captures?.[seat]?.length || 0) === 28;
+}
+
+function claimChuan(seat) {
+  if (!canClaimChuan(seat)) return false;
+  const tile = state.hands[seat][0];
+  state.hands[seat] = [];
+  state.center.push({ seat, tiles: [tile], combo: null, revealed: true, chuan: true });
+  state.best = { seat, combo: { type: "single", count: 1, score: [99, 1], tiles: [tile] } };
+  state.log.push({ kind: "chuan", trick: state.trick + 1, seat });
+  toast(t("toast.chuan"), "gold");
+  state.snapshot = null;
+  resolveTrick();
+  return true;
+}
+
+function bidSum() {
+  return (state?.bids || []).reduce((sum, value) => sum + (Number.isInteger(value) ? value : 0), 0);
+}
+
+function bidForbidden() {
+  if (!state?.bidOrder || state.bidTurn !== 3) return null;
+  const sum = bidSum();
+  const value = 8 - sum;
+  return value >= 0 && value <= 8 ? value : null;
+}
+
+function beginBidPhase() {
+  if (!state) return;
+  state.phase = "bid";
+  state.bids = [null, null, null, null];
+  state.bidOrder = [];
+  let cursor = state.leader;
+  for (let step = 0; step < TABLE_SEATS; step += 1) {
+    state.bidOrder.push(cursor);
+    cursor = nextSeat(cursor);
+  }
+  state.bidTurn = 0;
+  state.turn = state.bidOrder[0];
+  state.center = [];
+  state.lead = null;
+  state.best = null;
+  renderAll();
+  saveMatch();
+  if (scene) scene.sync(state);
+  if (isBotSeat(state.turn)) scheduleAI(700);
+}
+
+function placeBid(seat, value) {
+  if (!state || state.phase !== "bid" || state.turn !== seat) return false;
+  if (!Number.isInteger(value) || value < 0 || value > 8) return false;
+  if (state.bids[seat] !== null) return false;
+  if (state.bidTurn === 3 && bidForbidden() === value) return false;
+  state.bids[seat] = value;
+  state.bidTurn += 1;
+  state.log.push({ kind: "bid", trick: 0, seat, value });
+  if (state.bidTurn >= TABLE_SEATS) {
+    state.phase = "lead";
+    state.leader = state.bidOrder[0];
+    state.turn = state.leader;
+    renderAll();
+    saveMatch();
+    if (scene) scene.sync(state);
+    if (isBotSeat(state.turn)) scheduleAI(700);
+    return true;
+  }
+  state.turn = state.bidOrder[state.bidTurn];
+  renderAll();
+  saveMatch();
+  if (scene) scene.sync(state);
+  if (isBotSeat(state.turn)) scheduleAI(600);
+  return true;
+}
+
+function aiBid(seat) {
+  if (!state || state.phase !== "bid" || state.turn !== seat) return;
+  const hand = state.hands[seat] || [];
+  const strength = hand.reduce((sum, tile) => sum + (tile.power >= 5 ? 2 : tile.power >= 4 ? 1 : 0), 0);
+  let value = Math.max(0, Math.min(8, Math.round(strength / 2)));
+  if (state.bidTurn === 3) {
+    const forbidden = bidForbidden();
+    if (value === forbidden) value = value >= 8 ? 7 : value + 1;
+  }
+  placeBid(seat, value);
+}
+
 function beginTrick() {
   if (!state) return;
   clearTimeout(actionTimer);
@@ -1825,14 +2054,17 @@ function scheduleAI(delay = 1000) {
   clearTimeout(actionTimer);
   if (!state) return;
   if (!isBotSeat(state.turn)) return;
-  if (!["lead", "follow"].includes(state.phase)) return;
+  if (!["lead", "follow", "showdown", "bid"].includes(state.phase)) return;
   const token = ++actionToken;
   const seat = state.turn;
   actionTimer = setTimeout(() => {
     if (!state || token !== actionToken) return;
-    if (!["lead", "follow"].includes(state.phase) || state.turn !== seat) return;
+    if (!["lead", "follow", "showdown", "bid"].includes(state.phase) || state.turn !== seat) return;
     if (!isBotSeat(seat)) return;
-    if (state.phase === "lead") aiLead(seat);
+    if (state.phase === "bid") aiBid(seat);
+    else if (canClaimChuan(seat)) claimChuan(seat);
+    else if (state.phase === "lead") aiLead(seat);
+    else if (state.phase === "showdown") aiShowdown(seat);
     else aiFollow(seat);
   }, state.fast ? 5 : delay);
 }
@@ -1852,6 +2084,7 @@ function dealRound(leaderHint = null) {
     return tags;
   });
   state.captures = [[], [], [], []];
+  state.captureHidden = [[], [], [], []];
   state.center = [];
   state.lead = null;
   state.best = null;
@@ -1863,6 +2096,9 @@ function dealRound(leaderHint = null) {
   state.handCounts = [8, 8, 8, 8];
   state.winner = null;
   state.snapshot = null;
+  state.bids = null;
+  state.bidOrder = null;
+  state.bidTurn = 0;
 
   if (leaderHint !== null) {
     state.leader = leaderHint;
@@ -1882,7 +2118,8 @@ function dealRound(leaderHint = null) {
     if (scene) scene.flipHumanHand(state);
     setTimeout(() => {
       if (!state || state.phase !== "dealing") return;
-      beginTrick();
+      if (state.mode === "bid") beginBidPhase();
+      else beginTrick();
       toast(t("toast.dealt", { seat: seatName(state.leader) }));
     }, state.fast ? 10 : 380);
   };
@@ -1907,7 +2144,14 @@ function beginMatch(options = {}) {
   state.log = [];
   state.lastRound = null;
   state.snapshot = null;
-  state.target = options.target ?? 20;
+  state.target = options.target ?? prefs.target ?? 20;
+  state.direction = prefs.direction || "cw";
+  state.mode = prefs.mode || "piles";
+  state.multiplier = 1;
+  state.redraws = 0;
+  state.bids = null;
+  state.bidOrder = null;
+  state.bidTurn = 0;
   hideAllModals();
   renderAll();
   dealRound();
@@ -1928,6 +2172,9 @@ function startNextRound() {
   state.dealer = (state.dealer + 1) % 4;
   state.target = state.target || 20;
   state.scores = state.scores.slice();
+  state.multiplier = 1;
+  state.redraws = 0;
+  state.bids = null;
   state.roundPoints = [0, 0, 0, 0];
   state.lastRound = null;
   state.winner = null;
@@ -1951,13 +2198,13 @@ function leadTrick(seat, tileIds, comboOverride = null) {
 
   state.hands[seat] = hand.filter((tile) => !tiles.includes(tile));
   state.lead = { seat, combo };
-  state.best = { seat, combo };
-  state.center.push({ seat, tiles, combo, revealed: true });
+  state.best = null;
+  state.center.push({ seat, tiles, combo, revealed: false });
   state.selected = [];
-  state.turn = (seat + 1) % 4;
+  state.turn = nextSeat(seat);
   state.phase = "follow";
   state.handCounts = handCounts();
-  state.log.push({ kind: "lead", trick: state.trick, seat, combo: clone(combo) });
+  state.log.push({ kind: "lead", trick: state.trick, seat, callType: combo.type, callCount: combo.count });
   audio?.play("clack", seat);
   renderAll();
   saveMatch();
@@ -1975,16 +2222,13 @@ function submitPlay(seat, tileIds, reveal) {
   if (tiles.length !== state.lead.combo.count || tiles.length !== tileIds.length) return false;
 
   const combo = detectCombo(tiles);
-  const legalType = combo && combo.type === state.lead.combo.type;
-  const canReveal = Boolean(legalType && beats(combo, state.best.combo));
-  const shown = Boolean(reveal && canReveal);
+  const shown = false;
 
   state.hands[seat] = hand.filter((tile) => !tiles.includes(tile));
-  state.center.push({ seat, tiles, combo, revealed: shown });
-  if (shown) state.best = { seat, combo };
+  state.center.push({ seat, tiles, combo, revealed: false });
   state.selected = [];
   state.handCounts = handCounts();
-  state.turn = (seat + 1) % 4;
+  state.turn = nextSeat(seat);
   state.log.push({ kind: shown ? "challenge" : "hidden", trick: state.trick, seat, combo: clone(combo || null), revealed: shown });
   audio?.play(shown ? "flip" : "clack", seat);
   renderAll();
@@ -1993,13 +2237,96 @@ function submitPlay(seat, tileIds, reveal) {
   coachTick();
 
   if (state.center.length === 4) {
-    resolveTrick();
+    beginShowdown();
   } else if (!isBotSeat(state.turn)) {
     // A local or remote human is next; wait for their action.
     coachTick();
   } else {
     scheduleAI(900);
   }
+  return true;
+}
+
+function showdownCanBeat(seat) {
+  if (!state?.best || !state?.center) return false;
+  const entry = state.center.find((item) => item.seat === seat);
+  if (!entry?.combo) return false;
+  return entry.combo.type === state.best.combo.type && beats(entry.combo, state.best.combo);
+}
+
+function beginShowdown() {
+  if (!state || !state.lead || !state.center.length) return;
+  const leaderEntry = state.center.find((entry) => entry.seat === state.lead.seat);
+  if (!leaderEntry) return;
+  leaderEntry.revealed = true;
+  state.best = { seat: leaderEntry.seat, combo: leaderEntry.combo };
+  state.phase = "showdown";
+  state.showdownQueue = [];
+  let cursor = leaderEntry.seat;
+  for (let step = 0; step < 3; step += 1) {
+    cursor = nextSeat(cursor);
+    state.showdownQueue.push(cursor);
+  }
+  state.log.push({ kind: "showdown", trick: state.trick, seat: leaderEntry.seat, combo: clone(leaderEntry.combo) });
+  audio?.play("flip", leaderEntry.seat);
+  advanceShowdown();
+}
+
+function advanceShowdown() {
+  if (!state || state.phase !== "showdown") return;
+  if (!state.showdownQueue?.length) {
+    resolveTrick();
+    return;
+  }
+  state.turn = state.showdownQueue[0];
+  if (!showdownCanBeat(state.turn)) {
+    const entry = state.center.find((item) => item.seat === state.turn);
+    state.log.push({
+      kind: "hidden",
+      trick: state.trick,
+      seat: state.turn,
+      combo: entry?.combo ? clone(entry.combo) : null,
+      revealed: false
+    });
+    state.showdownQueue.shift();
+    renderAll();
+    saveMatch();
+    if (scene) scene.sync(state);
+    const token = ++actionToken;
+    setTimeout(() => {
+      if (token !== actionToken || state?.phase !== "showdown") return;
+      advanceShowdown();
+    }, state.fast ? 5 : 420);
+    return;
+  }
+  renderAll();
+  saveMatch();
+  if (scene) scene.sync(state);
+  coachTick();
+  if (isBotSeat(state.turn)) scheduleAI(900);
+}
+
+function showdown(seat, reveal) {
+  if (!state || state.phase !== "showdown" || state.turn !== seat) return false;
+  const entry = state.center.find((item) => item.seat === seat);
+  if (!entry) return false;
+  const shown = Boolean(reveal && showdownCanBeat(seat));
+  entry.revealed = shown;
+  if (shown) state.best = { seat, combo: entry.combo };
+  state.log.push({
+    kind: shown ? "challenge" : "hidden",
+    trick: state.trick,
+    seat,
+    combo: entry.combo ? clone(entry.combo) : null,
+    revealed: shown
+  });
+  audio?.play(shown ? "flip" : "clack", seat);
+  state.showdownQueue.shift();
+  renderAll();
+  saveMatch();
+  if (scene) scene.sync(state);
+  if (state.showdownQueue.length) advanceShowdown();
+  else resolveTrick();
   return true;
 }
 
@@ -2010,8 +2337,10 @@ function resolveTrick() {
   const winningCombo = state.best.combo;
   const captured = state.center.reduce((sum, entry) => sum + entry.tiles.length, 0);
   const allTiles = state.center.flatMap((entry) => entry.tiles);
+  const captureFlags = state.center.flatMap((entry) => entry.tiles.map(() => Boolean(entry.revealed)));
   const localEntry = state.center.find((entry) => entry.seat === MY_SEAT);
   state.captures[winner].push(...allTiles);
+  state.captureHidden[winner].push(...captureFlags);
   state.lastTrick = {
     winner,
     combo: clone(winningCombo),
@@ -2060,7 +2389,14 @@ function endRound() {
   if (!state) return;
   clearTimeout(actionTimer);
   const piles = state.captures.map((pile) => scoredPilesFromTiles(pile));
-  const points = piles.map((count) => scorePiles(count));
+  const multiplier = state.multiplier || 1;
+  const points = state.mode === "bid" && state.bids?.every((value) => Number.isInteger(value))
+    ? piles.map((count, seat) => {
+      const bid = state.bids[seat];
+      const base = count === bid ? bid + (bid === 0 ? 3 : 5) : -(Math.abs(count - bid));
+      return base * multiplier;
+    })
+    : piles.map((count) => scorePiles(count) * multiplier);
   state.roundPoints = points;
   state.scores = state.scores.map((score, index) => score + points[index]);
   state.phase = "roundEnd";
@@ -2160,13 +2496,18 @@ function aiLead(seat) {
   leadTrick(seat, combo.tiles.map((tile) => tile.id));
 }
 
+function aiShowdown(seat) {
+  if (!state || state.phase !== "showdown" || state.turn !== seat) return;
+  showdown(seat, showdownCanBeat(seat));
+}
+
 function aiFollow(seat) {
   if (!state || state.phase !== "follow" || state.turn !== seat || !state.lead) return;
-  const decision = chooseFollow(state.hands[seat], state.lead.combo, state.best.combo, {
+  const decision = chooseFollow(state.hands[seat], state.lead.combo, state.lead.combo, {
     playsLeft: 4 - state.center.length,
     deterministic: false
   });
-  submitPlay(seat, decision.tiles.map((tile) => tile.id), decision.reveal);
+  submitPlay(seat, decision.tiles.map((tile) => tile.id), false);
 }
 
 /* --------------------------------------------------------------------------
@@ -2196,28 +2537,31 @@ function humanLead() {
 }
 
 function humanFollow(reveal) {
-  if (!state || state.phase !== "follow" || state.turn !== MY_SEAT || !state.lead) return;
+  if (!state) return;
+  if (state.phase === "showdown") {
+    if (state.turn !== MY_SEAT) return;
+    if (isClient()) {
+      sendNetAction("show", [], Boolean(reveal));
+      return;
+    }
+    showdown(MY_SEAT, Boolean(reveal));
+    return;
+  }
+  if (state.phase !== "follow" || state.turn !== MY_SEAT || !state.lead) return;
   const tiles = selectedTiles();
   if (tiles.length !== state.lead.combo.count) {
     toast(t("coach.selectMore", { n: state.lead.combo.count, m: tiles.length }), "wine");
     return;
   }
-  if (reveal) {
-    const combo = detectCombo(tiles);
-    if (!combo || combo.type !== state.lead.combo.type || !beats(combo, state.best.combo)) {
-      toast(t("toast.notLegal"), "wine");
-      return;
-    }
-  }
   if (isClient()) {
-    if (sendNetAction("follow", tiles.map((tile) => tile.id), Boolean(reveal))) {
+    if (sendNetAction("follow", tiles.map((tile) => tile.id), false)) {
       state.selected = [];
       renderAll();
       scene?.setSelected([]);
     }
     return;
   }
-  submitPlay(MY_SEAT, tiles.map((tile) => tile.id), reveal);
+  submitPlay(MY_SEAT, tiles.map((tile) => tile.id), false);
 }
 
 function selectedTiles() {
@@ -2263,7 +2607,7 @@ function applyHint() {
     state.selected = combo.tiles.map((tile) => tile.id);
     toast(t("toast.hint"), "jade");
   } else {
-    const recommendation = recommendedFollow(state.hands[MY_SEAT], state.lead.combo, state.best.combo);
+    const recommendation = recommendedFollow(state.hands[MY_SEAT], state.lead.combo, state.lead.combo);
     if (recommendation.kind === "beat") {
       state.selected = recommendation.combo.tiles.map((tile) => tile.id);
     } else {
@@ -2326,11 +2670,17 @@ function coachMessage() {
     return t("coach.aiLead", { seat: seatName(state.turn) });
   }
 
+  if (state.phase === "showdown") {
+    return state.turn === MY_SEAT
+      ? t("coach.showdownYou")
+      : t("coach.showdownWait", { seat: seatName(state.turn) });
+  }
   if (state.phase === "follow") {
     const lead = state.lead;
     if (!lead) return t("coach.welcome");
+    const call = `${comboName(lead.combo.type)} ×${lead.combo.count}`;
     if (state.turn !== MY_SEAT) {
-      return t("coach.follow", { seat: seatName(state.turn), combo: comboSummary(lead.combo), n: lead.combo.count });
+      return t("coach.follow", { seat: seatName(state.turn), combo: call, n: lead.combo.count });
     }
     const needed = lead.combo.count;
     const selected = selectedTiles();
@@ -2341,10 +2691,7 @@ function coachMessage() {
     if (!combo || combo.type !== lead.combo.type) {
       return t("coach.followNoCombo", { type: comboName(lead.combo.type), n: needed });
     }
-    if (beats(combo, state.best.combo)) {
-      return t("coach.followReady", { combo: comboSummary(combo), best: comboSummary(state.best.combo), tiles: needed * 4 });
-    }
-    return t("coach.followLose", { combo: comboSummary(combo), best: comboSummary(state.best.combo) });
+    return t("coach.followHidden", { n: needed });
   }
   return t("coach.welcome");
 }
@@ -2355,9 +2702,8 @@ function coachMeta() {
   const left = counts[MY_SEAT];
   const pieces = [`${t("coach.tilesLeft", { n: left })}`];
   if (state.phase === "follow" && state.lead) {
-    const bestSeat = state.best?.seat;
     pieces.push(`${t("hud.trick")} ${state.trick} · ${comboName(state.lead.combo.type)} ×${state.lead.combo.count}`);
-    if (bestSeat !== undefined) pieces.push(`${seatName(bestSeat)}: ${comboSummary(state.best.combo)}`);
+    pieces.push(t("coach.allHidden"));
   } else if (state.phase === "lead" && state.turn === MY_SEAT) {
     pieces.push(t("coach.youLead"));
   } else if (state.phase === "lead") {
@@ -2506,6 +2852,7 @@ function renderAll() {
   const dock = $("#handDock");
   if (dock) dock.classList.toggle("is-turn", state.turn === MY_SEAT && ["lead", "follow"].includes(state.phase));
   renderNetChrome();
+  maybePublishHandLayout();
 }
 
 function renderHUD() {
@@ -2517,15 +2864,22 @@ function renderHUD() {
   else if (state.phase === "roundEnd") turn.textContent = t("phase.roundEnd");
   else if (state.phase === "matchEnd") turn.textContent = t("phase.matchEnd");
   else if (state.phase === "resolving") turn.textContent = t("phase.resolving");
+  else if (state.phase === "bid") turn.textContent = t("phase.bid");
   else turn.textContent = seatName(state.turn);
   turn.dataset.seat = state.turn;
+  const call = $("#callChip");
+  if (call) {
+    const showCall = Boolean(state.lead && ["follow", "showdown"].includes(state.phase));
+    call.hidden = !showCall;
+    if (showCall) call.textContent = `${t("hud.call")}: ${comboName(state.lead.combo.type)} ×${state.lead.combo.count}`;
+  }
 }
 
 function renderScoreboard() {
   const board = $("#scoreboard");
   if (!board) return;
   board.innerHTML = SEATS.map((seat) => {
-    const active = ["lead", "follow", "resolving"].includes(state.phase) && state.turn === seat.id;
+    const active = ["lead", "follow", "showdown", "bid", "resolving"].includes(state.phase) && state.turn === seat.id;
     const piles = scoredPilesFromTiles(state.captures[seat.id]);
     const profile = SEAT_PROFILES?.[seat.id];
     const tag = isBotSeat(seat.id) ? `<span class="seat-tag bot">${escapeHTML(t("net.botBadge"))}</span>`
@@ -2571,7 +2925,38 @@ function renderSelection() {
   const facedownBtn = $("#facedownBtn");
   const hintBtn = $("#hintBtn");
   const clearBtn = $("#clearBtn");
+  const tidyBtn = $("#tidyHandBtn");
+  if (tidyBtn) tidyBtn.hidden = !scene?.hasCustomHand?.();
+  const redrawBtn = $("#redrawBtn");
+  if (redrawBtn) redrawBtn.hidden = !canRedraw(MY_SEAT);
+  const chuanBtn = $("#chuanBtn");
+  if (chuanBtn) chuanBtn.hidden = !canClaimChuan(MY_SEAT);
+  const bidRow = $("#bidRow");
+  if (bidRow) bidRow.hidden = true;
   if (!title) return;
+
+  if (state.phase === "bid") {
+    const humanBidTurn = state.turn === MY_SEAT;
+    const forbidden = humanBidTurn && state.bidTurn === 3 ? bidForbidden() : null;
+    kicker.textContent = t("bid.kicker");
+    title.textContent = humanBidTurn ? t("bid.title") : t("bid.waiting", { seat: seatName(state.turn) });
+    detail.textContent = t("bid.help", { total: bidSum() });
+    pips.innerHTML = "";
+    leadBtn.hidden = true;
+    revealBtn.hidden = true;
+    facedownBtn.hidden = true;
+    hintBtn.disabled = true;
+    clearBtn.disabled = true;
+    if (bidRow) {
+      bidRow.hidden = !humanBidTurn;
+      if (humanBidTurn) {
+        bidRow.innerHTML = Array.from({ length: 9 }, (_, value) => (
+          `<button class="bid-btn" type="button" data-bid="${value}" ${value === forbidden ? "disabled" : ""}>${value}</button>`
+        )).join("");
+      }
+    }
+    return;
+  }
 
   const humanTurn = state.turn === MY_SEAT && ["lead", "follow"].includes(state.phase);
   hintBtn.disabled = !humanTurn;
@@ -2615,6 +3000,25 @@ function renderSelection() {
     return;
   }
 
+  if (state.phase === "showdown") {
+    const canShow = humanTurn && showdownCanBeat(MY_SEAT);
+    const entry = state.center.find((item) => item.seat === MY_SEAT);
+    kicker.textContent = t("dock.showdown");
+    title.textContent = canShow ? t("dock.showdownTitle") : t("dock.waiting", { seat: seatName(state.turn) });
+    detail.textContent = canShow && entry?.combo && state.best
+      ? t("dock.showdownCan", { combo: comboSummary(entry.combo), best: comboSummary(state.best.combo) })
+      : t("dock.showdownWait");
+    pips.innerHTML = "";
+    leadBtn.hidden = true;
+    revealBtn.hidden = !canShow;
+    revealBtn.disabled = !canShow;
+    revealBtn.textContent = t("actions.showWin");
+    facedownBtn.hidden = !humanTurn;
+    facedownBtn.disabled = !humanTurn;
+    facedownBtn.textContent = t("actions.keepHidden");
+    return;
+  }
+
   if (!humanTurn) {
     kicker.textContent = t("phase.follow");
     title.textContent = t("dock.waiting", { seat: seatName(state.turn) });
@@ -2648,27 +3052,16 @@ function renderSelection() {
   if (state.phase === "follow" && state.lead) {
     const needed = state.lead.combo.count;
     const selected = selectedTiles();
-    const combo = detectCombo(selected);
-    const legal = combo && combo.type === state.lead.combo.type;
-    const canBeat = legal && beats(combo, state.best.combo);
     kicker.textContent = t("dock.select");
-    title.textContent = t("dock.followTitle", { seat: seatName(state.lead.seat), combo: comboSummary(state.lead.combo) });
-    if (selected.length !== needed) {
-      detail.textContent = t("dock.followHelp", { n: needed, type: comboName(state.lead.combo.type) });
-    } else if (!legal) {
-      detail.textContent = t("coach.followNoCombo", { type: comboName(state.lead.combo.type), n: needed });
-    } else if (canBeat) {
-      detail.textContent = t("coach.followReady", { combo: comboSummary(combo), best: comboSummary(state.best.combo), tiles: needed * 4 });
-    } else {
-      detail.textContent = t("coach.followLose", { combo: comboSummary(combo), best: comboSummary(state.best.combo) });
-    }
+    title.textContent = t("dock.followTitle", { seat: seatName(state.lead.seat), combo: `${comboName(state.lead.combo.type)} ×${state.lead.combo.count}` });
+    detail.textContent = selected.length !== needed
+      ? t("dock.followHelp", { n: needed, type: comboName(state.lead.combo.type) })
+      : t("dock.followHidden", { n: needed });
     leadBtn.hidden = true;
-    revealBtn.hidden = false;
+    revealBtn.hidden = true;
     facedownBtn.hidden = false;
-    revealBtn.disabled = !canBeat;
     facedownBtn.disabled = selected.length !== needed;
-    revealBtn.textContent = t("actions.reveal");
-    facedownBtn.textContent = t("actions.facedown");
+    facedownBtn.textContent = t("actions.sendHidden");
     pips.innerHTML = Array.from({ length: needed }, (_, index) => `<i class="${index < selected.length ? "on" : ""}"></i>`).join("");
   }
 }
@@ -2723,6 +3116,32 @@ function hideTileTip() {
   clearTimeout(tileTipTimer);
   const tip = $("#tileTip");
   if (tip) tip.hidden = true;
+}
+
+function openPileModal(seat, pileIndex) {
+  if (!state || !Number.isInteger(seat)) return;
+  const pile = state.captures?.[seat] || [];
+  const start = Math.max(0, pileIndex) * 4;
+  const tiles = pile.slice(start, start + 4);
+  if (!tiles.length) return;
+  const hidden = state.captureHidden?.[seat] || [];
+  const upCount = tiles.filter((_, index) => !hidden[start + index]).length;
+  const title = $("#pileTitle");
+  const meta = $("#pileMeta");
+  const body = $("#pileTiles");
+  if (title) title.textContent = t("pile.title", { seat: seatName(seat), n: pileIndex + 1 });
+  if (meta) meta.textContent = t("pile.meta", { n: tiles.length, up: upCount });
+  if (body) {
+    body.innerHTML = tiles.map((tile, index) => {
+      const up = !hidden[start + index];
+      return up
+        ? `<span class="mini-tile ${tile.color === "r" ? "red" : "black"}">${tile.hanzi}</span>`
+        : `<span class="mini-tile back" role="img" aria-label="${escapeHTML(t("pile.hidden"))}">?</span>`;
+    }).join("");
+  }
+  const modal = $("#pileModal");
+  if (modal) modal.hidden = false;
+  audio?.play("click", 0);
 }
 
 function inspectTile(id, options = {}) {
@@ -2784,8 +3203,8 @@ function renderLog() {
   list.innerHTML = items.map((entry) => {
     const time = String(entry.trick).padStart(2, "0");
     let text = "";
-    if (entry.kind === "lead") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.lead"))} ${escapeHTML(comboSummary(entry.combo))}`;
-    else if (entry.kind === "challenge") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.reveal"))} ${escapeHTML(comboSummary(entry.combo))}`;
+    if (entry.kind === "lead") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.lead"))} ${escapeHTML(comboName(entry.callType))} ×${entry.callCount}`;
+    else if (entry.kind === "challenge") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.revealLog"))} ${escapeHTML(comboSummary(entry.combo))}`;
     else if (entry.kind === "hidden") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.facedown"))}`;
     else if (entry.kind === "win") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> +${entry.count} ${escapeHTML(t("summary.piles"))} · ${escapeHTML(comboSummary(entry.combo))}`;
     else if (entry.kind === "round") text = `${escapeHTML(t("summary.round", { n: entry.round }))} · ${entry.points[0]} ${escapeHTML(t("summary.points"))}`;
@@ -2862,13 +3281,18 @@ function renderAbout() {
 function renderRankReference() {
   const steps = $("#rankReferenceSteps");
   if (!steps) return;
-  steps.innerHTML = RANKS.slice().reverse().map((rank, index) => `
+  steps.innerHTML = RANKS.slice().reverse().map((rank, index) => {
+    const reading = rankReading(rank);
+    const primary = LANG === "th" ? reading : rank.en;
+    const secondary = LANG === "th" ? `${rank.thMeaning} · ${rank.en}` : `${reading} · ${rank.thMeaning}`;
+    return `
     <div class="rank-step">
       <em>${rank.power}</em>
       <div class="rank-tiles"><span class="mini-tile red">${rank.red}</span><span class="mini-tile black">${rank.black}</span></div>
-      <b>${escapeHTML(LANG === "th" ? rank.th : rank.en)}</b>
-      <span>${escapeHTML(LANG === "th" ? rank.en : rank.th)}</span>
-    </div>${index < RANKS.length - 1 ? '<span class="rank-arrow" aria-hidden="true">›</span>' : ""}`).join("");
+      <b>${escapeHTML(primary)}</b>
+      <span>${escapeHTML(secondary)}</span>
+    </div>${index < RANKS.length - 1 ? '<span class="rank-arrow" aria-hidden="true">›</span>' : ""}`;
+  }).join("");
 }
 
 function setRankReference(open) {
@@ -2921,7 +3345,7 @@ function renderDisplay() {
 
 function resetDisplay() {
   applyFontSize("md", { silent: true });
-  applyTheme("mahogany", { silent: true });
+  applyTheme("daybreak", { silent: true });
   savePrefs();
   toast(t("toast.displayReset"), "jade");
   audio?.play("click", 0);
@@ -3047,9 +3471,62 @@ function isGhostTileId(id) {
   return typeof id === "string" && id.startsWith(GHOST_PREFIX);
 }
 
-function sendNetAction(kind, tileIds, reveal = false) {
+function sanitizeHandSlots(raw) {
+  if (!Array.isArray(raw)) return null;
+  const slots = raw.slice(0, 8).map((slot) => {
+    if (!slot || typeof slot !== "object") return null;
+    const x = Number(slot.x);
+    const z = Number(slot.z);
+    const a = Number(slot.a);
+    if (!Number.isFinite(x) || !Number.isFinite(z) || !Number.isFinite(a)) return null;
+    const radius = Math.hypot(x, z);
+    const clamped = Math.max(0.8, Math.min(HAND_RADIUS + 0.55, radius));
+    const angle = Math.atan2(x, z);
+    return {
+      x: Math.round(Math.sin(angle) * clamped * 1000) / 1000,
+      z: Math.round(Math.cos(angle) * clamped * 1000) / 1000,
+      a: Math.round(a * 1000) / 1000
+    };
+  });
+  return slots.some((slot) => !slot) ? null : slots;
+}
+
+function publishHandLayout(slots) {
+  if (!isNetworked() || !net?.started) return;
+  const payload = slots === null ? null : sanitizeHandSlots(slots);
+  if (slots !== null && !payload) return;
+  const seat = isHost() ? MY_SEAT : net.seat;
+  if (isHost()) {
+    scene?.setSeatLayout?.(seat, payload);
+    net.host?.broadcast({ type: "hand-layout", seat, slots: payload });
+  } else if (net?.client) {
+    net.client.send({ type: "hand-layout", slots: payload });
+  }
+}
+
+function onHandLayoutChange() {
+  const slots = scene?.exportHandSlots?.();
+  if (!slots) return;
+  const seat = Number.isInteger(state?.mySeat) ? state.mySeat : MY_SEAT;
+  lastHandLayoutSig = (state?.hands?.[seat] || []).map((tile) => tile.id).join(",");
+  publishHandLayout(slots);
+}
+
+let lastHandLayoutSig = "";
+function maybePublishHandLayout() {
+  if (!isNetworked() || !net?.started || !state) return;
+  const seat = Number.isInteger(state.mySeat) ? state.mySeat : MY_SEAT;
+  const hand = state.hands?.[seat] || [];
+  const sig = hand.map((tile) => tile.id).join(",");
+  if (sig === lastHandLayoutSig) return;
+  lastHandLayoutSig = sig;
+  if (!scene?.hasCustomHand?.()) return;
+  publishHandLayout(scene.exportHandSlots());
+}
+
+function sendNetAction(kind, tileIds, reveal = false, value = null) {
   if (!isClient() || !net?.client) return false;
-  return net.client.send({ type: "action", kind, tiles: tileIds, reveal: Boolean(reveal) });
+  return net.client.send({ type: "action", kind, tiles: tileIds, reveal: Boolean(reveal), value });
 }
 
 function makeGhostTile(id) {
@@ -3138,6 +3615,9 @@ function hydrateRemoteState(raw) {
   const game = { ...raw };
   game.hands = (raw.hands || []).map((hand) => hand.map(tileFromWire));
   game.captures = (raw.captures || [[], [], [], []]).map((pile) => pile.map(tileFromWire));
+  game.captureHidden = [0, 1, 2, 3].map((seat) => (
+    (raw.captures?.[seat] || []).map((_, index) => Boolean(raw.captureHidden?.[seat]?.[index]))
+  ));
   game.center = (raw.center || []).map((entry) => ({
     ...entry,
     tiles: (entry.tiles || []).map(tileFromWire),
@@ -3169,6 +3649,7 @@ function applyRemoteState(raw) {
     scene.sync(state);
     scene.setSelected(state.selected);
   }
+  maybePublishHandLayout();
   if (next.phase === "roundEnd" || next.phase === "matchEnd") showRoundSummary(next.phase === "matchEnd");
   if (next.phase === "dealing") scene?.flipHumanHand?.(state);
   if (lobbyState?.view === "waiting") {
@@ -3473,8 +3954,16 @@ function hostMessage({ connId, message }) {
       const ok = message.kind === "lead"
         ? leadTrick(profile.seat, tiles)
         : message.kind === "follow"
-          ? submitPlay(profile.seat, tiles, Boolean(message.reveal))
-          : false;
+          ? submitPlay(profile.seat, tiles, false)
+          : message.kind === "show"
+            ? showdown(profile.seat, Boolean(message.reveal))
+            : message.kind === "redraw"
+              ? applyRedraw(profile.seat)
+              : message.kind === "chuan"
+                ? claimChuan(profile.seat)
+                : message.kind === "bid"
+                  ? placeBid(profile.seat, Number(message.value))
+                  : false;
       if (!ok) net.host.send(connId, { type: "rejected", reason: "illegal" });
       break;
     }
@@ -3487,6 +3976,16 @@ function hostMessage({ connId, message }) {
       if (!text) return;
       profile.chatAt = now;
       hostChat(profile.seat, text);
+      break;
+    }
+    case "hand-layout": {
+      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      if (!profile || !net?.started) return;
+      const slots = sanitizeHandSlots(message.slots);
+      if (message.slots !== null && !slots) return;
+      scene?.setSeatLayout?.(profile.seat, slots);
+      const targets = [...(net.host?.connections?.keys?.() || [])].filter((id) => id !== connId);
+      if (targets.length) net.host.broadcast({ type: "hand-layout", seat: profile.seat, slots }, targets);
       break;
     }
     case "voice-state": {
@@ -3684,6 +4183,7 @@ function clientMessage({ message }) {
       syncVoicePeers();
       break;
     case "start":
+      if (net) net.started = true;
       if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
       if (lobbyState) {
         lobbyState.started = true;
@@ -3696,6 +4196,12 @@ function clientMessage({ message }) {
       if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
       applyRemoteState(message.state);
       syncVoicePeers();
+      break;
+    case "hand-layout":
+      if (Number.isInteger(message.seat) && message.seat !== MY_SEAT) {
+        const slots = sanitizeHandSlots(message.slots);
+        if (message.slots === null || slots) scene?.setSeatLayout?.(message.seat, slots);
+      }
       break;
     case "chat":
       if (message.entry) appendChat(message.entry);
@@ -3858,6 +4364,7 @@ async function joinRoom(code, name, pin = "") {
 
 function leaveRoom({ silent = false, keepState = false } = {}) {
   releaseAutoAudio();
+  lastHandLayoutSig = "";
   clearTimeout(publishTimer);
   actionToken += 1;
   joinToken += 1;
@@ -3988,13 +4495,30 @@ function clearRoomIntent() {
   try { sessionStorage.removeItem(ROOM_INTENT_KEY); } catch { /* ignore */ }
 }
 
+function renderRuleSelects() {
+  const target = $("#targetSelect");
+  if (target) target.value = String(prefs.target);
+  const direction = $("#directionSelect");
+  if (direction) direction.value = prefs.direction;
+  const mode = $("#modeSelect");
+  if (mode) mode.value = prefs.mode;
+}
+
 function renderVersion() {
   const label = `v${APP.version}`;
   const chip = $("#versionChip");
   if (chip) chip.textContent = label;
+  const brandVersion = $("#brandVersion");
+  if (brandVersion) brandVersion.textContent = `(${label})`;
+  document.querySelector(".brand")?.setAttribute("data-version", label);
   $$(".version-label").forEach((node) => { node.textContent = label; });
   const action = availableVersion ? t("version.updateTo", { version: availableVersion }) : t("version.reload");
   $$("[data-version-label]").forEach((node) => { node.textContent = action; });
+  const pillAction = availableVersion ? t("version.updateShort", { version: availableVersion }) : t("version.update");
+  $$("[data-update-label]").forEach((node) => { node.textContent = pillAction; });
+  $$(".update-pill").forEach((button) => button.classList.toggle("is-update", Boolean(availableVersion)));
+  const dot = $("#updateDot");
+  if (dot) dot.hidden = !availableVersion;
   $$(".version-reload-big").forEach((button) => {
     button.classList.toggle("is-update", Boolean(availableVersion));
     button.title = availableVersion
@@ -5557,7 +6081,7 @@ async function createScene() {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
 
-  let currentThemeId = SCENE_THEMES[prefs.theme] ? prefs.theme : "mahogany";
+  let currentThemeId = SCENE_THEMES[prefs.theme] ? prefs.theme : "daybreak";
   const scenePalette = SCENE_THEMES[currentThemeId];
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(scenePalette.background);
@@ -5579,15 +6103,17 @@ async function createScene() {
   const homeTarget = portrait
     ? new THREE.Vector3(0, 0.18, 0.7)
     : new THREE.Vector3(0, 0.22, 0.9);
-  camera.position.copy(homePosition);
+  const topTarget = new THREE.Vector3(0, 0, portrait ? 0.95 : 0.75);
+  const topPosition = new THREE.Vector3(0, portrait ? 24.8 : 18.6, topTarget.z + 0.01);
+  camera.position.copy(topPosition);
 
   const controls = new OrbitControls(camera, canvas);
-  controls.target.copy(homeTarget);
+  controls.target.copy(topTarget);
   controls.enableDamping = true;
   controls.dampingFactor = 0.075;
   controls.minDistance = 7.4;
-  controls.maxDistance = 18.5;
-  controls.minPolarAngle = 0.14;
+  controls.maxDistance = 32;
+  controls.minPolarAngle = 0.02;
   controls.maxPolarAngle = 1.32;
   controls.enablePan = true;
   controls.screenSpacePanning = true;
@@ -5899,7 +6425,11 @@ async function createScene() {
   let downPoint = null;
   let dragging = false;
   let currentState = null;
-  let topView = false;
+  const handLayout = new Map();
+  const seatLayouts = new Map();
+  let handDrag = null;
+  const tablePlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -TABLE_Y);
+  let topView = true;
   let cinema = false;
   let cameraTween = null;
 
@@ -5941,8 +6471,19 @@ async function createScene() {
     const localSeat = Number.isInteger(gameState.mySeat) ? gameState.mySeat : (Number.isInteger(MY_SEAT) ? MY_SEAT : 0);
     gameState.hands.forEach((hand, seat) => {
       const ordered = seat === localSeat ? hand.slice().sort((a, b) => b.power - a.power || (a.color === "r" ? -1 : 1)) : hand.slice();
+      const layout = seat === localSeat ? null : seatLayouts.get(seat);
       ordered.forEach((tile, index) => {
-        map.set(tile.id, { kind: "hand", seat, index, count: ordered.length, up: seat === localSeat, angle: handPosition(seat, index, ordered.length).angle });
+        const slot = layout?.[index] || null;
+        map.set(tile.id, {
+          kind: "hand",
+          id: tile.id,
+          seat,
+          index,
+          count: ordered.length,
+          up: seat === localSeat,
+          angle: slot?.a ?? handPosition(seat, index, ordered.length).angle,
+          custom: slot
+        });
       });
     });
     gameState.center.forEach((entry) => {
@@ -5951,15 +6492,27 @@ async function createScene() {
       });
     });
     gameState.captures.forEach((pile, seat) => {
+      const hidden = gameState.captureHidden?.[seat] || [];
       pile.forEach((tile, index) => {
-        map.set(tile.id, { kind: "capture", seat, index, count: pile.length, up: true });
+        map.set(tile.id, { kind: "capture", seat, index, count: pile.length, up: !hidden[index] });
       });
     });
     return map;
   }
 
   function positionFor(placement) {
-    if (placement.kind === "hand") return handPosition(placement.seat, placement.index, placement.count);
+    if (placement.kind === "hand") {
+      const custom = handLayout.get(placement.id) || placement.custom;
+      if (custom) {
+        return {
+          x: custom.x,
+          y: TABLE_Y + TILE_THICKNESS / 2 + 0.012,
+          z: custom.z,
+          angle: custom.a ?? custom.angle
+        };
+      }
+      return handPosition(placement.seat, placement.index, placement.count);
+    }
     if (placement.kind === "center") return centerPosition(placement.seat, placement.index, placement.count);
     return capturePosition(placement.seat, placement.index);
   }
@@ -5989,6 +6542,8 @@ async function createScene() {
         continue;
       }
       record.root.visible = true;
+      record.kind = placement.kind;
+      record.index = placement.index;
       const target = positionFor(placement);
       orient(record, placement.seat, placement.angle);
       moveTile(record, target, options.deal ? 560 : duration, options.deal ? 0.75 : arc);
@@ -6001,6 +6556,8 @@ async function createScene() {
   function deal(gameState) {
     return new Promise((resolve) => {
       currentState = gameState;
+      handLayout.clear();
+      seatLayouts.clear();
       const map = placementMap(gameState);
       let order = 0;
       for (const record of tileObjects.values()) {
@@ -6063,7 +6620,142 @@ async function createScene() {
     return tileObjects.get(id) || null;
   }
 
+  function localHandRecord(record) {
+    if (!record || record.ghost || !record.faceUp) return false;
+    const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
+    if (record.seat !== localSeat) return false;
+    return (currentState?.hands?.[localSeat] || []).some((tile) => tile.id === record.id);
+  }
+
+  /* Freeze every hand tile where it currently sits before the first drag, so
+     playing a tile does not re-flow the player's arrangement. */
+  function localHandOrdered() {
+    if (!currentState) return { seat: MY_SEAT, tiles: [] };
+    const localSeat = Number.isInteger(currentState.mySeat) ? currentState.mySeat : MY_SEAT;
+    const hand = currentState.hands?.[localSeat] || [];
+    return {
+      seat: localSeat,
+      tiles: hand.slice().sort((a, b) => b.power - a.power || (a.color === "r" ? -1 : 1))
+    };
+  }
+
+  /* Slots in the raw hand order, because that is the order every other
+     client uses to index this seat's hidden tiles. The local view sorts the
+     hand by rank, so each tile's default position comes from its sorted
+     index while the array itself follows the deal order. */
+  function exportHandSlots() {
+    if (!currentState) return [];
+    const localSeat = Number.isInteger(currentState.mySeat) ? currentState.mySeat : MY_SEAT;
+    const hand = currentState.hands?.[localSeat] || [];
+    if (!hand.length) return [];
+    const sorted = hand.slice().sort((a, b) => b.power - a.power || (a.color === "r" ? -1 : 1));
+    const sortedIndex = new Map(sorted.map((tile, index) => [tile.id, index]));
+    return hand.map((tile) => {
+      const index = sortedIndex.get(tile.id) ?? 0;
+      const custom = handLayout.get(tile.id);
+      const point = custom || handPosition(localSeat, index, sorted.length);
+      const angle = custom ? custom.angle : point.angle;
+      return {
+        x: Math.round(point.x * 1000) / 1000,
+        z: Math.round(point.z * 1000) / 1000,
+        a: Math.round(angle * 1000) / 1000
+      };
+    });
+  }
+
+  function hasCustomHand() {
+    const { tiles } = localHandOrdered();
+    return tiles.some((tile) => handLayout.has(tile.id));
+  }
+
+  function tidyHand() {
+    handLayout.clear();
+    if (currentState) applyState(currentState, { duration: 220 });
+  }
+
+  function setSeatLayout(seat, slots) {
+    const next = Number(seat);
+    if (!Number.isInteger(next) || next < 0 || next >= TABLE_SEATS) return;
+    if (!Array.isArray(slots) || !slots.length) seatLayouts.delete(next);
+    else seatLayouts.set(next, slots);
+    if (currentState) applyState(currentState, { duration: 260 });
+  }
+
+  function captureHandLayout() {
+    if (!currentState) return;
+    const localSeat = Number.isInteger(currentState.mySeat) ? currentState.mySeat : MY_SEAT;
+    const hand = currentState.hands?.[localSeat] || [];
+    if (!hand.length) return;
+    if (hand.every((tile) => handLayout.has(tile.id))) return;
+    const ordered = hand.slice().sort((a, b) => b.power - a.power || (a.color === "r" ? -1 : 1));
+    ordered.forEach((tile, index) => {
+      const point = handPosition(localSeat, index, ordered.length);
+      handLayout.set(tile.id, { x: point.x, z: point.z, angle: point.angle });
+    });
+  }
+
+  function handPointFromEvent(event) {
+    const rect = canvas.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const point = new THREE.Vector3();
+    if (!raycaster.ray.intersectPlane(tablePlane, point)) return null;
+    return world.worldToLocal(point.clone());
+  }
+
+  /* Free placement across the whole felt: only the table edge and the very
+     centre are excluded, so a player can build rows, fans or groups. */
+  function clampHandPoint(point) {
+    const radius = Math.hypot(point.x, point.z);
+    const clamped = Math.max(0.8, Math.min(HAND_RADIUS + 0.55, radius));
+    const angle = Math.atan2(point.x, point.z);
+    return { x: Math.sin(angle) * clamped, z: Math.cos(angle) * clamped, angle };
+  }
+
+  function updateHandDrag(event) {
+    if (!handDrag) return;
+    const point = handPointFromEvent(event);
+    if (!point) return;
+    const target = clampHandPoint(point);
+    handDrag.point = target;
+    const record = handDrag.record;
+    record.anim = null;
+    record.root.position.set(target.x, TABLE_Y + TILE_THICKNESS / 2 + 0.26, target.z);
+    record.root.rotation.y = -target.angle;
+  }
+
+  function endHandDrag(commit) {
+    if (!handDrag) return false;
+    const { record, point, moved } = handDrag;
+    handDrag = null;
+    controls.enabled = true;
+    canvas.classList.remove("is-dragging-tile");
+    if (moved && point) {
+      handLayout.set(record.id, { x: point.x, z: point.z, angle: point.angle });
+      record.anim = null;
+      record.root.position.set(point.x, TABLE_Y + TILE_THICKNESS / 2 + 0.012, point.z);
+      record.root.rotation.y = -point.angle;
+      if (typeof onHandLayoutChange === "function") onHandLayoutChange();
+      if (typeof renderSelection === "function") renderSelection();
+      return true;
+    }
+    return false;
+  }
+
   function onPointerMove(event) {
+    if (handDrag) {
+      if (!handDrag.moved && Math.hypot(event.clientX - handDrag.startX, event.clientY - handDrag.startY) > 6) {
+        handDrag.moved = true;
+        canvas.classList.add("is-dragging-tile");
+        hideTileTip();
+        captureHandLayout();
+      }
+      if (handDrag.moved) {
+        updateHandDrag(event);
+        return;
+      }
+    }
     if (event.pointerType === "touch") return;
     if (event.buttons || dragging) return;
     const record = pick(event);
@@ -6088,6 +6780,7 @@ async function createScene() {
   }
 
   function onPointerLeave() {
+    if (handDrag) endHandDrag(handDrag.moved);
     hoverId = null;
     canvas.classList.remove("is-hovering-tile");
     hideTileTip();
@@ -6097,10 +6790,23 @@ async function createScene() {
     downPoint = { x: event.clientX, y: event.clientY, time: performance.now() };
     dragging = false;
     hideTileTip();
+    if (handDrag) endHandDrag(handDrag.moved);
+    const record = pick(event);
+    if (localHandRecord(record)) {
+      handDrag = { record, moved: false, startX: event.clientX, startY: event.clientY, point: null };
+      controls.enabled = false;
+    }
   }
 
   function onPointerUp(event) {
     if (!downPoint) return;
+    if (handDrag) {
+      const committed = endHandDrag(handDrag.moved);
+      if (committed) {
+        downPoint = null;
+        return;
+      }
+    }
     const moved = Math.hypot(event.clientX - downPoint.x, event.clientY - downPoint.y);
     const elapsed = performance.now() - downPoint.time;
     downPoint = null;
@@ -6108,6 +6814,10 @@ async function createScene() {
     const record = pick(event);
     if (!record) {
       hideTileTip();
+      return;
+    }
+    if (record.kind === "capture") {
+      openPileModal(record.seat, Math.floor((record.index || 0) / 4));
       return;
     }
     const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
@@ -6127,6 +6837,9 @@ async function createScene() {
   canvas.addEventListener("pointerleave", onPointerLeave);
   canvas.addEventListener("pointerdown", onPointerDown);
   canvas.addEventListener("pointerup", onPointerUp);
+  canvas.addEventListener("pointercancel", () => {
+    if (handDrag) endHandDrag(handDrag.moved);
+  });
   controls.addEventListener("start", () => { dragging = true; cameraTween = null; });
   controls.addEventListener("end", () => { setTimeout(() => { dragging = false; }, 0); });
 
@@ -6141,17 +6854,27 @@ async function createScene() {
     };
   }
 
+  function updateViewToggle() {
+    const button = $("#topViewBtn");
+    if (!button) return;
+    button.setAttribute("aria-pressed", String(topView));
+    const label = button.querySelector("[data-i18n]");
+    if (label) {
+      label.dataset.i18n = topView ? "view.top" : "view.3d";
+      label.textContent = t(label.dataset.i18n);
+    }
+  }
+
   function resetView() {
-    topView = false;
-    $("#topViewBtn")?.setAttribute("aria-pressed", "false");
-    tweenCamera(homePosition, homeTarget);
+    topView = true;
+    updateViewToggle();
+    tweenCamera(topPosition, topTarget);
   }
 
   function toggleTopView() {
     topView = !topView;
-    const button = $("#topViewBtn");
-    button?.setAttribute("aria-pressed", String(topView));
-    if (topView) tweenCamera(new THREE.Vector3(0, 14.6, 0.01), new THREE.Vector3(0, 0, 0));
+    updateViewToggle();
+    if (topView) tweenCamera(topPosition, topTarget);
     else tweenCamera(homePosition, homeTarget);
   }
 
@@ -6279,6 +7002,8 @@ async function createScene() {
     labels.forEach((sprite, index) => { sprite.visible = index !== next; });
   }
 
+  updateViewToggle();
+
   const api = {
     deal,
     sync,
@@ -6298,6 +7023,11 @@ async function createScene() {
     resetView,
     toggleTopView,
     toggleCinema,
+    exportHandSlots,
+    hasCustomHand,
+    tidyHand,
+    setSeatLayout,
+    getSeatLayout(seat) { return seatLayouts.get(Number(seat)) || null; },
     getState() {
       return {
         position: camera.position.toArray(),
@@ -6352,7 +7082,30 @@ function bindEvents() {
   });
 
   $("#leadBtn")?.addEventListener("click", humanLead);
+  $("#redrawBtn")?.addEventListener("click", () => {
+    if (isClient()) sendNetAction("redraw", [], false);
+    else applyRedraw(MY_SEAT);
+  });
+  $("#chuanBtn")?.addEventListener("click", () => {
+    if (isClient()) sendNetAction("chuan", [], false);
+    else claimChuan(MY_SEAT);
+  });
+  $("#bidRow")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-bid]");
+    if (!button || button.disabled) return;
+    const value = Number(button.dataset.bid);
+    if (isClient()) sendNetAction("bid", [], false, value);
+    else placeBid(MY_SEAT, value);
+  });
   $("#revealBtn")?.addEventListener("click", () => humanFollow(true));
+  $("#tidyHandBtn")?.addEventListener("click", () => {
+    if (!scene?.tidyHand) return;
+    scene.tidyHand();
+    publishHandLayout(null);
+    renderSelection();
+    audio?.play("click", 0);
+    toast(t("toast.handTidied"), "jade");
+  });
   $("#facedownBtn")?.addEventListener("click", () => humanFollow(false));
   $("#hintBtn")?.addEventListener("click", applyHint);
   $("#clearBtn")?.addEventListener("click", clearSelection);
@@ -6458,12 +7211,23 @@ function bindEvents() {
     await copyText(`${body}\n${status}`.trim(), t("diag.copied"));
   });
   $("#reloadAppBtn")?.addEventListener("click", forceReload);
+  $$("[data-rule]").forEach((select) => select.addEventListener("change", () => {
+    const key = select.dataset.rule;
+    const value = key === "target" ? Number(select.value) : select.value;
+    prefs[key] = value;
+    if (key === "direction" && state) state.direction = value;
+    if (key === "target" && state) state.target = value;
+    savePrefs();
+    renderAll();
+    if (key === "mode") toast(t("toast.modeNext"), "jade");
+  }));
   $$("[data-auto-audio]").forEach((input) => input.addEventListener("change", () => {
     prefs.autoAudio = input.checked;
     savePrefs();
     renderAutoAudio();
   }));
   $("#lobbyReload")?.addEventListener("click", forceReload);
+  $("#appUpdateBtn")?.addEventListener("click", forceReload);
   $("#updateReload")?.addEventListener("click", forceReload);
   $("#updateDismiss")?.addEventListener("click", () => { const banner = $("#updateBanner"); if (banner) banner.hidden = true; });
   $("#lobbyCopyInfo")?.addEventListener("click", copyRoomInfo);
@@ -6634,6 +7398,7 @@ async function boot() {
   applyLanguage(LANG);
   bindEvents();
   renderVersion();
+  renderRuleSelects();
   chatOpen = prefs.chatOpen !== false;
   setChatOpen(chatOpen);
   setDockCollapsed(prefs.dockCollapsed !== false, { silent: true });
@@ -6761,9 +7526,11 @@ window.LeabTui = {
     return leadTrick(MY_SEAT, ids || []);
   },
   follow: (ids, reveal = false) => {
-    if (isClient()) return sendNetAction("follow", ids || [], Boolean(reveal));
-    return submitPlay(MY_SEAT, ids || [], reveal);
+    if (isClient()) return sendNetAction("follow", ids || [], false);
+    return submitPlay(MY_SEAT, ids || [], false);
   },
+  showdown: (reveal = false) => humanFollow(Boolean(reveal)),
+  openPile: (seat, pile) => openPileModal(seat, pile),
   toggleTile,
   clearSelection,
   hint: applyHint,
@@ -6777,6 +7544,9 @@ window.LeabTui = {
   applyTheme,
   getDisplay: () => ({ fontSize: prefs.fontSize, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),
   checkUpdate: (force = false) => checkForUpdate({ force }),
+  exportHandSlots: () => scene?.exportHandSlots?.() || [],
+  publishHandLayout: (slots) => publishHandLayout(slots),
+  getSeatLayout: (seat) => scene?.getSeatLayout?.(seat) || null,
   getVersionState: () => ({ current: APP.version, available: availableVersion, checkedAt: (() => { try { return JSON.parse(localStorage.getItem(VERSION_CHECK_KEY) || "null")?.at || 0; } catch { return 0; } })() }),
   openRanks: () => setRankReference(true),
   closeRanks: () => setRankReference(false),

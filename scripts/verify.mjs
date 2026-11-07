@@ -82,11 +82,9 @@ const playthrough = `(async () => {
       LeabTui.lead(LeabTui.getState().selected);
     } else if (s.turn === 0 && s.phase === 'follow') {
       LeabTui.hint();
-      const picked = LeabTui.getState().selected;
-      const before = s.hands[0].length;
-      LeabTui.follow(picked, true);
-      await wait(25);
-      if (LeabTui.getState().hands[0].length === before) LeabTui.follow(picked, false);
+      LeabTui.follow(LeabTui.getState().selected, false);
+    } else if (s.turn === 0 && s.phase === 'showdown') {
+      LeabTui.showdown(false);
     }
   }
   const s = LeabTui.getState();

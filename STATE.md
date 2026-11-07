@@ -3,25 +3,39 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.7.2**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.8.0**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.7.2` |
+| App version | `1.8.0` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js` |
-| Source lines | 10,664 |
-| Source size | 446,098 bytes |
+| Source lines | 11,584 |
+| Source size | 483,759 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.8.0 — top view, hand arrangement and the showdown order
+
+The table opens from straight above, framed so the whole board and the player's hand are visible. A labelled **Top view / 3D view** chip in the HUD switches to the existing orbit view, and **Reset camera** returns to the top.
+
+Players can drag any face-up hand tile anywhere on the felt; **Tidy hand** restores the arc, and the other seats see the arrangement as coordinates only.
+
+The trick flow now follows the source: the leader and every follower send **face-down**; after all four have sent, the leader reveals first and each follower chooses to show or stay hidden. Hidden captured tiles stay face-down in the winner's pile, and clicking a pile opens it left-to-right with backs for hidden tiles.
+
+## Release 1.8.0 — top view and hand arrangement
+
+The table opens from straight above, framed so the whole board and the player's hand are visible. A labelled **Top view / 3D view** chip in the HUD switches to the existing orbit view, and **Reset camera** returns to the top.
+
+Players can drag any face-up hand tile anywhere on the felt; only the table edge and the very centre are excluded. The first drag snapshots the whole hand so later plays do not re-flow it, and **Tidy hand** restores the arc. Positions are relayed to the other seats as coordinates only (never tile identities), and a new deal resets the layout.
 
 ## Release 1.7.2 — room numbers and self-update
 
@@ -144,7 +158,7 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | 1.6.2 version/reload, diagnostics, join restore | 15:20–16:35 | ~75m |
 | 1.6.3 five-digit PIN, clearer Leave room | 16:35–17:05 | ~30m |
 
-**Measured session wall clock:** **14h 46m 51s** (53,211 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **17h 13m 50s** (62,030 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -152,13 +166,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 4,038,669 |
-| Output | 454,308 |
-| Reasoning | 334,004 |
-| **Total (input + output + reasoning)** | **4,826,981** |
-| Cache read | 538,906,624 |
+| Input | 4,954,537 |
+| Output | 525,761 |
+| Reasoning | 446,534 |
+| **Total (input + output + reasoning)** | **5,926,832** |
+| Cache read | 621,505,152 |
 | Cache write | 1,087 |
-| **Total including cache** | **543,734,692** |
+| **Total including cache** | **627,433,071** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.
@@ -185,7 +199,7 @@ Cache figures describe context reuse, not additional generated work. They are re
 | `node scripts/check.mjs` | pass (342) |
 | In-page self-test | **38/38** |
 | `node scripts/verify.mjs` | ALL BROWSER CHECKS PASSED |
-| `node scripts/net-check.mjs` | **21/21** multiplayer checks |
+| `node scripts/net-check.mjs` | **23/23** multiplayer checks |
 | Full round through the public API | `roundEnd`, 32 tiles captured, hands empty, points sum 0 |
 | Host + guest | 2 humans + Bot 1 + Bot 2 |
 | Guest privacy | own 8 real ids; other 24 ghost ids |

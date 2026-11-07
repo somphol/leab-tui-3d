@@ -2,6 +2,36 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.0] — 2026-11-07
+
+### Added
+
+- **Arrange your hand.** Drag any face-up tile anywhere on the felt — rows, fans or groups, including the centre. The first drag freezes the whole hand, so playing a tile does not re-flow the rest; a new deal resets the arrangement.
+- **Tidy hand.** A dock button restores the default arc without waiting for a new deal.
+- **Other seats see your arrangement.** Positions are relayed as coordinates only — never tile identities — so the host and the other guests see the same layout. The relay is memory-only and cleared at every deal.
+- **Top-down by default.** The table now opens in a straight-down view that fits the whole board, with a labelled **Top view / 3D view** toggle in the HUD. **Reset camera** returns to the top view. The 3D orbit view is unchanged and one tap away.
+
+### Changed
+
+- **Showdown order now follows the source.** The leader and every follower send face-down. Once all four have sent, the leader reveals first; each follower then chooses **Show & win** or **Keep hidden** in turn. The old "Reveal & challenge" at play time is gone.
+- **Hidden stays hidden.** Tiles captured face-down remain face-down in the winner's pile.
+- The camera distance limit is raised so the portrait top view can frame the full table.
+- **Clearer reveal wording.** The button now says **Show & win** instead of “Reveal & challenge”, and the coach explains the trade: showing the set wins the trick and takes the tiles; playing face-down keeps them hidden but cannot win.
+
+### Added
+
+- **Table rules before the deal.** Choose the target (20/50/100), the turn direction (clockwise or counter-clockwise) and the scoring mode (**Most piles** or **Bid piles**).
+- **Bid piles (4-player mode).** Each seat bids 0–8 piles in turn. The last bidder may not make the total exactly 8. Hit your bid for bid + 5 (or + 3 for a zero bid); miss by the difference, negative.
+- **Redraw (โละ).** A seat with no tile from the red Elephant up may request a redeal before the first play. The requester leads and the round scores ×2, ×3 … per redraw.
+- **Chuan special.** With seven piles and the last Soldier, the final follower may reveal it and take the last trick, reaching eight piles for 16.
+- **Call chip.** The HUD keeps the current call (type × count) visible while everyone is face-down.
+- **Pile inspector.** Click any captured pile to open it: tiles are shown left to right, face-up tiles with their carved face and hidden tiles as backs.
+
+### Fixed
+
+- **Thai piece names corrected** to the Teochew readings: ตี่ · สือ · เฉีย · กือ · แบ้ · เผ่า · จุก, each with its Thai meaning (แม่ทัพ, องครักษ์, ช้าง, รถศึก, ม้า, ปืนใหญ่, พลทหาร). The red General reads **อั้งตี่** and the black General **โอวตี่**.
+- **Tile glyphs corrected:** red 車 and 馬 (not 俥 / 傌), black 砲 (not 包), matching a standard set.
+
 ## [1.7.2] — 2026-11-07
 
 ### Changed

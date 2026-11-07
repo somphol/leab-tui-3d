@@ -323,6 +323,24 @@ async function main() {
   // the action channel.
   const hostSeat = 0;
   const guestSeat = view.seat;
+
+  // Guest arrangement relay: positions only, never tile identities.
+  const guestSlots = JSON.parse(await guest.eval("JSON.stringify(LeabTui.exportHandSlots())"));
+  await guest.eval("LeabTui.publishHandLayout(LeabTui.exportHandSlots()); true");
+  await sleep(600);
+  const hostLayout = JSON.parse(await host.eval(`JSON.stringify(LeabTui.getSeatLayout(${guestSeat}))`));
+  if (Array.isArray(hostLayout) && hostLayout.length === guestSlots.length && guestSlots.length > 0) {
+    pass("guest hand layout reached the host", `${guestSlots.length} slots`);
+  } else {
+    fail("guest hand layout reached the host", JSON.stringify({ guest: guestSlots.length, host: hostLayout }));
+  }
+  await guest.eval("LeabTui.publishHandLayout(null); true");
+  await sleep(500);
+  const clearedLayout = JSON.parse(await host.eval(`JSON.stringify(LeabTui.getSeatLayout(${guestSeat}))`));
+  if (clearedLayout === null) pass("tidy cleared the relayed layout");
+  else fail("tidy cleared the relayed layout", JSON.stringify(clearedLayout));
+
+  // Drive whichever human seat is on turn until a trick resolves.
   let acted = 0;
   let resolved = null;
   for (let step = 0; step < 40; step += 1) {
@@ -333,7 +351,15 @@ async function main() {
       center: LeabTui.getState().center.length,
       lastWinner: LeabTui.getState().lastTrick?.winner ?? null
     })`));
-    if (snapshot.phase === "follow" && snapshot.turn === guestSeat) {
+    if (snapshot.phase === "showdown" && snapshot.turn === guestSeat) {
+      await guest.eval("LeabTui.showdown(false); true");
+      acted += 1;
+      await sleep(500);
+    } else if (snapshot.phase === "showdown" && snapshot.turn === hostSeat) {
+      await host.eval("LeabTui.showdown(false); true");
+      acted += 1;
+      await sleep(500);
+    } else if (snapshot.phase === "follow" && snapshot.turn === guestSeat) {
       await guest.eval("LeabTui.hint(); LeabTui.follow(LeabTui.getState().selected, false); true");
       acted += 1;
       await sleep(700);
