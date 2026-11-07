@@ -2,6 +2,14 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.5] — 2026-11-07
+
+### Added
+
+- **Trick history browser.** The Trick Log header, the Last trick HUD button and the summary all open a round/trick browser. It shows the call, the winner, every seat's set, and the actual tiles each seat played — face-up for revealed sets and backs for hidden ones.
+- **Host auto-next toggle.** The summary has an **Auto-start next round (30s)** checkbox for the host. Off means it waits indefinitely; on means a 30-second countdown. Guests only get **Back to table**.
+- **Boot version guard.** A cached HTML page compares `app-version` with `state.json` and reloads once with a cache-busting query, so a normal refresh picks up a new release.
+
 ## [1.8.4] — 2026-11-07
 
 ### Added

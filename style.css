@@ -776,6 +776,20 @@ a:hover { text-decoration: underline; }
 .btn-wine:hover:not(:disabled) { background: linear-gradient(180deg, #a6364b, #6b1c2a); }
 .btn-ghost { background: var(--btn-ghost-bg); }
 
+.log-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 10px; }
+.log-filters label { display: flex; flex-direction: column; gap: 4px; color: var(--ink-faint); font-size: calc(9.5px * var(--fs-scale)); letter-spacing: 0.08em; text-transform: uppercase; }
+.log-filters select { min-height: 34px; padding: 0 8px; border: 1px solid var(--line-soft); border-radius: 8px; background: var(--btn-ghost-bg); color: var(--ink); font-family: var(--sans); font-size: calc(12px * var(--fs-scale)); }
+.log-entry { padding: 8px 10px; border: 1px solid var(--line-soft); border-radius: 10px; background: var(--card-bg); }
+.log-entry-head { display: flex; justify-content: space-between; gap: 8px; font-size: calc(11.5px * var(--fs-scale)); }
+.log-entry-head b { color: var(--ink); }
+.log-entry-head span { color: var(--ink-faint); text-align: right; }
+.log-entry.win { border-color: var(--gold); background: var(--gold-wash); }
+.log-tiles { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.log-tile { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(120, 80, 35, 0.4); background: radial-gradient(circle at 35% 28%, #fbf1dc, #e4d0a8 65%, #c7aa78); color: #1d1716; font-family: var(--serif); font-size: calc(15px * var(--fs-scale)); }
+.log-tile.red { color: #8d1f24; }
+.log-tile.back { color: var(--gold); background: repeating-linear-gradient(45deg, rgba(216, 178, 107, 0.16) 0 3px, transparent 3px 6px), var(--chip-tile-bg); }
+.summary-auto { margin-top: 10px; }
+.summary-log-row { margin-top: 10px; }
 .last-trick-list { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 6px; }
 .last-trick-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 10px; border: 1px solid var(--line-soft); border-radius: 8px; background: var(--card-bg); font-size: calc(12px * var(--fs-scale)); }
 .last-trick-row b { color: var(--ink); font-weight: 600; }

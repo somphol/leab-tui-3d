@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.8.4";
-import { VoiceChat } from "./voice-chat.js?v=1.8.4";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.4";
+} from "./peer-manager.js?v=1.8.5";
+import { VoiceChat } from "./voice-chat.js?v=1.8.5";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.5";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.8.4",
+  version: "1.8.5",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T09:15:28-08:00",
-    durationHuman: "23h 9m 55s",
-    tokensTotal: "6621419",
-    tokensInput: "5586271",
-    tokensOutput: "558380",
-    tokensReasoning: "476768",
-    tokensCacheRead: "651695744",
+    packagedAt: "2026-11-07T09:23:58-08:00",
+    durationHuman: "23h 18m 24s",
+    tokensTotal: "6665361",
+    tokensInput: "5609397",
+    tokensOutput: "567658",
+    tokensReasoning: "488306",
+    tokensCacheRead: "658694144",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -371,6 +371,16 @@ const I18N = {
     "score.piles": "piles",
     "lastTrick.button": "Last trick",
     "lastTrick.title": "Last trick",
+    "log.history": "History",
+    "log.browserTitle": "Trick history",
+    "log.round": "Round",
+    "log.trick": "Trick",
+    "log.call": "Call",
+    "log.winner": "Winner",
+    "log.why": "Only revealed sets compete; the highest revealed set takes the trick. Face-down tiles stay hidden.",
+    "log.empty": "No tricks recorded yet.",
+    "summary.viewLog": "View trick log",
+    "summary.autoNext": "Auto-start next round (30s)",
     "lastTrick.winner": "{seat} won {n} tiles with {combo}",
     "pile.title": "{seat} · pile {n}",
     "pile.meta": "{n} tiles · {up} face-up",
@@ -880,6 +890,16 @@ const I18N = {
     "score.piles": "กอง",
     "lastTrick.button": "ตาล่าสุด",
     "lastTrick.title": "ตาล่าสุด",
+    "log.history": "ประวัติ",
+    "log.browserTitle": "ประวัติการเล่น",
+    "log.round": "รอบ",
+    "log.trick": "ตา",
+    "log.call": "เรียก",
+    "log.winner": "ผู้ชนะ",
+    "log.why": "เฉพาะชุดที่เปิดเท่านั้นที่แข่งกัน ชุดที่เปิดสูงสุดกินกอง ไพ่ที่คว่ำจะถูกซ่อนไว้",
+    "log.empty": "ยังไม่มีประวัติตา",
+    "summary.viewLog": "ดูประวัติการเล่น",
+    "summary.autoNext": "เริ่มรอบถัดไปอัตโนมัติ (30 วิ)",
     "lastTrick.winner": "{seat} กิน {n} ตัว ด้วย {combo}",
     "pile.title": "{seat} · กอง {n}",
     "pile.meta": "{n} ตัว · เปิด {up} ตัว",
@@ -1645,7 +1665,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2 });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -1749,6 +1769,7 @@ function makeState(seed) {  return {
     captures: [[], [], [], []],
     captureHidden: [[], [], [], []],
     captureFrom: [[], [], [], []],
+    trickArchive: [],
     center: [],
     lead: null,
     best: null,
@@ -1806,6 +1827,15 @@ function serializableState(source = state) {
   copy.captureHidden = [0, 1, 2, 3].map((seat) => (
     (source.captures[seat] || []).map((_, index) => Boolean(source.captureHidden?.[seat]?.[index]))
   ));
+  copy.trickArchive = (source.trickArchive || []).map((record) => ({
+    ...record,
+    combo: serializeCombo(record.combo),
+    entries: (record.entries || []).map((entry) => ({
+      ...entry,
+      combo: serializeCombo(entry.combo),
+      tiles: (entry.tiles || []).map((tile) => (tile && tile.id ? tile.id : "hidden"))
+    }))
+  }));
   copy.captureFrom = [0, 1, 2, 3].map((seat) => (
     (source.captures[seat] || []).map((_, index) => (
       Number.isInteger(source.captureFrom?.[seat]?.[index]) ? source.captureFrom[seat][index] : null
@@ -1866,6 +1896,7 @@ function loadPrefs() {
   if (!["cw", "ccw"].includes(prefs.direction)) prefs.direction = "cw";
   if (!["piles", "bid"].includes(prefs.mode)) prefs.mode = "piles";
   if (![0, 2, 4, 6].includes(Number(prefs.resultSeconds))) prefs.resultSeconds = 2;
+  prefs.autoNext = prefs.autoNext !== false;
 }
 
 function loadStats() {
@@ -2193,6 +2224,7 @@ function beginMatch(options = {}) {
   state.scores = [0, 0, 0, 0];
   state.history = [];
   state.log = [];
+  state.trickArchive = [];
   state.lastRound = null;
   state.snapshot = null;
   state.target = options.target ?? prefs.target ?? 20;
@@ -2382,6 +2414,25 @@ function resolveTrick() {
   state.captures[winner].push(...allTiles);
   state.captureHidden[winner].push(...captureFlags);
   state.captureFrom[winner].push(...captureFrom);
+  state.trickArchive = state.trickArchive || [];
+  state.trickArchive.push({
+    round: state.round,
+    trick: state.trick,
+    leader: state.lead?.seat ?? null,
+    call: state.lead?.combo ? { type: state.lead.combo.type, count: state.lead.combo.count } : null,
+    winner,
+    combo: clone(winningCombo),
+    captured,
+    entries: state.center.map((entry) => ({
+      seat: entry.seat,
+      revealed: Boolean(entry.revealed),
+      combo: entry.combo ? clone(entry.combo) : null,
+      tiles: entry.tiles.map((tile) => ({
+        id: tile.id, hanzi: tile.hanzi, color: tile.color, rank: tile.rank, power: tile.power
+      }))
+    }))
+  });
+  if (state.trickArchive.length > 400) state.trickArchive.splice(0, state.trickArchive.length - 400);
   state.lastTrick = {
     winner,
     combo: clone(winningCombo),
@@ -2882,6 +2933,30 @@ function startParty() {
   party = { renderer, raf: requestAnimationFrame(frame), scene };
 }
 
+function startSummaryCountdown() {
+  clearInterval(summaryTimer);
+  const primary = $("#summaryPrimary");
+  if (!primary) return;
+  if (isClient() || !state || state.phase !== "roundEnd" || prefs.autoNext === false) {
+    primary.textContent = t("summary.next");
+    return;
+  }
+  let left = 30;
+  const tick = () => {
+    if (!state || state.phase !== "roundEnd") { clearInterval(summaryTimer); return; }
+    primary.textContent = t("summary.nextIn", { n: left });
+    if (left <= 0) {
+      clearInterval(summaryTimer);
+      closeModal("summaryModal");
+      startNextRound();
+      return;
+    }
+    left -= 1;
+  };
+  tick();
+  summaryTimer = setInterval(tick, 1000);
+}
+
 function showRoundSummary(matchEnded) {
   const modal = $("#summaryModal");
   if (!modal || !state) return;
@@ -2908,7 +2983,8 @@ function showRoundSummary(matchEnded) {
     ${winnerLine}
     ${isClient() ? `<div class="summary-note">${escapeHTML(t("summary.waitingHost"))}</div>` : ""}
     <div class="summary-note">${escapeHTML(t("summary.note"))}</div>
-    <div class="summary-note">${escapeHTML(t("summary.streak", { n: stats.currentStreak }))} · ${escapeHTML(t("summary.targetReached", { target: state.target }))}</div>`;
+    <div class="summary-note">${escapeHTML(t("summary.streak", { n: stats.currentStreak }))} · ${escapeHTML(t("summary.targetReached", { target: state.target }))}</div>
+    <div class="summary-log-row"><button id="summaryLogBtn" class="btn btn-ghost btn-small" type="button">${escapeHTML(t("summary.viewLog"))}</button></div>`;
   const primary = $("#summaryPrimary");
   const secondary = $("#summarySecondary");
   primary.textContent = isClient() ? t("net.resume") : isMatch ? t("summary.newMatch") : t("summary.next");
@@ -2918,26 +2994,14 @@ function showRoundSummary(matchEnded) {
     secondary.textContent = isMatch ? t("actions.export") : t("summary.newMatch");
     secondary.dataset.action = isMatch ? "export" : "new";
   }
+  const autoWrap = $("#summaryAutoWrap");
+  if (autoWrap) autoWrap.hidden = isClient() || isMatch;
+  const autoCheck = $("#summaryAutoNext");
+  if (autoCheck) autoCheck.checked = prefs.autoNext !== false;
   modal.hidden = false;
   requestAnimationFrame(startParty);
   audio?.play("celebrate", 0);
-  clearInterval(summaryTimer);
-  if (!isClient() && !isMatch) {
-    let left = 5;
-    const tick = () => {
-      if (!state || state.phase !== "roundEnd") { clearInterval(summaryTimer); return; }
-      primary.textContent = t("summary.nextIn", { n: left });
-      if (left <= 0) {
-        clearInterval(summaryTimer);
-        closeModal("summaryModal");
-        startNextRound();
-        return;
-      }
-      left -= 1;
-    };
-    tick();
-    summaryTimer = setInterval(tick, 1000);
-  }
+  startSummaryCountdown();
 }
 
 function buildUndoExplanation() {
@@ -3310,19 +3374,63 @@ function showResult(text) {
   resultTimer = setTimeout(() => { banner.hidden = true; }, seconds * 1000);
 }
 
-function openLastTrickModal() {
-  const last = state?.lastTrick;
-  if (!last) return;
+function renderLogRecord(record) {
   const meta = $("#lastTrickMeta");
-  if (meta) meta.textContent = t("lastTrick.winner", { seat: seatName(last.winner), combo: comboSummary(last.combo), n: last.captured });
   const list = $("#lastTrickList");
-  if (list) {
-    list.innerHTML = (last.entries || []).map((entry) => `
-      <div class="last-trick-row ${entry.seat === last.winner ? "win" : ""}">
-        <b>${escapeHTML(seatName(entry.seat))}</b>
-        <span>${escapeHTML(entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden"))}</span>
-      </div>`).join("");
+  if (!record) {
+    if (meta) meta.textContent = t("log.empty");
+    if (list) list.innerHTML = "";
+    return;
   }
+  const call = record.call ? `${comboName(record.call.type)} ×${record.call.count}` : "—";
+  if (meta) {
+    meta.textContent = `${t("log.round")} ${record.round} · ${t("log.trick")} ${record.trick} · ${t("log.call")}: ${call} · ${t("log.winner")}: ${seatName(record.winner)} (${comboSummary(record.combo)})`;
+  }
+  if (list) {
+    list.innerHTML = (record.entries || []).map((entry) => {
+      const tiles = (entry.tiles || []).map((tile) => {
+        if (!entry.revealed || !tile || tile.id === "hidden" || !tile.hanzi) {
+          return `<span class="log-tile back" aria-hidden="true">?</span>`;
+        }
+        return `<span class="log-tile ${tile.color === "r" ? "red" : ""}">${tile.hanzi}</span>`;
+      }).join("");
+      const label = entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden");
+      return `<div class="log-entry ${entry.seat === record.winner ? "win" : ""}">
+        <div class="log-entry-head"><b>${escapeHTML(seatName(entry.seat))}</b><span>${escapeHTML(label)}</span></div>
+        <div class="log-tiles">${tiles}</div>
+      </div>`;
+    }).join("") + `<div class="summary-note">${escapeHTML(t("log.why"))}</div>`;
+  }
+}
+
+function renderLogBrowser(round, trick) {
+  const records = state?.trickArchive || [];
+  const roundSelect = $("#logRoundSelect");
+  const trickSelect = $("#logTrickSelect");
+  if (!records.length) {
+    renderLogRecord(null);
+    if (roundSelect) roundSelect.innerHTML = "";
+    if (trickSelect) trickSelect.innerHTML = "";
+    return;
+  }
+  const rounds = [...new Set(records.map((record) => record.round))].sort((a, b) => a - b);
+  const currentRound = rounds.includes(Number(round)) ? Number(round) : rounds[rounds.length - 1];
+  if (roundSelect) {
+    roundSelect.innerHTML = rounds.map((value) => `<option value="${value}" ${value === currentRound ? "selected" : ""}>${t("log.round")} ${value}</option>`).join("");
+  }
+  const inRound = records.filter((record) => record.round === currentRound);
+  const currentTrick = inRound.some((record) => record.trick === Number(trick)) ? Number(trick) : inRound[inRound.length - 1].trick;
+  if (trickSelect) {
+    trickSelect.innerHTML = inRound.map((record) => `<option value="${record.trick}" ${record.trick === currentTrick ? "selected" : ""}>${t("log.trick")} ${record.trick}</option>`).join("");
+  }
+  renderLogRecord(inRound.find((record) => record.trick === currentTrick) || inRound[inRound.length - 1]);
+}
+
+function openLastTrickModal(round = null, trick = null) {
+  const records = state?.trickArchive || [];
+  if (!records.length) return;
+  const latest = records[records.length - 1];
+  renderLogBrowser(round ?? latest.round, trick ?? latest.trick);
   const modal = $("#lastTrickModal");
   if (modal) modal.hidden = false;
   audio?.play("click", 0);
@@ -3836,6 +3944,13 @@ function sanitizeForSeat(source, seat) {
       humanTiles: []
     };
   }
+  raw.trickArchive = (raw.trickArchive || []).map((record) => ({
+    ...record,
+    entries: (record.entries || []).map((entry) => {
+      if (entry.revealed || entry.seat === seat) return entry;
+      return { ...entry, combo: null, tiles: (entry.tiles || []).map(() => "hidden") };
+    })
+  }));
   raw.selected = [];
   return raw;
 }
@@ -3848,6 +3963,15 @@ function hydrateRemoteState(raw) {
   game.captureHidden = [0, 1, 2, 3].map((seat) => (
     (raw.captures?.[seat] || []).map((_, index) => Boolean(raw.captureHidden?.[seat]?.[index]))
   ));
+  game.trickArchive = (raw.trickArchive || []).map((record) => ({
+    ...record,
+    combo: record.combo || null,
+    entries: (record.entries || []).map((entry) => ({
+      ...entry,
+      combo: entry.combo || null,
+      tiles: (entry.tiles || []).map((id) => TILE_BY_ID[id] || { id: "hidden", hanzi: "?", color: "b", rank: "soldier", power: 1 })
+    }))
+  }));
   game.captureFrom = [0, 1, 2, 3].map((seat) => (
     (raw.captures?.[seat] || []).map((_, index) => (
       Number.isInteger(raw.captureFrom?.[seat]?.[index]) ? raw.captureFrom[seat][index] : null
@@ -7332,7 +7456,18 @@ function bindEvents() {
     if (isClient()) sendNetAction("chuan", [], false);
     else claimChuan(MY_SEAT);
   });
-  $("#lastTrickBtn")?.addEventListener("click", openLastTrickModal);
+  $("#lastTrickBtn")?.addEventListener("click", () => openLastTrickModal());
+  $("#logHistoryBtn")?.addEventListener("click", () => openLastTrickModal());
+  $("#summaryBody")?.addEventListener("click", (event) => {
+    if (event.target.closest("#summaryLogBtn")) openLastTrickModal();
+  });
+  $("#logRoundSelect")?.addEventListener("change", (event) => renderLogBrowser(event.target.value, null));
+  $("#logTrickSelect")?.addEventListener("change", (event) => renderLogBrowser($("#logRoundSelect")?.value, event.target.value));
+  $("#summaryAutoNext")?.addEventListener("change", (event) => {
+    prefs.autoNext = event.target.checked;
+    savePrefs();
+    startSummaryCountdown();
+  });
   $("#resultSelect")?.addEventListener("change", (event) => {
     const value = Number(event.target.value);
     prefs.resultSeconds = value;

@@ -6,6 +6,7 @@
   <title>Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio</title>
   <meta name="description" content="A bilingual, offline-friendly 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with 32 Chinese chess tiles. Vanilla HTML, CSS and Three.js." />
   <meta name="theme-color" content="#e8f0f2" />
+  <meta name="app-version" content="1.8.5" />
   <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta property="og:type" content="website" />
@@ -23,8 +24,30 @@
       document.documentElement.dataset.theme = "daybreak";
     }
   </script>
+  <script>
+    /* If a cached HTML page is older than the deployed state.json, reload once
+       with a cache-busting query. This makes a normal refresh self-healing. */
+    (function () {
+      try {
+        var meta = document.querySelector('meta[name="app-version"]');
+        if (!meta || location.protocol === 'file:') return;
+        var key = 'leabtui.bootReload.v1';
+        fetch('state.json?ts=' + Date.now(), { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d || !d.version || d.version === meta.content) return;
+            if (sessionStorage.getItem(key) === d.version) return;
+            sessionStorage.setItem(key, d.version);
+            var url = new URL(location.href);
+            url.searchParams.set('v', String(Date.now()));
+            location.replace(url.toString());
+          })
+          .catch(function () {});
+      } catch (error) { /* ignore */ }
+    })();
+  </script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=1.8.4" />
+  <link rel="stylesheet" href="style.css?v=1.8.5" />
   <script type="importmap">
     {
       "imports": {
@@ -45,7 +68,7 @@
         <span class="brand-copy">
           <span class="brand-line">
             <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
-            <span id="brandVersion" class="brand-version">(v1.8.4)</span>
+            <span id="brandVersion" class="brand-version">(v1.8.5)</span>
           </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
@@ -231,6 +254,7 @@
         <section class="panel log-panel" id="logPanel">
           <div class="panel-head">
             <h2 data-i18n="log.title">Trick log</h2>
+            <button id="logHistoryBtn" class="mini-btn" type="button" data-i18n="log.history">History</button>
             <span class="badge" data-i18n="log.live">live</span>
           </div>
           <ol id="logList" class="log-list"></ol>
@@ -239,7 +263,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.8.4</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.8.5</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -471,7 +495,7 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.8.4</span>
+          <span class="version-chip version-label">v1.8.5</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
@@ -549,6 +573,10 @@
         <h2 id="summaryTitle">Round complete</h2>
         <canvas id="partyCanvas" class="party-canvas" aria-hidden="true"></canvas>
         <div id="summaryBody" class="summary-body"></div>
+        <label id="summaryAutoWrap" class="lobby-check summary-auto" hidden>
+          <input id="summaryAutoNext" type="checkbox" checked />
+          <span data-i18n="summary.autoNext">Auto-start next round (30s)</span>
+        </label>
         <div class="modal-actions">
           <button id="summaryPrimary" class="btn btn-gold" type="button">Next round</button>
           <button id="summarySecondary" class="btn btn-ghost" type="button">New match</button>
@@ -596,7 +624,11 @@
     <div id="lastTrickModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="lastTrickTitle">
       <div class="modal-card modal-small">
         <button class="modal-close" type="button" data-close="lastTrickModal" aria-label="Close">×</button>
-        <h2 id="lastTrickTitle" data-i18n="lastTrick.title">Last trick</h2>
+        <h2 id="lastTrickTitle" data-i18n="log.browserTitle">Trick history</h2>
+        <div class="log-filters">
+          <label><span data-i18n="log.round">Round</span><select id="logRoundSelect"></select></label>
+          <label><span data-i18n="log.trick">Trick</span><select id="logTrickSelect"></select></label>
+        </div>
         <p id="lastTrickMeta" class="lobby-note"></p>
         <div id="lastTrickList" class="last-trick-list"></div>
         <div class="modal-actions">
@@ -646,6 +678,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.8.4"></script>
+  <script type="module" src="script.js?v=1.8.5"></script>
 </body>
 </html>
