@@ -2,6 +2,13 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.10] — 2026-11-07
+
+### Changed
+
+- **Bots draft at random.** The experimental bot now takes two tiles uniformly at random from the remaining pool instead of the two highest-power tiles. It still never reads the human hand; the pool is public in this variant. Bot hands are therefore mixed rather than stacked with Generals and Advisors.
+- **Seeded drafts stay reproducible.** The pool shuffle now uses the round seed (it previously reused the previous deal's generator), so `?seed=` reproduces the pool and the bot draws for the same round.
+
 ## [1.9.9] — 2026-11-07
 
 ### Added

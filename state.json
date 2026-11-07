@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.9",
-  "version": "1.9.9",
+  "projectVersion": "1.9.10",
+  "version": "1.9.10",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (371 checks)",
+    "staticCheck": "scripts/check.mjs (372 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
     "multiplayer": "scripts/net-check.mjs — 23/23",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
@@ -288,9 +288,14 @@
       "version": "1.9.9",
       "date": "2026-11-07",
       "summary": "Table draft switch, logged bot picks and a large host PIN."
+    },
+    {
+      "version": "1.9.10",
+      "date": "2026-11-07",
+      "summary": "Random bot draft picks."
     }
   ],
-  "releaseNotes": "1.9.9 adds a Draft on/off HUD chip with visible bot picks in the Turn log, and enlarges the host PIN to the room-number size.",
+  "releaseNotes": "1.9.10 makes bot draft picks uniformly random and seeds the draft pool from the round.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

@@ -44,10 +44,14 @@ the bots are drafting too, rather than silently skipping their turns.
 
 ## Bots
 
-The experimental bot picks the two highest-power tiles still in the pool (red
-first on a tie). This is intentionally simple and greedy; it does not plan a
-hand or deny the human a known combination. Treat bot drafting as a placeholder,
-not a strong opponent model.
+The bot picks **two tiles uniformly at random** from the remaining pool. It does
+not rank by power, does not read the human's hand and does not plan a
+combination. The pool is public in this variant, so every seat can see the
+available tiles; the random pick is a fairness/feel decision, not a hidden
+information one.
+
+With a `?seed=` or an explicit `seed`, the pool shuffle and the bot picks are
+reproducible for the same round; human picks still change the pool.
 
 ## Interactions with the rest of the rules
 

@@ -224,6 +224,8 @@ ok(script.includes("function startDraft") && script.includes("function draftPick
 ok(/state\.hands\.every\(\(hand\) => hand\.length === 8\)/.test(script), "draft finishes only when every hand has 8 tiles");
 ok(/kind === "draft"[\s\S]{0,80}draftPick\(profile\.seat/.test(script), "draft picks are relayed through the host");
 ok(index.includes('id="draftChip"') && script.includes("function setDraftMode"), "draft can be toggled at the table");
+const aiDraftBody = script.slice(script.indexOf("function aiDraftPick"), script.indexOf("function beginTrick"));
+ok(aiDraftBody.includes("randomDraftPair") && !aiDraftBody.includes(".sort("), "bot draft picks are uniformly random");
 ok(script.includes('kind: "draft"') && script.includes('"log.draftPick"'), "bot draft picks are recorded in the log");
 ok(script.includes("prefs.draftMode = prefs.draftMode === true"), "draft mode defaults off");
 ok(script.includes("copy.draftPool") && script.includes("game.draftPool"), "draft pool survives save and hydrate");

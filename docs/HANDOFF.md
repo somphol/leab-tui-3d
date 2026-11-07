@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Release **1.9.9** of Leab-Tui 3D is built, verified and published. It adds the table interaction layer (zones, drag-to-play, showdown pause, captured piles), Chuan-aware result explanations, a Turn-Log-style reveal panel, winner badges, and an off-by-default **experimental draft deal**: the host toggles it in the lobby or in Actions, seats take turns picking 2 tiles four times from a public pool, bots pick automatically, and picks are relayed through the host. 1.9.9 unifies the reveal result and the Turn-history detail with the captured-pile comparison popup.
+Release **1.9.10** of Leab-Tui 3D is built, verified and published. It adds the table interaction layer (zones, drag-to-play, showdown pause, captured piles), Chuan-aware result explanations, a Turn-Log-style reveal panel, winner badges, and an off-by-default **experimental draft deal**: the host toggles it in the lobby or in Actions, seats take turns picking 2 tiles four times from a public pool, bots pick automatically, and picks are relayed through the host. 1.9.10 unifies the reveal result and the Turn-history detail with the captured-pile comparison popup.
 
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Live: <https://somphol.github.io/leab-tui-3d/>

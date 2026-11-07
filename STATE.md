@@ -23,6 +23,10 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.9.10 — random bot picks
+
+The experimental bot no longer takes the two strongest tiles. It draws two tiles uniformly at random from the remaining pool, so a bot hand is not simply the best available cards. The pool shuffle and bot draws are reproducible when a seed is set.
+
 ## Release 1.9.9 — table draft switch and a readable PIN
 
 The Draft mode gets a **Draft: on/off** chip in the HUD so the host can switch it without opening Actions; the change applies to the next deal and may be made while a draft is running. Every pick, including bot picks, appears in the live Turn log. The host room PIN now uses the same 28 px mono treatment as the room number, in its own gold card.

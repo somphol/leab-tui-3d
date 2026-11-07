@@ -4,7 +4,7 @@
 
 A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat, independent full-mesh voice chat (mic mute + deafen), and an off-by-default experimental draft deal. It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.9**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.10**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -81,7 +81,7 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.9"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.10"
 prefs: theme daybreak (default)|mahogany|jade|midnight|parchment; fontSize sm|md|lg|xl; autoAudio on by default; CSS --fs-scale 0.9/1/1.12/1.24
 room: 482-173 (display; the peer id still carries a private leab prefix); peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
@@ -97,7 +97,7 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **Face-down play.** The leader and every follower send exactly the called count **face-down**. When all four have sent, the leader reveals automatically; each follower then decides to show or stay hidden, in turn. A set must be revealed to compete. Do not auto-reveal a follower or let an unrevealed set win.
 - **Table rules.** `prefs.target` (20/50/100), `prefs.direction` (`cw`/`ccw`, `nextSeat` is the only turn-order helper) and `prefs.mode` (`piles`/`bid`) are copied into `state` by `beginMatch`. Changing mode mid-match is ignored until the next match; target and direction apply live.
 - **Bid mode.** After the deal, phase `bid`; `bidOrder` starts at the leader and follows `nextSeat`. `bidForbidden()` blocks the last bidder from making the total exactly 8. `endRound` uses bid + 5 (zero bid + 3) on a hit, minus the difference on a miss, times `state.multiplier`.
-- **Draft deal (experimental).** `prefs.draftMode` / `state.draftMode` default false. A host-only toggle exists in the lobby (before the room starts) and in Actions (applies to the next deal, disabled during a draft). `startDraft` shuffles a public pool, orders seats from `nextSeat(dealer)`, and each seat takes exactly 2 tiles for 4 cycles; `finishDraft` requires all four hands at 8 and gives the lead to the red-General holder. Bots pick by raw power (`aiDraftPick`). Redraw is disabled while draft mode is on. The pool is public on the wire; hands stay redacted. Guests relay picks as `kind:"draft"`. Do not present this as a standard rule; the source has no draft. Design record: `docs/DRAFT.md`.
+- **Draft deal (experimental).** `prefs.draftMode` / `state.draftMode` default false. A host-only toggle exists in the lobby (before the room starts) and in Actions (applies to the next deal, disabled during a draft). `startDraft` shuffles a public pool, orders seats from `nextSeat(dealer)`, and each seat takes exactly 2 tiles for 4 cycles; `finishDraft` requires all four hands at 8 and gives the lead to the red-General holder. Bots pick two tiles at random (`randomDraftPair` / `aiDraftPick`), seeded from the round when a seed is set. Redraw is disabled while draft mode is on. The pool is public on the wire; hands stay redacted. Guests relay picks as `kind:"draft"`. Do not present this as a standard rule; the source has no draft. Design record: `docs/DRAFT.md`.
 - **Redraw (โละ).** `canRedraw` requires no tile from the red Elephant up before the first play. `applyRedraw` increments `redraws`, sets `multiplier = redraws + 1`, and redeals with the requester as leader. Multipliers apply at `endRound` and reset each round.
 - **Chuan special.** `canClaimChuan` requires the last follower, seven piles (28 tiles), one tile left and it is a Soldier. `claimChuan` adds it, sets an unbeatable best and resolves; the winner reaches 32 tiles.
 - **Captured visibility.** `state.captureHidden` is a per-seat boolean array parallel to `captures`. A hidden tile stays face-down in the winner's pile and is never flipped by the UI. `serializableState` carries the flags; saves and network state preserve them. Clicking a captured tile opens `pileModal` with the pile left-to-right, face-up or back.

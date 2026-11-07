@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.9";
-import { VoiceChat } from "./voice-chat.js?v=1.9.9";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.9";
+} from "./peer-manager.js?v=1.9.10";
+import { VoiceChat } from "./voice-chat.js?v=1.9.10";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.10";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.9",
+  version: "1.9.10",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -2306,12 +2306,20 @@ function finishDraft() {
   toast(t("toast.draftDone"), "jade");
 }
 
+function randomDraftPair(pool, rng = random) {
+  const copy = (pool || []).slice();
+  const picks = [];
+  for (let i = 0; i < 2 && copy.length; i += 1) {
+    const [tile] = copy.splice(Math.floor(rng() * copy.length), 1);
+    if (tile) picks.push(tile);
+  }
+  return picks;
+}
+
 function aiDraftPick(seat) {
   if (!state || state.phase !== "draft" || state.turn !== seat) return;
-  const picks = state.draftPool.slice()
-    .sort((a, b) => b.power - a.power || (a.color === "r" ? -1 : 1))
-    .slice(0, 2)
-    .map((tile) => tile.id);
+  const picks = randomDraftPair(state.draftPool).map((tile) => tile.id);
+  if (picks.length !== 2) return;
   draftPick(seat, picks);
 }
 
@@ -2366,10 +2374,10 @@ function scheduleAI(delay = 1000) {
 
 function dealRound(leaderHint = null) {
   if (!state) return;
+  random = state.seed ? mulberry32(state.seed + state.round * 7919) : Math.random;
   if (state.draftMode) { startDraft(); return; }
   clearTimeout(actionTimer);
   actionToken += 1;
-  random = state.seed ? mulberry32(state.seed + state.round * 7919) : Math.random;
   const deck = shuffle(buildDeck());
   const hands = [[], [], [], []];
   for (let i = 0; i < 32; i += 1) hands[i % 4].push(deck[i]);

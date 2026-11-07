@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.9.9-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.9.10-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -184,7 +184,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 - Online play is host-authoritative and serverless. There is no host migration: if the host closes the tab, the room ends. Guests are not authenticated.
 - Redaction keeps other hands off the wire, but the host browser knows every hand and a determined guest can inspect their own client. There is no collusion or cheating detection.
 - The rules follow the Thai description cited in [docs/RULES.md](docs/RULES.md); where that source is ambiguous, the studio documents a playable interpretation. It is not an official tournament rulebook.
-- The draft deal is an experimental house variant, not part of the source rules. Its bot picks greedily (highest power first) and redraw is disabled while it is on.
+- The draft deal is an experimental house variant, not part of the source rules. Its bots pick two tiles at random from the pool and redraw is disabled while it is on.
 - No accounts, leaderboards or server-side storage.
 - The page is not fully offline: Three.js r160 is loaded from jsDelivr. Multiplayer also needs PeerJS from jsDelivr and the `0.peerjs.com` broker. The rule engine can still be exercised if the CDN fails, but the table and rooms will not start.
 - Mobile is verified under Chrome device emulation, not on physical iOS/Android hardware.
@@ -195,7 +195,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 
 ## Credits
 
-Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.9.9**; the original table was 1.0.0.
+Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.9.10**; the original table was 1.0.0.
 
 Rules reference: Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016), linked in [docs/RULES.md](docs/RULES.md). Three.js and PeerJS are MIT-licensed; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
