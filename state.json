@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.8.2",
-  "version": "1.8.2",
+  "projectVersion": "1.8.3",
+  "version": "1.8.3",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-07T09:01:18-08:00",
-    "durationSeconds": 82544,
-    "durationHuman": "22h 55m 44s",
+    "packagedAt": "2026-11-07T09:10:01-08:00",
+    "durationSeconds": 83067,
+    "durationHuman": "23h 4m 27s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-07T17:01:25Z"
+    "publishedAt": "2026-11-07T17:10:07Z"
   },
   "tokens": {
-    "input": 5569920,
-    "output": 548808,
-    "reasoning": 472614,
-    "cacheRead": 644896256,
+    "input": 5578514,
+    "output": 553211,
+    "reasoning": 475651,
+    "cacheRead": 647963520,
     "cacheWrite": 1087,
-    "total": 6591342,
-    "totalWithCache": 651488685,
+    "total": 6607376,
+    "totalWithCache": 654571983,
     "cost": 0.0,
-    "note": "Session total at 2026-11-07T09:01:18-08:00, covering 1.4.0–1.8.2."
+    "note": "Session total at 2026-11-07T09:10:01-08:00, covering 1.4.0–1.8.3."
   },
   "cost": {
     "usd": 0.0,
@@ -203,9 +203,14 @@
       "version": "1.8.2",
       "date": "2026-11-07",
       "summary": "Dancing 3D summary, host-gated next round with 5s auto-start, showdown button and HUD pointer fixes."
+    },
+    {
+      "version": "1.8.3",
+      "date": "2026-11-07",
+      "summary": "Allow showing a losing legal set at showdown."
     }
   ],
-  "releaseNotes": "1.8.2 adds the 3D congratulations summary, host-only next-round control with a 5s auto-start, and fixes the missing showdown buttons and the unclickable Top/3D and Result controls.",
+  "releaseNotes": "1.8.3 lets a player show a legal set even when it loses; the showdown button is Show set, with Keep hidden as the alternative.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

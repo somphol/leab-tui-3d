@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.3] — 2026-11-07
+
+### Changed
+
+- **A losing set can be shown.** At showdown the **Show** button is enabled for any legal set of the called type, not only one that beats the table. Showing a weaker set reveals it, loses the trick, and stays face-up in the winner's pile; **Keep hidden** remains the other choice. The button is labelled **Show set** instead of “Show & win”.
+
 ## [1.8.2] — 2026-11-07
 
 ### Fixed

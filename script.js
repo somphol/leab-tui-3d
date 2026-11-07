@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.8.2";
-import { VoiceChat } from "./voice-chat.js?v=1.8.2";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.2";
+} from "./peer-manager.js?v=1.8.3";
+import { VoiceChat } from "./voice-chat.js?v=1.8.3";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.3";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.8.2",
+  version: "1.8.3",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T09:01:18-08:00",
-    durationHuman: "22h 55m 44s",
-    tokensTotal: "6591342",
-    tokensInput: "5569920",
-    tokensOutput: "548808",
-    tokensReasoning: "472614",
-    tokensCacheRead: "644896256",
+    packagedAt: "2026-11-07T09:10:01-08:00",
+    durationHuman: "23h 4m 27s",
+    tokensTotal: "6607376",
+    tokensInput: "5578514",
+    tokensOutput: "553211",
+    tokensReasoning: "475651",
+    tokensCacheRead: "647963520",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -295,7 +295,8 @@ const I18N = {
     "dock.showdown": "Showdown",
     "dock.showdownTitle": "Show or keep hidden?",
     "dock.showdownCan": "Your {combo} beats {best}. Show it to take the trick.",
-    "dock.showdownWait": "Only a revealed set can win. If yours cannot beat the table, keep it hidden.",
+    "dock.showdownWait": "Only a revealed set can win. You may show yours even if it loses.",
+    "dock.showdownLose": "Your {combo} does not beat {best}, but you may still show it.",
     "dock.showdownFirst": "Show your set first",
     "dock.showdownFirstHelp": "You called this shape. Reveal it to set the mark for the other seats.",
     "dock.showdownNoBeat": "You cannot beat the table",
@@ -454,7 +455,7 @@ const I18N = {
     "coach.followNoBeat": "Your best {type} is {yours}, but {best} still wins. Send {n} tiles face-down and keep your strength.",
     "coach.followNoCombo": "You have no legal {type}. Send {n} tiles face-down — hidden tiles cannot win.",
     "coach.followHidden": "Send these {n} tiles face-down. Everyone sends hidden; the leader reveals first.",
-    "coach.showdownYou": "The leader has revealed. Show your set if it beats the table, or keep it hidden.",
+    "coach.showdownYou": "The leader has revealed. Show your set or keep it hidden — showing a losing set is allowed.",
     "coach.showdownWait": "Showdown: {seat} is deciding whether to reveal.",
     "coach.allHidden": "all hidden",
     "coach.followReady": "Your {combo} beats {best}. Show it to win the trick and take the {tiles} tiles — or play face-down and keep them hidden.",
@@ -802,7 +803,8 @@ const I18N = {
     "dock.showdown": "เปิดไพ่",
     "dock.showdownTitle": "จะเปิดหรือเก็บคว่ำ?",
     "dock.showdownCan": "{combo} ของคุณชนะ {best} เปิดเพื่อกินกองนี้",
-    "dock.showdownWait": "เปิดแล้วชนะเท่านั้น ถ้าสู้โต๊ะไม่ได้ให้เก็บคว่ำไว้",
+    "dock.showdownWait": "เปิดแล้วชนะเท่านั้น คุณจะเปิดชุดที่แพ้ให้ดูก็ได้",
+    "dock.showdownLose": "{combo} ของคุณไม่ชนะ {best} แต่จะเปิดให้ดูก็ได้",
     "dock.showdownFirst": "เปิดชุดของคุณก่อน",
     "dock.showdownFirstHelp": "คุณเป็นคนเรียก เปิดชุดนี้เพื่อตั้งมาตรฐานให้คนอื่น",
     "dock.showdownNoBeat": "คุณสู้โต๊ะไม่ได้",
@@ -961,7 +963,7 @@ const I18N = {
     "coach.followNoBeat": "{type} ที่ดีที่สุดของคุณคือ {yours} แต่ {best} ยังใหญ่กว่า ส่ง {n} ตัวลงคว่ำและเก็บของดีไว้",
     "coach.followNoCombo": "คุณไม่มี {type} ที่ถูกกติกา ส่ง {n} ตัวลงคว่ำ — ไพ่ที่คว่ำชนะไม่ได้",
     "coach.followHidden": "ส่ง {n} ตัวนี้แบบคว่ำ ทุกคนส่งคว่ำก่อน แล้วคนเรียกจะเปิดก่อน",
-    "coach.showdownYou": "คนเรียกเปิดแล้ว ถ้าชุดคุณชนะโต๊ะให้เปิด ไม่งั้นเก็บคว่ำไว้",
+    "coach.showdownYou": "คนเรียกเปิดแล้ว จะเปิดชุดหรือเก็บคว่ำก็ได้ — เปิดชุดที่แพ้ให้ดูก็ได้",
     "coach.showdownWait": "เปิดไพ่: {seat} กำลังตัดสินใจจะเปิดหรือไม่",
     "coach.allHidden": "ทุกคนคว่ำ",
     "coach.followReady": "{combo} ของคุณชนะ {best} เปิดเพื่อชนะตักและเก็บ {tiles} ตัว หรือจะคว่ำไว้ก็ได้ แต่ไพ่ที่คว่ำชนะไม่ได้",
@@ -2283,6 +2285,13 @@ function submitPlay(seat, tileIds, reveal) {
   return true;
 }
 
+function showdownCanShow(seat) {
+  if (!state?.center) return false;
+  const entry = state.center.find((item) => item.seat === seat);
+  if (!entry?.combo) return false;
+  return !state.lead?.combo || entry.combo.type === state.lead.combo.type;
+}
+
 function showdownCanBeat(seat) {
   if (!state?.center) return false;
   const entry = state.center.find((item) => item.seat === seat);
@@ -2325,10 +2334,10 @@ function showdown(seat, reveal) {
   if (!state || state.phase !== "showdown" || state.turn !== seat) return false;
   const entry = state.center.find((item) => item.seat === seat);
   if (!entry) return false;
-  const shown = Boolean(reveal && showdownCanBeat(seat));
+  const shown = Boolean(reveal && showdownCanShow(seat));
   if (!shown && !state.best) return false;
   entry.revealed = shown;
-  if (shown) state.best = { seat, combo: entry.combo };
+  if (shown && showdownCanBeat(seat)) state.best = { seat, combo: entry.combo };
   state.log.push({
     kind: shown ? "challenge" : "hidden",
     trick: state.trick,
@@ -3149,7 +3158,8 @@ function renderSelection() {
 
   if (state.phase === "showdown") {
     const leaderTurn = humanTurn && !state.best;
-    const canShow = humanTurn && showdownCanBeat(MY_SEAT);
+    const canShow = humanTurn && showdownCanShow(MY_SEAT);
+    const canBeat = humanTurn && showdownCanBeat(MY_SEAT);
     const entry = state.center.find((item) => item.seat === MY_SEAT);
     kicker.textContent = t("dock.showdown");
     title.textContent = humanTurn
@@ -3157,14 +3167,16 @@ function renderSelection() {
       : t("dock.waiting", { seat: seatName(state.turn) });
     detail.textContent = leaderTurn
       ? t("dock.showdownFirstHelp")
-      : canShow && entry?.combo && state.best
-        ? t("dock.showdownCan", { combo: comboSummary(entry.combo), best: comboSummary(state.best.combo) })
-        : t("dock.showdownWait");
+      : !canShow
+        ? t("dock.showdownWait")
+        : canBeat && entry?.combo && state.best
+          ? t("dock.showdownCan", { combo: comboSummary(entry.combo), best: comboSummary(state.best.combo) })
+          : t("dock.showdownLose", { combo: comboSummary(entry?.combo), best: comboSummary(state.best?.combo) });
     pips.innerHTML = "";
     leadBtn.hidden = true;
     revealBtn.hidden = !humanTurn;
     revealBtn.disabled = !canShow;
-    revealBtn.textContent = leaderTurn ? t("actions.showFirst") : t("actions.showWin");
+    revealBtn.textContent = leaderTurn ? t("actions.showFirst") : t("actions.showSet");
     facedownBtn.hidden = !humanTurn;
     facedownBtn.disabled = !humanTurn || leaderTurn;
     facedownBtn.textContent = t("actions.keepHidden");
