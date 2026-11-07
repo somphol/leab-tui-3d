@@ -18,14 +18,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.6.5";
-import { VoiceChat } from "./voice-chat.js?v=1.6.5";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.5";
+} from "./peer-manager.js?v=1.6.6";
+import { VoiceChat } from "./voice-chat.js?v=1.6.6";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.6";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.6.5",
+  version: "1.6.6",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -36,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T17:45:08-08:00",
-    durationHuman: "7h 39m 34s",
-    tokensTotal: "3206120",
-    tokensInput: "2595354",
-    tokensOutput: "369515",
-    tokensReasoning: "241251",
-    tokensCacheRead: "479852544",
+    packagedAt: "2026-11-06T17:53:07-08:00",
+    durationHuman: "7h 47m 34s",
+    tokensTotal: "3213675",
+    tokensInput: "2597848",
+    tokensOutput: "373808",
+    tokensReasoning: "242019",
+    tokensCacheRead: "489159296",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -4145,8 +4145,6 @@ function renderLobby() {
   if (soloFromLost) soloFromLost.hidden = !(view === "lost" || view === "join");
   const waitLeave = $("#lobbyWaitLeave");
   if (waitLeave) waitLeave.hidden = view === "lost";
-  const copyBtn = $("#lobbyCopyBtn");
-  if (copyBtn) copyBtn.disabled = !code;
   const copyInfo = $("#lobbyCopyInfo");
   if (copyInfo) {
     copyInfo.disabled = !code;
@@ -6205,7 +6203,6 @@ function bindEvents() {
   $("#joinReload")?.addEventListener("click", forceReload);
   $("#updateReload")?.addEventListener("click", forceReload);
   $("#updateDismiss")?.addEventListener("click", () => { const banner = $("#updateBanner"); if (banner) banner.hidden = true; });
-  $("#lobbyCopyBtn")?.addEventListener("click", copyInvite);
   $("#lobbyCopyInfo")?.addEventListener("click", copyRoomInfo);
   $("#lobbyShareBtn")?.addEventListener("click", shareRoomInfo);
   $("#lobbyPinPaste")?.addEventListener("click", pastePasscode);

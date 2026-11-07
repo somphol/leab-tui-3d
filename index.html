@@ -15,7 +15,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://0.peerjs.com wss://0.peerjs.com; font-src 'self' data:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=1.6.5" />
+  <link rel="stylesheet" href="style.css?v=1.6.6" />
   <script type="importmap">
     {
       "imports": {
@@ -199,7 +199,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.6.5</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.6.6</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -282,7 +282,7 @@
           </div>
           <p class="lobby-note" data-i18n="net.menuNote">No game server and no account. PeerJS brokers only the first handshake.</p>
           <div class="version-row">
-            <span class="version-chip version-label">v1.6.5</span>
+            <span class="version-chip version-label">v1.6.6</span>
             <button id="lobbyReload" class="mini-btn" type="button" data-i18n="version.reload">↻ Reload</button>
           </div>
         </section>
@@ -291,12 +291,10 @@
           <div class="room-line">
             <span data-i18n="net.roomCode">Room code</span>
             <strong id="lobbyRoomCode">—</strong>
-            <button id="lobbyCopyBtn" class="btn btn-ghost btn-small" type="button" data-i18n="net.copyLink">Copy invite link</button>
             <button id="lobbyCopyInfo" class="btn btn-ghost btn-small" type="button" data-i18n="net.copyInvitePin">Copy invite + PIN</button>
             <button id="lobbyShareBtn" class="btn btn-gold btn-small" type="button" hidden data-i18n="net.shareInvitePin">Share invite + PIN</button>
           </div>
           <input id="lobbyInvite" class="lobby-invite" readonly hidden aria-label="Invite link" />
-          <p class="lobby-note" data-i18n="net.codeHelp">Share this code. Letter case does not matter.</p>
           <div class="host-live" role="status" aria-live="polite">
             <span class="host-live-dot" aria-hidden="true"></span>
             <span id="hostListening" data-i18n="net.listening">Listening for guests…</span>
@@ -355,7 +353,7 @@
             <button id="lobbyConnectBtn" class="btn btn-gold" type="button" data-i18n="net.connect">Connect</button>
           </div>
           <div class="version-row join-version-row">
-            <span class="version-chip version-label">v1.6.5</span>
+            <span class="version-chip version-label">v1.6.6</span>
             <button id="joinReload" class="mini-btn" type="button" data-i18n="version.reload">Reload</button>
           </div>
         </section>
@@ -513,6 +511,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.6.5"></script>
+  <script type="module" src="script.js?v=1.6.6"></script>
 </body>
 </html>

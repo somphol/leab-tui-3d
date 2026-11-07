@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.6] — 2026-11-06
+
+### Changed
+
+- **Host a table** is simpler: removed the separate **Copy invite link** button and the “Share this six-digit code” label. The host keeps **Copy invite + PIN** and **Share invite + PIN**; the link is still included in both.
+
 ## [1.6.5] — 2026-11-06
 
 ### Fixed
