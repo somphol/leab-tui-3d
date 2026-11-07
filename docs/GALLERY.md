@@ -122,6 +122,24 @@ The chat panel at 390×844: **Leave room** is still visible in Actions, the glas
 
 Approval is on, a generated 5-digit PIN is set, and **Copy room info** sits next to **Copy invite link**. The plain PIN is shown once in the host panel; state, roster, URL and export contain only the digest. The warning explains that Copy room info puts the PIN in the clipboard.
 
+## iPad landscape — join
+
+![iPad landscape join](../screenshots/ipad-join.jpg)
+
+The join sheet at 1024×768: top-aligned, internally scrollable, 16 px inputs so Safari does not auto-zoom when the keyboard opens. The panel rail sits on the right and the hand dock folds to a circle.
+
+## iPad portrait — table
+
+![iPad portrait table](../screenshots/ipad-portrait.jpg)
+
+The 768×1024 layout uses the same circular panel rail and collapsed hand dock.
+
+## Approval actions
+
+![Approval actions](../screenshots/ipad-approve.jpg)
+
+On the bright Daybreak theme, **Approve** is solid green, **Deny** is solid wine, and **Approve all** is gold. The pending row is readable without relying on contrast alone.
+
 ## What is not shown
 
 - The match-end summary and the undo comparison modal. Both use the same card system; capture them if you add release notes about scoring or learning.

@@ -2,12 +2,22 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.4] — 2026-11-06
+
+### Fixed
+
+- **iPad/tablet landscape join bounce** — form controls are 16 px on touch/tablet (preventing Safari auto-zoom) and tall lobby modals are top-aligned with internal scrolling in short landscape, so the keyboard no longer makes the page bounce.
+- **Approve / Deny contrast** — solid green and wine buttons with larger hit areas on dark and bright themes.
+- **Approve all** is now a gold action instead of a faint outline.
+- **Copy PIN / New PIN** have stronger card contrast on bright themes.
+
 ## [1.6.3] — 2026-11-06
 
 ### Changed
 
 - **Numeric room codes** — `LEAB-482-173` (six digits) instead of mixed letters/digits. There are only 1,000,000 codes; the PIN and approval remain the gates.
 - **PIN simplified to exactly 5 digits** for easier sharing and testing. Auto-generated; **New PIN** rotates it. Common/repeated/sequential values are rejected. A 5-digit PIN has only 100,000 possibilities, so host approval remains the real access control and 8 wrong attempts still lock the room for 60 seconds.
+- **iPad landscape join fix** — 16 px form controls prevent Safari auto-zoom, and tall modals are top-aligned with internal scrolling in short landscape so the keyboard cannot make the page bounce.
 - **Leave room** is now a solid wine button with a stronger border, weight and shadow, so it reads as an action rather than a faint outline.
 - Passcode extraction and `Paste` accept a 5-digit PIN from a shared message.
 

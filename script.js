@@ -18,14 +18,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.6.3";
-import { VoiceChat } from "./voice-chat.js?v=1.6.3";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.3";
+} from "./peer-manager.js?v=1.6.4";
+import { VoiceChat } from "./voice-chat.js?v=1.6.4";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.4";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.6.3",
+  version: "1.6.4",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -36,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T17:06:51-08:00",
-    durationHuman: "7h 1m 18s",
-    tokensTotal: "3124203",
-    tokensInput: "2574113",
-    tokensOutput: "343142",
-    tokensReasoning: "206948",
-    tokensCacheRead: "424088960",
+    packagedAt: "2026-11-06T17:34:36-08:00",
+    durationHuman: "7h 29m 3s",
+    tokensTotal: "3197461",
+    tokensInput: "2592759",
+    tokensOutput: "364812",
+    tokensReasoning: "239890",
+    tokensCacheRead: "470619136",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -671,6 +671,8 @@ const I18N = {
     "diag.reachable": "Host reachable. PIN required: {required}. PIN accepted: {accepted}. Approval: {approval}. Started: {started}. Free seats: {seats}.",
     "diag.unreachable": "Probe failed: {error}",
     "diag.noCode": "Enter a room code first.",
+    "dock.expand": "Expand hand dock",
+    "dock.collapse": "Collapse hand dock",
     "version.reload": "Reload",
     "version.reloadHint": "Force reload the app and its scripts",
     "version.reloadConfirm": "Reloading closes the current room or match. Continue?",
@@ -1101,6 +1103,8 @@ const I18N = {
     "diag.reachable": "ถึงเจ้าบ้าน ต้องใช้ PIN: {required} PIN ถูกต้อง: {accepted} อนุมัติ: {approval} เริ่มแล้ว: {started} ที่นั่งว่าง: {seats}",
     "diag.unreachable": "ทดสอบไม่สำเร็จ: {error}",
     "diag.noCode": "กรอกรหัสห้องก่อน",
+    "dock.expand": "ขยายแถบมือ",
+    "dock.collapse": "ย่อแถบมือ",
     "version.reload": "โหลดใหม่",
     "version.reloadHint": "บังคับโหลดแอปและสคริปต์ใหม่",
     "version.reloadConfirm": "การโหลดใหม่จะปิดห้องหรือแมตช์ปัจจุบัน ดำเนินการต่อหรือไม่?",
@@ -1475,7 +1479,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "mahogany", fontSize: "md", chatOpen: true });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "mahogany", fontSize: "md", chatOpen: true, dockCollapsed: true });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -1504,6 +1508,7 @@ let voice = null;
 let voiceActive = false;
 let chatHistory = [];
 let chatOpen = true;
+let chatUnread = 0;
 let pendingRequests = new Map();
 const pendingTimers = new Map();
 let roomPinPlain = "";
@@ -1511,6 +1516,8 @@ let joinToken = 0;
 let availableVersion = "";
 let lastNetError = "";
 let lastNetStage = "";
+let activePanelId = null;
+let panelHome = null;
 let hostWakeLock = null;
 const speakingSeats = new Set();
 let remoteClock = null;
@@ -2194,6 +2201,7 @@ function toggleTile(id, options = {}) {
     }
   }
   if (prefs.sound) audio?.play("click", 0);
+  expandDock();
   renderAll();
   if (scene) scene.setSelected(state.selected);
 }
@@ -2454,6 +2462,8 @@ function renderAll() {
   if (streak) streak.textContent = `×${stats.currentStreak}`;
   const target = $("#scoreTarget");
   if (target) target.textContent = state.target;
+  const dock = $("#handDock");
+  if (dock) dock.classList.toggle("is-turn", state.turn === MY_SEAT && ["lead", "follow"].includes(state.phase));
   renderNetChrome();
 }
 
@@ -2622,11 +2632,64 @@ function renderSelection() {
   }
 }
 
-function inspectTile(id) {
+let tileTipTimer = null;
+
+function positionTileTip(x, y) {
+  const tip = $("#tileTip");
+  if (!tip || tip.hidden) return;
+  const pad = 10;
+  const rect = tip.getBoundingClientRect();
+  let left = (x ?? window.innerWidth / 2) + 14;
+  let top = (y ?? 100) + 14;
+  if (left + rect.width > window.innerWidth - pad) left = (x ?? window.innerWidth / 2) - rect.width - 14;
+  if (top + rect.height > window.innerHeight - pad) top = (y ?? 100) - rect.height - 14;
+  tip.style.left = `${Math.max(pad, left)}px`;
+  tip.style.top = `${Math.max(pad, top)}px`;
+}
+
+function showTileTip(id, options = {}) {
+  const tip = $("#tileTip");
+  if (!tip) return;
+  const tile = TILE_BY_ID[id];
+  if (!tile) { hideTileTip(); return; }
+  const rank = RANK_BY_ID[tile.rank];
+  tip.innerHTML = `
+    <span class="tile-tip-medallion ${tile.color === "b" ? "black" : ""}">${tile.hanzi}</span>
+    <span class="tile-tip-copy">
+      <strong>${escapeHTML(tileName(tile))}</strong>
+      <span>${escapeHTML(colorName(tile.color))} · ${escapeHTML(rank.en)} · ${escapeHTML(t("inspector.copies"))} ${rank.copies}</span>
+      <small>${escapeHTML(rank.note[LANG])}</small>
+    </span>`;
+  tip.hidden = false;
+  positionTileTip(options.x, options.y);
+  clearTimeout(tileTipTimer);
+  if (options.touch) tileTipTimer = setTimeout(hideTileTip, 4500);
+}
+
+function showHiddenTip(options = {}) {
+  const tip = $("#tileTip");
+  if (!tip) return;
+  tip.innerHTML = `
+    <span class="tile-tip-medallion">?</span>
+    <span class="tile-tip-copy"><strong>${escapeHTML(t("inspector.hidden"))}</strong><span>${escapeHTML(t("inspector.hiddenNote"))}</span></span>`;
+  tip.hidden = false;
+  positionTileTip(options.x, options.y);
+  clearTimeout(tileTipTimer);
+  if (options.touch) tileTipTimer = setTimeout(hideTileTip, 4500);
+}
+
+function hideTileTip() {
+  clearTimeout(tileTipTimer);
+  const tip = $("#tileTip");
+  if (tip) tip.hidden = true;
+}
+
+function inspectTile(id, options = {}) {
   const tile = TILE_BY_ID[id];
   if (!tile) return;
   inspectedTileId = id;
   renderInspector(tile, true);
+  showTileTip(id, options);
 }
 
 function renderInspector(tile = null, pinned = false) {
@@ -2662,11 +2725,11 @@ function renderInspector(tile = null, pinned = false) {
     <p class="tile-note">${escapeHTML(t("inspector.note"))}</p>`;
 }
 
-function inspectHidden() {
+function inspectHidden(options = {}) {
   inspectedTileId = "hidden";
   const body = $("#inspectorBody");
-  if (!body) return;
-  body.innerHTML = `<div class="inspector-empty"><span class="ghost-tile" aria-hidden="true">?</span><div><strong>${escapeHTML(t("inspector.hidden"))}</strong><p>${escapeHTML(t("inspector.hiddenNote"))}</p></div></div>`;
+  if (body) body.innerHTML = `<div class="inspector-empty"><span class="ghost-tile" aria-hidden="true">?</span><div><strong>${escapeHTML(t("inspector.hidden"))}</strong><p>${escapeHTML(t("inspector.hiddenNote"))}</p></div></div>`;
+  showHiddenTip(options);
 }
 
 function renderLog() {
@@ -3765,7 +3828,9 @@ function leaveRoom({ silent = false, keepState = false } = {}) {
   voiceActive = false;
   clearSpeaking();
   chatHistory = [];
+  chatUnread = 0;
   renderChat();
+  renderChatBadge();
   roomPinPlain = "";
   clearRoomIntent();
   renderPinReveal();
@@ -4113,6 +4178,79 @@ function closeLobby() {
   if (modal) modal.hidden = true;
 }
 
+function isPanelRailMode() {
+  return window.matchMedia("(max-width: 1024px)").matches;
+}
+
+function setDockCollapsed(collapsed, options = {}) {
+  const dock = $("#handDock");
+  const button = $("#dockFold");
+  if (!dock) return;
+  dock.classList.toggle("dock-collapsed", Boolean(collapsed));
+  prefs.dockCollapsed = Boolean(collapsed);
+  if (button) {
+    button.textContent = collapsed ? "手" : "⌄";
+    button.setAttribute("aria-expanded", String(!collapsed));
+    button.setAttribute("aria-label", collapsed ? t("dock.expand") : t("dock.collapse"));
+  }
+  if (!options.silent) savePrefs();
+}
+
+function expandDock() {
+  if (isPanelRailMode() && $("#handDock")?.classList.contains("dock-collapsed")) setDockCollapsed(false);
+}
+
+function renderPanelRail() {
+  const rail = $("#panelRail");
+  if (!rail) return;
+  const chatPanel = $("#chatPanel");
+  const chatButton = rail.querySelector('[data-panel="chatPanel"]');
+  if (chatButton) chatButton.hidden = Boolean(chatPanel?.hidden);
+  rail.hidden = !isPanelRailMode();
+  if (!isPanelRailMode() && activePanelId) closePanelSheet();
+}
+
+function openPanelSheet(id) {
+  if (!isPanelRailMode()) return;
+  if (activePanelId) closePanelSheet();
+  if (id === "chatPanel") {
+    chatUnread = 0;
+    renderChatBadge();
+  }
+  const panel = document.getElementById(id);
+  if (!panel || panel.hidden) return;
+  panelHome = { parent: panel.parentElement, next: panel.nextElementSibling };
+  const title = panel.querySelector(".panel-head h2")?.textContent || "";
+  const titleNode = $("#panelSheetTitle");
+  if (titleNode) titleNode.textContent = title;
+  activePanelId = id;
+  panel.classList.add("in-sheet");
+  $("#panelSheetBody")?.appendChild(panel);
+  const sheet = $("#panelSheet");
+  if (sheet) sheet.hidden = false;
+  document.body.classList.add("panel-sheet-open");
+}
+
+function closePanelSheet() {
+  if (!activePanelId) return;
+  const panel = document.getElementById(activePanelId);
+  if (panel) {
+    panel.classList.remove("in-sheet");
+    if (panelHome?.parent) {
+      if (panelHome.next && panelHome.next.parentElement === panelHome.parent) {
+        panelHome.parent.insertBefore(panel, panelHome.next);
+      } else {
+        panelHome.parent.appendChild(panel);
+      }
+    }
+  }
+  activePanelId = null;
+  panelHome = null;
+  const sheet = $("#panelSheet");
+  if (sheet) sheet.hidden = true;
+  document.body.classList.remove("panel-sheet-open");
+}
+
 function renderNetChrome() {
   const chip = $("#netChip");
   if (chip) {
@@ -4136,6 +4274,10 @@ function renderNetChrome() {
   if (leave) leave.hidden = !isNetworked();
   const chatPanel = $("#chatPanel");
   if (chatPanel) chatPanel.hidden = !isNetworked();
+  const chatTool = $("#chatToolBtn");
+  if (chatTool) chatTool.hidden = !isNetworked();
+  renderChatBadge();
+  renderPanelRail();
 }
 
 async function copyText(text, message) {
@@ -4364,14 +4506,53 @@ function renderChat() {
 
 function appendChat(entry) {
   if (!entry || !entry.text) return;
+  const seat = Number(entry.seat) || 0;
   chatHistory.push({
-    seat: Number(entry.seat) || 0,
+    seat,
     name: String(entry.name || "").slice(0, 18),
     text: normaliseChat(entry.text),
     at: Number(entry.at) || Date.now()
   });
   if (chatHistory.length > 80) chatHistory = chatHistory.slice(-80);
   renderChat();
+  if (seat !== MY_SEAT && !chatIsVisible()) {
+    chatUnread += 1;
+    renderChatBadge();
+  }
+}
+
+function chatIsVisible() {
+  const panel = $("#chatPanel");
+  if (!chatOpen || !panel || panel.hidden) return false;
+  if (isPanelRailMode()) return activePanelId === "chatPanel";
+  return true;
+}
+
+function renderChatBadge() {
+  const badge = $("#chatBadge");
+  if (badge) {
+    badge.hidden = chatUnread <= 0;
+    badge.textContent = chatUnread > 9 ? "9+" : String(chatUnread);
+  }
+  const railButton = document.querySelector('.panel-orb[data-panel="chatPanel"]');
+  railButton?.classList.toggle("has-unread", chatUnread > 0);
+}
+
+function openChat() {
+  if (!isNetworked()) {
+    showLobby("menu");
+    return;
+  }
+  chatUnread = 0;
+  renderChatBadge();
+  if (isPanelRailMode()) {
+    openPanelSheet("chatPanel");
+    return;
+  }
+  setChatOpen(true);
+  const panel = $("#chatPanel");
+  panel?.scrollIntoView({ behavior: "smooth", block: "center" });
+  setTimeout(() => $("#chatInput")?.focus(), 220);
 }
 
 function hostChat(seat, text) {
@@ -4395,6 +4576,10 @@ function setChatOpen(open) {
   chatOpen = Boolean(open);
   prefs.chatOpen = chatOpen;
   savePrefs();
+  if (chatOpen) {
+    chatUnread = 0;
+    renderChatBadge();
+  }
   const body = $("#chatBody");
   if (body) body.hidden = !chatOpen;
   const button = $("#chatToggle");
@@ -5627,6 +5812,7 @@ async function createScene() {
   }
 
   function onPointerMove(event) {
+    if (event.pointerType === "touch") return;
     if (event.buttons || dragging) return;
     const record = pick(event);
     const id = record?.id ?? null;
@@ -5637,12 +5823,14 @@ async function createScene() {
         const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
         const stateHasHumanTurn = currentState && currentState.turn === localSeat;
         if (record.faceUp || (currentState && currentState.hands[localSeat]?.some((tile) => tile.id === record.id))) {
-          inspectTile(record.id);
+          inspectTile(record.id, { x: event.clientX, y: event.clientY });
         } else if (stateHasHumanTurn) {
-          inspectHidden();
+          inspectHidden({ x: event.clientX, y: event.clientY });
         } else {
-          inspectHidden();
+          inspectHidden({ x: event.clientX, y: event.clientY });
         }
+      } else {
+        hideTileTip();
       }
     }
   }
@@ -5650,11 +5838,13 @@ async function createScene() {
   function onPointerLeave() {
     hoverId = null;
     canvas.classList.remove("is-hovering-tile");
+    hideTileTip();
   }
 
   function onPointerDown(event) {
     downPoint = { x: event.clientX, y: event.clientY, time: performance.now() };
     dragging = false;
+    hideTileTip();
   }
 
   function onPointerUp(event) {
@@ -5664,15 +5854,20 @@ async function createScene() {
     downPoint = null;
     if (dragging || moved > 7 || elapsed > 900) return;
     const record = pick(event);
-    if (!record) return;
+    if (!record) {
+      hideTileTip();
+      return;
+    }
     const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
     const humanHand = currentState?.hands?.[localSeat] || [];
+    const touch = event.pointerType === "touch";
     if (humanHand.some((tile) => tile.id === record.id) && currentState?.turn === localSeat && ["lead", "follow"].includes(currentState.phase)) {
       toggleTile(record.id);
+      showTileTip(record.id, { x: event.clientX, y: event.clientY, touch });
     } else if (record.faceUp) {
-      inspectTile(record.id);
+      inspectTile(record.id, { x: event.clientX, y: event.clientY, touch });
     } else {
-      inspectHidden();
+      inspectHidden({ x: event.clientX, y: event.clientY, touch });
     }
   }
 
@@ -5955,8 +6150,18 @@ function bindEvents() {
     if (code) saveRoomIntent({ role: "guest", code, name: event.target.value });
   });
   $("#lobbyCodeInput")?.addEventListener("input", () => {
-    const code = normalizeRoomCode($("#lobbyCodeInput").value);
-    if (code) saveRoomIntent({ role: "guest", code, name: $("#lobbyNameInput")?.value || "" });
+    const input = $("#lobbyCodeInput");
+    if (!input) return;
+    const raw = input.value;
+    let digits = "";
+    if (/^https?:|room=/i.test(raw)) digits = normalizeRoomCode(raw) || "";
+    else digits = raw.replace(/\D/g, "").slice(0, 6);
+    if (digits.length === 6) input.value = formatRoomCode(digits);
+    else if (digits.length > 3) input.value = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    else input.value = digits;
+    const end = input.value.length;
+    try { input.setSelectionRange(end, end); } catch { /* ignore */ }
+    if (digits) saveRoomIntent({ role: "guest", code: digits, name: $("#lobbyNameInput")?.value || "" });
   });
   $("#lobbyCodeInput")?.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -5974,6 +6179,18 @@ function bindEvents() {
       else createHostRoom(name);
     }
   });
+  $$(".panel-orb").forEach((button) => button.addEventListener("click", () => openPanelSheet(button.dataset.panel)));
+  $("#panelSheetClose")?.addEventListener("click", closePanelSheet);
+  $("#panelSheet")?.addEventListener("pointerdown", (event) => {
+    if (event.target === $("#panelSheet")) closePanelSheet();
+  });
+  $("#dockFold")?.addEventListener("click", () => {
+    const dock = $("#handDock");
+    if (!dock) return;
+    setDockCollapsed(!dock.classList.contains("dock-collapsed"));
+  });
+  window.matchMedia("(max-width: 1024px)").addEventListener("change", renderPanelRail);
+  $("#chatToolBtn")?.addEventListener("click", openChat);
   $("#joinDiagBtn")?.addEventListener("click", openDiagnostics);
   $("#hostDiagBtn")?.addEventListener("click", openDiagnostics);
   $("#diagProbePin")?.addEventListener("click", () => runProbe(true));
@@ -5985,6 +6202,7 @@ function bindEvents() {
   });
   $("#reloadAppBtn")?.addEventListener("click", forceReload);
   $("#lobbyReload")?.addEventListener("click", forceReload);
+  $("#joinReload")?.addEventListener("click", forceReload);
   $("#updateReload")?.addEventListener("click", forceReload);
   $("#updateDismiss")?.addEventListener("click", () => { const banner = $("#updateBanner"); if (banner) banner.hidden = true; });
   $("#lobbyCopyBtn")?.addEventListener("click", copyInvite);
@@ -6085,6 +6303,7 @@ function bindEvents() {
     else { closeModal("summaryModal"); beginMatch(); }
   });
 
+  document.addEventListener("pointerdown", () => hideTileTip(), { capture: true });
   $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeModal(button.dataset.close)));
   $$(".modal").forEach((modal) => {
     modal.addEventListener("pointerdown", (event) => {
@@ -6097,6 +6316,7 @@ function bindEvents() {
       if (open && open.id !== "summaryModal") open.hidden = true;
       setRankReference(false);
       setPinInfo(false);
+      closePanelSheet();
     }
     if (event.key === "h" && !event.metaKey && !event.ctrlKey && !event.altKey) applyHint();
     if (event.key === "Escape" && state?.selected?.length) clearSelection();
@@ -6145,6 +6365,7 @@ async function boot() {
   renderVersion();
   chatOpen = prefs.chatOpen !== false;
   setChatOpen(chatOpen);
+  setDockCollapsed(prefs.dockCollapsed !== false, { silent: true });
   renderChat();
 
   const params = new URLSearchParams(location.search);

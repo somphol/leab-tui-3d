@@ -3,29 +3,34 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.6.3**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.6.4**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.6.3` |
+| App version | `1.6.4` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js` |
-| Source lines | 9,501 |
-| Source size | 404,181 bytes |
+| Source lines | 10,074 |
+| Source size | 423,579 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.6.4 — iPad join and approval contrast
+
+- iPad/tablet landscape: 16 px inputs stop Safari auto-zoom; tall lobby modals top-align and scroll internally so the keyboard does not bounce the page.
+- Approve and Deny are solid green/wine buttons with larger hit areas; Approve all is gold; Copy PIN/New PIN have stronger contrast.
+
 ## Release 1.6.3 — 5-digit PIN and clearer exit
 
-Room codes are now numeric `LEAB-482-173` (six digits; 1,000,000 possibilities). PIN management is simplified to **exactly 5 digits**, auto-generated on room open, with **New PIN** to rotate. Common, repeated and sequential values are rejected; the PIN remains a digest in memory. This is a deliberate usability trade-off: 5 digits is only 100,000 possibilities, so **approval is the real access control** and the 8-attempt/60-second lockout stays. **Leave room** is a solid wine button with stronger contrast.
+Room codes are now numeric `LEAB-482-173` (six digits; 1,000,000 possibilities). PIN management is simplified to **exactly 5 digits**, auto-generated on room open, with **New PIN** to rotate. Common, repeated and sequential values are rejected; the PIN remains a digest in memory. This is a deliberate usability trade-off: 5 digits is only 100,000 possibilities, so **approval is the real access control** and the 8-attempt/60-second lockout stays. **Leave room** is a solid wine button with stronger contrast. iPad landscape uses 16 px inputs to prevent Safari auto-zoom and top-aligns tall lobby modals with internal scrolling so the keyboard does not bounce the page.
 
 ## Release 1.6.2 — visibility and diagnostics
 
@@ -111,7 +116,7 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | 1.6.2 version/reload, diagnostics, join restore | 15:20–16:35 | ~75m |
 | 1.6.3 five-digit PIN, clearer Leave room | 16:35–17:05 | ~30m |
 
-**Measured session wall clock:** **7h 1m 18s** (25,278 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **7h 29m 3s** (26,943 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -119,13 +124,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 2,574,113 |
-| Output | 343,142 |
-| Reasoning | 206,948 |
-| **Total (input + output + reasoning)** | **3,124,203** |
-| Cache read | 424,088,960 |
+| Input | 2,592,759 |
+| Output | 364,812 |
+| Reasoning | 239,890 |
+| **Total (input + output + reasoning)** | **3,197,461** |
+| Cache read | 470,619,136 |
 | Cache write | 1,087 |
-| **Total including cache** | **427,214,250** |
+| **Total including cache** | **473,817,684** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.

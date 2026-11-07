@@ -264,6 +264,7 @@ The privacy check is the important one: it reads the guest's `LeabTui.getState()
 - [ ] 1440×900: sidebar visible, hand dock fits, inspector readable.
 - [ ] 1024×768: sidebar narrower, dock wraps without covering the hand.
 - [ ] 390×844: stage fills most of the viewport, hand and dock visible, coach below.
+- [ ] 1024×768 landscape: Join panel is top-aligned, scrolls internally, inputs are 16 px and focusing them does not make the page bounce.
 - [ ] Keyboard `H` hints and `Esc` clears the selection.
 - [ ] Reduced-motion preference shortens CSS transitions.
 
