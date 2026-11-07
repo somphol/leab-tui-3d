@@ -9,7 +9,7 @@
 | Rules + protocol | `?selftest=1` → `selfTest()` | 38 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export, chat normalization, room codes, redaction, hydration, loopback |
 | Browser | `node scripts/verify.mjs` | Chrome loads the page, no console exceptions, the table renders, the self-test passes |
 | Flow | CDP playthrough (below) | a complete round, 32-tile conservation |
-| Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, chat, voice mesh, mute/deafen, actions, disconnect-to-bot |
+| Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, PIN/approval, probe, chat, voice mesh, mute/deafen, actions, disconnect-to-bot |
 | Visual | screenshots in `screenshots/` | desktop EN, desktop TH, rules drawer, 390×844 phone, lobby |
 
 Run the static checks first:
@@ -189,6 +189,9 @@ The privacy check is the important one: it reads the guest's `LeabTui.getState()
 - [ ] Host approval is on by default; a guest waits for Approve/Deny.
 - [ ] A generated PIN has 15+ characters, four classes and is not in state/URL.
 - [ ] Wrong PIN is rejected; eight wrong attempts lock the room briefly.
+- [ ] Troubleshoot reports broker/host reachability and PIN accepted/not accepted.
+- [ ] Reload button busts cached assets; version chip and update banner show the running/latest version.
+- [ ] Switching away/back on mobile restores the join panel with code and name (PIN is not stored).
 - [ ] Your name is required before hosting or joining; an empty name shows a clear message.
 - [ ] Hosting uses the menu name and the roster shows it.
 - [ ] An invite link prefills the room code but asks the guest to confirm their own name.

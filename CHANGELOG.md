@@ -2,6 +2,21 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.2] — 2026-11-06
+
+### Added
+
+- **Visible version chip + Reload** — footer and launch overlay show `vX.Y.Z`; Reload forces a cache-busted navigation and confirms if a room/match is active.
+- **Update banner** — fetches `state.json` with `no-store`; if a newer version is deployed, offers Reload.
+- **Versioned assets** — `style.css`, `script.js` and the three ES module imports carry `?v=X.Y.Z`, so a forced reload actually picks up new code instead of a cached module graph.
+- **Troubleshoot panel** — shows version, secure context, PeerJS, role, peers, pending count and last error. Guest can **Probe with PIN** or **Probe without PIN**; the host replies with reachability, PIN requirement/acceptance, approval, started and free seats — without creating a pending seat request.
+- **Join intent restore** — mobile tab reload/re-entry restores the join panel with the room code and name from `sessionStorage`; the PIN is deliberately not saved.
+
+### Changed
+
+- Join failure messages distinguish broker, host and ICE timeouts; Connect becomes Retry.
+- Host shows Listening / guest connecting / pending / ready-to-start and warns to keep the tab open and awake.
+
 ## [1.6.1] — 2026-11-06
 
 ### Added

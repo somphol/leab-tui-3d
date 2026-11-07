@@ -192,6 +192,8 @@ Without a TURN relay, symmetric NAT and some corporate firewalls will fail. The 
 
 The host panel shows **Listening for guests…** until a guest's data channel actually opens. A guest stuck at “PeerJS client timed out” never reached the host, so there is no pending request to approve. The host should keep the tab open and awake; mobile backgrounding can suspend it.
 
+**Troubleshoot** opens a diagnostic panel. It shows version, secure context, PeerJS, role, peer IDs, pending count and the last error. Guests can **Probe with PIN** or **Probe without PIN**; the host answers with PIN required/accepted, approval, started state and free seats without creating a pending seat request. This distinguishes “host offline”, “wrong PIN”, “no PIN” and “ICE blocked”.
+
 A failed join retries once automatically and turns **Connect** into **Retry**. The status line distinguishes broker, host and ICE failures rather than showing a generic timeout.
 
 The **two-client** verification is `node scripts/net-check.mjs`. It uses the real broker and checks: host room, guest join, two-human start, bot fill, own-hand privacy, ghosted other hands, host controls, text chat, voice mesh attachment, mic mute, deafen, actions in both directions, a resolved trick, and disconnect-to-bot. Voice media is exercised with a synthetic oscillator stream so headless Chrome does not need a real microphone; the production path still uses `getUserMedia`. It is separate from `scripts/verify.mjs` so offline CI stays deterministic. Set `GUEST_SHOT=screenshots/guest-play.png` to capture the guest table during the run.

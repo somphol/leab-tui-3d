@@ -3,25 +3,34 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.6.1**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.6.2**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.6.1` |
+| App version | `1.6.2` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js` |
-| Source lines | 9,155 |
-| Source size | 390,028 bytes |
+| Source lines | 9,526 |
+| Source size | 406,311 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.6.2 — visibility and diagnostics
+
+- **Version chip + Reload** in the footer and launch overlay; Reload uses a cache-busted URL, removes any PIN query param, and confirms if a room/match is active.
+- **Update banner** checks `state.json` with `no-store` and offers Reload when a newer version is deployed.
+- **Versioned assets** — CSS, `script.js` and the three module imports carry `?v=1.6.2`, so a forced reload actually busts the module graph.
+- **Troubleshoot panel** with Probe with PIN / without PIN, reporting PIN requirement, acceptance, approval, started state and free seats without creating a pending request.
+- **Join intent restore** — mobile tab reload restores the join panel with room code + name; PIN is not persisted.
+- **Staged join errors** — broker, host and ICE timeouts are distinct; Connect becomes Retry.
 
 ## Release 1.6.1 — one-paste sharing
 
@@ -95,8 +104,9 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | 1.5.0 chat, voice mesh, mute/deafen, screenshots | 12:34–13:15 | ~41m |
 | 1.6.0 approval, PIN policy, caps, security docs | 13:15–14:30 | ~75m |
 | 1.6.1 one-paste invite + PIN sharing, auto PIN UI | 14:30–15:20 | ~50m |
+| 1.6.2 version/reload, diagnostics, join restore | 15:20–16:35 | ~75m |
 
-**Measured session wall clock:** **5h 54m 7s** (21,247 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **6h 28m 9s** (23,289 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -104,13 +114,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 1,150,166 |
-| Output | 304,762 |
-| Reasoning | 169,896 |
-| **Total (input + output + reasoning)** | **1,624,824** |
-| Cache read | 341,903,488 |
+| Input | 1,204,904 |
+| Output | 325,577 |
+| Reasoning | 193,596 |
+| **Total (input + output + reasoning)** | **1,724,077** |
+| Cache read | 385,355,776 |
 | Cache write | 1,087 |
-| **Total including cache** | **343,529,399** |
+| **Total including cache** | **387,080,940** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.
@@ -125,7 +135,7 @@ Cache figures describe context reuse, not additional generated work. They are re
 - **Bilingual UI** — EN ⇄ TH across 315 dictionary keys, dynamic coach/log/summary strings, tile names, ARIA labels, lobby copy and 3D labels.
 - **Audio** — synthesised shuffle, clack, flip, sweep, win, lose, undo; unlocked on first gesture; no files.
 - **Persistence** — autosaved solo match, preferences and statistics; reload-resume; versioned JSON export with app, credits, stats and game; network saves marked non-resumable.
-- **Verification** — 38-check in-page suite, 342-check static release check, Chrome CDP harness, full-round test, 20-check two-browser WebRTC suite, 20 release screenshots.
+- **Verification** — 38-check in-page suite, 342-check static release check, Chrome CDP harness, full-round test, 21-check two-browser WebRTC suite, 20 release screenshots.
 - **Release** — README, AGENTS handoff, rules, architecture, multiplayer, protocol, testing, deployment, reproduction, data format, controls, accessibility, performance, design, FAQ, roadmap, release checklist, gallery, glossary, browser support, licence, changelog, contribution/security/privacy/support docs, citation, notices, GitHub templates, static-check workflow and a published skill.
 
 ## Verification snapshot
@@ -137,7 +147,7 @@ Cache figures describe context reuse, not additional generated work. They are re
 | `node scripts/check.mjs` | pass (342) |
 | In-page self-test | **38/38** |
 | `node scripts/verify.mjs` | ALL BROWSER CHECKS PASSED |
-| `node scripts/net-check.mjs` | **20/20** multiplayer checks |
+| `node scripts/net-check.mjs` | **21/21** multiplayer checks |
 | Full round through the public API | `roundEnd`, 32 tiles captured, hands empty, points sum 0 |
 | Host + guest | 2 humans + Bot 1 + Bot 2 |
 | Guest privacy | own 8 real ids; other 24 ghost ids |

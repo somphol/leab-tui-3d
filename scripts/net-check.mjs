@@ -197,6 +197,14 @@ async function main() {
   if (guestState.role === "client" && guestState.mySeat >= 1) pass("guest joined a seat", `seat ${guestState.mySeat}`);
   else fail("guest joined a seat", guestNet);
 
+  const probe = JSON.parse(await guest.eval(`LeabTui.net.probe(${JSON.stringify(code)}, ${JSON.stringify(roomPin)}).then((r) => JSON.stringify(r))`));
+  const noPinProbe = JSON.parse(await guest.eval(`LeabTui.net.probe(${JSON.stringify(code)}, "").then((r) => JSON.stringify(r))`));
+  if (probe.pinRequired && probe.pinAccepted && !noPinProbe.pinAccepted) {
+    pass("diagnostic probe reports PIN acceptance", `pinRequired=${probe.pinRequired}`);
+  } else {
+    fail("diagnostic probe reports PIN acceptance", JSON.stringify({ probe, noPinProbe }));
+  }
+
   const roster = await host.waitFor("JSON.stringify(window.LeabTui?.net.getState?.().players || null)", "host roster", 12000);
   const players = JSON.parse(roster);
   if (players.filter((player) => player.kind === "host" || player.kind === "human").length === 2) pass("lobby sees two humans");

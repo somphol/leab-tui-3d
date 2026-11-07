@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.6.1",
-  "version": "1.6.1",
+  "projectVersion": "1.6.2",
+  "version": "1.6.2",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-06T15:59:40-08:00",
-    "durationSeconds": 21247,
-    "durationHuman": "5h 54m 7s",
+    "packagedAt": "2026-11-06T16:33:42-08:00",
+    "durationSeconds": 23289,
+    "durationHuman": "6h 28m 9s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-06T23:59:52Z"
+    "publishedAt": "2026-11-07T00:33:53Z"
   },
   "tokens": {
-    "input": 1150166,
-    "output": 304762,
-    "reasoning": 169896,
-    "cacheRead": 341903488,
+    "input": 1204904,
+    "output": 325577,
+    "reasoning": 193596,
+    "cacheRead": 385355776,
     "cacheWrite": 1087,
-    "total": 1624824,
-    "totalWithCache": 343529399,
+    "total": 1724077,
+    "totalWithCache": 387080940,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T15:59:40-08:00, covering 1.4.0–1.6.1. The final state-record commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T16:33:42-08:00, covering 1.4.0–1.6.2. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -73,7 +73,7 @@
     "selfTest": "38/38",
     "staticCheck": "scripts/check.mjs (342 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
-    "multiplayer": "scripts/net-check.mjs — 20/20 PIN, approval, wrong PIN, host, join, bot fill, privacy, controls, chat, voice, mute/deafen, actions, disconnect",
+    "multiplayer": "scripts/net-check.mjs — 21/21 PIN, approval, wrong PIN, probe, host, join, bot fill, privacy, controls, chat, voice, mute/deafen, actions, disconnect",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
@@ -142,24 +142,29 @@
     {
       "version": "1.6.0",
       "date": "2026-11-06",
-      "summary": "Host approval queue, strong generated PIN with memory-only SHA-256 digest, Copy room info, abuse caps, voice allowlist, security docs and 20-check two-browser suite."
+      "summary": "Host approval queue, strong generated PIN with memory-only SHA-256 digest, Copy room info, abuse caps, voice allowlist, security docs and 21-check two-browser suite."
     },
     {
       "version": "1.6.1",
       "date": "2026-11-06",
       "summary": "Copy invite + PIN, native Share, guest Paste with passcode extraction, 38 self-tests."
+    },
+    {
+      "version": "1.6.2",
+      "date": "2026-11-06",
+      "summary": "Version chip/reload, versioned assets, no-store update banner, diagnostics/probe, join retry diagnostics and mobile join intent restore."
     }
   ],
-  "releaseNotes": "1.6.1 adds a one-paste Copy invite + PIN, native Share invite + PIN and a guest Paste button that extracts the passcode from the host message. The PIN still never appears in the URL or persisted state.",
+  "releaseNotes": "1.6.2 adds a visible version/reload control with versioned asset URLs, a no-store update banner, a connection probe that tests with/without PIN, staged retry diagnostics and mobile join-panel restoration.",
   "updates": [
     {
-      "version": "1.4.0–1.6.1",
+      "version": "1.4.0–1.6.2",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-06T15:59:40-08:00",
-      "durationSeconds": 21247,
-      "durationHuman": "5h 54m 7s",
-      "tokensAdded": 1624824,
-      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, strong PIN, abuse caps, one-paste sharing, host listening/retry diagnostics and skill mirrors."
+      "completedAt": "2026-11-06T16:33:42-08:00",
+      "durationSeconds": 23289,
+      "durationHuman": "6h 28m 9s",
+      "tokensAdded": 1724077,
+      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, strong PIN, abuse caps, one-paste sharing, version/reload, diagnostics, join restore and skill mirrors."
     }
   ],
   "multiplayer": {

@@ -15,7 +15,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://0.peerjs.com wss://0.peerjs.com; font-src 'self' data:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=1.6.2" />
   <script type="importmap">
     {
       "imports": {
@@ -196,12 +196,21 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.6.2</span>
+          <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
+          <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
           <span class="dot">·</span>
           <a href="https://github.com/somphol/leab-tui-3d" target="_blank" rel="noopener">GitHub</a>
         </footer>
       </aside>
     </main>
+
+    <div id="updateBanner" class="update-banner" hidden role="status" aria-live="polite">
+      <span id="updateText" data-i18n="version.updateAvailable">A new version is available.</span>
+      <button id="updateReload" class="mini-btn" type="button" data-i18n="version.reload">↻ Reload</button>
+      <button id="updateDismiss" class="mini-btn" type="button" aria-label="Dismiss">×</button>
+    </div>
 
     <div id="bootError" class="boot-error" hidden>
       <h2 data-i18n="error.webglTitle">The 3D table could not start</h2>
@@ -249,6 +258,10 @@
             </button>
           </div>
           <p class="lobby-note" data-i18n="net.menuNote">No game server and no account. PeerJS brokers only the first handshake.</p>
+          <div class="version-row">
+            <span class="version-chip version-label">v1.6.2</span>
+            <button id="lobbyReload" class="mini-btn" type="button" data-i18n="version.reload">↻ Reload</button>
+          </div>
         </section>
 
         <section id="lobbyHostPanel" class="lobby-view" hidden>
@@ -294,6 +307,7 @@
           <div id="lobbyRoster" class="lobby-roster"></div>
           <p class="lobby-note" data-i18n="net.fourSeats">Leab-Tui is a four-seat game: the host plus up to three guests. Empty seats are filled with bots.</p>
           <div class="modal-actions">
+            <button id="hostDiagBtn" class="btn btn-ghost" type="button" data-i18n="diag.open">Troubleshoot</button>
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
             <button id="lobbyStartBtn" class="btn btn-gold" type="button" disabled data-i18n="net.startTable">Start table</button>
           </div>
@@ -313,6 +327,7 @@
           </div>
           <p class="lobby-note" data-i18n="net.pinFromMessage">Paste the passcode from the host's message.</p>
           <div class="modal-actions">
+            <button id="joinDiagBtn" class="btn btn-ghost" type="button" data-i18n="diag.open">Troubleshoot</button>
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
             <button id="lobbyConnectBtn" class="btn btn-gold" type="button" data-i18n="net.connect">Connect</button>
           </div>
@@ -425,6 +440,23 @@
       </div>
     </div>
 
+    <div id="diagModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="diagTitle">
+      <div class="modal-card modal-small">
+        <button class="modal-close" type="button" data-close="diagModal" aria-label="Close">×</button>
+        <h2 id="diagTitle" data-i18n="diag.title">Troubleshoot connection</h2>
+        <pre id="diagBody" class="diag-body"></pre>
+        <div class="diag-actions">
+          <button id="diagProbePin" class="btn btn-ghost btn-small" type="button" data-i18n="diag.probe">Probe with PIN</button>
+          <button id="diagProbeNoPin" class="btn btn-ghost btn-small" type="button" data-i18n="diag.probeNoPin">Probe without PIN</button>
+          <button id="diagCopy" class="btn btn-ghost btn-small" type="button" data-i18n="diag.copy">Copy report</button>
+        </div>
+        <p id="diagStatus" class="lobby-status"></p>
+        <div class="modal-actions">
+          <button class="btn btn-gold" type="button" data-close="diagModal" data-i18n="actions.continue">Continue</button>
+        </div>
+      </div>
+    </div>
+
     <div id="leaveModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="leaveTitle">
       <div class="modal-card modal-small">
         <h2 id="leaveTitle" data-i18n="net.leaveTitle">Leave the room?</h2>
@@ -454,6 +486,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js"></script>
+  <script type="module" src="script.js?v=1.6.2"></script>
 </body>
 </html>

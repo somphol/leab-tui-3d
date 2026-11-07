@@ -140,8 +140,8 @@ ok(index.includes('id="remoteAudio"') && css.includes(".remote-audio") && css.in
 ok(/type="importmap"/.test(index), "index has an import map");
 ok(index.includes("three@0.160.0/build/three.module.js"), "Three.js r160 is pinned");
 ok(index.includes("three@0.160.0/examples/jsm/"), "OrbitControls addons are pinned");
-ok(index.includes('href="style.css"'), "index links style.css");
-ok(index.includes('src="script.js"'), "index loads script.js as a module");
+ok(/href="style\.css\?v=[0-9.]+"/.test(index), "index links a versioned style.css");
+ok(/src="script\.js\?v=[0-9.]+"/.test(index), "index loads a versioned script.js as a module");
 ok(index.includes('type="module"'), "script.js is a module");
 const indexForRemote = index
   .replace(/https:\/\/somphol\.github\.io[^" ]*/g, "")

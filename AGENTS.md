@@ -4,7 +4,7 @@
 
 A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat and independent full-mesh voice chat (mic mute + deafen). It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.6.1**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.6.2**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -81,7 +81,7 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.6.1"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.6.2"
 prefs: theme mahogany|jade|midnight|parchment|daybreak; fontSize sm|md|lg|xl; CSS --fs-scale 0.9/1/1.12/1.24
 room: LEAB-ABC-234; peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
@@ -118,7 +118,9 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **CDN pins.** `three@0.160.0` in the import map and `peerjs@1.5.4` in `peer-manager.js`. Do not float either version. If the CDN fails, the table cannot render and rooms cannot open; that is a documented limitation, not a reason to inline the libraries.
 - **CSP.** `script-src` allows `'unsafe-inline'` only because import maps are inline. `connect-src` allows jsDelivr, `https://0.peerjs.com` and `wss://0.peerjs.com`. The app has no inline event handlers. Do not add remote fonts or analytics.
 - **Display settings.** Font size scales the interface through `--fs-scale` on `html[data-font-size]`, never the 3D table. Five themes are `html[data-theme]` CSS variables plus `SCENE_THEMES`: Mahogany, Jade Court, Midnight Lacquer, Parchment and Daybreak. `scene.setTheme` must dispose the replaced felt/wood/back textures. Never add a theme that only recolours the panels and leaves the 3D scene behind.
-- **No build step.** Keep it five runtime files. Scripts may verify, screenshot, or publish, but must not generate the runtime source.
+- **Versioned assets.** `index.html` links `style.css?v=X.Y.Z` / `script.js?v=X.Y.Z`, and `script.js` imports the three modules with the same query. Bump all five strings with `APP.version` on every release or a force reload can still use cached modules. `check.mjs` enforces the match.
+- **Reload/update.** Footer and launch overlay show the version; Reload adds a `v=<timestamp>` page query, removes `pin`, and confirms when a room/match is active. `state.json` is fetched with `no-store` for the update banner.
+- **No build step.** Keep it six runtime files. Scripts may verify, screenshot, or publish, but must not generate the runtime source.
 
 ## 5. Known issues
 

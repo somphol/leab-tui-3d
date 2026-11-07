@@ -18,14 +18,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js";
-import { VoiceChat } from "./voice-chat.js";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js";
+} from "./peer-manager.js?v=1.6.2";
+import { VoiceChat } from "./voice-chat.js?v=1.6.2";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.2";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.6.1",
+  version: "1.6.2",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -36,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T15:59:40-08:00",
-    durationHuman: "5h 54m 7s",
-    tokensTotal: "1624824",
-    tokensInput: "1150166",
-    tokensOutput: "304762",
-    tokensReasoning: "169896",
-    tokensCacheRead: "341903488",
+    packagedAt: "2026-11-06T16:33:42-08:00",
+    durationHuman: "6h 28m 9s",
+    tokensTotal: "1724077",
+    tokensInput: "1204904",
+    tokensOutput: "325577",
+    tokensReasoning: "193596",
+    tokensCacheRead: "385355776",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -660,6 +660,21 @@ const I18N = {
     "net.matchInProgress": "Match in progress",
     "net.alreadyStarted": "The match is already running. Use New match for a rematch, or leave the room.",
     "net.joinHint": "Ask the host for the six-character code.",
+    "net.reconnectHint": "Room {code} restored. Enter the PIN again to reconnect.",
+    "diag.open": "Troubleshoot",
+    "diag.title": "Troubleshoot connection",
+    "diag.probe": "Probe with PIN",
+    "diag.probeNoPin": "Probe without PIN",
+    "diag.copy": "Copy report",
+    "diag.copied": "Diagnostic report copied.",
+    "diag.probing": "Probing the host…",
+    "diag.reachable": "Host reachable. PIN required: {required}. PIN accepted: {accepted}. Approval: {approval}. Started: {started}. Free seats: {seats}.",
+    "diag.unreachable": "Probe failed: {error}",
+    "diag.noCode": "Enter a room code first.",
+    "version.reload": "Reload",
+    "version.reloadHint": "Force reload the app and its scripts",
+    "version.reloadConfirm": "Reloading closes the current room or match. Continue?",
+    "version.updateAvailable": "New version {version} is available. Reload to update.",
     "chat.title": "Table chat",
     "chat.hide": "hide",
     "chat.show": "show",
@@ -1075,6 +1090,21 @@ const I18N = {
     "net.matchInProgress": "แมตช์กำลังเล่น",
     "net.alreadyStarted": "แมตช์เริ่มแล้ว ใช้ปุ่มสร้างแมตช์ใหม่เพื่อเล่นอีกครั้ง หรือออกจากห้อง",
     "net.joinHint": "ขอรหัสหกตัวจากเจ้าบ้าน",
+    "net.reconnectHint": "กู้ห้อง {code} แล้ว กรอก PIN อีกครั้งเพื่อเชื่อมต่อใหม่",
+    "diag.open": "ตรวจสอบปัญหา",
+    "diag.title": "ตรวจสอบการเชื่อมต่อ",
+    "diag.probe": "ทดสอบด้วย PIN",
+    "diag.probeNoPin": "ทดสอบโดยไม่ใส่ PIN",
+    "diag.copy": "คัดลอกรายงาน",
+    "diag.copied": "คัดลอกรายงานแล้ว",
+    "diag.probing": "กำลังทดสอบเจ้าบ้าน…",
+    "diag.reachable": "ถึงเจ้าบ้าน ต้องใช้ PIN: {required} PIN ถูกต้อง: {accepted} อนุมัติ: {approval} เริ่มแล้ว: {started} ที่นั่งว่าง: {seats}",
+    "diag.unreachable": "ทดสอบไม่สำเร็จ: {error}",
+    "diag.noCode": "กรอกรหัสห้องก่อน",
+    "version.reload": "โหลดใหม่",
+    "version.reloadHint": "บังคับโหลดแอปและสคริปต์ใหม่",
+    "version.reloadConfirm": "การโหลดใหม่จะปิดห้องหรือแมตช์ปัจจุบัน ดำเนินการต่อหรือไม่?",
+    "version.updateAvailable": "มีเวอร์ชันใหม่ {version} โหลดใหม่เพื่ออัปเดต",
     "chat.title": "แชทโต๊ะ",
     "chat.hide": "ซ่อน",
     "chat.show": "แสดง",
@@ -1478,12 +1508,16 @@ let pendingRequests = new Map();
 const pendingTimers = new Map();
 let roomPinPlain = "";
 let joinToken = 0;
+let availableVersion = "";
+let lastNetError = "";
+let lastNetStage = "";
 let hostWakeLock = null;
 const speakingSeats = new Set();
 let remoteClock = null;
 let lastPublished = 0;
 let publishTimer = null;
 const PLAYER_NAME_KEY = "leabtui.name.v1";
+const ROOM_INTENT_KEY = "leabtui.room.v1";
 const LAUNCH_KEY = "leabtui.launch.v1";
 
 function isNetworked() {
@@ -2823,6 +2857,11 @@ function applyLanguage(lang) {
   renderAll();
   renderInspector();
   renderChat();
+  renderVersion();
+  if (availableVersion) {
+    const updateText = $("#updateText");
+    if (updateText) updateText.textContent = t("version.updateAvailable", { version: availableVersion });
+  }
   if (voice) renderVoiceState(voice.snapshot());
   if (lobbyState) renderLobby();
   if (scene && state && ["lead", "follow", "roundEnd", "matchEnd"].includes(state.phase)) scene.sync(state);
@@ -3156,9 +3195,11 @@ function acceptGuest(connId, name) {
   audio?.play("click", 0);
 }
 
-function cleanGuestName(name, fallback) {
+function cleanGuestName(name, fallback = "Guest") {
   const clean = String(name || "").replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, 18);
-  return clean || fallback || "Guest";
+  if (clean) return clean;
+  if (fallback === "") return "";
+  return fallback || "Guest";
 }
 
 function pendingList() {
@@ -3293,6 +3334,23 @@ async function setRoomPin(value, options = {}) {
   return true;
 }
 
+async function probeHost(connId, message) {
+  if (!isHost() || !net?.host) return;
+  const pinRequired = Boolean(net.security?.pinHash);
+  const digest = await hashPin(message.pin);
+  const pinAccepted = !pinRequired || Boolean(digest && digest === net.security.pinHash);
+  const humans = SEAT_PROFILES.filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.connected).length;
+  net.host.send(connId, {
+    type: "probe-result",
+    roomCode: net.code,
+    pinRequired,
+    pinAccepted,
+    approval: Boolean(net.security?.approval),
+    started: Boolean(net.started),
+    seatsFree: Math.max(0, TABLE_SEATS - humans)
+  });
+}
+
 function hostMessage({ connId, message }) {
   if (!isProtocolMessage(message)) return;
   switch (message.type) {
@@ -3330,6 +3388,9 @@ function hostMessage({ connId, message }) {
       syncVoicePeers();
       break;
     }
+    case "probe":
+      probeHost(connId, message).catch(() => {});
+      break;
     case "ping":
       net.host.send(connId, { type: "pong", at: Date.now() });
       break;
@@ -3390,6 +3451,7 @@ function releaseHostWakeLock() {
 
 async function createHostRoom(name) {
   if (net) leaveRoom({ silent: true });
+  clearRoomIntent();
   roomPinPlain = "";
   const handle = String(name || "").trim().slice(0, 18) || t("net.hostDefault");
   lobbyState = { view: "host", roomCode: "", status: t("net.startingHost"), error: "", players: [], hostName: handle, started: false };
@@ -3403,6 +3465,7 @@ async function createHostRoom(name) {
     onClose: hostConnectionLost,
     onError: ({ type }) => {
       if (type === "unavailable-id") return;
+      lastNetError = type;
       setLobbyStatus(t("net.error", { error: type }), "wine");
     },
     onStatus: ({ state: status }) => {
@@ -3542,6 +3605,7 @@ function clientMessage({ message }) {
       break;
     case "rejected": {
       if (net) net.rejected = true;
+      lastNetError = message.reason || "rejected";
       if (message.reason === "illegal") {
         toast(t("net.rejected.illegal"), "wine");
         break;
@@ -3572,6 +3636,7 @@ function clientMessage({ message }) {
 
 function handleHostLost() {
   if (!isClient()) return;
+  lastNetError = "host-left";
   if (voice) {
     voice.leave();
     voice.destroy();
@@ -3597,6 +3662,7 @@ async function joinRoom(code, name, pin = "") {
   }
   const handle = cleanGuestName(name, t("net.guestDefault"));
   const roomPin = normalisePin(pin);
+  saveRoomIntent({ role: "guest", code: normalized, name: handle });
   const token = ++joinToken;
   MY_SEAT = 0;
   SEAT_PROFILES = null;
@@ -3656,6 +3722,8 @@ async function joinRoom(code, name, pin = "") {
           continue;
         }
         const type = error?.code || error?.type || error?.message || "unknown";
+        lastNetError = type;
+        lastNetStage = error?.stage || "";
         if (type === "peer-unavailable") setLobbyStatus(t("net.roomNotFound"), "wine");
         else if (type === "broker-timeout") setLobbyStatus(t("net.brokerTimeout"), "wine");
         else if (type === "host-timeout") setLobbyStatus(t("net.hostTimeout"), "wine");
@@ -3699,6 +3767,7 @@ function leaveRoom({ silent = false, keepState = false } = {}) {
   chatHistory = [];
   renderChat();
   roomPinPlain = "";
+  clearRoomIntent();
   renderPinReveal();
   denyAllPending("host-left");
   pendingRequests = new Map();
@@ -3772,6 +3841,75 @@ function savePlayerName(name) {
 
 function loadPlayerName() {
   try { return localStorage.getItem(PLAYER_NAME_KEY) || ""; } catch { return ""; }
+}
+
+function saveRoomIntent(intent) {
+  try {
+    if (!intent || intent.role !== "guest") { sessionStorage.removeItem(ROOM_INTENT_KEY); return; }
+    const code = normalizeRoomCode(intent.code || "");
+    if (!code) return;
+    sessionStorage.setItem(ROOM_INTENT_KEY, JSON.stringify({ role: "guest", code, name: cleanGuestName(intent.name || "", "") }));
+  } catch { /* storage may be denied */ }
+}
+
+function loadRoomIntent() {
+  try {
+    const raw = sessionStorage.getItem(ROOM_INTENT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.role !== "guest") return null;
+    const code = normalizeRoomCode(parsed.code || "");
+    if (!code) return null;
+    return { role: "guest", code, name: cleanGuestName(parsed.name || "", "") };
+  } catch { return null; }
+}
+
+function clearRoomIntent() {
+  try { sessionStorage.removeItem(ROOM_INTENT_KEY); } catch { /* ignore */ }
+}
+
+function renderVersion() {
+  const label = `v${APP.version}`;
+  const chip = $("#versionChip");
+  if (chip) chip.textContent = label;
+  $$(".version-label").forEach((node) => { node.textContent = label; });
+}
+
+function forceReload() {
+  if (isNetworked() && !window.confirm(t("version.reloadConfirm"))) return;
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set("v", String(Date.now()));
+    url.searchParams.delete("pin");
+    location.replace(url.toString());
+  } catch {
+    location.reload();
+  }
+}
+
+function isNewerVersion(candidate, current) {
+  const a = String(candidate).split(".").map(Number);
+  const b = String(current).split(".").map(Number);
+  for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
+    const av = a[index] || 0;
+    const bv = b[index] || 0;
+    if (av !== bv) return av > bv;
+  }
+  return false;
+}
+
+async function checkForUpdate() {
+  try {
+    const response = await fetch(`state.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (!data?.version || !isNewerVersion(data.version, APP.version)) return;
+    availableVersion = data.version;
+    const banner = $("#updateBanner");
+    const text = $("#updateText");
+    if (text) text.textContent = t("version.updateAvailable", { version: data.version });
+    if (banner) banner.hidden = false;
+  } catch { /* offline or blocked */ }
 }
 
 function preferredPlayerName() {
@@ -4085,6 +4223,100 @@ async function shareRoomInfo() {
     }
   }
   await copyRoomInfo();
+}
+
+async function probeRoom(code, pin = "") {
+  const normalized = normalizeRoomCode(code);
+  if (!normalized) throw new Error("bad-code");
+  return new Promise((resolve, reject) => {
+    let client = null;
+    let settled = false;
+    const finish = (fn, value) => {
+      if (settled) return;
+      settled = true;
+      try { client?.close(); } catch { /* ignore */ }
+      fn(value);
+    };
+    client = new PeerClient({
+      code: normalized,
+      name: "diagnostics",
+      connectTimeoutMs: 9000,
+      onOpen: () => client.send({ type: "probe", pin: normalisePin(pin) }),
+      onMessage: ({ message }) => {
+        if (message.type === "probe-result") finish(resolve, message);
+      },
+      onError: ({ type }) => {
+        if (type === "peer-unavailable") finish(reject, Object.assign(new Error("host-unavailable"), { code: "peer-unavailable" }));
+      }
+    });
+    client.connect().catch((error) => finish(reject, error));
+    setTimeout(() => finish(reject, Object.assign(new Error("probe-timeout"), { code: "probe-timeout" })), 16000);
+  });
+}
+
+function diagnosticsText() {
+  const role = net?.role || "none";
+  const code = normalizeRoomCode($("#lobbyCodeInput")?.value || net?.code || "");
+  const selfPeer = isHost() ? net?.host?.id : net?.client?.peer?.id;
+  const hostPeer = isHost() ? net?.host?.id : net?.client?.hostId;
+  return [
+    `Version: ${APP.version}`,
+    `URL: ${location.href}`,
+    `Secure context: ${window.isSecureContext}`,
+    `PeerJS: ${window.Peer ? "loaded" : "not loaded"}`,
+    `Role: ${role}`,
+    `Room: ${code ? formatRoomCode(code) : "—"}`,
+    `Self peer: ${selfPeer || "—"}`,
+    `Host peer: ${hostPeer || "—"}`,
+    `Connections: ${isHost() && net?.host?.connectionCount ? net.host.connectionCount() : "—"}`,
+    `Pending: ${isHost() ? pendingRequests.size : "—"}`,
+    `Last error: ${lastNetError || "none"}`,
+    `Last stage: ${lastNetStage || "none"}`,
+    `Room intent: ${loadRoomIntent()?.code ? formatRoomCode(loadRoomIntent().code) : "none"}`
+  ].join("\n");
+}
+
+function openDiagnostics() {
+  const body = $("#diagBody");
+  if (body) body.textContent = diagnosticsText();
+  const status = $("#diagStatus");
+  if (status) status.textContent = "";
+  const guest = isClient() || (!net && normalizeRoomCode($("#lobbyCodeInput")?.value || ""));
+  const code = normalizeRoomCode($("#lobbyCodeInput")?.value || net?.code || "");
+  const pinButton = $("#diagProbePin");
+  const noPinButton = $("#diagProbeNoPin");
+  if (pinButton) pinButton.disabled = !guest || !code;
+  if (noPinButton) noPinButton.disabled = !guest || !code;
+  const modal = $("#diagModal");
+  if (modal) modal.hidden = false;
+}
+
+async function runProbe(withPin) {
+  const status = $("#diagStatus");
+  const code = normalizeRoomCode($("#lobbyCodeInput")?.value || net?.code || "");
+  if (!code) {
+    if (status) status.textContent = t("diag.noCode");
+    return;
+  }
+  if (status) status.textContent = t("diag.probing");
+  try {
+    const result = await probeRoom(code, withPin ? preferredPin() : "");
+    lastNetError = result.pinAccepted ? "" : "bad-pin";
+    const text = t("diag.reachable", {
+      required: result.pinRequired ? "yes" : "no",
+      accepted: result.pinAccepted ? "yes" : "no",
+      approval: result.approval ? "yes" : "no",
+      started: result.started ? "yes" : "no",
+      seats: result.seatsFree
+    });
+    if (status) status.textContent = text;
+    const body = $("#diagBody");
+    if (body) body.textContent = `${diagnosticsText()}\nProbe: ${JSON.stringify(result)}`;
+  } catch (error) {
+    const type = error?.code || error?.type || error?.message || "unknown";
+    lastNetError = type;
+    if (status) status.textContent = t("diag.unreachable", { error: type });
+  }
 }
 
 async function generateRoomPin() {
@@ -5717,6 +5949,12 @@ function bindEvents() {
   $("#lobbyNameInput")?.addEventListener("input", (event) => {
     const field = $("#lobbyPlayerName");
     if (field) field.value = event.target.value;
+    const code = normalizeRoomCode($("#lobbyCodeInput")?.value || "");
+    if (code) saveRoomIntent({ role: "guest", code, name: event.target.value });
+  });
+  $("#lobbyCodeInput")?.addEventListener("input", () => {
+    const code = normalizeRoomCode($("#lobbyCodeInput").value);
+    if (code) saveRoomIntent({ role: "guest", code, name: $("#lobbyNameInput")?.value || "" });
   });
   $("#lobbyCodeInput")?.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -5734,6 +5972,19 @@ function bindEvents() {
       else createHostRoom(name);
     }
   });
+  $("#joinDiagBtn")?.addEventListener("click", openDiagnostics);
+  $("#hostDiagBtn")?.addEventListener("click", openDiagnostics);
+  $("#diagProbePin")?.addEventListener("click", () => runProbe(true));
+  $("#diagProbeNoPin")?.addEventListener("click", () => runProbe(false));
+  $("#diagCopy")?.addEventListener("click", async () => {
+    const body = $("#diagBody")?.textContent || "";
+    const status = $("#diagStatus")?.textContent || "";
+    await copyText(`${body}\n${status}`.trim(), t("diag.copied"));
+  });
+  $("#reloadAppBtn")?.addEventListener("click", forceReload);
+  $("#lobbyReload")?.addEventListener("click", forceReload);
+  $("#updateReload")?.addEventListener("click", forceReload);
+  $("#updateDismiss")?.addEventListener("click", () => { const banner = $("#updateBanner"); if (banner) banner.hidden = true; });
   $("#lobbyCopyBtn")?.addEventListener("click", copyInvite);
   $("#lobbyCopyInfo")?.addEventListener("click", copyRoomInfo);
   $("#lobbyShareBtn")?.addEventListener("click", shareRoomInfo);
@@ -5794,7 +6045,10 @@ function bindEvents() {
   $("#voiceLeaveBtn")?.addEventListener("click", () => voice?.leave());
   $$("[data-lobby-back]").forEach((button) => button.addEventListener("click", () => {
     if (net) requestLeaveRoom();
-    else showLobby("menu");
+    else {
+      clearRoomIntent();
+      showLobby("menu");
+    }
   }));
 
   $("#newMatchBtn")?.addEventListener("click", () => { openModal("confirmModal"); });
@@ -5860,8 +6114,21 @@ function bindEvents() {
   window.addEventListener("beforeunload", saveMatch);
   window.addEventListener("pagehide", () => voice?.leave());
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) saveMatch();
-    else if (isHost()) acquireHostWakeLock();
+    if (document.hidden) {
+      saveMatch();
+      return;
+    }
+    if (lobbyState && ["join", "waiting", "lost"].includes(lobbyState.view) && $("#lobbyModal")?.hidden) {
+      showLobby(lobbyState.view);
+    }
+    if (isHost()) acquireHostWakeLock();
+    checkForUpdate();
+  });
+  window.addEventListener("pageshow", (event) => {
+    if (!event.persisted) return;
+    if (lobbyState && ["join", "waiting", "lost"].includes(lobbyState.view) && $("#lobbyModal")?.hidden) {
+      showLobby(lobbyState.view);
+    }
   });
 }
 
@@ -5873,6 +6140,7 @@ async function boot() {
   audio = new StudioAudio();
   applyLanguage(LANG);
   bindEvents();
+  renderVersion();
   chatOpen = prefs.chatOpen !== false;
   setChatOpen(chatOpen);
   renderChat();
@@ -5883,9 +6151,14 @@ async function boot() {
     if (Number.isFinite(seed)) random = mulberry32(seed);
   }
 
-  const autoRoom = normalizeRoomCode(params.get("room") || "");
   const autoHost = params.get("mode") === "host" || params.get("host") === "1";
-  const skipLaunch = autoRoom || autoHost || params.get("mode") === "solo"
+  const mode = params.get("mode");
+  if (mode === "solo" || params.get("selftest") === "1" || params.get("demo") === "1") clearRoomIntent();
+  const savedIntent = loadRoomIntent();
+  const useIntent = !autoHost && mode !== "solo" && params.get("selftest") !== "1" && params.get("demo") !== "1";
+  const autoRoom = normalizeRoomCode(params.get("room") || (useIntent && savedIntent?.code ? savedIntent.code : ""));
+  const restoreName = savedIntent && savedIntent.code === autoRoom ? savedIntent.name : "";
+  const skipLaunch = autoRoom || autoHost || mode === "solo"
     || params.get("selftest") === "1" || params.get("demo") === "1";
   const willPrompt = !skipLaunch;
 
@@ -5963,11 +6236,11 @@ async function boot() {
         return;
       }
       const nameField = $("#lobbyNameInput");
-      if (nameField && !nameField.value) nameField.value = loadPlayerName();
+      if (nameField && !nameField.value) nameField.value = params.get("name") || restoreName || loadPlayerName();
       const pinField = $("#lobbyPinInput");
       if (pinField && params.get("pin")) pinField.value = normalisePin(params.get("pin"));
       showLobby("join");
-      setLobbyStatus(nameField?.value ? t("net.joinHint") : t("net.enterName"), "");
+      setLobbyStatus(restoreName ? t("net.reconnectHint", { code: formatRoomCode(autoRoom) }) : nameField?.value ? t("net.joinHint") : t("net.enterName"), restoreName ? "jade" : "");
       if (nameField?.value) $("#lobbyCodeInput")?.focus();
       else nameField?.focus();
     }, 350);
@@ -6044,7 +6317,9 @@ window.LeabTui = {
     hydrate: hydrateRemoteState,
     roomCode: () => (net ? formatRoomCode(net.code) : ""),
     copyInvite,
-    roomInfo: roomInfoText
+    roomInfo: roomInfoText,
+    probe: (code, pin = "") => probeRoom(code, pin),
+    diagnostics: diagnosticsText
   },
   chat: {
     send: sendChat,
