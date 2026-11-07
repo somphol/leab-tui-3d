@@ -174,3 +174,21 @@ The host-only draft deal (off by default): the public 32-tile pool, a step count
 ![Draft modal on a phone](../screenshots/draft-modal-mobile.jpg)
 
 The same modal at 390×844: five tiles per row, a scrollable pool of 436 px and the confirm button still inside the card, with no horizontal overflow.
+
+## Reveal result and turn history
+
+![Reveal result on desktop](../screenshots/reveal-result.jpg)
+
+The reveal result uses the same language as the captured-pile popup: one frame per seat in play order, the played set as mini tile cards (a striped back while the set is hidden), a large green ✓ with a gold frame on the current winner, and a note that names the leader and explains whether the trick moved. Continue applies the reveal; ×, Escape and the backdrop do the same rather than stranding the showdown.
+
+![Turn history on desktop](../screenshots/trick-history.jpg)
+
+Turn history after choosing a round and turn: the same seat frames and cards, the winning frame's ✓, and the winner/reason note. The Round and Turn selects re-render this detail; the live sidebar log keeps its compact rows.
+
+![Reveal result on a phone](../screenshots/reveal-result-mobile.jpg)
+
+At 390×844 the seat frames fall to one column and the tile cards and note stay inside the card without horizontal overflow.
+
+![Turn history on a phone](../screenshots/trick-history-mobile.jpg)
+
+The same history detail on a phone: one column, the four seat frames, and a modal that scrolls internally to the note and Continue.

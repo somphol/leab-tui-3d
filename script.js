@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.7";
-import { VoiceChat } from "./voice-chat.js?v=1.9.7";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.7";
+} from "./peer-manager.js?v=1.9.8";
+import { VoiceChat } from "./voice-chat.js?v=1.9.8";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.8";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.7",
+  version: "1.9.8",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -309,6 +309,8 @@ const I18N = {
     "reveal.first": "You set the mark to beat.",
     "reveal.ahead": "You are ahead — the trick is yours so far.",
     "reveal.trails": "The trick stays with {seat}.",
+    "reveal.lead": "{seat} leads with {combo}.",
+    "reveal.leadYou": "You lead with {combo}.",
     "dock.waiting": "{seat} is thinking…",
     "dock.pick": "Select {n} tile(s) for this trick.",
     "dock.selected": "{n} selected.",
@@ -868,6 +870,8 @@ const I18N = {
     "reveal.first": "คุณตั้งมาตรฐานให้คนอื่น",
     "reveal.ahead": "คุณนำอยู่ — กองนี้เป็นของคุณตอนนี้",
     "reveal.trails": "กองนี้ยังเป็นของ {seat}",
+    "reveal.lead": "{seat} นำด้วย {combo}",
+    "reveal.leadYou": "คุณนำด้วย {combo}",
     "dock.waiting": "{seat} กำลังคิด…",
     "dock.pick": "เลือก {n} ตัวสำหรับตานี้",
     "dock.selected": "เลือกแล้ว {n} ตัว",
@@ -2585,26 +2589,58 @@ function finishRevealResult() {
   if (callback) callback();
 }
 
+function trickCardsMarkup(entry, showTiles, isWinner) {
+  const tiles = entry.tiles || [];
+  if (!showTiles) {
+    return tiles.map(() => (
+      `<div class="pile-item back"><span class="mini-tile back" role="img" aria-label="${escapeHTML(t("pile.hidden"))}">?</span></div>`
+    )).join("");
+  }
+  return tiles.map((tile) => {
+    const rank = RANK_BY_ID[tile.rank] || RANK_BY_POWER[tile.power];
+    return `<div class="pile-item ${isWinner ? "winner" : ""}">
+      <em>${rank.power}</em>
+      <span class="mini-tile ${tile.color === "r" ? "red" : "black"}">${tile.hanzi}</span>
+      <b>${escapeHTML(tileName(tile))}</b>
+    </div>`;
+  }).join("");
+}
+
+/* One comparison layout for the reveal result, the trick history and (in spirit) the captured pile. */
+function trickCompareMarkup(entries, winnerSeat, showFor = null) {
+  return `<div class="trick-compare">${(entries || []).map((entry) => {
+    const isWinner = entry.seat === winnerSeat;
+    const showTiles = entry.revealed || entry.seat === showFor;
+    const label = showTiles && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden");
+    return `<section class="trick-seat ${isWinner ? "win" : ""}" role="group" aria-label="${escapeHTML(seatName(entry.seat))}">
+      <div class="trick-seat-head">
+        <b>${isWinner ? `<span class="seat-tick" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>` : ""}${escapeHTML(seatName(entry.seat))}</b>
+        <span>${escapeHTML(label)}</span>
+      </div>
+      <div class="trick-cards">${trickCardsMarkup(entry, showTiles, isWinner)}</div>
+    </section>`;
+  }).join("")}</div>`;
+}
+
 function openRevealResult(entry, beats, callback) {
   revealPending = callback;
   const body = $("#revealBody");
-  const winner = beats ? entry.seat : state.best?.seat ?? entry.seat;
-  const rows = state.center.map((item) => {
-    const shown = item.seat === entry.seat || item.revealed;
-    const label = shown && item.combo ? comboSummary(item.combo) : t("showdown.hidden");
-    const badge = item.seat === winner
-      ? `<span class="log-win-badge" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>`
-      : "";
-    return `<div class="log-entry ${item.seat === winner ? "win" : ""}">
-      <div class="log-entry-head"><b>${badge}${escapeHTML(seatName(item.seat))}</b><span>${escapeHTML(label)}</span></div>
-    </div>`;
-  }).join("");
+  const winnerSeat = beats ? entry.seat : state.best?.seat ?? entry.seat;
+  const winnerCombo = beats ? entry.combo : state.best?.combo ?? entry.combo;
   const note = !state.best
     ? t("reveal.first")
     : beats
       ? t("reveal.ahead")
       : t("reveal.trails", { seat: seatName(state.best.seat) });
-  if (body) body.innerHTML = `<div class="reveal-list">${rows}</div><p class="reveal-note">${escapeHTML(note)}</p>`;
+  if (body) {
+    body.innerHTML = `${trickCompareMarkup(state.center, winnerSeat, MY_SEAT)}
+      <div class="pile-why">
+        <b>${escapeHTML(winnerSeat === MY_SEAT
+          ? t("reveal.leadYou", { combo: comboSummary(winnerCombo) })
+          : t("reveal.lead", { seat: seatName(winnerSeat), combo: comboSummary(winnerCombo) }))}</b>
+        <p>${escapeHTML(note)}</p>
+      </div>`;
+  }
   const modal = $("#revealModal");
   if (modal) modal.hidden = false;
   audio?.play(beats ? "win" : "lose", 0);
@@ -3641,22 +3677,11 @@ function renderLogRecord(record) {
     meta.textContent = `${t("log.round")} ${record.round} · ${t("log.trick")} ${record.trick} · ${t("log.call")}: ${call} · ${t("log.winner")}: ${seatName(record.winner)} (${comboSummary(record.combo)})${record.chuan ? ` · ${t("log.chuan")}` : ""}`;
   }
   if (list) {
-    list.innerHTML = (record.entries || []).map((entry) => {
-      const tiles = (entry.tiles || []).map((tile) => {
-        if (!entry.revealed || !tile || tile.id === "hidden" || !tile.hanzi) {
-          return `<span class="log-tile back" aria-hidden="true">?</span>`;
-        }
-        return `<span class="log-tile ${tile.color === "r" ? "red" : ""}">${tile.hanzi}</span>`;
-      }).join("");
-      const label = entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden");
-      const badge = entry.seat === record.winner
-        ? `<span class="log-win-badge" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>`
-        : "";
-      return `<div class="log-entry ${entry.seat === record.winner ? "win" : ""}">
-        <div class="log-entry-head"><b>${badge}${escapeHTML(seatName(entry.seat))}</b><span>${escapeHTML(label)}</span></div>
-        <div class="log-tiles">${tiles}</div>
+    list.innerHTML = `${trickCompareMarkup(record.entries || [], record.winner)}
+      <div class="pile-why">
+        <b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummary(record.combo), n: record.captured }))}</b>
+        <p>${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</p>
       </div>`;
-    }).join("") + `<div class="summary-note">${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</div>`;
   }
 }
 
@@ -8284,13 +8309,16 @@ function bindEvents() {
   $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeModal(button.dataset.close)));
   $$(".modal").forEach((modal) => {
     modal.addEventListener("pointerdown", (event) => {
-      if (event.target === modal && modal.id !== "summaryModal" && modal.id !== "lobbyModal") modal.hidden = true;
+      if (event.target !== modal) return;
+      if (modal.id === "revealModal") { finishRevealResult(); return; }
+      if (modal.id !== "summaryModal" && modal.id !== "lobbyModal") modal.hidden = true;
     });
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       const open = $$(".modal").find((modal) => !modal.hidden);
-      if (open && open.id !== "summaryModal") open.hidden = true;
+      if (open && open.id === "revealModal") finishRevealResult();
+      else if (open && open.id !== "summaryModal") open.hidden = true;
       setRankReference(false);
       setPinInfo(false);
       closePanelSheet();

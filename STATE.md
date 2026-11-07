@@ -23,6 +23,10 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.9.8 — one comparison popup
+
+The reveal result and the turn-history detail now use the captured-pile popup language: one frame per seat, the played tiles as mini cards, a large green ✓ and gold frame on the winner, and the comparison plus reason in the gold-bordered note. The sidebar live log and the flat captured-pile grid are unchanged.
+
 ## Release 1.9.7 — experimental draft deal
 
 The host can enable a draft deal (off by default) in the lobby or from Actions. The automatic deal is replaced by a public pool: seats take turns taking 2 tiles, four times, for 8 each; bots pick automatically and the red-General holder leads. The draft is host-validated and relayed in P2P, resumes mid-draft, and disables redraw. Documented as experimental in `docs/DRAFT.md`.

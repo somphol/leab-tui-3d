@@ -177,6 +177,68 @@ async function main() {
   if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.themeButtons === 5) pass("display panel exposes four sizes and five themes");
   else fail("display panel exposes four sizes and five themes", JSON.stringify(displayValue));
 
+  const compareExpr = `(async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    LeabTui.setFast(true);
+    LeabTui.newMatch({ fast: true });
+    await sleep(250);
+    const act = async (allowReveal) => {
+      const st = LeabTui.getState();
+      if (!st) return 'end';
+      if (st.phase === 'showdown' && st.turn === 0) {
+        LeabTui.showdown(true);
+        await sleep(60);
+        if (!document.querySelector('#revealModal').hidden) return 'reveal';
+        const next = LeabTui.getState();
+        if (next.phase === 'showdown' && next.turn === 0) LeabTui.showdown(false);
+        return 'acted';
+      }
+      if (st.phase === 'lead' && st.turn === 0) { LeabTui.hint(); LeabTui.lead(LeabTui.getState().selected); }
+      else if (st.phase === 'follow' && st.turn === 0) { LeabTui.hint(); LeabTui.follow(LeabTui.getState().selected); }
+      else if (st.phase === 'roundEnd' || st.phase === 'matchEnd') { LeabTui.newMatch({ fast: true }); }
+      return 'wait';
+    };
+    let revealed = false;
+    for (let i = 0; i < 500 && !revealed; i += 1) {
+      await sleep(20);
+      if (await act(true) === 'reveal') revealed = true;
+    }
+    const body = document.querySelector('#revealBody');
+    const reveal = {
+      opened: revealed,
+      seats: body.querySelectorAll('.trick-seat').length,
+      tick: body.querySelectorAll('.seat-tick').length,
+      why: body.querySelector('.pile-why b')?.textContent || ''
+    };
+    if (revealed) {
+      document.querySelector('#revealContinue').click();
+      await sleep(80);
+    }
+    for (let i = 0; i < 400; i += 1) {
+      await sleep(20);
+      const st = LeabTui.getState();
+      if (!st) break;
+      if ((st.trickArchive || []).length >= 1) break;
+      if (await act(false) === 'reveal') document.querySelector('#revealContinue').click();
+    }
+    document.querySelector('#logHistoryBtn').click();
+    await sleep(250);
+    const list = document.querySelector('#lastTrickList');
+    const history = {
+      open: !document.querySelector('#lastTrickModal').hidden,
+      seats: list.querySelectorAll('.trick-seat').length,
+      tick: list.querySelectorAll('.seat-tick').length,
+      why: list.querySelector('.pile-why b')?.textContent || ''
+    };
+    return JSON.stringify({ reveal, history });
+  })()`;
+  const compare = runHarness(["--url", soloBase, "--wait", "2500", "--eval", compareExpr]);
+  const compareValue = compare.evalValue || {};
+  if (compareValue.reveal?.opened && compareValue.reveal.seats === 4 && compareValue.reveal.tick === 1) pass("reveal result uses the comparison cards");
+  else fail("reveal result uses the comparison cards", JSON.stringify(compareValue.reveal));
+  if (compareValue.history?.open && compareValue.history.seats === 4 && compareValue.history.tick === 1) pass("turn history uses the comparison cards");
+  else fail("turn history uses the comparison cards", JSON.stringify(compareValue.history));
+
   const flow = runHarness(["--url", soloBase, "--wait", "900", "--eval", playthrough]);
   const value = flow.evalValue || {};
   const flowExceptions = (flow.events || []).filter((event) => event.type === "exception");

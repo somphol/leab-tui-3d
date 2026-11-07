@@ -181,6 +181,25 @@ console               no exceptions on either page
 
 The privacy check is the important one: it reads the guest's `LeabTui.getState()` and asserts that every id outside the guest's own seat starts with `ghost-`. That value comes from the actual data channel, not from a unit stub.
 
+### Comparison popups
+
+The reveal result and the Turn history detail share `trickCompareMarkup`. Drive
+one trick and assert the DOM:
+
+```text
+reveal result       4 seat frames, 1 winner frame, 1 big tick
+reveal cards        centre tiles count; backs for hidden seats
+reveal note         "West leads with Red Advisor." / "The trick stays with West."
+history (1 trick)   4 seat frames, 1 winner frame, 1 big tick
+history note        "East won 4 tiles with Red Advisor"
+history selector    changing Round/Turn re-renders the same layout
+mobile 390×844      1 column, no horizontal overflow, card scrolls internally
+```
+
+The reveal modal was checked for all three outcomes: the leader's first show
+(no mark yet), a show that takes the lead, and a losing show. The sidebar live
+log still uses its compact row layout; only the modal detail changed.
+
 ### Draft deal
 
 Run with `?mode=solo`, enable **Draft next deal**, then `LeabTui.newMatch()`:

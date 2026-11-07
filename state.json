@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.7",
-  "version": "1.9.7",
+  "projectVersion": "1.9.8",
+  "version": "1.9.8",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,13 +9,13 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-07T11:26:50-08:00",
-    "durationSeconds": 91277,
-    "durationHuman": "25h 21m 17s",
+    "packagedAt": "2026-11-07T12:05:00-08:00",
+    "durationSeconds": 93567,
+    "durationHuman": "25h 59m 27s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror. plus 1.9.2–1.9.7: arrangement/showdown/piles, Chuan-aware results, Turn-Log reveal, winner badges and the experimental draft deal.",
-    "publishedAt": "2026-11-07T19:26:50Z"
+    "publishedAt": "2026-11-07T20:05:00Z"
   },
   "tokens": {
     "input": 6615671,
@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (360 checks)",
+    "staticCheck": "scripts/check.mjs (367 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
     "multiplayer": "scripts/net-check.mjs — 23/23",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
@@ -278,9 +278,14 @@
       "version": "1.9.7",
       "date": "2026-11-07",
       "summary": "Experimental draft deal with host toggle and P2P relay."
+    },
+    {
+      "version": "1.9.8",
+      "date": "2026-11-07",
+      "summary": "Shared comparison popup for reveal results and turn history."
     }
   ],
-  "releaseNotes": "1.9.7 adds an off-by-default experimental draft deal: host toggle, public pool, 2 tiles ×4, bot auto-picks, P2P relay and mid-draft resume.",
+  "releaseNotes": "1.9.8 unifies the reveal result and turn-history detail with the captured-pile comparison popup: seat frames, tile cards, a large winner tick and a reason note.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

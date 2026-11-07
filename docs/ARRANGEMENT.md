@@ -78,9 +78,11 @@ The turn order follows the source:
   bot reveals when it can beat the mark.
 - **Double-click** (or double-tap) a player's own tile in the centre during
   showdown is a shortcut for **Show set**.
-- A local reveal opens a result panel with the set, whether it beats the mark
-  and the reason, plus a full-width **Continue** button. The showdown state is
-  not mutated and the trick is not swept until Continue (or ×) is pressed.
+- A local reveal opens a **result panel in the captured-pile style**: one frame
+  per seat in play order, the seat's tiles as mini cards (backs while hidden),
+  a large green ✓ and gold frame on the current winner, and the comparison and
+  reason in the gold-bordered note below. The showdown state is not mutated and
+  the trick is not swept until Continue, × or the backdrop is used.
 - The final winner takes all `4 × N` tiles; only then are they added to the
   winner's pile.
 
@@ -96,9 +98,11 @@ The turn order follows the source:
   **from {seat}** on both face-up and face-down cards.
 - Clicking a captured tile opens the trick's pile: tiles left to right, with
   the same 76 px tile and ranking typography as the Ranks ladder.
-- The **Turn history** browser shows the call, winner, each seat's set and the
-  tiles actually played (backs for hidden sets); the winner row carries a green
-  ✓ badge.
+- The **Turn history** browser uses the same comparison layout after a round
+  and turn are selected: one frame per seat, the actual tiles as mini cards
+  (backs for hidden sets), a large green ✓ on the winning frame, and the winner
+  line plus the reason in the same gold-bordered note. The reveal result and the
+  history share `trickCompareMarkup`; do not fork the layout again.
 
 ## 6. Layout relay
 
@@ -141,6 +145,8 @@ These are deliberate and should not be “simplified” away:
 - No arrangement outside the private arc; the centre is only a play target.
 - No tile identities in the layout relay.
 - One trick = one captured pile.
+- One comparison layout. Reveal result, turn history and the captured-pile why
+  block share the card and note treatment; hidden sets never render faces.
 - The dock buttons remain a complete alternative to drag.
 
 ## 9. Code map
@@ -150,6 +156,6 @@ These are deliberate and should not be “simplified” away:
 | Zones, drag, reveal, piles | `script.js` → `createScene` (`personalZone`, `battleRing`, `tryPlayFromHand`, `endHandDrag`, `showdown`, `capturePosition`) |
 | Hand layout + relay | `handLayout`, `seatLayouts`, `exportHandSlots`, `publishHandLayout` |
 | Captured visibility / source / trick | `captureHidden`, `captureFrom`, `captureTrick` in `state` |
-| Reveal panel | `#revealModal`, `revealPending`, `applyShowdown` |
-| History browser | `trickArchive`, `renderLogBrowser`, `#lastTrickModal` |
+| Reveal panel | `#revealModal`, `revealPending`, `trickCompareMarkup`, `applyShowdown` |
+| History browser | `trickArchive`, `renderLogBrowser`, `trickCompareMarkup`, `#lastTrickModal` |
 | Pile popup | `openPileModal`, `captureGroupsFor` |

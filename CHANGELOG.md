@@ -2,6 +2,18 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.8] — 2026-11-07
+
+### Changed
+
+- **The reveal result now looks like the captured-pile popup.** Four seat frames in play order, the played set as mini tile cards (backs while hidden), a large green ✓ with a gold frame on the current winner, and a note block with the leader/comparison and the reason.
+- **Turn history uses the same comparison.** After choosing a round and turn, the detail shows the tile cards per seat, the winning frame's ✓ and the winner/reason note — not a text row list. The live sidebar log is unchanged.
+- **Reveal dismissal is safe.** Continue, ×, Escape and the backdrop all apply the pending reveal; none can leave the showdown waiting on a callback that was already dismissed.
+
+### Fixed
+
+- English first-person wording in the comparison: “You lead with …” instead of “You leads with …”.
+
 ## [1.9.7] — 2026-11-07
 
 ### Added
