@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.8.6";
-import { VoiceChat } from "./voice-chat.js?v=1.8.6";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.6";
+} from "./peer-manager.js?v=1.8.7";
+import { VoiceChat } from "./voice-chat.js?v=1.8.7";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.7";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.8.6",
+  version: "1.8.7",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T09:32:56-08:00",
-    durationHuman: "23h 27m 23s",
-    tokensTotal: "6686543",
-    tokensInput: "5620165",
-    tokensOutput: "572712",
-    tokensReasoning: "493666",
-    tokensCacheRead: "662606592",
+    packagedAt: "2026-11-07T09:46:25-08:00",
+    durationHuman: "23h 40m 52s",
+    tokensTotal: "6736256",
+    tokensInput: "5647120",
+    tokensOutput: "582386",
+    tokensReasoning: "506750",
+    tokensCacheRead: "674019584",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -281,9 +281,9 @@ const I18N = {
     "app.title": "Leab-Tui 3D",
     "app.subtitle": "Traditional Xiangqi Trick-Taking Studio",
     "hud.round": "Round",
-    "hud.trick": "Trick",
+    "hud.trick": "Turn",
     "hud.target": "Target",
-    "hud.turn": "Turn",
+    "hud.turn": "Now",
     "hud.call": "Call",
     "hud.result": "Result",
     "dock.select": "Select your tiles",
@@ -298,6 +298,7 @@ const I18N = {
     "dock.showdownCan": "Your {combo} beats {best}. Show it to take the trick.",
     "dock.showdownWait": "Only a revealed set can win. You may show yours even if it loses.",
     "dock.showdownLose": "Your {combo} does not beat {best}, but you may still show it.",
+    "dock.showdownDouble": "Double-click your tile on the table to show it.",
     "dock.showdownFirst": "Show your set first",
     "dock.showdownFirstHelp": "You called this shape. Reveal it to set the mark for the other seats.",
     "dock.showdownNoBeat": "You cannot beat the table",
@@ -357,7 +358,7 @@ const I18N = {
     "rankRef.close": "Close rank order",
     "rankRef.highest": "Highest",
     "rankRef.lowest": "Lowest",
-    "camera.hint": "Drag to orbit · scroll to zoom · drag one of your tiles to arrange",
+    "camera.hint": "Drag to orbit · drag a tile to arrange · drop it in the centre ring to play",
     "play.release": "Release to play",
     "view.top": "Top view",
     "view.3d": "3D view",
@@ -371,12 +372,12 @@ const I18N = {
     "score.points": "points",
     "score.pile": "pile",
     "score.piles": "piles",
-    "lastTrick.button": "Last trick",
-    "lastTrick.title": "Last trick",
+    "lastTrick.button": "Last turn",
+    "lastTrick.title": "Last turn",
     "log.history": "History",
-    "log.browserTitle": "Trick history",
+    "log.browserTitle": "Turn history",
     "log.round": "Round",
-    "log.trick": "Trick",
+    "log.trick": "Turn",
     "log.call": "Call",
     "log.winner": "Winner",
     "log.why": "Only revealed sets compete; the highest revealed set takes the trick. Face-down tiles stay hidden.",
@@ -402,7 +403,7 @@ const I18N = {
     "handList.hide": "hide",
     "handList.show": "show",
     "handList.empty": "No tiles left this round.",
-    "log.title": "Trick log",
+    "log.title": "Turn log",
     "log.live": "live",
     "log.empty": "The table is quiet. Lead the first trick.",
     "footer.credit": "Built with OpenCode + DeepSeek V4.1 Flash",
@@ -515,6 +516,7 @@ const I18N = {
     "toast.redraw": "Redraw {n}: this round scores ×{n}.",
     "toast.trickResult": "{winner} wins with {combo} — {entries}",
     "toast.chuan": "Chuan! Seven piles plus the last Soldier.",
+    "toast.stayZone": "Keep your tiles inside your own area.",
     "toast.lang": "Language switched to English.",
     "summary.round": "Round {n} complete",
     "summary.match": "Match complete",
@@ -803,7 +805,7 @@ const I18N = {
     "hud.round": "รอบ",
     "hud.trick": "ตา",
     "hud.target": "เป้า",
-    "hud.turn": "ตาเดิน",
+    "hud.turn": "ตอนนี้",
     "hud.call": "เรียก",
     "hud.result": "ประกาศผล",
     "dock.select": "เลือกหมากของคุณ",
@@ -818,6 +820,7 @@ const I18N = {
     "dock.showdownCan": "{combo} ของคุณชนะ {best} เปิดเพื่อกินกองนี้",
     "dock.showdownWait": "เปิดแล้วชนะเท่านั้น คุณจะเปิดชุดที่แพ้ให้ดูก็ได้",
     "dock.showdownLose": "{combo} ของคุณไม่ชนะ {best} แต่จะเปิดให้ดูก็ได้",
+    "dock.showdownDouble": "ดับเบิลคลิกไพ่ของคุณบนโต๊ะเพื่อเปิด",
     "dock.showdownFirst": "เปิดชุดของคุณก่อน",
     "dock.showdownFirstHelp": "คุณเป็นคนเรียก เปิดชุดนี้เพื่อตั้งมาตรฐานให้คนอื่น",
     "dock.showdownNoBeat": "คุณสู้โต๊ะไม่ได้",
@@ -877,7 +880,7 @@ const I18N = {
     "rankRef.close": "ปิดลำดับศักดิ์",
     "rankRef.highest": "สูงสุด",
     "rankRef.lowest": "ต่ำสุด",
-    "camera.hint": "ลากเพื่อหมุน · เลื่อนเพื่อซูม · ลากไพ่ในมือเพื่อจัดวาง",
+    "camera.hint": "ลากเพื่อหมุน · ลากไพ่เพื่อจัดวาง · ปล่อยในวงกลางเพื่อลงไพ่",
     "play.release": "ปล่อยเพื่อลงไพ่",
     "view.top": "มุมมองด้านบน",
     "view.3d": "มุมมอง 3D",
@@ -1035,6 +1038,7 @@ const I18N = {
     "toast.redraw": "โละครั้งที่ {n}: รอบนี้คิดแต้มคูณ {n}",
     "toast.trickResult": "{winner} กินกองด้วย {combo} — {entries}",
     "toast.chuan": "ช้วน! เจ็ดกองกับจุกตัวสุดท้าย",
+    "toast.stayZone": "วางไพ่ไว้ในโซนของคุณเท่านั้น",
     "toast.lang": "เปลี่ยนภาษาเป็นไทยแล้ว",
     "summary.round": "จบรอบที่ {n}",
     "summary.match": "จบแมตช์",
@@ -3253,8 +3257,8 @@ function renderSelection() {
       : !canShow
         ? t("dock.showdownWait")
         : canBeat && entry?.combo && state.best
-          ? t("dock.showdownCan", { combo: comboSummary(entry.combo), best: comboSummary(state.best.combo) })
-          : t("dock.showdownLose", { combo: comboSummary(entry?.combo), best: comboSummary(state.best?.combo) });
+          ? `${t("dock.showdownCan", { combo: comboSummary(entry.combo), best: comboSummary(state.best.combo) })} ${t("dock.showdownDouble")}`
+          : `${t("dock.showdownLose", { combo: comboSummary(entry?.combo), best: comboSummary(state.best?.combo) })} ${t("dock.showdownDouble")}`;
     pips.innerHTML = "";
     leadBtn.hidden = true;
     revealBtn.hidden = !humanTurn;
@@ -6459,6 +6463,22 @@ async function createScene() {
      seat at the bottom of the screen. Lights, floor and dust stay fixed. */
   const world = new THREE.Group();
   scene.add(world);
+
+  // Battle ring (centre) and the player's private arrangement arc.
+  const battleRing = new THREE.Mesh(
+    new THREE.RingGeometry(2.72, 2.82, 96),
+    new THREE.MeshBasicMaterial({ color: 0xd8b26b, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false })
+  );
+  battleRing.rotation.x = -Math.PI / 2;
+  battleRing.position.y = TABLE_Y + 0.006;
+  world.add(battleRing);
+  const personalZone = new THREE.Mesh(
+    new THREE.RingGeometry(3.06, 4.6, 96, 1, -Math.PI / 2 - 0.92, 1.84),
+    new THREE.MeshBasicMaterial({ color: 0xd8b26b, transparent: true, opacity: 0.09, side: THREE.DoubleSide, depthWrite: false })
+  );
+  personalZone.rotation.x = -Math.PI / 2;
+  personalZone.position.y = TABLE_Y + 0.004;
+  world.add(personalZone);
   let viewSeat = MY_SEAT || 0;
   let viewAngle = -SEATS[viewSeat].angle;
 
@@ -6791,6 +6811,7 @@ async function createScene() {
   let hoverId = null;
   let selectedIds = new Set();
   let downPoint = null;
+  let lastCenterTap = null;
   let dragging = false;
   let currentState = null;
   const handLayout = new Map();
@@ -6977,6 +6998,19 @@ async function createScene() {
     selectedIds = new Set(ids || []);
   }
 
+  function tileScreen(id) {
+    const record = tileObjects.get(id);
+    if (!record || !record.root.visible) return null;
+    const point = new THREE.Vector3();
+    record.root.getWorldPosition(point);
+    point.project(camera);
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: rect.left + ((point.x + 1) / 2) * rect.width,
+      y: rect.top + ((1 - point.y) / 2) * rect.height
+    };
+  }
+
   function pick(event) {
     const rect = canvas.getBoundingClientRect();
     pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -7095,6 +7129,16 @@ async function createScene() {
     if (hint) hint.hidden = Math.hypot(target.x, target.z) >= HAND_PLAY_RADIUS;
   }
 
+  function inPersonalZone(point, seat) {
+    const radius = Math.hypot(point.x, point.z);
+    if (radius < 3.0 || radius > HAND_RADIUS + 0.5) return false;
+    const base = SEATS[seat].angle;
+    let offset = Math.atan2(point.x, point.z) - base;
+    while (offset > Math.PI) offset -= Math.PI * 2;
+    while (offset < -Math.PI) offset += Math.PI * 2;
+    return Math.abs(offset) <= 0.92;
+  }
+
   function tryPlayFromHand(record) {
     if (!state || !["lead", "follow"].includes(state.phase) || state.turn !== MY_SEAT) return false;
     let ids = (state.selected || []).slice();
@@ -7137,6 +7181,13 @@ async function createScene() {
       return true;
     }
     if (moved && point) {
+      const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
+      if (!inPersonalZone(point, localSeat)) {
+        record.anim = null;
+        record.root.position.copy(origin);
+        toast(t("toast.stayZone"), "wine");
+        return true;
+      }
       handLayout.set(record.id, { x: point.x, z: point.z, angle: point.angle });
       record.anim = null;
       record.root.position.set(point.x, TABLE_Y + TILE_THICKNESS / 2 + 0.012, point.z);
@@ -7233,6 +7284,20 @@ async function createScene() {
       return;
     }
     const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
+    if (record.kind === "center" && record.seat === localSeat) {
+      const now = performance.now();
+      if (lastCenterTap && lastCenterTap.id === record.id && now - lastCenterTap.time < 420) {
+        lastCenterTap = null;
+        if (currentState?.phase === "showdown" && currentState.turn === localSeat) {
+          humanFollow(true);
+          return;
+        }
+      } else {
+        lastCenterTap = { id: record.id, time: now };
+      }
+    } else {
+      lastCenterTap = null;
+    }
     const humanHand = currentState?.hands?.[localSeat] || [];
     const touch = event.pointerType === "touch";
     if (humanHand.some((tile) => tile.id === record.id) && currentState?.turn === localSeat && ["lead", "follow"].includes(currentState.phase)) {
@@ -7249,6 +7314,13 @@ async function createScene() {
   canvas.addEventListener("pointerleave", onPointerLeave);
   canvas.addEventListener("pointerdown", onPointerDown);
   canvas.addEventListener("pointerup", onPointerUp);
+  canvas.addEventListener("dblclick", (event) => {
+    const record = pick(event);
+    if (record?.kind === "center" && record.seat === MY_SEAT
+      && currentState?.phase === "showdown" && currentState.turn === MY_SEAT) {
+      humanFollow(true);
+    }
+  });
   canvas.addEventListener("pointercancel", () => {
     if (handDrag) endHandDrag(handDrag.moved);
   });
@@ -7439,6 +7511,7 @@ async function createScene() {
     tidyHand,
     setSeatLayout,
     getSeatLayout(seat) { return seatLayouts.get(Number(seat)) || null; },
+    tileScreen,
     getState() {
       return {
         position: camera.position.toArray(),
@@ -7981,6 +8054,7 @@ window.LeabTui = {
   exportHandSlots: () => scene?.exportHandSlots?.() || [],
   publishHandLayout: (slots) => publishHandLayout(slots),
   getSeatLayout: (seat) => scene?.getSeatLayout?.(seat) || null,
+  getTileScreen: (id) => scene?.tileScreen?.(id) || null,
   getVersionState: () => ({ current: APP.version, available: availableVersion, checkedAt: (() => { try { return JSON.parse(localStorage.getItem(VERSION_CHECK_KEY) || "null")?.at || 0; } catch { return 0; } })() }),
   openRanks: () => setRankReference(true),
   closeRanks: () => setRankReference(false),

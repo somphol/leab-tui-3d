@@ -3,25 +3,29 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.8.6**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.8.7**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.8.6` |
+| App version | `1.8.7` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js` |
-| Source lines | 12,205 |
-| Source size | 511,304 bytes |
+| Source lines | 12,279 |
+| Source size | 514,473 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.8.7 — zones and Turn wording
+
+A gold battle ring marks the centre and a private arc marks the player's arrangement area; drops outside the arc snap back. Double-clicking your own centre tile at showdown shows it. The HUD now reads **Round · Turn** and **Now** for the current player, with **Turn log** / **Last turn** wording.
 
 ## Release 1.8.6 — drag to play
 
@@ -182,7 +186,7 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | 1.6.2 version/reload, diagnostics, join restore | 15:20–16:35 | ~75m |
 | 1.6.3 five-digit PIN, clearer Leave room | 16:35–17:05 | ~30m |
 
-**Measured session wall clock:** **23h 27m 23s** (84,443 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **23h 40m 52s** (85,252 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -190,13 +194,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 5,620,165 |
-| Output | 572,712 |
-| Reasoning | 493,666 |
-| **Total (input + output + reasoning)** | **6,686,543** |
-| Cache read | 662,606,592 |
+| Input | 5,647,120 |
+| Output | 582,386 |
+| Reasoning | 506,750 |
+| **Total (input + output + reasoning)** | **6,736,256** |
+| Cache read | 674,019,584 |
 | Cache write | 1,087 |
-| **Total including cache** | **669,294,222** |
+| **Total including cache** | **680,756,927** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.

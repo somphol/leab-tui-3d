@@ -2,6 +2,17 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.7] — 2026-11-07
+
+### Added
+
+- **Table zones.** A gold **battle ring** marks the centre and a faint arc marks the player's private area. Tiles may only be arranged inside the private arc; a drop in another seat's area or the gap snaps back with a message. The centre is reserved for a play drop.
+- **Double-click to show.** At showdown, double-click one of your own tiles in the centre to reveal it (same as **Show set**).
+
+### Changed
+
+- The HUD counter is **Round · Turn** and the current player chip is **Now** (Thai **ตอนนี้**), so “Turn 3” no longer collides with “Turn You”. The log is **Turn log** and the history is **Turn history**; **Last turn** replaces Last trick.
+
 ## [1.8.6] — 2026-11-07
 
 ### Added
