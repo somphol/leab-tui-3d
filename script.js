@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.4";
-import { VoiceChat } from "./voice-chat.js?v=1.9.4";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.4";
+} from "./peer-manager.js?v=1.9.5";
+import { VoiceChat } from "./voice-chat.js?v=1.9.5";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.5";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.4",
+  version: "1.9.5",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -306,9 +306,9 @@ const I18N = {
     "showdown.hidden": "face-down",
     "actions.showFirst": "Show first",
     "reveal.title": "Reveal result",
-    "reveal.first": "You are first; your set is the mark to beat.",
-    "reveal.win": "Your {combo} beats {best}. You are ahead.",
-    "reveal.lose": "Your {combo} does not beat {best}. The trick stays with {best}.",
+    "reveal.first": "You set the mark to beat.",
+    "reveal.ahead": "You are ahead — the trick is yours so far.",
+    "reveal.trails": "The trick stays with {seat}.",
     "dock.waiting": "{seat} is thinking…",
     "dock.pick": "Select {n} tile(s) for this trick.",
     "dock.selected": "{n} selected.",
@@ -856,9 +856,9 @@ const I18N = {
     "showdown.hidden": "คว่ำ",
     "actions.showFirst": "เปิดก่อน",
     "reveal.title": "ผลการเปิด",
-    "reveal.first": "คุณเป็นคนแรก ชุดนี้ตั้งมาตรฐานให้คนอื่น",
-    "reveal.win": "{combo} ของคุณชนะ {best} ตอนนี้คุณนำอยู่",
-    "reveal.lose": "{combo} ของคุณไม่ชนะ {best} กองนี้ยังเป็นของ {best}",
+    "reveal.first": "คุณตั้งมาตรฐานให้คนอื่น",
+    "reveal.ahead": "คุณนำอยู่ — กองนี้เป็นของคุณตอนนี้",
+    "reveal.trails": "กองนี้ยังเป็นของ {seat}",
     "dock.waiting": "{seat} กำลังคิด…",
     "dock.pick": "เลือก {n} ตัวสำหรับตานี้",
     "dock.selected": "เลือกแล้ว {n} ตัว",
@@ -2464,15 +2464,23 @@ function finishRevealResult() {
 function openRevealResult(entry, beats, callback) {
   revealPending = callback;
   const body = $("#revealBody");
-  const combo = comboSummary(entry.combo);
-  const best = state.best ? comboSummary(state.best.combo) : "";
-  if (body) {
-    body.innerHTML = state.best
-      ? (beats
-        ? `<b>${escapeHTML(combo)}</b><br>${escapeHTML(t("reveal.win", { combo, best }))}`
-        : `<b>${escapeHTML(combo)}</b><br>${escapeHTML(t("reveal.lose", { combo, best }))}`)
-      : `<b>${escapeHTML(combo)}</b><br>${escapeHTML(t("reveal.first", { combo }))}`;
-  }
+  const winner = beats ? entry.seat : state.best?.seat ?? entry.seat;
+  const rows = state.center.map((item) => {
+    const shown = item.seat === entry.seat || item.revealed;
+    const label = shown && item.combo ? comboSummary(item.combo) : t("showdown.hidden");
+    const badge = item.seat === winner
+      ? `<span class="log-win-badge" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>`
+      : "";
+    return `<div class="log-entry ${item.seat === winner ? "win" : ""}">
+      <div class="log-entry-head"><b>${badge}${escapeHTML(seatName(item.seat))}</b><span>${escapeHTML(label)}</span></div>
+    </div>`;
+  }).join("");
+  const note = !state.best
+    ? t("reveal.first")
+    : beats
+      ? t("reveal.ahead")
+      : t("reveal.trails", { seat: seatName(state.best.seat) });
+  if (body) body.innerHTML = `<div class="reveal-list">${rows}</div><p class="reveal-note">${escapeHTML(note)}</p>`;
   const modal = $("#revealModal");
   if (modal) modal.hidden = false;
   audio?.play(beats ? "win" : "lose", 0);

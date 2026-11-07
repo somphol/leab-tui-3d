@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.5] — 2026-11-07
+
+### Changed
+
+- **Reveal result now looks like the Turn Log.** Instead of a long sentence, the panel lists every set in the trick, shows the sets that were revealed and face-down placeholders for the rest, and puts a green ✓ on the current winner. A short footer says “You set the mark”, “You are ahead” or “The trick stays with {seat}”; the big Continue button is unchanged.
+
 ## [1.9.4] — 2026-11-07
 
 ### Fixed

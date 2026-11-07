@@ -827,6 +827,8 @@ a:hover { text-decoration: underline; }
 .last-trick-row span { color: var(--ink-dim); text-align: right; }
 .last-trick-row.win { border-color: var(--gold); background: var(--gold-wash); }
 .reveal-result { text-align: center; }
+.reveal-list { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 12px; text-align: left; }
+.reveal-note { margin: 0 0 16px; color: var(--ink-dim); font-size: calc(12px * var(--fs-scale)); text-align: center; }
 .reveal-body { margin: 6px 0 18px; color: var(--ink-dim); font-size: calc(14px * var(--fs-scale)); line-height: 1.6; }
 .reveal-body b { color: var(--gold-bright); font-family: var(--serif); font-size: calc(18px * var(--fs-scale)); }
 .reveal-big { width: 100%; min-height: 52px; font-size: calc(15px * var(--fs-scale)); }

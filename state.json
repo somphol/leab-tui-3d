@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.4",
-  "version": "1.9.4",
+  "projectVersion": "1.9.5",
+  "version": "1.9.5",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -263,9 +263,14 @@
       "version": "1.9.4",
       "date": "2026-11-07",
       "summary": "Chuan-aware result explanations and pile popup details."
+    },
+    {
+      "version": "1.9.5",
+      "date": "2026-11-07",
+      "summary": "Turn-Log-style reveal result panel."
     }
   ],
-  "releaseNotes": "1.9.4 makes every result explanation Chuan-aware and adds the trick winner/comparison/reason to the captured-pile popup.",
+  "releaseNotes": "1.9.5 turns the reveal result into a Turn-Log-style comparison with a green check on the current winner.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
