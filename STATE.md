@@ -3,25 +3,33 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.8.9**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.9.1**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.8.9` |
+| App version | `1.9.1` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js` |
-| Source lines | 12,356 |
-| Source size | 517,564 bytes |
+| Source lines | 12,430 |
+| Source size | 521,151 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.9.1 — staged drag and the arrangement record
+
+Dragging a tile into the battle ring uses the dragged tile (or the selection it belongs to), never a stale selection. Follow calls stage one tile at a time and send on the final tile; leads stage and confirm with Lead. `docs/ARRANGEMENT.md` records the zones, staging, reveal pause, captured piles and layout relay.
+
+## Release 1.9.0 — reveal announcement
+
+A local reveal (Show set or double-click) opens a big-button result panel: the set, whether it beats the current best and why. The showdown is paused; pressing **Continue** applies the reveal, advances the queue or resolves and sweeps the trick.
 
 ## Release 1.8.9 — capture fixes and exits
 
@@ -194,7 +202,7 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | 1.6.2 version/reload, diagnostics, join restore | 15:20–16:35 | ~75m |
 | 1.6.3 five-digit PIN, clearer Leave room | 16:35–17:05 | ~30m |
 
-**Measured session wall clock:** **24h 4m 25s** (86,665 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **24h 29m 37s** (88,177 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -202,13 +210,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 5,684,914 |
-| Output | 596,557 |
-| Reasoning | 524,856 |
-| **Total (input + output + reasoning)** | **6,806,327** |
-| Cache read | 695,110,912 |
+| Input | 6,615,671 |
+| Output | 607,856 |
+| Reasoning | 535,004 |
+| **Total (input + output + reasoning)** | **7,758,531** |
+| Cache read | 705,187,840 |
 | Cache write | 1,087 |
-| **Total including cache** | **701,918,326** |
+| **Total including cache** | **712,947,458** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.

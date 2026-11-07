@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.8.9";
-import { VoiceChat } from "./voice-chat.js?v=1.8.9";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.9";
+} from "./peer-manager.js?v=1.9.1";
+import { VoiceChat } from "./voice-chat.js?v=1.9.1";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.1";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.8.9",
+  version: "1.9.1",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T10:09:58-08:00",
-    durationHuman: "24h 4m 25s",
-    tokensTotal: "6806327",
-    tokensInput: "5684914",
-    tokensOutput: "596557",
-    tokensReasoning: "524856",
-    tokensCacheRead: "695110912",
+    packagedAt: "2026-11-07T10:35:11-08:00",
+    durationHuman: "24h 29m 37s",
+    tokensTotal: "7758531",
+    tokensInput: "6615671",
+    tokensOutput: "607856",
+    tokensReasoning: "535004",
+    tokensCacheRead: "705187840",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -304,6 +304,10 @@ const I18N = {
     "dock.showdownNoBeat": "You cannot beat the table",
     "showdown.hidden": "face-down",
     "actions.showFirst": "Show first",
+    "reveal.title": "Reveal result",
+    "reveal.first": "You are first; your set is the mark to beat.",
+    "reveal.win": "Your {combo} beats {best}. You are ahead.",
+    "reveal.lose": "Your {combo} does not beat {best}. The trick stays with {best}.",
     "dock.waiting": "{seat} is thinking…",
     "dock.pick": "Select {n} tile(s) for this trick.",
     "dock.selected": "{n} selected.",
@@ -518,6 +522,8 @@ const I18N = {
     "toast.trickResult": "{winner} wins with {combo} — {entries}",
     "toast.chuan": "Chuan! Seven piles plus the last Soldier.",
     "toast.stayZone": "Keep your tiles inside your own area.",
+    "toast.needMore": "Selected {n}/{m} — drag another tile.",
+    "toast.stagedLead": "Staged {n} tile(s). Press Lead to play.",
     "toast.lang": "Language switched to English.",
     "summary.round": "Round {n} complete",
     "summary.match": "Match complete",
@@ -827,6 +833,10 @@ const I18N = {
     "dock.showdownNoBeat": "คุณสู้โต๊ะไม่ได้",
     "showdown.hidden": "คว่ำ",
     "actions.showFirst": "เปิดก่อน",
+    "reveal.title": "ผลการเปิด",
+    "reveal.first": "คุณเป็นคนแรก ชุดนี้ตั้งมาตรฐานให้คนอื่น",
+    "reveal.win": "{combo} ของคุณชนะ {best} ตอนนี้คุณนำอยู่",
+    "reveal.lose": "{combo} ของคุณไม่ชนะ {best} กองนี้ยังเป็นของ {best}",
     "dock.waiting": "{seat} กำลังคิด…",
     "dock.pick": "เลือก {n} ตัวสำหรับตานี้",
     "dock.selected": "เลือกแล้ว {n} ตัว",
@@ -1041,6 +1051,8 @@ const I18N = {
     "toast.trickResult": "{winner} กินกองด้วย {combo} — {entries}",
     "toast.chuan": "ช้วน! เจ็ดกองกับจุกตัวสุดท้าย",
     "toast.stayZone": "วางไพ่ไว้ในโซนของคุณเท่านั้น",
+    "toast.needMore": "เลือกแล้ว {n}/{m} — ลากไพ่อีกใบ",
+    "toast.stagedLead": "เตรียมไว้ {n} ตัว กด Lead เพื่อลง",
     "toast.lang": "เปลี่ยนภาษาเป็นไทยแล้ว",
     "summary.round": "จบรอบที่ {n}",
     "summary.match": "จบแมตช์",
@@ -2397,12 +2409,36 @@ function advanceShowdown() {
   if (isBotSeat(state.turn)) scheduleAI(900);
 }
 
-function showdown(seat, reveal) {
-  if (!state || state.phase !== "showdown" || state.turn !== seat) return false;
+let revealPending = null;
+
+function finishRevealResult() {
+  const callback = revealPending;
+  revealPending = null;
+  closeModal("revealModal");
+  if (callback) callback();
+}
+
+function openRevealResult(entry, beats, callback) {
+  revealPending = callback;
+  const body = $("#revealBody");
+  const combo = comboSummary(entry.combo);
+  const best = state.best ? comboSummary(state.best.combo) : "";
+  if (body) {
+    body.innerHTML = state.best
+      ? (beats
+        ? `<b>${escapeHTML(combo)}</b><br>${escapeHTML(t("reveal.win", { combo, best }))}`
+        : `<b>${escapeHTML(combo)}</b><br>${escapeHTML(t("reveal.lose", { combo, best }))}`)
+      : `<b>${escapeHTML(combo)}</b><br>${escapeHTML(t("reveal.first", { combo }))}`;
+  }
+  const modal = $("#revealModal");
+  if (modal) modal.hidden = false;
+  audio?.play(beats ? "win" : "lose", 0);
+}
+
+function applyShowdown(seat, shown) {
+  if (!state || state.phase !== "showdown") return false;
   const entry = state.center.find((item) => item.seat === seat);
   if (!entry) return false;
-  const shown = Boolean(reveal && showdownCanShow(seat));
-  if (!shown && !state.best) return false;
   entry.revealed = shown;
   if (shown && showdownCanBeat(seat)) state.best = { seat, combo: entry.combo };
   state.log.push({
@@ -2420,6 +2456,19 @@ function showdown(seat, reveal) {
   if (state.showdownQueue.length) advanceShowdown();
   else resolveTrick();
   return true;
+}
+
+function showdown(seat, reveal) {
+  if (!state || state.phase !== "showdown" || state.turn !== seat) return false;
+  const entry = state.center.find((item) => item.seat === seat);
+  if (!entry) return false;
+  const shown = Boolean(reveal && showdownCanShow(seat));
+  if (!shown && !state.best) return false;
+  if (shown && seat === MY_SEAT && !revealPending) {
+    openRevealResult(entry, showdownCanBeat(seat), () => applyShowdown(seat, true));
+    return true;
+  }
+  return applyShowdown(seat, shown);
 }
 
 function resolveTrick() {
@@ -3471,12 +3520,16 @@ function openPileModal(seat, pileIndex) {
   const tiles = group ? pile.slice(start, start + group.count) : [];
   if (!tiles.length) return;
   const hidden = state.captureHidden?.[seat] || [];
-  const upCount = tiles.filter((_, index) => !hidden[start + index]).length;
   const title = $("#pileTitle");
   const meta = $("#pileMeta");
   const body = $("#pileTiles");
-  if (title) title.textContent = t("pile.title", { seat: seatName(seat), n: pileIndex + 1 });
-  if (meta) meta.textContent = t("pile.meta", { n: tiles.length, up: upCount });
+  if (title) {
+    title.innerHTML = `<span class="log-win-badge" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>${escapeHTML(t("pile.title", { seat: seatName(seat), n: pileIndex + 1 }))}`;
+  }
+  if (meta) {
+    meta.hidden = true;
+    meta.textContent = "";
+  }
   if (body) {
     body.innerHTML = tiles.map((tile, index) => {
       const up = !hidden[start + index];
@@ -7197,29 +7250,34 @@ async function createScene() {
 
   function tryPlayFromHand(record) {
     if (!state || !["lead", "follow"].includes(state.phase) || state.turn !== MY_SEAT) return false;
-    let ids = (state.selected || []).slice();
-    if (!ids.includes(record.id)) ids = ids.length ? ids : [record.id];
+    const selected = state.selected || [];
+    const ids = selected.includes(record.id) ? selected.slice() : [record.id];
     const hand = state.hands?.[MY_SEAT] || [];
     const tiles = ids.map((id) => hand.find((tile) => tile.id === id)).filter(Boolean);
     if (!tiles.length) return false;
     if (state.phase === "lead") {
-      if (!detectCombo(tiles)) {
-        toast(t("toast.notLegal"), "wine");
-        return false;
-      }
       state.selected = ids;
       renderAll();
-      humanLead();
-      return true;
+      setSelected(ids);
+      if (detectCombo(tiles)) toast(t("toast.stagedLead", { n: ids.length }), "jade");
+      return "stage";
     }
-    if (tiles.length !== state.lead.combo.count) {
-      toast(t("coach.selectMore", { n: state.lead.combo.count, m: tiles.length }), "wine");
+    const needed = state.lead.combo.count;
+    if (ids.length < needed) {
+      state.selected = ids;
+      renderAll();
+      setSelected(ids);
+      toast(t("toast.needMore", { n: ids.length, m: needed }), "");
+      return "stage";
+    }
+    if (ids.length > needed) {
+      toast(t("coach.selectMore", { n: needed, m: ids.length }), "wine");
       return false;
     }
     state.selected = ids;
     renderAll();
     humanFollow(false);
-    return true;
+    return "play";
   }
 
   function endHandDrag(commit) {
@@ -7231,7 +7289,8 @@ async function createScene() {
     const hint = $("#playHint");
     if (hint) hint.hidden = true;
     if (moved && point && Math.hypot(point.x, point.z) < HAND_PLAY_RADIUS) {
-      if (tryPlayFromHand(record)) return true;
+      const outcome = tryPlayFromHand(record);
+      if (outcome === "play") return true;
       record.anim = null;
       record.root.position.copy(origin);
       return true;
@@ -7639,6 +7698,8 @@ function bindEvents() {
   });
   $("#logRoundSelect")?.addEventListener("change", (event) => renderLogBrowser(event.target.value, null));
   $("#logTrickSelect")?.addEventListener("change", (event) => renderLogBrowser($("#logRoundSelect")?.value, event.target.value));
+  $("#revealContinue")?.addEventListener("click", finishRevealResult);
+  $("#revealModal [data-close]")?.addEventListener("click", finishRevealResult);
   $("#summaryAutoNext")?.addEventListener("change", (event) => {
     prefs.autoNext = event.target.checked;
     savePrefs();

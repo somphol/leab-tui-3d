@@ -2,6 +2,23 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.1] — 2026-11-07
+
+### Changed
+
+- **Staged drag-to-play.** A tile dragged into the battle ring no longer uses a stale selection. The dragged tile (or the selection it belongs to) becomes the candidate. On a follow call, tiles are staged one at a time and the final tile sends face-down automatically; on a lead, tiles are staged and **Lead** confirms the shape.
+
+### Docs
+
+- **Pile popup:** a green ✓ marks the winning seat in the title, and the “4 tiles · 3 face-up” line is gone (the cards show it).
+- Added **[docs/ARRANGEMENT.md](docs/ARRANGEMENT.md)**: the table zones, hand arrangement, drag staging, showdown reveal pause, captured-pile grouping/provenance and layout relay, with invariants and a code map.
+
+## [1.9.0] — 2026-11-07
+
+### Added
+
+- **Reveal announcement with a pause.** When you reveal at showdown (Show set or double-click), a big-button panel names the set and says whether it beats the current best, with the reason. The trick is not swept until you press **Continue**; then the reveal is applied and the queue or the winner collection proceeds.
+
 ## [1.8.9] — 2026-11-07
 
 ### Fixed

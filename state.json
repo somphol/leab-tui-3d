@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.8.9",
-  "version": "1.8.9",
+  "projectVersion": "1.9.1",
+  "version": "1.9.1",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-07T10:09:58-08:00",
-    "durationSeconds": 86665,
-    "durationHuman": "24h 4m 25s",
+    "packagedAt": "2026-11-07T10:35:11-08:00",
+    "durationSeconds": 88177,
+    "durationHuman": "24h 29m 37s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-07T18:10:06Z"
+    "publishedAt": "2026-11-07T18:35:15Z"
   },
   "tokens": {
-    "input": 5684914,
-    "output": 596557,
-    "reasoning": 524856,
-    "cacheRead": 695110912,
+    "input": 6615671,
+    "output": 607856,
+    "reasoning": 535004,
+    "cacheRead": 705187840,
     "cacheWrite": 1087,
-    "total": 6806327,
-    "totalWithCache": 701918326,
+    "total": 7758531,
+    "totalWithCache": 712947458,
     "cost": 0.0,
-    "note": "Session total at 2026-11-07T10:09:58-08:00, covering 1.4.0–1.8.9."
+    "note": "Session total at 2026-11-07T10:35:11-08:00, covering 1.4.0–1.9.1."
   },
   "cost": {
     "usd": 0.0,
@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (346 checks)",
+    "staticCheck": "scripts/check.mjs (348 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
     "multiplayer": "scripts/net-check.mjs — 23/23",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
@@ -238,9 +238,19 @@
       "version": "1.8.9",
       "date": "2026-11-07",
       "summary": "Capture visibility/grouping fixes, winner check, leave in top bar, Cancel turn."
+    },
+    {
+      "version": "1.9.0",
+      "date": "2026-11-07",
+      "summary": "Reveal result panel with a big Continue before the sweep."
+    },
+    {
+      "version": "1.9.1",
+      "date": "2026-11-07",
+      "summary": "Staged drag-to-play and the arrangement design record."
     }
   ],
-  "releaseNotes": "1.8.9 fixes face-down revealed captures, groups a trick into one pile, adds a winner check, removes New match from the round summary, moves Leave room to the top bar and renames Undo trick to Cancel turn.",
+  "releaseNotes": "1.9.1 stages drag-to-play without stale selections and documents the arrangement, zone, reveal and pile mechanics in docs/ARRANGEMENT.md.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

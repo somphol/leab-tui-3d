@@ -4,7 +4,7 @@
 
 A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat and independent full-mesh voice chat (mic mute + deafen). It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.8.9**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.1**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -81,7 +81,7 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.8.9"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.1"
 prefs: theme daybreak (default)|mahogany|jade|midnight|parchment; fontSize sm|md|lg|xl; autoAudio on by default; CSS --fs-scale 0.9/1/1.12/1.24
 room: 482-173 (display; the peer id still carries a private leab prefix); peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
@@ -119,7 +119,9 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **Speaking meter** uses `AudioContext` analysers and a 120 ms interval; it must not connect to `destination` (playback is the `<audio>` element).
 - **The 3D scene is a view.** `scene.sync(state)` is idempotent; it animates only targets that differ. Never mutate `state` from inside the scene except through the public callbacks (`toggleTile`, `inspect*`).
 - **Camera.** The default is a **top view**: `(0, 18.6, 0.76)` target `(0, 0, 0.75)` on desktop, `(0, 24.8, 0.96)` target `(0, 0, 0.95)` on portrait with FOV 46. `#topViewBtn` is a labelled HUD toggle (Top view / 3D view); `resetView` returns to the top view. The 3D home is desktop `(0, 10.2, 11.4)` target `(0, 0.22, 0.9)`, portrait `(0, 14.3, 17.2)` target `(0, 0.18, 0.7)`. `controls.maxDistance` is 32 so the portrait top view can frame the table. The mobile hand dock must stay under ~110 px or it hides the hand.
+- **Reveal announcement.** A local human reveal (button or double-click) opens `revealModal` with the shown set and whether it beats the current best. The showdown state is not mutated until **Continue** (or ×); then `applyShowdown` reveals, advances or resolves and sweeps. Bots and remote reveals skip the modal.
 - **Table zones.** A faint gold **battle ring** marks the centre play area and an arc marks the player's private zone. Arrangement drops outside the personal arc (other seats or the centre) snap back; the centre is only for a play drop.
+- **Arrangement design record.** `docs/ARRANGEMENT.md` documents the zones, drag staging, reveal pause, captured-pile grouping and layout relay. Update it with those mechanics.
 - **Drag to play.** Dropping a hand tile inside `HAND_PLAY_RADIUS` (2.8) plays it: a single when nothing is selected, or the current selection when tiles are pre-selected. Lead validates the combo; follow sends the called count face-down. Invalid drops or a non-turn drop snap back with a toast. The dock buttons remain.
 - **Hand arrangement.** `handLayout` is a scene-local `Map<tileId, {x, z, angle}>`. The first drag snapshots every local hand tile so later plays do not re-flow the rest; `deal()` clears it. Dragging is free across the felt: only the table edge (`radius ≤ HAND_RADIUS + 0.55`) and the very centre (`radius ≥ 0.8`) are excluded. Overlap is allowed and intentional.
 - **Layout relay.** On drop the owner sends `{type:"hand-layout", slots}` with `{x,z,a}` in **raw hand order** (never tile ids). The host clamps each slot, applies it to the sender's seat, and relays `{type:"hand-layout", seat, slots}` to the other guests. `slots:null` clears it (Tidy). Because slots are index-based, the owner republishes whenever their hand changes (a play shifts indices). The host applies guest layouts through `scene.setSeatLayout`. Layouts are memory-only and never saved or exported.

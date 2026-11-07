@@ -826,6 +826,10 @@ a:hover { text-decoration: underline; }
 .last-trick-row b { color: var(--ink); font-weight: 600; }
 .last-trick-row span { color: var(--ink-dim); text-align: right; }
 .last-trick-row.win { border-color: var(--gold); background: var(--gold-wash); }
+.reveal-result { text-align: center; }
+.reveal-body { margin: 6px 0 18px; color: var(--ink-dim); font-size: calc(14px * var(--fs-scale)); line-height: 1.6; }
+.reveal-body b { color: var(--gold-bright); font-family: var(--serif); font-size: calc(18px * var(--fs-scale)); }
+.reveal-big { width: 100%; min-height: 52px; font-size: calc(15px * var(--fs-scale)); }
 .pile-tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
