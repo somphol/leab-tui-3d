@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.8.3";
-import { VoiceChat } from "./voice-chat.js?v=1.8.3";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.3";
+} from "./peer-manager.js?v=1.8.4";
+import { VoiceChat } from "./voice-chat.js?v=1.8.4";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.4";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.8.3",
+  version: "1.8.4",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T09:10:01-08:00",
-    durationHuman: "23h 4m 27s",
-    tokensTotal: "6607376",
-    tokensInput: "5578514",
-    tokensOutput: "553211",
-    tokensReasoning: "475651",
-    tokensCacheRead: "647963520",
+    packagedAt: "2026-11-07T09:15:28-08:00",
+    durationHuman: "23h 9m 55s",
+    tokensTotal: "6621419",
+    tokensInput: "5586271",
+    tokensOutput: "558380",
+    tokensReasoning: "476768",
+    tokensCacheRead: "651695744",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -375,6 +375,7 @@ const I18N = {
     "pile.title": "{seat} · pile {n}",
     "pile.meta": "{n} tiles · {up} face-up",
     "pile.hidden": "Face-down tile",
+    "pile.from": "from {seat}",
     "inspector.title": "Tile inspector",
     "inspector.hover": "hover",
     "inspector.empty": "Hover or click a carved tile to see its Thai name, English name and rank.",
@@ -883,6 +884,7 @@ const I18N = {
     "pile.title": "{seat} · กอง {n}",
     "pile.meta": "{n} ตัว · เปิด {up} ตัว",
     "pile.hidden": "ไพ่คว่ำ",
+    "pile.from": "จาก {seat}",
     "inspector.title": "ตรวจหมาก",
     "inspector.hover": "ชี้",
     "inspector.empty": "ชี้หรือคลิกหมากเพื่อดูชื่อไทย ชื่ออังกฤษ และอันดับ",
@@ -1746,6 +1748,7 @@ function makeState(seed) {  return {
     hands: [[], [], [], []],
     captures: [[], [], [], []],
     captureHidden: [[], [], [], []],
+    captureFrom: [[], [], [], []],
     center: [],
     lead: null,
     best: null,
@@ -1802,6 +1805,11 @@ function serializableState(source = state) {
   copy.captures = source.captures.map((pile) => pile.map((tile) => typeof tile === "string" ? tile : tile.id));
   copy.captureHidden = [0, 1, 2, 3].map((seat) => (
     (source.captures[seat] || []).map((_, index) => Boolean(source.captureHidden?.[seat]?.[index]))
+  ));
+  copy.captureFrom = [0, 1, 2, 3].map((seat) => (
+    (source.captures[seat] || []).map((_, index) => (
+      Number.isInteger(source.captureFrom?.[seat]?.[index]) ? source.captureFrom[seat][index] : null
+    ))
   ));
   copy.center = source.center.map((entry) => ({
     seat: entry.seat,
@@ -1892,6 +1900,11 @@ function loadMatch() {
     state.captures = (state.captures || [[], [], [], []]).map((pile) => pile.map((id) => TILE_BY_ID[id]).filter(Boolean));
     state.captureHidden = [0, 1, 2, 3].map((seat) => (
       (state.captures[seat] || []).map((_, index) => Boolean(game.captureHidden?.[seat]?.[index]))
+    ));
+    state.captureFrom = [0, 1, 2, 3].map((seat) => (
+      (state.captures[seat] || []).map((_, index) => (
+        Number.isInteger(game.captureFrom?.[seat]?.[index]) ? game.captureFrom[seat][index] : null
+      ))
     ));
     state.center = (state.center || []).map((entry) => ({
       ...entry,
@@ -2122,6 +2135,7 @@ function dealRound(leaderHint = null) {
   });
   state.captures = [[], [], [], []];
   state.captureHidden = [[], [], [], []];
+  state.captureFrom = [[], [], [], []];
   state.center = [];
   state.lead = null;
   state.best = null;
@@ -2363,9 +2377,11 @@ function resolveTrick() {
   const captured = state.center.reduce((sum, entry) => sum + entry.tiles.length, 0);
   const allTiles = state.center.flatMap((entry) => entry.tiles);
   const captureFlags = state.center.flatMap((entry) => entry.tiles.map(() => Boolean(entry.revealed)));
+  const captureFrom = state.center.flatMap((entry) => entry.tiles.map(() => entry.seat));
   const localEntry = state.center.find((entry) => entry.seat === MY_SEAT);
   state.captures[winner].push(...allTiles);
   state.captureHidden[winner].push(...captureFlags);
+  state.captureFrom[winner].push(...captureFrom);
   state.lastTrick = {
     winner,
     combo: clone(winningCombo),
@@ -3329,21 +3345,27 @@ function openPileModal(seat, pileIndex) {
     body.innerHTML = tiles.map((tile, index) => {
       const up = !hidden[start + index];
       if (!up) {
+        const hiddenFrom = state.captureFrom?.[seat]?.[start + index];
+        const hiddenFromText = Number.isInteger(hiddenFrom) ? t("pile.from", { seat: seatName(hiddenFrom) }) : "";
         return `<div class="pile-item back">
           <span class="mini-tile back" role="img" aria-label="${escapeHTML(t("pile.hidden"))}">?</span>
           <b>${escapeHTML(t("showdown.hidden"))}</b>
           <span>${escapeHTML(t("pile.hidden"))}</span>
+          ${hiddenFromText ? `<span class="pile-from">${escapeHTML(hiddenFromText)}</span>` : ""}
         </div>`;
       }
       const rank = RANK_BY_ID[tile.rank] || RANK_BY_POWER[tile.power];
       const reading = tileName(tile);
       const primary = LANG === "th" ? reading : rank.en;
       const secondary = LANG === "th" ? `${rank.en} · ${rank.thMeaning}` : `${reading} · ${rank.thMeaning}`;
+      const fromSeat = state.captureFrom?.[seat]?.[start + index];
+      const from = Number.isInteger(fromSeat) ? t("pile.from", { seat: seatName(fromSeat) }) : "";
       return `<div class="pile-item">
         <em>${rank.power}</em>
         <span class="mini-tile ${tile.color === "r" ? "red" : "black"}">${tile.hanzi}</span>
         <b>${escapeHTML(primary)}</b>
         <span>${escapeHTML(secondary)}</span>
+        ${from ? `<span class="pile-from">${escapeHTML(from)}</span>` : ""}
       </div>`;
     }).join("");
   }
@@ -3825,6 +3847,11 @@ function hydrateRemoteState(raw) {
   game.captures = (raw.captures || [[], [], [], []]).map((pile) => pile.map(tileFromWire));
   game.captureHidden = [0, 1, 2, 3].map((seat) => (
     (raw.captures?.[seat] || []).map((_, index) => Boolean(raw.captureHidden?.[seat]?.[index]))
+  ));
+  game.captureFrom = [0, 1, 2, 3].map((seat) => (
+    (raw.captures?.[seat] || []).map((_, index) => (
+      Number.isInteger(raw.captureFrom?.[seat]?.[index]) ? raw.captureFrom[seat][index] : null
+    ))
   ));
   game.center = (raw.center || []).map((entry) => ({
     ...entry,

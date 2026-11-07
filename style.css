@@ -813,6 +813,7 @@ a:hover { text-decoration: underline; }
   font-weight: 500;
   line-height: 1.1;
 }
+.pile-from { color: var(--gold); font-size: calc(10px * var(--fs-scale)); }
 .pile-item > span:last-child {
   display: block;
   margin-top: 2px;
