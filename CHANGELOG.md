@@ -2,6 +2,13 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.3] — 2026-11-07
+
+### Added
+
+- **Illustrated rules document.** The Rules modal now has a visual piece ladder (red and black tiles, Teochew reading, meaning, English name and rank) and six worked examples with real tile faces: single, pair, Sa Hoo big vs small, See Hoo (the duplicated pair decides), Soldier sets vs straights, and the Chuan seven-piles-plus-Soldier claim.
+- A **How to play** button in the launch menu opens the same document; the top-bar **?** still does.
+
 ## [1.9.2] — 2026-11-07
 
 ### Docs

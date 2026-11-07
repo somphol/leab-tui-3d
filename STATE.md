@@ -3,14 +3,14 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.9.2**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.9.3**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.9.2` |
+| App version | `1.9.3` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
@@ -22,6 +22,10 @@
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.9.3 — illustrated rules
+
+The rules modal now includes a visual piece ladder and six worked examples with tile faces (single, pair, Sa Hoo, See Hoo, Soldier sets, Chuan). A How to play button opens it from the launch menu.
 
 ## Release 1.9.2 — Chuan is a standard rule
 

@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.2";
-import { VoiceChat } from "./voice-chat.js?v=1.9.2";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.2";
+} from "./peer-manager.js?v=1.9.3";
+import { VoiceChat } from "./voice-chat.js?v=1.9.3";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.3";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.2",
+  version: "1.9.3",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -585,6 +585,21 @@ const I18N = {
     "rules.pilesMode": "Most piles",
     "rules.bidMode": "Bid piles",
 
+    "rules.open": "How to play",
+    "rules.pieces": "The pieces",
+    "rules.examples": "Examples",
+    "rules.ex.single": "Single (Leab)",
+    "rules.ex.singleBody": "Red beats black at equal rank.",
+    "rules.ex.pair": "Pair (Tui)",
+    "rules.ex.pairBody": "Only a true pair of the same rank and colour can win a Tui call; mixed singles never win.",
+    "rules.ex.sahoo": "Sa Hoo",
+    "rules.ex.sahooBody": "The big core (General + Advisor + Elephant) beats the small core (Chariot + Horse + Cannon). At the same size, red beats black.",
+    "rules.ex.seehoo": "See Hoo",
+    "rules.ex.seehooBody": "The duplicated pair decides, not the colour of the whole set. A black Advisor pair beats a red Elephant pair.",
+    "rules.ex.soldier": "Soldier sets",
+    "rules.ex.soldierBody": "A straight and a same-rank Soldier set are different categories; neither can beat the other.",
+    "rules.ex.chuan": "Chuan",
+    "rules.ex.chuanBody": "With seven piles and the last Soldier in hand, reveal it to take the final trick and reach eight piles (16 points).",
     "rules.goal": "Goal",
     "rules.goalBody": "Capture piles of four tiles. Two piles at the end of a round is par (0 points). Every pile above or below par is one point; capturing all eight piles is a 16-point Chuan. A player with seven piles and the last Soldier in hand may reveal it to take the final trick and complete the Chuan. The first player to the match target (20 points by default) wins.",
     "rules.equipment": "Equipment",
@@ -1118,6 +1133,21 @@ const I18N = {
     "rules.pilesMode": "กองมากที่สุด",
     "rules.bidMode": "ประเมินกอง",
 
+    "rules.open": "วิธีเล่น",
+    "rules.pieces": "ตัวหมาก",
+    "rules.examples": "ตัวอย่าง",
+    "rules.ex.single": "เลี๊ยบ",
+    "rules.ex.singleBody": "ศักดิ์เท่ากัน แดงชนะดำ",
+    "rules.ex.pair": "ตุ่ย",
+    "rules.ex.pairBody": "ต้องเป็นคู่จริงที่มีศักดิ์และสีเดียวกันเท่านั้นจึงชนะการเรียกตุ่ย สองตัวคนละอย่างชนะไม่ได้",
+    "rules.ex.sahoo": "ซาฮู้",
+    "rules.ex.sahooBody": "ชุดใหญ่ (ตี่ + สือ + เฉีย) ชนะชุดเล็ก (กือ + แบ้ + เผ่า) ขนาดเดียวกันแดงชนะดำ",
+    "rules.ex.seehoo": "สี่ฮู้",
+    "rules.ex.seehooBody": "คู่ที่ซ้ำเป็นตัวตัดสิน ไม่ใช่สีของทั้งชุด คู่สือดำชนะคู่เฉียแดง",
+    "rules.ex.soldier": "ชุดจุก",
+    "rules.ex.soldierBody": "ชุดเรียงกับชุดจุกเป็นคนละประเภท ชนะกันไม่ได้",
+    "rules.ex.chuan": "ช้วน",
+    "rules.ex.chuanBody": "เหลือ 7 กองและตัวสุดท้ายเป็นจุก เปิดโชว์เพื่อกินตาสุดท้ายและครบ 8 กอง (16 แต้ม)",
     "rules.goal": "เป้าหมาย",
     "rules.goalBody": "เก็บกองละสี่ตัว สองกองเมื่อจบรอบคือทุน (0 แต้ม) เกินหรือขาดกองละหนึ่งแต้ม และแปดกองคือช้วน 16 แต้ม ถ้าเหลือ 7 กองและตัวสุดท้ายในมือเป็นจุก เปิดโชว์เพื่อกินตาสุดท้ายและปิดช้วนได้ ผู้ที่ถึงเป้าแมตช์ก่อน (ค่าเริ่มต้น 20 แต้ม) ชนะ",
     "rules.equipment": "อุปกรณ์",
@@ -3637,7 +3667,30 @@ function renderLog() {
 function renderRules() {
   const body = $("#rulesBody");
   if (!body) return;
-  const hierarchy = RANKS.slice().reverse().map((rank) => `<li><code>${rank.power}</code> ${escapeHTML(LANG === "th" ? rank.th : rank.en)} <span style="color:var(--ink-faint)">· ${escapeHTML(LANG === "th" ? rank.en : rank.th)} · ${rank.red}${rank.black}</span></li>`).join("");
+  const hierarchy = RANKS.slice().reverse().map((rank) => {
+    const reading = rankReading(rank);
+    const primary = LANG === "th" ? reading : rank.en;
+    const secondary = LANG === "th" ? `${rank.en} · ${rank.thMeaning}` : `${reading} · ${rank.thMeaning}`;
+    return `<div class="rule-piece">
+      <span class="rule-tile red">${rank.red}</span>
+      <span class="rule-tile black">${rank.black}</span>
+      <span class="rule-piece-copy"><b>${escapeHTML(primary)}</b><span>${escapeHTML(secondary)}</span></span>
+      <em>${rank.power}</em>
+    </div>`;
+  }).join("");
+  const tile = (power, color) => {
+    const rank = RANK_BY_POWER[power];
+    return `<span class="rule-tile ${color === "r" ? "red" : "black"}">${color === "r" ? rank.red : rank.black}</span>`;
+  };
+  const row = (powers, color) => powers.map((power) => tile(power, color)).join("");
+  const examples = [
+    ["rules.ex.single", `${tile(7, "r")}<span class="rule-vs">vs</span>${tile(7, "b")}`],
+    ["rules.ex.pair", `${row([6, 6], "r")}<span class="rule-vs">vs</span>${row([6, 6], "b")}`],
+    ["rules.ex.sahoo", `${row([7, 6, 5], "r")}<span class="rule-vs">vs</span>${row([4, 3, 2], "b")}`],
+    ["rules.ex.seehoo", `${row([7, 6, 5, 6], "b")}<span class="rule-vs">vs</span>${row([7, 6, 5, 5], "r")}`],
+    ["rules.ex.soldier", `${row([1, 1, 1], "r")}<span class="rule-vs">≠</span>${row([4, 3, 2], "r")}`],
+    ["rules.ex.chuan", `${row([1], "r")}<span class="rule-vs">+ 7</span>`]
+  ].map(([key, tiles]) => `<div class="rule-example"><b>${escapeHTML(t(key))}</b><div class="rule-tiles">${tiles}</div><p>${escapeHTML(t(`${key}Body`))}</p></div>`).join("");
   const calls = COMBO_TYPES.map((type) => `<div class="rule-card"><b>${escapeHTML(comboName(type))}</b><span>${escapeHTML(t(`combo.${type}.desc`))}</span></div>`).join("");
   const scoreRows = Array.from({ length: 9 }, (_, piles) => `<tr><td>${piles} ${escapeHTML(t("rules.piles"))}</td><td>${piles === 8 ? "16" : piles - 2}</td></tr>`).join("");
   body.innerHTML = `
@@ -3645,8 +3698,10 @@ function renderRules() {
     <p>${escapeHTML(t("rules.goalBody"))}</p>
     <h3>${escapeHTML(t("rules.equipment"))}</h3>
     <p>${escapeHTML(t("rules.equipmentBody"))}</p>
-    <h3>${escapeHTML(t("rules.hierarchy"))}</h3>
-    <ul>${hierarchy}</ul>
+    <h3>${escapeHTML(t("rules.pieces"))}</h3>
+    <div class="rule-pieces">${hierarchy}</div>
+    <h3>${escapeHTML(t("rules.examples"))}</h3>
+    ${examples}
     <h3>${escapeHTML(t("rules.color"))}</h3>
     <p>${escapeHTML(t("rules.colorBody"))}</p>
     <h3>${escapeHTML(t("rules.calls"))}</h3>

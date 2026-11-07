@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.2",
-  "version": "1.9.2",
+  "projectVersion": "1.9.3",
+  "version": "1.9.3",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -253,9 +253,14 @@
       "version": "1.9.2",
       "date": "2026-11-07",
       "summary": "Chuan clarified as standard; in-app rules text updated."
+    },
+    {
+      "version": "1.9.3",
+      "date": "2026-11-07",
+      "summary": "Illustrated rules document with worked examples."
     }
   ],
-  "releaseNotes": "1.9.2 documents Chuan as a standard rule (including the 7-pile + last Soldier claim) and limits the house-rule discussion to Soldier-beats-General.",
+  "releaseNotes": "1.9.3 adds an illustrated rules document with a visual piece ladder and six worked tile examples, linked from the launch menu.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

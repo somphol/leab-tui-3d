@@ -1259,6 +1259,20 @@ a:hover { text-decoration: underline; }
 .rules-body li, .about-body li { margin-bottom: 4px; }
 .rules-body code, .about-body code { padding: 1px 5px; border-radius: 5px; background: rgba(216, 178, 107, 0.1); color: var(--gold-bright); font-family: var(--mono); font-size: calc(11.5px * var(--fs-scale)); }
 .rules-body .rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin: 10px 0 14px; }
+.rule-pieces { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px; margin: 8px 0 14px; }
+.rule-piece { display: flex; align-items: center; gap: 7px; padding: 7px 9px; border: 1px solid var(--line-soft); border-radius: 10px; background: var(--card-bg); }
+.rule-tile { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(120, 80, 35, 0.4); background: radial-gradient(circle at 35% 28%, #fbf1dc, #e4d0a8 65%, #c7aa78); color: #1d1716; font-family: var(--serif); font-size: calc(15px * var(--fs-scale)); line-height: 1; }
+.rule-tile.red { color: #8d1f24; }
+.rule-tile.black { color: #1d1716; }
+.rule-piece .rule-tile { width: 30px; height: 30px; font-size: calc(16px * var(--fs-scale)); }
+.rule-piece-copy b { display: block; color: var(--ink); font-family: var(--serif); font-size: calc(14px * var(--fs-scale)); font-weight: 500; }
+.rule-piece-copy span { display: block; color: var(--ink-faint); font-size: calc(10.5px * var(--fs-scale)); }
+.rule-piece em { margin-left: auto; color: var(--gold); font-family: var(--mono); font-size: calc(10px * var(--fs-scale)); font-style: normal; }
+.rule-example { margin: 10px 0; padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--card-bg); }
+.rule-example b { display: block; color: var(--ink); font-family: var(--serif); font-size: calc(15px * var(--fs-scale)); font-weight: 500; }
+.rule-example p { margin: 4px 0 0; color: var(--ink-dim); font-size: calc(12px * var(--fs-scale)); line-height: 1.5; }
+.rule-tiles { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 6px 0 2px; }
+.rule-vs { padding: 0 4px; color: var(--gold); font-family: var(--serif); font-size: calc(12px * var(--fs-scale)); }
 .rules-body .rule-card { padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: 11px; background: var(--card-bg); }
 .rules-body .rule-card b { display: block; color: var(--ink); font-family: var(--serif); font-size: calc(15px * var(--fs-scale)); font-weight: 500; }
 .rules-body .rule-card span { color: var(--ink-faint); font-size: calc(11.5px * var(--fs-scale)); }

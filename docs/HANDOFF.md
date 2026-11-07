@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Release **1.9.2** of Leab-Tui 3D is built, verified and published. It adds version/reload controls, connection diagnostics and mobile join restore, and hardens the room with host approval, an auto-generated strong PIN with memory-only digest, connection/message caps and a voice allowlist, on top of chat and full-mesh voice.
+Release **1.9.3** of Leab-Tui 3D is built, verified and published. It adds version/reload controls, connection diagnostics and mobile join restore, and hardens the room with host approval, an auto-generated strong PIN with memory-only digest, connection/message caps and a voice allowlist, on top of chat and full-mesh voice.
 
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Live: <https://somphol.github.io/leab-tui-3d/>
