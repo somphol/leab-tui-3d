@@ -167,10 +167,10 @@ Then convert with `sips -s format jpeg -s formatOptions 86 screenshots/hero.png 
 
 ## Experimental draft deal
 
-![Draft modal on desktop](../screenshots/draft-modal.png)
+![Draft modal on desktop](../screenshots/draft-modal.jpg)
 
 The host-only draft deal (off by default): the public 32-tile pool, a step counter, the remaining pool size and the two-tile confirm button. The host toggle sits in Actions and is disabled while a draft is in progress; the lobby has the same switch before a room starts.
 
-![Draft modal on a phone](../screenshots/draft-modal-mobile.png)
+![Draft modal on a phone](../screenshots/draft-modal-mobile.jpg)
 
 The same modal at 390×844: five tiles per row, a scrollable pool of 436 px and the confirm button still inside the card, with no horizontal overflow.
