@@ -801,6 +801,19 @@ a:hover { text-decoration: underline; }
 .log-entry-head { display: flex; justify-content: space-between; gap: 8px; font-size: calc(11.5px * var(--fs-scale)); }
 .log-entry-head b { color: var(--ink); }
 .log-entry-head span { color: var(--ink-faint); text-align: right; }
+.log-win-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #2f7b63;
+  color: #fff;
+  font-size: 10px;
+  font-style: normal;
+  vertical-align: 1px;
+}
 .log-entry.win { border-color: var(--gold); background: var(--gold-wash); }
 .log-tiles { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 .log-tile { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(120, 80, 35, 0.4); background: radial-gradient(circle at 35% 28%, #fbf1dc, #e4d0a8 65%, #c7aa78); color: #1d1716; font-family: var(--serif); font-size: calc(15px * var(--fs-scale)); }
@@ -1352,13 +1365,15 @@ a:hover { text-decoration: underline; }
 @media (max-width: 640px) {
   :root { --topbar-h: 64px; }
   .stage-hint { display: none; }
-  .topbar { padding: 8px 12px; gap: 8px; }
+  .topbar { padding: 8px 10px; gap: 8px; }
   .brand-seal { width: 40px; height: 40px; flex-basis: 40px; font-size: calc(21px * var(--fs-scale)); }
   .brand-title { font-size: calc(18px * var(--fs-scale)); }
   .brand-sub { display: none; }
   .pill { height: 36px; padding: 0 11px 0 8px; font-size: calc(11px * var(--fs-scale)); }
   .voice-call .voice-call-label { display: none; }
   .update-pill [data-update-label] { display: none; }
+  .leave-top .leave-top-label { display: none; }
+  .leave-top { padding: 0 10px; }
   .update-pill { padding: 0 10px; }
   .voice-call { padding: 0 10px; }
   .pill-icon { width: 21px; height: 21px; font-size: calc(11px * var(--fs-scale)); }
@@ -1406,6 +1421,8 @@ a:hover { text-decoration: underline; }
    Serverless multiplayer lobby
    -------------------------------------------------------------------------- */
 
+.leave-top { border-color: rgba(182, 75, 95, 0.55); color: var(--bad-ink); }
+.leave-top:hover { border-color: var(--bad-ink); background: rgba(182, 75, 95, 0.12); }
 .net-chip {
   border-color: rgba(216, 178, 107, 0.5);
   font-family: var(--mono);

@@ -237,6 +237,9 @@ const missingTh = enKeys.filter((key) => !thKeys.includes(key));
 const missingEn = thKeys.filter((key) => !enKeys.includes(key));
 ok(enKeys.length >= 330, "English dictionary is substantial", String(enKeys.length));
 ok(!missingTh.length && !missingEn.length, "i18n dictionaries are symmetrical", `missing TH: ${missingTh.join(",")} | missing EN: ${missingEn.join(",")}`);
+const usedKeys = [...script.matchAll(/\bt\("([a-zA-Z0-9_.]+)"/g)].map((match) => match[1]);
+const missingUsed = [...new Set(usedKeys)].filter((key) => !enKeys.includes(key));
+ok(!missingUsed.length, "every t() key exists in the dictionaries", missingUsed.join(","));
 
 // Relative Markdown links must exist.
 const markdownFiles = ["README.md", "AGENTS.md", "STATE.md", "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md", "PRIVACY.md", "THIRD_PARTY_NOTICES.md", ...required.filter((file) => file.startsWith("docs/") && file.endsWith(".md"))];

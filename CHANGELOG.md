@@ -2,6 +2,27 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.9] — 2026-11-07
+
+### Fixed
+
+- **Revealed tiles were captured face-down.** The capture flag was stored inverted, so a set shown by double-click or **Show set** entered the winner's pile as a back. It now stays face-up, and hidden sets stay hidden.
+- **One trick, one pile.** Captures are grouped by trick instead of every four tiles, so an 8-tile pair trick is one stack, not two piles. The pile popup opens the whole trick.
+- **`actions.showSet` label fixed.** The missing key made the button print its key; dictionaries now contain it and `check.mjs` verifies every `t("…")` key.
+
+### Changed
+
+- **Round summary no longer offers New match.** Only the match-end screen does; the round summary keeps Next round (with the 30s option).
+- **Leave room moved to the top bar**, next to the room code, for a deliberate exit. The Actions button remains.
+- **Cancel turn** replaces “Undo trick” in the Actions panel (Thai **ยกเลิกตานี้**).
+- **Winner check** in Turn history: a green ✓ badge marks the winning row.
+
+## [1.8.8] — 2026-11-07
+
+### Changed
+
+- **A deeper personal zone.** The private arrangement band now runs from radius 2.92 to 4.88 (was 3.06–4.60) with a wider arc (±0.98 rad), so rows and fans have room without touching the centre or another seat. The zone tint is slightly stronger.
+
 ## [1.8.7] — 2026-11-07
 
 ### Added

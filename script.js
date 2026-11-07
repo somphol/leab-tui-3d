@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.8.7";
-import { VoiceChat } from "./voice-chat.js?v=1.8.7";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.7";
+} from "./peer-manager.js?v=1.8.9";
+import { VoiceChat } from "./voice-chat.js?v=1.8.9";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.9";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.8.7",
+  version: "1.8.9",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T09:46:25-08:00",
-    durationHuman: "23h 40m 52s",
-    tokensTotal: "6736256",
-    tokensInput: "5647120",
-    tokensOutput: "582386",
-    tokensReasoning: "506750",
-    tokensCacheRead: "674019584",
+    packagedAt: "2026-11-07T10:09:58-08:00",
+    durationHuman: "24h 4m 25s",
+    tokensTotal: "6806327",
+    tokensInput: "5684914",
+    tokensOutput: "596557",
+    tokensReasoning: "524856",
+    tokensCacheRead: "695110912",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -312,6 +312,7 @@ const I18N = {
     "actions.lead": "Lead",
     "actions.reveal": "Show & win",
     "actions.showWin": "Show & win",
+    "actions.showSet": "Show set",
     "actions.redraw": "Redraw (โละ)",
     "actions.chuan": "Chuan",
     "actions.sendHidden": "Send face-down",
@@ -322,7 +323,7 @@ const I18N = {
     "actions.title": "Actions",
     "actions.newMatch": "New match",
     "actions.nextRound": "Next round",
-    "actions.undo": "Undo trick",
+    "actions.undo": "Cancel turn",
     "actions.export": "Export JSON",
     "actions.continue": "Continue",
     "actions.keep": "Keep playing",
@@ -410,7 +411,7 @@ const I18N = {
     "error.webglTitle": "The 3D table could not start",
     "error.webglBody": "Three.js needs WebGL 2 and a network connection to the CDN. The rules, score and coaching panels still work.",
     "rules.title": "Rules of เลี๊ยบตุ่ย",
-    "undo.title": "Why did that trick go wrong?",
+    "undo.title": "Why did that turn go wrong?",
     "about.title": "About this studio",
     "about.short": "About",
     "confirm.title": "Start a new match?",
@@ -834,6 +835,7 @@ const I18N = {
     "actions.lead": "นำ",
     "actions.reveal": "เปิดเพื่อชนะ",
     "actions.showWin": "เปิดเพื่อชนะ",
+    "actions.showSet": "เปิดชุด",
     "actions.redraw": "โละแจกใหม่",
     "actions.chuan": "ช้วน",
     "actions.sendHidden": "ส่งแบบคว่ำ",
@@ -844,7 +846,7 @@ const I18N = {
     "actions.title": "การกระทำ",
     "actions.newMatch": "แมตช์ใหม่",
     "actions.nextRound": "รอบถัดไป",
-    "actions.undo": "ย้อนตา",
+    "actions.undo": "ยกเลิกตานี้",
     "actions.export": "ส่งออก JSON",
     "actions.continue": "เล่นต่อ",
     "actions.keep": "เล่นต่อ",
@@ -932,7 +934,7 @@ const I18N = {
     "error.webglTitle": "เริ่มโต๊ะ 3 มิติไม่ได้",
     "error.webglBody": "Three.js ต้องใช้ WebGL 2 และการเชื่อมต่อ CDN แต่กติกา คะแนน และโค้ชยังใช้งานได้",
     "rules.title": "กติกาเลี๊ยบตุ่ย",
-    "undo.title": "ทำไมตานั้นถึงแพ้?",
+    "undo.title": "ทำไมตานี้ถึงแพ้?",
     "about.title": "เกี่ยวกับสตูดิโอนี้",
     "about.short": "เกี่ยวกับ",
     "confirm.title": "เริ่มแมตช์ใหม่?",
@@ -1776,6 +1778,7 @@ function makeState(seed) {  return {
     captures: [[], [], [], []],
     captureHidden: [[], [], [], []],
     captureFrom: [[], [], [], []],
+    captureTrick: [[], [], [], []],
     trickArchive: [],
     center: [],
     lead: null,
@@ -1843,6 +1846,11 @@ function serializableState(source = state) {
       tiles: (entry.tiles || []).map((tile) => (tile && tile.id ? tile.id : "hidden"))
     }))
   }));
+  copy.captureTrick = [0, 1, 2, 3].map((seat) => (
+    (source.captures[seat] || []).map((_, index) => (
+      Number.isInteger(source.captureTrick?.[seat]?.[index]) ? source.captureTrick[seat][index] : null
+    ))
+  ));
   copy.captureFrom = [0, 1, 2, 3].map((seat) => (
     (source.captures[seat] || []).map((_, index) => (
       Number.isInteger(source.captureFrom?.[seat]?.[index]) ? source.captureFrom[seat][index] : null
@@ -1938,6 +1946,11 @@ function loadMatch() {
     state.captures = (state.captures || [[], [], [], []]).map((pile) => pile.map((id) => TILE_BY_ID[id]).filter(Boolean));
     state.captureHidden = [0, 1, 2, 3].map((seat) => (
       (state.captures[seat] || []).map((_, index) => Boolean(game.captureHidden?.[seat]?.[index]))
+    ));
+    state.captureTrick = [0, 1, 2, 3].map((seat) => (
+      (state.captures[seat] || []).map((_, index) => (
+        Number.isInteger(game.captureTrick?.[seat]?.[index]) ? game.captureTrick[seat][index] : null
+      ))
     ));
     state.captureFrom = [0, 1, 2, 3].map((seat) => (
       (state.captures[seat] || []).map((_, index) => (
@@ -2174,6 +2187,7 @@ function dealRound(leaderHint = null) {
   state.captures = [[], [], [], []];
   state.captureHidden = [[], [], [], []];
   state.captureFrom = [[], [], [], []];
+  state.captureTrick = [[], [], [], []];
   state.center = [];
   state.lead = null;
   state.best = null;
@@ -2415,12 +2429,14 @@ function resolveTrick() {
   const winningCombo = state.best.combo;
   const captured = state.center.reduce((sum, entry) => sum + entry.tiles.length, 0);
   const allTiles = state.center.flatMap((entry) => entry.tiles);
-  const captureFlags = state.center.flatMap((entry) => entry.tiles.map(() => Boolean(entry.revealed)));
+  const captureFlags = state.center.flatMap((entry) => entry.tiles.map(() => !entry.revealed));
   const captureFrom = state.center.flatMap((entry) => entry.tiles.map(() => entry.seat));
+  const captureTrick = state.center.flatMap((entry) => entry.tiles.map(() => state.trick));
   const localEntry = state.center.find((entry) => entry.seat === MY_SEAT);
   state.captures[winner].push(...allTiles);
   state.captureHidden[winner].push(...captureFlags);
   state.captureFrom[winner].push(...captureFrom);
+  state.captureTrick[winner].push(...captureTrick);
   state.trickArchive = state.trickArchive || [];
   state.trickArchive.push({
     round: state.round,
@@ -2996,10 +3012,10 @@ function showRoundSummary(matchEnded) {
   const secondary = $("#summarySecondary");
   primary.textContent = isClient() ? t("net.resume") : isMatch ? t("summary.newMatch") : t("summary.next");
   primary.dataset.action = isClient() ? "close" : isMatch ? "new" : "next";
-  secondary.hidden = isClient();
-  if (!isClient()) {
-    secondary.textContent = isMatch ? t("actions.export") : t("summary.newMatch");
-    secondary.dataset.action = isMatch ? "export" : "new";
+  secondary.hidden = isClient() || !isMatch;
+  if (!isClient() && isMatch) {
+    secondary.textContent = t("actions.export");
+    secondary.dataset.action = "export";
   }
   const autoWrap = $("#summaryAutoWrap");
   if (autoWrap) autoWrap.hidden = isClient() || isMatch;
@@ -3402,8 +3418,11 @@ function renderLogRecord(record) {
         return `<span class="log-tile ${tile.color === "r" ? "red" : ""}">${tile.hanzi}</span>`;
       }).join("");
       const label = entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden");
+      const badge = entry.seat === record.winner
+        ? `<span class="log-win-badge" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>`
+        : "";
       return `<div class="log-entry ${entry.seat === record.winner ? "win" : ""}">
-        <div class="log-entry-head"><b>${escapeHTML(seatName(entry.seat))}</b><span>${escapeHTML(label)}</span></div>
+        <div class="log-entry-head"><b>${badge}${escapeHTML(seatName(entry.seat))}</b><span>${escapeHTML(label)}</span></div>
         <div class="log-tiles">${tiles}</div>
       </div>`;
     }).join("") + `<div class="summary-note">${escapeHTML(t("log.why"))}</div>`;
@@ -3446,8 +3465,10 @@ function openLastTrickModal(round = null, trick = null) {
 function openPileModal(seat, pileIndex) {
   if (!state || !Number.isInteger(seat)) return;
   const pile = state.captures?.[seat] || [];
-  const start = Math.max(0, pileIndex) * 4;
-  const tiles = pile.slice(start, start + 4);
+  const groups = captureGroupsFor(state, seat);
+  const group = groups[Math.max(0, pileIndex)] || groups[groups.length - 1];
+  const start = group?.start ?? 0;
+  const tiles = group ? pile.slice(start, start + group.count) : [];
   if (!tiles.length) return;
   const hidden = state.captureHidden?.[seat] || [];
   const upCount = tiles.filter((_, index) => !hidden[start + index]).length;
@@ -3825,7 +3846,7 @@ function sanitizeHandSlots(raw) {
     const a = Number(slot.a);
     if (!Number.isFinite(x) || !Number.isFinite(z) || !Number.isFinite(a)) return null;
     const radius = Math.hypot(x, z);
-    const clamped = Math.max(0.8, Math.min(HAND_RADIUS + 0.55, radius));
+    const clamped = Math.max(0.8, Math.min(HAND_RADIUS + 0.82, radius));
     const angle = Math.atan2(x, z);
     return {
       x: Math.round(Math.sin(angle) * clamped * 1000) / 1000,
@@ -3979,6 +4000,11 @@ function hydrateRemoteState(raw) {
       tiles: (entry.tiles || []).map((id) => TILE_BY_ID[id] || { id: "hidden", hanzi: "?", color: "b", rank: "soldier", power: 1 })
     }))
   }));
+  game.captureTrick = [0, 1, 2, 3].map((seat) => (
+    (raw.captures?.[seat] || []).map((_, index) => (
+      Number.isInteger(raw.captureTrick?.[seat]?.[index]) ? raw.captureTrick[seat][index] : null
+    ))
+  ));
   game.captureFrom = [0, 1, 2, 3].map((seat) => (
     (raw.captures?.[seat] || []).map((_, index) => (
       Number.isInteger(raw.captureFrom?.[seat]?.[index]) ? raw.captureFrom[seat][index] : null
@@ -5322,6 +5348,8 @@ function renderNetChrome() {
   if (undo && isClient()) undo.disabled = true;
   const leave = $("#leaveRoomBtn");
   if (leave) leave.hidden = !isNetworked();
+  const leaveTop = $("#leaveRoomTopBtn");
+  if (leaveTop) leaveTop.hidden = !isNetworked();
   const chatPanel = $("#chatPanel");
   if (chatPanel) chatPanel.hidden = !isNetworked();
   const chatTool = $("#chatToolBtn");
@@ -6421,20 +6449,30 @@ function centerPosition(seat, index, count) {
   };
 }
 
-function capturePosition(seat, index) {
-  const pile = Math.floor(index / 4);
-  const within = index % 4;
-  const row = Math.floor(pile / 4);
-  const col = pile % 4;
-  const base = seatVector(seat, 3.36);
+function captureGroupsFor(game, seat) {
+  const pile = game?.captures?.[seat] || [];
+  const tricks = game?.captureTrick?.[seat] || [];
+  const groups = [];
+  pile.forEach((_, index) => {
+    const trick = Number.isInteger(tricks[index]) ? tricks[index] : Math.floor(index / 4);
+    let last = groups[groups.length - 1];
+    if (!last || last.trick !== trick) {
+      last = { trick, start: index, count: 0 };
+      groups.push(last);
+    }
+    last.count += 1;
+  });
+  return groups;
+}
+
+function capturePosition(seat, pileIndex = 0, within = 0, pileCount = 1) {
+  const base = seatVector(seat, 5.35);
   const tangent = seatTangent(seat);
-  const radial = { x: Math.sin(SEATS[seat].angle), z: Math.cos(SEATS[seat].angle) };
-  const tangentOffset = (col - 1.5) * 0.52;
-  const radialOffset = (row - 0.5) * 0.42;
+  const tangentOffset = (pileIndex - (pileCount - 1) / 2) * 0.58;
   return {
-    x: base.x + tangent.x * tangentOffset + radial.x * radialOffset,
+    x: base.x + tangent.x * tangentOffset,
     y: TABLE_Y + TILE_THICKNESS / 2 + 0.014 + within * 0.036,
-    z: base.z + tangent.z * tangentOffset + radial.z * radialOffset
+    z: base.z + tangent.z * tangentOffset
   };
 }
 
@@ -6473,8 +6511,8 @@ async function createScene() {
   battleRing.position.y = TABLE_Y + 0.006;
   world.add(battleRing);
   const personalZone = new THREE.Mesh(
-    new THREE.RingGeometry(3.06, 4.6, 96, 1, -Math.PI / 2 - 0.92, 1.84),
-    new THREE.MeshBasicMaterial({ color: 0xd8b26b, transparent: true, opacity: 0.09, side: THREE.DoubleSide, depthWrite: false })
+    new THREE.RingGeometry(2.92, 4.88, 96, 1, -Math.PI / 2 - 0.98, 1.96),
+    new THREE.MeshBasicMaterial({ color: 0xd8b26b, transparent: true, opacity: 0.13, side: THREE.DoubleSide, depthWrite: false })
   );
   personalZone.rotation.x = -Math.PI / 2;
   personalZone.position.y = TABLE_Y + 0.004;
@@ -6882,8 +6920,25 @@ async function createScene() {
     });
     gameState.captures.forEach((pile, seat) => {
       const hidden = gameState.captureHidden?.[seat] || [];
+      const groups = captureGroupsFor(gameState, seat);
+      const slotOf = new Map();
+      groups.forEach((group, pileIndex) => {
+        for (let offset = 0; offset < group.count; offset += 1) {
+          slotOf.set(group.start + offset, { pileIndex, within: offset });
+        }
+      });
       pile.forEach((tile, index) => {
-        map.set(tile.id, { kind: "capture", seat, index, count: pile.length, up: !hidden[index] });
+        const slot = slotOf.get(index) || { pileIndex: 0, within: index };
+        map.set(tile.id, {
+          kind: "capture",
+          seat,
+          index,
+          pileIndex: slot.pileIndex,
+          within: slot.within,
+          pileCount: groups.length,
+          count: pile.length,
+          up: !hidden[index]
+        });
       });
     });
     return map;
@@ -6903,7 +6958,7 @@ async function createScene() {
       return handPosition(placement.seat, placement.index, placement.count);
     }
     if (placement.kind === "center") return centerPosition(placement.seat, placement.index, placement.count);
-    return capturePosition(placement.seat, placement.index);
+    return capturePosition(placement.seat, placement.pileIndex ?? Math.floor(placement.index / 4), placement.within ?? (placement.index % 4), placement.pileCount || 1);
   }
 
   function updateLabels(gameState) {
@@ -6933,6 +6988,7 @@ async function createScene() {
       record.root.visible = true;
       record.kind = placement.kind;
       record.index = placement.index;
+      record.pileIndex = placement.pileIndex || 0;
       const target = positionFor(placement);
       orient(record, placement.seat, placement.angle);
       moveTile(record, target, options.deal ? 560 : duration, options.deal ? 0.75 : arc);
@@ -7131,12 +7187,12 @@ async function createScene() {
 
   function inPersonalZone(point, seat) {
     const radius = Math.hypot(point.x, point.z);
-    if (radius < 3.0 || radius > HAND_RADIUS + 0.5) return false;
+    if (radius < 2.9 || radius > HAND_RADIUS + 0.82) return false;
     const base = SEATS[seat].angle;
     let offset = Math.atan2(point.x, point.z) - base;
     while (offset > Math.PI) offset -= Math.PI * 2;
     while (offset < -Math.PI) offset += Math.PI * 2;
-    return Math.abs(offset) <= 0.92;
+    return Math.abs(offset) <= 0.98;
   }
 
   function tryPlayFromHand(record) {
@@ -7280,7 +7336,7 @@ async function createScene() {
       return;
     }
     if (record.kind === "capture") {
-      openPileModal(record.seat, Math.floor((record.index || 0) / 4));
+      openPileModal(record.seat, record.pileIndex || 0);
       return;
     }
     const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
@@ -7768,6 +7824,7 @@ function bindEvents() {
   $("#lobbyResumeBtn")?.addEventListener("click", closeLobby);
   $("#lobbySoloFromLost")?.addEventListener("click", backToSolo);
   $("#leaveRoomBtn")?.addEventListener("click", requestLeaveRoom);
+  $("#leaveRoomTopBtn")?.addEventListener("click", requestLeaveRoom);
   $("#leaveCancel")?.addEventListener("click", () => closeModal("leaveModal"));
   $("#leaveConfirm")?.addEventListener("click", () => {
     closeModal("leaveModal");
