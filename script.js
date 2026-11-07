@@ -8,7 +8,6 @@
 
 import {
   PROTOCOL_VERSION,
-  ROOM_PREFIX,
   makeRoomCode,
   normalizeRoomCode,
   formatRoomCode,
@@ -18,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.7.1";
-import { VoiceChat } from "./voice-chat.js?v=1.7.1";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.7.1";
+} from "./peer-manager.js?v=1.7.2";
+import { VoiceChat } from "./voice-chat.js?v=1.7.2";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.7.2";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.7.1",
+  version: "1.7.2",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -36,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T00:03:30-08:00",
-    durationHuman: "13h 57m 57s",
-    tokensTotal: "3827438",
-    tokensInput: "3082282",
-    tokensOutput: "434253",
-    tokensReasoning: "310903",
-    tokensCacheRead: "521038848",
+    packagedAt: "2026-11-07T00:52:24-08:00",
+    durationHuman: "14h 46m 51s",
+    tokensTotal: "4826981",
+    tokensInput: "4038669",
+    tokensOutput: "454308",
+    tokensReasoning: "334004",
+    tokensCacheRead: "538906624",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -534,9 +533,9 @@ const I18N = {
     "net.solo": "Play now",
     "net.soloDesc": "Start immediately. Three bots take the other seats.",
     "net.host": "Host a game",
-    "net.hostDesc": "Keep this tab open. We make a code you can send.",
+    "net.hostDesc": "Keep this tab open. We make a room number you can send.",
     "net.join": "Join a game",
-    "net.joinDesc": "A friend sent you a code? Paste it here.",
+    "net.joinDesc": "A friend sent you a room number? Paste it here.",
     "net.yourNameHint": "Shown to other players.",
     "net.autoAudio": "Join audio chat when the table starts",
     "net.hostLead": "Send the invite, approve your friends, then start.",
@@ -547,8 +546,8 @@ const I18N = {
     "net.pasteInviteDone": "Invite pasted.",
     "net.pasteInviteFailed": "No invite found on the clipboard.",
     "net.hostTitle": "Host a table",
-    "net.roomCode": "Room code",
-    "net.codeHelp": "Share this six-digit code.",
+    "net.roomCode": "Room number",
+    "net.codeHelp": "Share this six-digit number.",
     "net.copyLink": "Copy invite link",
     "net.roster": "Seats",
     "net.startTable": "Start table",
@@ -556,8 +555,8 @@ const I18N = {
     "net.needTwo": "Need 2 humans",
     "net.needTwoLong": "At least two humans must be connected. Empty seats become bots.",
     "net.joinTitle": "Join a table",
-    "net.codeLabel": "Room code",
-    "net.codePlaceholder": "LEAB-482-173",
+    "net.codeLabel": "Room number",
+    "net.codePlaceholder": "482-173",
     "net.nameLabel": "Your name",
     "net.namePlaceholder": "Guest",
     "net.yourName": "Your name",
@@ -645,8 +644,8 @@ const I18N = {
     "net.error": "Connection error: {error}",
     "net.hostFailed": "Could not open the room: {error}",
     "net.joinFailed": "Could not join: {error}",
-    "net.roomNotFound": "Room not found. Check the code and that the host page is open.",
-    "net.badCode": "A room code is six digits.",
+    "net.roomNotFound": "Room not found. Check the number and that the host page is open.",
+    "net.badCode": "A room number is six digits.",
     "net.versionMismatch": "Protocol mismatch. Both pages must run protocol {version}.",
     "net.hostLeft": "The host left the table. You can join another room or play solo.",
     "net.reconnecting": "Signalling connection lost. Reconnecting…",
@@ -672,7 +671,7 @@ const I18N = {
     "net.leaveBodyGuest": "You will leave the table. A bot will take over your seat and the match will continue.",
     "net.matchInProgress": "Match in progress",
     "net.alreadyStarted": "The match is already running. Use New match for a rematch, or leave the room.",
-    "net.joinHint": "Ask the host for the six-digit code.",
+    "net.joinHint": "Ask the host for the six-digit room number.",
     "net.reconnectHint": "Room {code} restored. Enter the PIN again to reconnect.",
     "diag.open": "Troubleshoot",
     "diag.title": "Troubleshoot connection",
@@ -686,7 +685,9 @@ const I18N = {
     "diag.noCode": "Enter a room code first.",
     "dock.expand": "Expand hand dock",
     "dock.collapse": "Collapse hand dock",
-    "version.reload": "Reload",
+    "version.reload": "Reload version",
+    "version.updateTo": "Update to v{version}",
+    "version.autoUpdating": "New version v{version}. Updating…",
     "version.reloadHint": "Force reload the app and its scripts",
     "version.reloadConfirm": "Reloading closes the current room or match. Continue?",
     "version.updateAvailable": "New version {version} is available. Reload to update.",
@@ -983,9 +984,9 @@ const I18N = {
     "net.solo": "เล่นเลย",
     "net.soloDesc": "เริ่มทันที บอทสามตัวนั่งแทนที่เหลือ",
     "net.host": "เปิดโต๊ะ",
-    "net.hostDesc": "เปิดแท็บนี้ไว้ ระบบจะสร้างรหัสให้ส่งต่อ",
+    "net.hostDesc": "เปิดแท็บนี้ไว้ ระบบจะสร้างเลขห้องให้ส่งต่อ",
     "net.join": "เข้าร่วมโต๊ะ",
-    "net.joinDesc": "เพื่อนส่งรหสมา? วางที่นี่",
+    "net.joinDesc": "เพื่อนส่งเลขห้องมา? วางที่นี่",
     "net.yourNameHint": "ชื่อนี้จะแสดงให้ผู้เล่นคนอื่นเห็น",
     "net.autoAudio": "เข้าร่วมแชทเสียงเมื่อเริ่มโต๊ะ",
     "net.hostLead": "ส่งคำเชิญ อนุมัติเพื่อน แล้วเริ่มโต๊ะ",
@@ -996,8 +997,8 @@ const I18N = {
     "net.pasteInviteDone": "วางคำเชิญแล้ว",
     "net.pasteInviteFailed": "ไม่พบคำเชิญในคลิปบอร์ด",
     "net.hostTitle": "เปิดโต๊ะ",
-    "net.roomCode": "รหัสห้อง",
-    "net.codeHelp": "แชร์รหัสหกหลักนี้",
+    "net.roomCode": "เลขห้อง",
+    "net.codeHelp": "แชร์เลขหกหลักนี้",
     "net.copyLink": "คัดลอกลิงก์เชิญ",
     "net.roster": "ที่นั่ง",
     "net.startTable": "เริ่มโต๊ะ",
@@ -1005,8 +1006,8 @@ const I18N = {
     "net.needTwo": "ต้องมีมนุษย์ 2 คน",
     "net.needTwoLong": "ต้องมีมนุษย์อย่างน้อยสองคน ที่นั่งที่เหลือจะเป็นบอท",
     "net.joinTitle": "เข้าร่วมโต๊ะ",
-    "net.codeLabel": "รหัสห้อง",
-    "net.codePlaceholder": "LEAB-482-173",
+    "net.codeLabel": "เลขห้อง",
+    "net.codePlaceholder": "482-173",
     "net.nameLabel": "ชื่อของคุณ",
     "net.namePlaceholder": "แขก",
     "net.yourName": "ชื่อของคุณ",
@@ -1094,8 +1095,8 @@ const I18N = {
     "net.error": "ข้อผิดพลาดการเชื่อมต่อ: {error}",
     "net.hostFailed": "เปิดห้องไม่ได้: {error}",
     "net.joinFailed": "เข้าร่วมไม่ได้: {error}",
-    "net.roomNotFound": "ไม่พบห้อง ตรวจรหัสและหน้าเจ้าบ้าน",
-    "net.badCode": "รหัสห้องต้องเป็นตัวเลขหกหลัก",
+    "net.roomNotFound": "ไม่พบห้อง ตรวจเลขห้องและหน้าเจ้าบ้าน",
+    "net.badCode": "เลขห้องต้องเป็นตัวเลขหกหลัก",
     "net.versionMismatch": "โปรโตคอลไม่ตรงกัน ต้องใช้รุ่น {version}",
     "net.hostLeft": "เจ้าบ้านออกจากโต๊ะแล้ว คุณสามารถเข้าห้องอื่นหรือเล่นคนเดียว",
     "net.reconnecting": "การเชื่อมต่อสัญญาณขาด กำลังเชื่อมใหม่…",
@@ -1121,7 +1122,7 @@ const I18N = {
     "net.leaveBodyGuest": "คุณจะออกจากโต๊ะ บอทจะรับที่นั่งของคุณและแมตช์จะดำเนินต่อ",
     "net.matchInProgress": "แมตช์กำลังเล่น",
     "net.alreadyStarted": "แมตช์เริ่มแล้ว ใช้ปุ่มสร้างแมตช์ใหม่เพื่อเล่นอีกครั้ง หรือออกจากห้อง",
-    "net.joinHint": "ขอรหัสหกหลักจากเจ้าบ้าน",
+    "net.joinHint": "ขอเลขห้องหกหลักจากเจ้าบ้าน",
     "net.reconnectHint": "กู้ห้อง {code} แล้ว กรอก PIN อีกครั้งเพื่อเชื่อมต่อใหม่",
     "diag.open": "ตรวจสอบปัญหา",
     "diag.title": "ตรวจสอบการเชื่อมต่อ",
@@ -1135,7 +1136,9 @@ const I18N = {
     "diag.noCode": "กรอกรหัสห้องก่อน",
     "dock.expand": "ขยายแถบมือ",
     "dock.collapse": "ย่อแถบมือ",
-    "version.reload": "โหลดใหม่",
+    "version.reload": "โหลดเวอร์ชันใหม่",
+    "version.updateTo": "อัปเดตเป็น v{version}",
+    "version.autoUpdating": "มีเวอร์ชันใหม่ v{version} กำลังอัปเดต…",
     "version.reloadHint": "บังคับโหลดแอปและสคริปต์ใหม่",
     "version.reloadConfirm": "การโหลดใหม่จะปิดห้องหรือแมตช์ปัจจุบัน ดำเนินการต่อหรือไม่?",
     "version.updateAvailable": "มีเวอร์ชันใหม่ {version} โหลดใหม่เพื่ออัปเดต",
@@ -1558,6 +1561,9 @@ const speakingSeats = new Set();
 let remoteClock = null;
 let lastPublished = 0;
 let publishTimer = null;
+const VERSION_CHECK_KEY = "leabtui.versionCheck.v1";
+const AUTO_RELOAD_KEY = "leabtui.autoReload.v1";
+const VERSION_CHECK_MS = 5 * 60 * 1000;
 const PLAYER_NAME_KEY = "leabtui.name.v1";
 const ROOM_INTENT_KEY = "leabtui.room.v1";
 const LAUNCH_KEY = "leabtui.launch.v1";
@@ -3987,6 +3993,59 @@ function renderVersion() {
   const chip = $("#versionChip");
   if (chip) chip.textContent = label;
   $$(".version-label").forEach((node) => { node.textContent = label; });
+  const action = availableVersion ? t("version.updateTo", { version: availableVersion }) : t("version.reload");
+  $$("[data-version-label]").forEach((node) => { node.textContent = action; });
+  $$(".version-reload-big").forEach((button) => {
+    button.classList.toggle("is-update", Boolean(availableVersion));
+    button.title = availableVersion
+      ? t("version.updateAvailable", { version: availableVersion })
+      : t("version.reloadHint");
+  });
+}
+
+function versionCheckDue(force = false) {
+  if (force) return true;
+  try {
+    const parsed = JSON.parse(localStorage.getItem(VERSION_CHECK_KEY) || "null");
+    if (!parsed?.at) return true;
+    return Date.now() - Number(parsed.at) >= VERSION_CHECK_MS;
+  } catch { return true; }
+}
+
+function markVersionCheck() {
+  try {
+    localStorage.setItem(VERSION_CHECK_KEY, JSON.stringify({ at: Date.now(), version: APP.version }));
+  } catch { /* ignore */ }
+}
+
+/* Only the launch menu auto-reloads: no room, no match, page visible. */
+function canAutoReload() {
+  const modal = $("#lobbyModal");
+  return !isNetworked()
+    && !document.hidden
+    && Boolean(modal)
+    && !modal.hidden
+    && (lobbyState?.view || "menu") === "menu";
+}
+
+function autoReloadFor(version) {
+  try {
+    if (sessionStorage.getItem(AUTO_RELOAD_KEY) === version) return false;
+    sessionStorage.setItem(AUTO_RELOAD_KEY, version);
+  } catch { /* storage may be denied; still reload once via the in-memory guard */ }
+  const text = $("#updateText");
+  const banner = $("#updateBanner");
+  if (text) text.textContent = t("version.autoUpdating", { version });
+  if (banner) banner.hidden = false;
+  setTimeout(() => {
+    if (!canAutoReload()) {
+      if (text) text.textContent = t("version.updateAvailable", { version });
+      if (banner) banner.hidden = false;
+      return;
+    }
+    forceReload();
+  }, 900);
+  return true;
 }
 
 function forceReload() {
@@ -4012,13 +4071,17 @@ function isNewerVersion(candidate, current) {
   return false;
 }
 
-async function checkForUpdate() {
+async function checkForUpdate({ force = false } = {}) {
+  if (!versionCheckDue(force)) return;
+  markVersionCheck();
   try {
     const response = await fetch(`state.json?ts=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) return;
     const data = await response.json();
     if (!data?.version || !isNewerVersion(data.version, APP.version)) return;
     availableVersion = data.version;
+    renderVersion();
+    if (canAutoReload() && autoReloadFor(data.version)) return;
     const banner = $("#updateBanner");
     const text = $("#updateText");
     if (text) text.textContent = t("version.updateAvailable", { version: data.version });
@@ -4141,6 +4204,13 @@ function renderPending() {
   if (approval && isHost() && net?.security) approval.checked = Boolean(net.security.approval);
 }
 
+function updateLobbyScrollState() {
+  $$(".lobby-view").forEach((view) => {
+    if (!view || view.hidden) return;
+    view.classList.toggle("is-scrollable", view.scrollHeight > view.clientHeight + 4);
+  });
+}
+
 function renderLobby() {
   const modal = $("#lobbyModal");
   if (!modal) return;
@@ -4166,6 +4236,7 @@ function renderLobby() {
         });
       }
     }
+    requestAnimationFrame(updateLobbyScrollState);
     return;
   }
   const started = Boolean(net?.started);
@@ -4222,6 +4293,7 @@ function renderLobby() {
   }
   const status = $("#lobbyStatus");
   if (status && lobbyState?.status) status.textContent = lobbyState.status;
+  requestAnimationFrame(updateLobbyScrollState);
   const waitStatus = $("#lobbyWaitStatus");
   if (waitStatus && lobbyState?.status) waitStatus.textContent = lobbyState.status;
   const back = $("#lobbyBackBtn");
@@ -4427,7 +4499,7 @@ function roomInfoText() {
   const code = formatRoomCode(net.code);
   return [
     "Leab-Tui 3D table",
-    `Room code: ${code}`,
+    `Room number: ${code}`,
     roomPinPlain ? `PIN: ${roomPinPlain}` : "PIN: none — host approval still applies",
     `Link: ${inviteUrl(net.code)}`,
     roomPinPlain
@@ -4893,7 +4965,7 @@ function netSelfTest() {
   });
   check("room code normalization accepts LEAB and separators", () => normalizeRoomCode("leab-482-173") === "482173");
   check("room code rejects an incomplete code", () => normalizeRoomCode("173") === null && normalizeRoomCode("LEAB-ABC-234") === null);
-  check("formatted room code is branded", () => formatRoomCode("482173") === "LEAB-482-173");
+  check("formatted room number is grouped", () => formatRoomCode("482173") === "482-173");
   check("peer id is stable and lowercase", () => peerIdForCode("ABC234") === peerIdForCode("abc-234"));
   check("sanitized state hides another hand", () => {
     if (!state) return "no state";
@@ -6374,6 +6446,7 @@ function bindEvents() {
   });
   window.matchMedia("(max-width: 1024px)").addEventListener("change", renderPanelRail);
   window.matchMedia("(max-width: 520px)").addEventListener("change", renderNetChrome);
+  window.addEventListener("resize", () => requestAnimationFrame(updateLobbyScrollState));
   $("#chatToolBtn")?.addEventListener("click", openChat);
   $("#joinDiagBtn")?.addEventListener("click", openDiagnostics);
   $("#hostDiagBtn")?.addEventListener("click", openDiagnostics);
@@ -6391,7 +6464,6 @@ function bindEvents() {
     renderAutoAudio();
   }));
   $("#lobbyReload")?.addEventListener("click", forceReload);
-  $("#joinReload")?.addEventListener("click", forceReload);
   $("#updateReload")?.addEventListener("click", forceReload);
   $("#updateDismiss")?.addEventListener("click", () => { const banner = $("#updateBanner"); if (banner) banner.hidden = true; });
   $("#lobbyCopyInfo")?.addEventListener("click", copyRoomInfo);
@@ -6647,6 +6719,10 @@ async function boot() {
 
   if (willPrompt) {
     setTimeout(() => showLobby("menu"), 450);
+    /* A page reached by forceReload carries ?v=; check once even inside the
+       5-minute window so the new version is confirmed, not assumed. */
+    const forced = Boolean(new URLSearchParams(location.search).get("v"));
+    setTimeout(() => checkForUpdate({ force: forced }), 1400);
   } else if (autoRoom) {
     setTimeout(() => {
       const field = $("#lobbyCodeInput");
@@ -6700,6 +6776,8 @@ window.LeabTui = {
   applyFontSize,
   applyTheme,
   getDisplay: () => ({ fontSize: prefs.fontSize, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),
+  checkUpdate: (force = false) => checkForUpdate({ force }),
+  getVersionState: () => ({ current: APP.version, available: availableVersion, checkedAt: (() => { try { return JSON.parse(localStorage.getItem(VERSION_CHECK_KEY) || "null")?.at || 0; } catch { return 0; } })() }),
   openRanks: () => setRankReference(true),
   closeRanks: () => setRankReference(false),
   getAudioState: () => ({ context: audio?.ctx?.state || null, unlocked: Boolean(audio?.unlocked), sound: prefs.sound, master: audio?.master?.gain.value ?? null, level: audio?.level?.() ?? 0, time: audio?.ctx?.currentTime ?? null, playCount: audio?.playCount ?? 0, lastPlayed: audio?.lastPlayed ?? null }),

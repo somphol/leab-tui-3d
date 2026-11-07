@@ -40,7 +40,7 @@
 | **Chuan bonus** | The 16-point score for eight piles. |
 | **P2P** | Peer-to-peer. Game traffic flows directly between browsers; no game server. |
 | **PeerJS** | The WebRTC wrapper pinned at `1.5.4`; its public broker performs the initial handshake. |
-| **Room code** | The six-digit `LEAB-482-173` code that identifies a host peer. |
+| **Room number** | The six-digit `482-173` number that identifies a host peer. The `LEAB-` prefix is internal and never shown. |
 | **Host** | Seat 0; the only browser that runs the rules, deals and AI. |
 | **Guest** | Seat 1–3; sends intent and renders the host's redacted state. |
 | **Bot fill** | Empty seats are filled with heuristic AI before a network match starts. |

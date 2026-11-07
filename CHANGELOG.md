@@ -2,6 +2,20 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.7.2] — 2026-11-07
+
+### Changed
+
+- **Room numbers no longer show a prefix.** The host card, join field, room chip, invite text and diagnostics show `482-173`. `LEAB-` still exists inside the peer id, and pasting an old `LEAB-482-173` code still normalises correctly.
+- **Label copy** now says **Room number** instead of room code.
+
+### Added
+
+- **Big Reload version bar** pinned to the bottom of the launch, host, join and waiting dialogs. It turns gold and reads **Update to vX** when a newer build is live.
+- **Version check on first open**, throttled to once every 5 minutes per browser, plus the existing check when returning to the tab.
+- **Self-update from the launch menu.** If a newer version is found while the menu is open and no room or match is active, the page reloads itself once. Rooms and active matches get the banner instead, so a game is never interrupted.
+- A session guard and a `?v=` confirmation check prevent reload loops if GitHub Pages briefly serves a mixed build.
+
 ## [1.7.1] — 2026-11-07
 
 ### Added

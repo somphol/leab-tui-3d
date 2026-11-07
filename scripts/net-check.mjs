@@ -171,9 +171,9 @@ async function main() {
   await host.goto(`${BASE}?mode=host&name=Host`);
   const hostNet = await host.waitFor("JSON.stringify(window.LeabTui?.net.getState?.() || null)", "host room open", 30000);
   const hostState = JSON.parse(hostNet);
-  if (hostState.role === "host" && /^LEAB-/.test(hostState.code)) pass("host opened a branded room", hostState.code);
+  if (hostState.role === "host" && /^\d{3}-\d{3}$/.test(hostState.code)) pass("host opened a room number", hostState.code);
   else fail("host opened a branded room", hostNet);
-  const code = hostState.code.replace("LEAB-", "").replace("-", "");
+  const code = hostState.code.replace("-", "");
   const roomPin = "48213";
   await host.eval(`LeabTui.net.setPin(${JSON.stringify(roomPin)})`);
 

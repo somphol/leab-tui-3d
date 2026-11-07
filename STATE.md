@@ -3,25 +3,31 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.7.1**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.7.2**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.7.1` |
+| App version | `1.7.2` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js` |
-| Source lines | 10,514 |
-| Source size | 440,659 bytes |
+| Source lines | 10,664 |
+| Source size | 446,098 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.7.2 — room numbers and self-update
+
+Room numbers are shown as `482-173`: the `LEAB-` prefix stays internal to the peer id, and old prefixed codes still normalise. The launch, host, join and waiting dialogs share a pinned **Reload version** bar that turns gold and shows **Update to vX** when a newer build exists.
+
+The app checks `state.json` once on first open and then at most every 5 minutes, plus when returning to the tab. If the launch menu is open with no room or match, a newer build reloads the page once; otherwise an update banner appears. A session guard and a `?v=` confirmation check prevent loops.
 
 ## Release 1.7.1 — automatic audio join
 
@@ -108,7 +114,7 @@ The host lobby hides **Start table** after kickoff, relabels its back action **L
 
 Release 1.4.0 adds a **host-authoritative WebRTC table** without a game server:
 
-- **Launch lobby** — Play solo, Host a table, Join a table. Six-character `LEAB-482-173` codes, copy-invite, four-seat roster.
+- **Launch lobby** — Play solo, Host a table, Join a table. Six-digit `482-173` room numbers, copy-invite, four-seat roster.
 - **Two-human start** — the host can start as soon as one guest is connected. Every empty seat becomes `Bot n`.
 - **Host authority** — only the host deals, scores, runs the AI and validates actions. Guests send one `action` message and render the state they receive.
 - **Per-seat redaction** — `sanitizeForSeat` replaces other hands and unrevealed centre/log/last-trick plays with stable `ghost-<seat>-<index>` ids. The host-only tag map and undo snapshot never leave the browser.
@@ -138,7 +144,7 @@ The four-seat rule contract is unchanged: 32 tiles, four winds, eight each. The 
 | 1.6.2 version/reload, diagnostics, join restore | 15:20–16:35 | ~75m |
 | 1.6.3 five-digit PIN, clearer Leave room | 16:35–17:05 | ~30m |
 
-**Measured session wall clock:** **13h 57m 57s** (50,277 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
+**Measured session wall clock:** **14h 46m 51s** (53,211 s) from the OpenCode session record at the last token measurement. This includes the idle gap while waiting for review feedback; active work is roughly 1h 40m. The final commit and push add a small amount.
 
 ## Token consumption
 
@@ -146,13 +152,13 @@ Measured from OpenCode session `ses_e4df670e0ffeOm01DFj236fffs` at 2026-11-06T12
 
 | Metric | Tokens |
 | --- | ---: |
-| Input | 3,082,282 |
-| Output | 434,253 |
-| Reasoning | 310,903 |
-| **Total (input + output + reasoning)** | **3,827,438** |
-| Cache read | 521,038,848 |
+| Input | 4,038,669 |
+| Output | 454,308 |
+| Reasoning | 334,004 |
+| **Total (input + output + reasoning)** | **4,826,981** |
+| Cache read | 538,906,624 |
 | Cache write | 1,087 |
-| **Total including cache** | **524,867,373** |
+| **Total including cache** | **543,734,692** |
 | Cost | $0.00 (as reported) |
 
 Cache figures describe context reuse, not additional generated work. They are reported separately so the headline number stays comparable to a normal token count. The session ID allows re-measurement from `opencode.db`; the final publishing turns add a small amount.

@@ -58,7 +58,7 @@ export function normalizeRoomCode(input) {
 
 export function formatRoomCode(code) {
   const normalized = normalizeRoomCode(code);
-  return normalized ? `${ROOM_PREFIX}${normalized.slice(0, 3)}-${normalized.slice(3)}` : "";
+  return normalized ? `${normalized.slice(0, 3)}-${normalized.slice(3)}` : "";
 }
 
 export function roomCodeFromPeerId(peerId) {

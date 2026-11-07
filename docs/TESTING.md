@@ -64,7 +64,7 @@ node scripts/net-check.mjs   # real broker, needs outbound 0.peerjs.com
 | 28 | room code | six chars from the unambiguous alphabet |
 | 29 | code normalization | `leab-abc-234` → `482173` |
 | 30 | incomplete code rejected | `ABC` → `null` |
-| 31 | formatted code | starts with `LEAB-` |
+| 31 | formatted number | matches `NNN-NNN` and never shows a prefix |
 | 32 | peer id stability | uppercase and dashed codes collide intentionally |
 | 33 | redaction hides another hand | every id is a ghost |
 | 34 | redaction keeps the recipient hand | every id is real |
@@ -167,7 +167,7 @@ The saved game survived the reload and the scene re-synced. A saved `roundEnd` o
 (`?room=CODE&name=Guest`) in the same headless Chrome, then asserts:
 
 ```text
-host room             LEAB-482-173   (branded, six-char code)
+host room             482-173        (six digits, shown without a prefix)
 guest seat            1
 lobby humans          2
 start                 host + guest + Bot 1 + Bot 2
@@ -247,7 +247,7 @@ The privacy check is the important one: it reads the guest's `LeabTui.getState()
 - [ ] Mute others deafens every remote stream and is independent of the mic.
 - [ ] A green pulse appears on the speaking seat avatar/scoreboard row.
 - [ ] The host Leave room button is visible in Actions, confirms first, and returns to the menu.
-- [ ] Host shows a `LEAB-XXX-XXX` code, a 4-seat roster and a disabled Start until a second human joins.
+- [ ] Host shows an `XXX-XXX` room number, a 4-seat roster and a disabled Start until a second human joins.
 - [ ] Copy invite link copies a URL with `?room=...`.
 - [ ] Guest enters the code and a name; the waiting panel shows the same roster.
 - [ ] Host Start fills empty seats with bots and deals immediately on both screens.

@@ -96,7 +96,7 @@ The same overlay at 390×844: one mode per row, full-width touch targets, and th
 
 ![Guest table](../screenshots/guest-play.jpg)
 
-A guest's view after the host started: the guest's own hand is at the bottom, the host is on the left, bots are opposite and right, and the room chip shows `LEAB-JUG-MPF`. The other hands are back-only ghost meshes; the wire never carried their tile ids. This capture came from `scripts/net-check.mjs` with `GUEST_SHOT` set.
+A guest's view after the host started: the guest's own hand is at the bottom, the host is on the left, bots are opposite and right, and the room chip shows the room number. The other hands are back-only ghost meshes; the wire never carried their tile ids. This capture came from `scripts/net-check.mjs` with `GUEST_SHOT` set.
 
 ## Mobile — room exit
 

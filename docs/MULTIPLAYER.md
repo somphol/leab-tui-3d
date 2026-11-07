@@ -56,7 +56,7 @@ Approval is the access-control decision. The PIN only reduces who can ask. A mal
 launch
   ├─ Play solo ───────────────► normal solo table
   ├─ Host a table
-  │    generate LEAB-XXXXXX ──► open PeerJS host
+  │    generate XXXXXX ──► open PeerJS host
   │    PIN (auto) / approval► lobby security
   │    guest hello ───────────► PIN check -> pending request
   │    host Approve / Deny ───► assign seat 1–3 (or close)
@@ -74,7 +74,7 @@ The launch overlay appears on every normal load. `?mode=solo` skips it. `?mode=h
 
 ## Room codes
 
-A code is six digits, displayed as `LEAB-482-173`.
+A number is six digits, displayed as `482-173`. The `LEAB-` prefix exists only inside the peer id.
 
 - Spaces, dashes and the `LEAB` prefix are stripped.
 - A full invite URL is accepted.

@@ -24,7 +24,7 @@ Assume the attacker has read this repository and knows the protocol, message nam
 
 ## Lobby gate
 
-1. The host generates a room code (six digits, `LEAB-482-173`).
+1. The host generates a room number (six digits, `482-173`).
 2. A 5-digit PIN is generated when the room opens; **New PIN** rotates it. The PIN is **never in the invite URL**, never in the roster, never in `localStorage`, and never in the exported game.
 3. A guest sends the room code, name and PIN over the encrypted WebRTC data channel.
 4. The host verifies the PIN against an in-memory SHA-256 digest and then puts the request in the **approval queue**.
