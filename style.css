@@ -830,6 +830,18 @@ a:hover { text-decoration: underline; }
 .reveal-body { margin: 6px 0 18px; color: var(--ink-dim); font-size: calc(14px * var(--fs-scale)); line-height: 1.6; }
 .reveal-body b { color: var(--gold-bright); font-family: var(--serif); font-size: calc(18px * var(--fs-scale)); }
 .reveal-big { width: 100%; min-height: 52px; font-size: calc(15px * var(--fs-scale)); }
+.pile-why {
+  margin: 8px 0 4px;
+  padding: 9px 11px;
+  border-left: 2px solid var(--gold);
+  background: var(--note-bg);
+  color: var(--ink-dim);
+  font-size: calc(11.5px * var(--fs-scale));
+  line-height: 1.5;
+}
+.pile-why b { display: block; color: var(--ink); font-family: var(--serif); font-size: calc(13px * var(--fs-scale)); font-weight: 500; }
+.pile-why p { margin: 3px 0; }
+.pile-why small { color: var(--ink-faint); font-size: calc(10.5px * var(--fs-scale)); }
 .pile-tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -2,6 +2,14 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.4] — 2026-11-07
+
+### Fixed
+
+- **Chuan is explained correctly in every result view.** The Chuan claim now stores a real Soldier set (not an out-of-range score), marks the trick `chuan`, and the result banner, Turn history, undo explanation and captured-pile popup say “Chuan claim: seven piles plus the last Soldier; the Soldier wins by the special rule, not by rank.”
+- The captured-pile popup now includes the trick’s winner, the comparison and the reason below the cards (the count line stays hidden).
+- The dock shows “Seven piles and the last Soldier: claim Chuan” when the claim is available.
+
 ## [1.9.3] — 2026-11-07
 
 ### Added

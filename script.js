@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.3";
-import { VoiceChat } from "./voice-chat.js?v=1.9.3";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.3";
+} from "./peer-manager.js?v=1.9.4";
+import { VoiceChat } from "./voice-chat.js?v=1.9.4";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.4";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.3",
+  version: "1.9.4",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -299,6 +299,7 @@ const I18N = {
     "dock.showdownWait": "Only a revealed set can win. You may show yours even if it loses.",
     "dock.showdownLose": "Your {combo} does not beat {best}, but you may still show it.",
     "dock.showdownDouble": "Double-click your tile on the table to show it.",
+    "dock.chuanReady": "Seven piles and the last Soldier: claim Chuan.",
     "dock.showdownFirst": "Show your set first",
     "dock.showdownFirstHelp": "You called this shape. Reveal it to set the mark for the other seats.",
     "dock.showdownNoBeat": "You cannot beat the table",
@@ -386,6 +387,8 @@ const I18N = {
     "log.call": "Call",
     "log.winner": "Winner",
     "log.why": "Only revealed sets compete; the highest revealed set takes the trick. Face-down tiles stay hidden.",
+    "log.chuan": "Chuan",
+    "log.chuanWhy": "Chuan claim: seven piles plus the last Soldier. The Soldier takes the final trick by the special rule, not by rank.",
     "log.empty": "No tricks recorded yet.",
     "summary.viewLog": "View trick log",
     "summary.autoNext": "Auto-start next round (30s)",
@@ -520,6 +523,7 @@ const I18N = {
     "toast.modeNext": "Scoring changes apply to the next match.",
     "toast.redraw": "Redraw {n}: this round scores ×{n}.",
     "toast.trickResult": "{winner} wins with {combo} — {entries}",
+    "toast.trickResultChuan": "{winner} completes Chuan with the last Soldier — {entries}",
     "toast.chuan": "Chuan! Seven piles plus the last Soldier.",
     "toast.stayZone": "Keep your tiles inside your own area.",
     "toast.needMore": "Selected {n}/{m} — drag another tile.",
@@ -550,6 +554,7 @@ const I18N = {
     "undo.faceDown": "face-down",
     "undo.rankOrder": "Rank order, strongest to weakest",
     "undo.why": "Why it lost",
+    "undo.whyChuan": "The winner completed Chuan: seven piles plus the last Soldier. The Soldier takes the final trick by the special rule, not by rank.",
     "undo.whyHidden": "You kept your tiles face-down, so they never entered the comparison. Revealing is optional — but only a revealed set can win.",
     "undo.whyRank": "{losing} is below {winning} in the hierarchy. Rank is checked before colour.",
     "undo.whyColor": "Both sets share a rank, but {winning} is red and red beats black at equal rank.",
@@ -844,6 +849,7 @@ const I18N = {
     "dock.showdownWait": "เปิดแล้วชนะเท่านั้น คุณจะเปิดชุดที่แพ้ให้ดูก็ได้",
     "dock.showdownLose": "{combo} ของคุณไม่ชนะ {best} แต่จะเปิดให้ดูก็ได้",
     "dock.showdownDouble": "ดับเบิลคลิกไพ่ของคุณบนโต๊ะเพื่อเปิด",
+    "dock.chuanReady": "เจ็ดกองกับจุกตัวสุดท้าย: กดช้วนได้เลย",
     "dock.showdownFirst": "เปิดชุดของคุณก่อน",
     "dock.showdownFirstHelp": "คุณเป็นคนเรียก เปิดชุดนี้เพื่อตั้งมาตรฐานให้คนอื่น",
     "dock.showdownNoBeat": "คุณสู้โต๊ะไม่ได้",
@@ -931,6 +937,8 @@ const I18N = {
     "log.call": "เรียก",
     "log.winner": "ผู้ชนะ",
     "log.why": "เฉพาะชุดที่เปิดเท่านั้นที่แข่งกัน ชุดที่เปิดสูงสุดกินกอง ไพ่ที่คว่ำจะถูกซ่อนไว้",
+    "log.chuan": "ช้วน",
+    "log.chuanWhy": "ช้วน: เจ็ดกองกับจุกตัวสุดท้าย จุกกินตาสุดท้ายได้ด้วยกติกาพิเศษ ไม่ใช่เพราะศักดิ์ใหญ่กว่า",
     "log.empty": "ยังไม่มีประวัติตา",
     "summary.viewLog": "ดูประวัติการเล่น",
     "summary.autoNext": "เริ่มรอบถัดไปอัตโนมัติ (30 วิ)",
@@ -1065,6 +1073,7 @@ const I18N = {
     "toast.modeNext": "การคิดแต้มใหม่จะมีผลในแมตช์ถัดไป",
     "toast.redraw": "โละครั้งที่ {n}: รอบนี้คิดแต้มคูณ {n}",
     "toast.trickResult": "{winner} กินกองด้วย {combo} — {entries}",
+    "toast.trickResultChuan": "{winner} ปิดช้วนด้วยจุกตัวสุดท้าย — {entries}",
     "toast.chuan": "ช้วน! เจ็ดกองกับจุกตัวสุดท้าย",
     "toast.stayZone": "วางไพ่ไว้ในโซนของคุณเท่านั้น",
     "toast.needMore": "เลือกแล้ว {n}/{m} — ลากไพ่อีกใบ",
@@ -1098,6 +1107,7 @@ const I18N = {
     "undo.faceDown": "ลงคว่ำ",
     "undo.rankOrder": "ลำดับศักดิ์ จากใหญ่ไปเล็ก",
     "undo.why": "ทำไมถึงแพ้",
+    "undo.whyChuan": "ผู้ชนะปิดช้วน: เจ็ดกองกับกองสุดท้ายเป็นจุก จุกกินตาสุดท้ายได้ด้วยกติกาพิเศษ ไม่ใช่เพราะศักดิ์ใหญ่กว่า",
     "undo.whyHidden": "คุณลงคว่ำ หมากจึงไม่เข้าการเปรียบเทียบ การเปิดสู้เป็นทางเลือก แต่มีเพียงชุดที่เปิดเท่านั้นที่ชนะ",
     "undo.whyRank": "{losing} อยู่ต่ำกว่า {winning} ในลำดับศักดิ์ ศักดิ์ถูกตัดสินก่อนสี",
     "undo.whyColor": "ศักดิ์เท่ากัน แต่ {winning} เป็นสีแดง และแดงชนะดำเมื่อศักดิ์เท่ากัน",
@@ -2086,9 +2096,10 @@ function canClaimChuan(seat) {
 function claimChuan(seat) {
   if (!canClaimChuan(seat)) return false;
   const tile = state.hands[seat][0];
+  const combo = detectCombo([tile]);
   state.hands[seat] = [];
-  state.center.push({ seat, tiles: [tile], combo: null, revealed: true, chuan: true });
-  state.best = { seat, combo: { type: "single", count: 1, score: [99, 1], tiles: [tile] } };
+  state.center.push({ seat, tiles: [tile], combo, revealed: true, chuan: true });
+  state.best = { seat, combo };
   state.log.push({ kind: "chuan", trick: state.trick + 1, seat });
   toast(t("toast.chuan"), "gold");
   state.snapshot = null;
@@ -2509,6 +2520,7 @@ function resolveTrick() {
   const winner = state.best.seat;
   const winningCombo = state.best.combo;
   const captured = state.center.reduce((sum, entry) => sum + entry.tiles.length, 0);
+  const chuan = state.center.some((entry) => entry.chuan);
   const allTiles = state.center.flatMap((entry) => entry.tiles);
   const captureFlags = state.center.flatMap((entry) => entry.tiles.map(() => !entry.revealed));
   const captureFrom = state.center.flatMap((entry) => entry.tiles.map(() => entry.seat));
@@ -2527,6 +2539,7 @@ function resolveTrick() {
     winner,
     combo: clone(winningCombo),
     captured,
+    chuan,
     entries: state.center.map((entry) => ({
       seat: entry.seat,
       revealed: Boolean(entry.revealed),
@@ -2540,6 +2553,7 @@ function resolveTrick() {
   state.lastTrick = {
     winner,
     combo: clone(winningCombo),
+    chuan,
     entries: state.center.map((entry) => ({
       seat: entry.seat,
       revealed: entry.revealed,
@@ -2566,7 +2580,7 @@ function resolveTrick() {
   const comparison = state.lastTrick.entries.map((entry) => (
     `${seatName(entry.seat)}: ${entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden")}`
   )).join(" · ");
-  showResult(t("toast.trickResult", {
+  showResult(t(chuan ? "toast.trickResultChuan" : "toast.trickResult", {
     winner: seatName(winner),
     combo: comboSummary(winningCombo),
     entries: comparison
@@ -3117,7 +3131,8 @@ function buildUndoExplanation() {
   const youPlayed = humanCombo ? comboSummary(humanCombo) : t("undo.faceDown");
   const winnerPlayed = winnerCombo ? comboSummary(winnerCombo) : "—";
   let why = t("undo.whyUnknown");
-  if (!trick.humanRevealed) why = t("undo.whyHidden");
+  if (trick.chuan) why = t("undo.whyChuan");
+  else if (!trick.humanRevealed) why = t("undo.whyHidden");
   else if (humanCombo && winnerCombo) {
     if (humanCombo.type !== winnerCombo.type) why = t("undo.whyType");
     else if (["seehoo"].includes(winnerCombo.type)) why = t("undo.whyPair", { winning: winnerPlayed });
@@ -3402,9 +3417,11 @@ function renderSelection() {
     const selected = selectedTiles();
     kicker.textContent = t("dock.select");
     title.textContent = t("dock.followTitle", { seat: seatName(state.lead.seat), combo: `${comboName(state.lead.combo.type)} ×${state.lead.combo.count}` });
-    detail.textContent = selected.length !== needed
-      ? t("dock.followHelp", { n: needed, type: comboName(state.lead.combo.type) })
-      : t("dock.followHidden", { n: needed });
+    detail.textContent = canClaimChuan(MY_SEAT)
+      ? t("dock.chuanReady")
+      : selected.length !== needed
+        ? t("dock.followHelp", { n: needed, type: comboName(state.lead.combo.type) })
+        : t("dock.followHidden", { n: needed });
     leadBtn.hidden = true;
     revealBtn.hidden = true;
     facedownBtn.hidden = false;
@@ -3488,7 +3505,7 @@ function renderLogRecord(record) {
   }
   const call = record.call ? `${comboName(record.call.type)} ×${record.call.count}` : "—";
   if (meta) {
-    meta.textContent = `${t("log.round")} ${record.round} · ${t("log.trick")} ${record.trick} · ${t("log.call")}: ${call} · ${t("log.winner")}: ${seatName(record.winner)} (${comboSummary(record.combo)})`;
+    meta.textContent = `${t("log.round")} ${record.round} · ${t("log.trick")} ${record.trick} · ${t("log.call")}: ${call} · ${t("log.winner")}: ${seatName(record.winner)} (${comboSummary(record.combo)})${record.chuan ? ` · ${t("log.chuan")}` : ""}`;
   }
   if (list) {
     list.innerHTML = (record.entries || []).map((entry) => {
@@ -3506,7 +3523,7 @@ function renderLogRecord(record) {
         <div class="log-entry-head"><b>${badge}${escapeHTML(seatName(entry.seat))}</b><span>${escapeHTML(label)}</span></div>
         <div class="log-tiles">${tiles}</div>
       </div>`;
-    }).join("") + `<div class="summary-note">${escapeHTML(t("log.why"))}</div>`;
+    }).join("") + `<div class="summary-note">${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</div>`;
   }
 }
 
@@ -3555,12 +3572,31 @@ function openPileModal(seat, pileIndex) {
   const title = $("#pileTitle");
   const meta = $("#pileMeta");
   const body = $("#pileTiles");
+  const why = $("#pileWhy");
   if (title) {
     title.innerHTML = `<span class="log-win-badge" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>${escapeHTML(t("pile.title", { seat: seatName(seat), n: pileIndex + 1 }))}`;
   }
   if (meta) {
     meta.hidden = true;
     meta.textContent = "";
+  }
+  if (why) {
+    const trickNumber = state.captureTrick?.[seat]?.[start];
+    const records = state.trickArchive || [];
+    const record = records.slice().reverse().find((item) => item.trick === trickNumber && item.winner === seat)
+      || records.slice().reverse().find((item) => item.trick === trickNumber);
+    if (record) {
+      const entries = (record.entries || []).map((entry) => (
+        `${seatName(entry.seat)}: ${entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden")}`
+      )).join(" · ");
+      why.innerHTML = `<b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummary(record.combo), n: record.captured }))}</b>
+        <p>${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</p>
+        <small>${escapeHTML(entries)}</small>`;
+      why.hidden = false;
+    } else {
+      why.hidden = true;
+      why.innerHTML = "";
+    }
   }
   if (body) {
     body.innerHTML = tiles.map((tile, index) => {
