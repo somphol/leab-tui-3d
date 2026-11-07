@@ -3,14 +3,14 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.9.5**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.9.6**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.9.5` |
+| App version | `1.9.6` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
@@ -22,6 +22,10 @@
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.9.6 — winner badge on captured cards
+
+Cards from the winning seat in a captured pile now carry a large green ✓ and a gold frame, including face-down winners.
 
 ## Release 1.9.5 — reveal result as a comparison
 

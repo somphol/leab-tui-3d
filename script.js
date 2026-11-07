@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.5";
-import { VoiceChat } from "./voice-chat.js?v=1.9.5";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.5";
+} from "./peer-manager.js?v=1.9.6";
+import { VoiceChat } from "./voice-chat.js?v=1.9.6";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.6";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.5",
+  version: "1.9.6",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -3612,7 +3612,9 @@ function openPileModal(seat, pileIndex) {
       if (!up) {
         const hiddenFrom = state.captureFrom?.[seat]?.[start + index];
         const hiddenFromText = Number.isInteger(hiddenFrom) ? t("pile.from", { seat: seatName(hiddenFrom) }) : "";
-        return `<div class="pile-item back">
+        const hiddenWinner = hiddenFrom === seat;
+        return `<div class="pile-item back ${hiddenWinner ? "winner" : ""}">
+          ${hiddenWinner ? `<span class="pile-win-big" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>` : ""}
           <span class="mini-tile back" role="img" aria-label="${escapeHTML(t("pile.hidden"))}">?</span>
           <b>${escapeHTML(t("showdown.hidden"))}</b>
           <span>${escapeHTML(t("pile.hidden"))}</span>
@@ -3625,7 +3627,9 @@ function openPileModal(seat, pileIndex) {
       const secondary = LANG === "th" ? `${rank.en} · ${rank.thMeaning}` : `${reading} · ${rank.thMeaning}`;
       const fromSeat = state.captureFrom?.[seat]?.[start + index];
       const from = Number.isInteger(fromSeat) ? t("pile.from", { seat: seatName(fromSeat) }) : "";
-      return `<div class="pile-item">
+      const isWinner = fromSeat === seat;
+      return `<div class="pile-item ${isWinner ? "winner" : ""}">
+        ${isWinner ? `<span class="pile-win-big" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>` : ""}
         <em>${rank.power}</em>
         <span class="mini-tile ${tile.color === "r" ? "red" : "black"}">${tile.hanzi}</span>
         <b>${escapeHTML(primary)}</b>

@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.6] — 2026-11-07
+
+### Added
+
+- **Big winner badge in the captured pile.** Every card played by the winning seat now carries a large green ✓ on its corner and a gold frame, in addition to the small check on the pile title. Face-down winning cards are marked the same way.
+
 ## [1.9.5] — 2026-11-07
 
 ### Changed

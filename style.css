@@ -876,6 +876,22 @@ a:hover { text-decoration: underline; }
   font-weight: 500;
   line-height: 1.1;
 }
+.pile-item.winner { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-wash); }
+.pile-win-big {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #2f7b63;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
 .pile-from { color: var(--gold); font-size: calc(10px * var(--fs-scale)); }
 .pile-item > span:last-child {
   display: block;
