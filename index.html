@@ -15,7 +15,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://0.peerjs.com wss://0.peerjs.com; font-src 'self' data:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=1.6.6" />
+  <link rel="stylesheet" href="style.css?v=1.7.0" />
   <script type="importmap">
     {
       "imports": {
@@ -44,6 +44,10 @@
         </button>
         <button id="soundToggle" class="icon-btn" type="button" aria-pressed="true" aria-label="Sound on" title="Sound">
           <span id="soundIcon" aria-hidden="true">♪</span>
+        </button>
+        <button id="voiceCallBtn" class="pill voice-call" type="button" hidden aria-label="Join audio chat">
+          <span class="voice-call-icon" aria-hidden="true">🎙</span>
+          <span class="voice-call-label" data-i18n="voice.joinAudio">Join audio</span>
         </button>
         <button id="netChip" class="pill net-chip" type="button" hidden aria-label="Room code">—</button>
         <button id="rulesBtn" class="icon-btn" type="button" aria-label="Rules" title="Rules">
@@ -199,7 +203,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.6.6</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.7.0</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -249,13 +253,25 @@
             <span class="lobby-kicker" data-i18n="net.menuKicker">Serverless table</span>
             <h2 id="lobbyTitle" data-i18n="net.launchTitle">Choose how to play</h2>
           </div>
+          <div class="lang-switch lang-switch-mini" role="group" aria-label="Language">
+            <button type="button" data-lang="en" aria-pressed="true">EN</button>
+            <button type="button" data-lang="th" aria-pressed="false">TH</button>
+          </div>
           <button class="modal-close" type="button" data-close="lobbyModal" aria-label="Close">×</button>
         </div>
 
         <section id="lobbyMenu" class="lobby-view">
-          <p class="lobby-lead" data-i18n="net.launchBody">Set up a direct WebRTC table. The host browser runs the rules and the bots; guests only need the invite code.</p>
-          <label class="field-label" for="lobbyPlayerName" data-i18n="net.yourName">Your name</label>
-          <input id="lobbyPlayerName" class="lobby-input lobby-player-name" type="text" maxlength="18" autocomplete="nickname" placeholder="Your name" data-i18n-placeholder="net.yourNamePlaceholder" />
+          <p class="lobby-lead" data-i18n="net.pickMode">Play right now, or invite friends with one link.</p>
+
+          <button id="lobbySolo" class="lobby-primary" type="button">
+            <span class="lobby-primary-icon" aria-hidden="true">一</span>
+            <span class="lobby-primary-copy">
+              <b data-i18n="net.solo">Play now</b>
+              <span data-i18n="net.soloDesc">Start immediately. Three bots take the other seats.</span>
+            </span>
+            <span class="lobby-primary-arrow" aria-hidden="true">→</span>
+          </button>
+
           <button id="lobbyResumeSaved" class="lobby-resume" type="button" hidden>
             <span class="lobby-resume-copy">
               <b data-i18n="net.resumeMatch">Resume match</b>
@@ -263,36 +279,43 @@
             </span>
             <span class="lobby-resume-arrow" aria-hidden="true">›</span>
           </button>
-          <div class="lobby-modes">
-            <button id="lobbySolo" class="lobby-mode" type="button">
-              <span class="lobby-mode-icon" aria-hidden="true">一</span>
-              <b data-i18n="net.solo">Play solo</b>
-              <span data-i18n="net.soloDesc">One human seat, three AI seats.</span>
-            </button>
+
+          <p class="lobby-or"><span data-i18n="net.orFriends">or play with friends</span></p>
+
+          <div class="lobby-modes lobby-modes-two">
             <button id="lobbyHost" class="lobby-mode" type="button">
               <span class="lobby-mode-icon" aria-hidden="true">◉</span>
-              <b data-i18n="net.host">Host a table</b>
-              <span data-i18n="net.hostDesc">Create a room code and invite up to three guests.</span>
+              <b data-i18n="net.host">Host a game</b>
+              <span data-i18n="net.hostDesc">Keep this tab open. We make a code you can send.</span>
             </button>
             <button id="lobbyJoin" class="lobby-mode" type="button">
               <span class="lobby-mode-icon" aria-hidden="true">◇</span>
-              <b data-i18n="net.join">Join a table</b>
-              <span data-i18n="net.joinDesc">Enter a six-digit room code.</span>
+              <b data-i18n="net.join">Join a game</b>
+              <span data-i18n="net.joinDesc">A friend sent you a code? Paste it here.</span>
             </button>
           </div>
-          <p class="lobby-note" data-i18n="net.menuNote">No game server and no account. PeerJS brokers only the first handshake.</p>
+
+          <div class="lobby-name-row">
+            <label for="lobbyPlayerName" data-i18n="net.yourName">Your name</label>
+            <input id="lobbyPlayerName" class="lobby-input lobby-player-name" type="text" maxlength="18" autocomplete="nickname" placeholder="Your name" data-i18n-placeholder="net.yourNamePlaceholder" />
+            <span class="lobby-name-hint" data-i18n="net.yourNameHint">Shown to other players.</span>
+          </div>
+
           <div class="version-row">
-            <span class="version-chip version-label">v1.6.6</span>
+            <span class="version-chip version-label">v1.7.0</span>
             <button id="lobbyReload" class="mini-btn" type="button" data-i18n="version.reload">↻ Reload</button>
           </div>
         </section>
 
         <section id="lobbyHostPanel" class="lobby-view" hidden>
-          <div class="room-line">
-            <span data-i18n="net.roomCode">Room code</span>
-            <strong id="lobbyRoomCode">—</strong>
-            <button id="lobbyCopyInfo" class="btn btn-ghost btn-small" type="button" data-i18n="net.copyInvitePin">Copy invite + PIN</button>
-            <button id="lobbyShareBtn" class="btn btn-gold btn-small" type="button" hidden data-i18n="net.shareInvitePin">Share invite + PIN</button>
+          <p class="lobby-lead" data-i18n="net.hostLead">Send the invite, approve your friends, then start.</p>
+          <div class="host-code-card">
+            <span class="host-code-label" data-i18n="net.roomCode">Room code</span>
+            <strong id="lobbyRoomCode" class="host-code">—</strong>
+            <div class="host-code-actions">
+              <button id="lobbyCopyInfo" class="btn btn-gold" type="button" data-i18n="net.copyInvitePin">Copy invite + PIN</button>
+              <button id="lobbyShareBtn" class="btn btn-ghost" type="button" hidden data-i18n="net.shareInvitePin">Share invite + PIN</button>
+            </div>
           </div>
           <input id="lobbyInvite" class="lobby-invite" readonly hidden aria-label="Invite link" />
           <div class="host-live" role="status" aria-live="polite">
@@ -321,9 +344,11 @@
               <p data-i18n="net.pinInfoDigest">The host keeps only a SHA-256 digest in memory. The PIN is not in the invite link, saved game or exported file. Copy invite + PIN is the one-paste share text.</p>
             </div>
           </div>
-          <h3 data-i18n="net.pendingTitle">Join requests</h3>
-          <div id="lobbyPending" class="lobby-pending"></div>
-          <button id="lobbyApproveAll" class="btn btn-gold btn-small" type="button" hidden data-i18n="net.approveAll">Approve all</button>
+          <section id="hostPendingBlock" class="host-pending-block" hidden>
+            <h3 data-i18n="net.pendingTitle">Join requests</h3>
+            <div id="lobbyPending" class="lobby-pending"></div>
+            <button id="lobbyApproveAll" class="btn btn-gold btn-small" type="button" hidden data-i18n="net.approveAll">Approve all</button>
+          </section>
           <h3 data-i18n="net.roster">Seats</h3>
           <div id="lobbyRoster" class="lobby-roster"></div>
           <p class="lobby-note" data-i18n="net.fourSeats">Leab-Tui is a four-seat game: the host plus up to three guests. Empty seats are filled with bots.</p>
@@ -332,28 +357,36 @@
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
             <button id="lobbyStartBtn" class="btn btn-gold" type="button" disabled data-i18n="net.startTable">Start table</button>
           </div>
-          <p id="lobbyStartHint" class="lobby-hint"></p>
         </section>
 
         <section id="lobbyJoinPanel" class="lobby-view" hidden>
-          <p class="lobby-lead" data-i18n="net.joinHint">Ask the host for the six-character code.</p>
+          <p class="lobby-lead" data-i18n="net.joinLead">Paste the message your host sent, or type the code.</p>
+          <button id="lobbyPasteInvite" class="lobby-primary lobby-primary-compact" type="button">
+            <span class="lobby-primary-icon" aria-hidden="true">⎘</span>
+            <span class="lobby-primary-copy">
+              <b data-i18n="net.pasteInvite">Paste invite</b>
+              <span data-i18n="net.pasteInviteDesc">Fills the code and PIN from your clipboard.</span>
+            </span>
+            <span class="lobby-primary-arrow" aria-hidden="true">→</span>
+          </button>
+          <p class="lobby-or"><span data-i18n="net.orType">or type it</span></p>
           <label class="field-label" for="lobbyCodeInput" data-i18n="net.codeLabel">Room code</label>
           <input id="lobbyCodeInput" class="lobby-input code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="LEAB-482-173" data-i18n-placeholder="net.codePlaceholder" />
-          <label class="field-label" for="lobbyNameInput" data-i18n="net.nameLabel">Your name</label>
-          <input id="lobbyNameInput" class="lobby-input" type="text" maxlength="18" autocomplete="nickname" placeholder="Guest" data-i18n-placeholder="net.namePlaceholder" />
           <label class="field-label" for="lobbyPinInput" data-i18n="net.pinLabel">Room PIN</label>
           <div class="pin-line guest-pin-line">
             <input id="lobbyPinInput" class="lobby-input pin-input" type="text" inputmode="numeric" autocomplete="one-time-code" spellcheck="false" maxlength="5" placeholder="5 digits" data-i18n-placeholder="net.pinGuestPlaceholder" />
-            <button id="lobbyPinPaste" class="btn btn-ghost btn-small" type="button" data-i18n="net.pinPaste">Paste</button>
+            <button id="lobbyPinPaste" class="btn btn-ghost btn-small" type="button" data-i18n="net.pinPaste">Paste PIN</button>
           </div>
-          <p class="lobby-note" data-i18n="net.pinFromMessage">Paste the passcode from the host's message.</p>
+          <label class="field-label" for="lobbyNameInput" data-i18n="net.nameLabel">Your name</label>
+          <input id="lobbyNameInput" class="lobby-input" type="text" maxlength="18" autocomplete="nickname" placeholder="Guest" data-i18n-placeholder="net.namePlaceholder" />
+          <p class="lobby-note" data-i18n="net.joinNote">The host still has to approve you before you get a seat.</p>
           <div class="modal-actions">
             <button id="joinDiagBtn" class="btn btn-ghost" type="button" data-i18n="diag.open">Troubleshoot</button>
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
             <button id="lobbyConnectBtn" class="btn btn-gold" type="button" data-i18n="net.connect">Connect</button>
           </div>
           <div class="version-row join-version-row">
-            <span class="version-chip version-label">v1.6.6</span>
+            <span class="version-chip version-label">v1.7.0</span>
             <button id="joinReload" class="mini-btn" type="button" data-i18n="version.reload">Reload</button>
           </div>
         </section>
@@ -381,6 +414,13 @@
       <div class="modal-card modal-small">
         <button class="modal-close" type="button" data-close="displayModal" aria-label="Close">×</button>
         <h2 id="displayTitle" data-i18n="display.title">Display</h2>
+        <div class="display-section">
+          <h3 data-i18n="display.language">Language</h3>
+          <div class="lang-switch" role="group" aria-label="Language">
+            <button type="button" data-lang="en" aria-pressed="true">English</button>
+            <button type="button" data-lang="th" aria-pressed="false">ไทย</button>
+          </div>
+        </div>
         <div class="display-section">
           <h3 data-i18n="display.font">Text size</h3>
           <div class="segmented" id="fontSizeGroup" role="group" aria-label="Text size">
@@ -511,6 +551,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.6.6"></script>
+  <script type="module" src="script.js?v=1.7.0"></script>
 </body>
 </html>

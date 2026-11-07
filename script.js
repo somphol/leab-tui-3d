@@ -18,14 +18,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.6.6";
-import { VoiceChat } from "./voice-chat.js?v=1.6.6";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.6";
+} from "./peer-manager.js?v=1.7.0";
+import { VoiceChat } from "./voice-chat.js?v=1.7.0";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.7.0";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.6.6",
+  version: "1.7.0",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -36,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T17:53:07-08:00",
-    durationHuman: "7h 47m 34s",
-    tokensTotal: "3213675",
-    tokensInput: "2597848",
-    tokensOutput: "373808",
-    tokensReasoning: "242019",
-    tokensCacheRead: "489159296",
+    packagedAt: "2026-11-06T18:36:28-08:00",
+    durationHuman: "8h 30m 54s",
+    tokensTotal: "3456822",
+    tokensInput: "2770003",
+    tokensOutput: "407019",
+    tokensReasoning: "279800",
+    tokensCacheRead: "504388608",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -307,6 +307,7 @@ const I18N = {
     "actions.keep": "Keep playing",
     "actions.sound": "Sound",
     "display.title": "Display",
+    "display.language": "Language",
     "display.font": "Text size",
     "display.small": "Small",
     "display.default": "Default",
@@ -523,16 +524,27 @@ const I18N = {
     "rules.beginner": "Beginner guard",
     "rules.beginnerBody": "Undo trick restores the position before the last trick and explains the comparison. The coach panel names the best lead or challenge in your hand, but never plays for you.",
     "rules.footnote": "This is an independent, open-source teaching implementation. It is not affiliated with any publisher or standards body.",
-    "net.menuKicker": "Serverless table",
-    "net.launchTitle": "Choose how to play",
-    "net.launchBody": "Set up a direct WebRTC table. The host browser runs the rules and the bots; guests only need the invite code.",
-    "net.menuNote": "No game server and no account. PeerJS brokers only the first handshake.",
-    "net.solo": "Play solo",
-    "net.soloDesc": "One human seat, three AI seats.",
-    "net.host": "Host a table",
-    "net.hostDesc": "Create a room code and invite up to three guests.",
-    "net.join": "Join a table",
-    "net.joinDesc": "Enter a six-character room code.",
+    "net.menuKicker": "Leab-Tui 3D",
+    "net.launchTitle": "How do you want to play?",
+    "net.launchBody": "Start a game on this device, or invite friends with one link.",
+    "net.pickMode": "Start playing in one tap, or invite friends with a single link.",
+    "net.menuNote": "No account and no game server. The two browsers talk directly.",
+    "net.orFriends": "or play with friends",
+    "net.orType": "or type it",
+    "net.solo": "Play now",
+    "net.soloDesc": "Start immediately. Three bots take the other seats.",
+    "net.host": "Host a game",
+    "net.hostDesc": "Keep this tab open. We make a code you can send.",
+    "net.join": "Join a game",
+    "net.joinDesc": "A friend sent you a code? Paste it here.",
+    "net.yourNameHint": "Shown to other players.",
+    "net.hostLead": "Send the invite, approve your friends, then start.",
+    "net.joinLead": "Paste the message your host sent, or type the code.",
+    "net.joinNote": "The host still has to approve you before you get a seat.",
+    "net.pasteInvite": "Paste invite",
+    "net.pasteInviteDesc": "Fills the code and PIN from your clipboard.",
+    "net.pasteInviteDone": "Invite pasted.",
+    "net.pasteInviteFailed": "No invite found on the clipboard.",
     "net.hostTitle": "Host a table",
     "net.roomCode": "Room code",
     "net.codeHelp": "Share this six-digit code.",
@@ -583,7 +595,7 @@ const I18N = {
     "net.copyRoomInfo": "Copy room info",
     "net.copyInvitePin": "Copy invite + PIN",
     "net.shareInvitePin": "Share invite + PIN",
-    "net.pinPaste": "Paste",
+    "net.pinPaste": "Paste PIN",
     "net.pinPasted": "Passcode filled from the clipboard.",
     "net.pinPasteFailed": "Clipboard access was blocked. Paste the passcode manually.",
     "net.pinFromMessage": "Paste the passcode from the host's message.",
@@ -685,6 +697,10 @@ const I18N = {
     "chat.send": "Send",
     "voice.off": "Voice off",
     "voice.join": "Join voice",
+    "voice.joinAudio": "Join audio",
+    "voice.connecting": "Connecting…",
+    "voice.callHintJoin": "Join the table audio chat",
+    "voice.callHintLive": "Tap to mute or unmute your microphone",
     "voice.on": "Voice on",
     "voice.micOn": "Mute mic",
     "voice.micOff": "Unmute mic",
@@ -739,6 +755,7 @@ const I18N = {
     "actions.keep": "เล่นต่อ",
     "actions.sound": "เสียง",
     "display.title": "การแสดงผล",
+    "display.language": "ภาษา",
     "display.font": "ขนาดตัวอักษร",
     "display.small": "เล็ก",
     "display.default": "ปกติ",
@@ -955,16 +972,27 @@ const I18N = {
     "rules.beginner": "ตัวช่วยผู้เริ่มต้น",
     "rules.beginnerBody": "ปุ่มย้อนตาจะคืนตำแหน่งก่อนตาสุดท้ายและอธิบายการเปรียบเทียบ แผงโค้ชบอกชุดนำหรือชุดสู้ที่ดีที่สุดในมือ แต่จะไม่เล่นแทนคุณ",
     "rules.footnote": "นี่คือimplementation สอนเล่นโอเพนซอร์สอิสระ ไม่ได้เกี่ยวข้องกับสำนักพิมพ์หรือองค์กรมาตรฐานใด",
-    "net.menuKicker": "โต๊ะแบบเพียร์ทูเพียร์",
-    "net.launchTitle": "เลือกวิธีเล่น",
-    "net.launchBody": "ตั้งโต๊ะผ่าน WebRTC โดยตรง เบราว์เซอร์เจ้าบ้านคิดกติกาและบอท ผู้เล่นอื่นใช้เพียงรหัสห้อง",
-    "net.menuNote": "ไม่มีเซิร์ฟเวอร์เกมและไม่มีบัญชี PeerJS ใช้เพียงจับมือครั้งแรก",
-    "net.solo": "เล่นคนเดียว",
-    "net.soloDesc": "หนึ่งที่นั่งมนุษย์ กับสามที่นั่งบอท",
+    "net.menuKicker": "ละบตุ้ย 3D",
+    "net.launchTitle": "จะเล่นแบบไหน?",
+    "net.launchBody": "เริ่มเกมบนเครื่องนี้ หรือชวนเพื่อนด้วยลิงก์เดียว",
+    "net.pickMode": "เริ่มเล่นได้ในแตะเดียว หรือชวนเพื่อนด้วยลิงก์เดียว",
+    "net.menuNote": "ไม่มีบัญชี ไม่มีเซิร์ฟเวอร์เกม สองเบราว์เซอร์คุยกันโดยตรง",
+    "net.orFriends": "หรือเล่นกับเพื่อน",
+    "net.orType": "หรือพิมพ์เอง",
+    "net.solo": "เล่นเลย",
+    "net.soloDesc": "เริ่มทันที บอทสามตัวนั่งแทนที่เหลือ",
     "net.host": "เปิดโต๊ะ",
-    "net.hostDesc": "สร้างรหัสห้องและเชิญแขกได้ถึงสามคน",
+    "net.hostDesc": "เปิดแท็บนี้ไว้ ระบบจะสร้างรหัสให้ส่งต่อ",
     "net.join": "เข้าร่วมโต๊ะ",
-    "net.joinDesc": "กรอกรหัสห้องหกตัว",
+    "net.joinDesc": "เพื่อนส่งรหสมา? วางที่นี่",
+    "net.yourNameHint": "ชื่อนี้จะแสดงให้ผู้เล่นคนอื่นเห็น",
+    "net.hostLead": "ส่งคำเชิญ อนุมัติเพื่อน แล้วเริ่มโต๊ะ",
+    "net.joinLead": "วางข้อความที่เจ้าบ้านส่งมา หรือพิมพ์รหัสเอง",
+    "net.joinNote": "เจ้าบ้านยังต้องอนุมัติก่อนคุณจะได้ที่นั่ง",
+    "net.pasteInvite": "วางคำเชิญ",
+    "net.pasteInviteDesc": "เติมรหัสห้องและ PIN จากคลิปบอร์ด",
+    "net.pasteInviteDone": "วางคำเชิญแล้ว",
+    "net.pasteInviteFailed": "ไม่พบคำเชิญในคลิปบอร์ด",
     "net.hostTitle": "เปิดโต๊ะ",
     "net.roomCode": "รหัสห้อง",
     "net.codeHelp": "แชร์รหัสหกหลักนี้",
@@ -1015,7 +1043,7 @@ const I18N = {
     "net.copyRoomInfo": "คัดลอกข้อมูลห้อง",
     "net.copyInvitePin": "คัดลอกลิงก์ + PIN",
     "net.shareInvitePin": "แชร์ลิงก์ + PIN",
-    "net.pinPaste": "วาง",
+    "net.pinPaste": "วาง PIN",
     "net.pinPasted": "เติมรหัสผ่านจากคลิปบอร์ดแล้ว",
     "net.pinPasteFailed": "เข้าถึงคลิปบอร์ดไม่ได้ กรุณาวางรหัสผ่านเอง",
     "net.pinFromMessage": "วางรหัสผ่านจากข้อความของเจ้าบ้าน",
@@ -1117,6 +1145,10 @@ const I18N = {
     "chat.send": "ส่ง",
     "voice.off": "ปิดเสียงพูด",
     "voice.join": "เข้าร่วมเสียง",
+    "voice.joinAudio": "เข้าร่วมเสียง",
+    "voice.connecting": "กำลังเชื่อมเสียง…",
+    "voice.callHintJoin": "เข้าร่วมแชทเสียงของโต๊ะ",
+    "voice.callHintLive": "แตะเพื่อปิดหรือเปิดไมโครโฟน",
     "voice.on": "เสียงเปิด",
     "voice.micOn": "ปิดไมค์",
     "voice.micOff": "เปิดไมค์",
@@ -1506,6 +1538,7 @@ let lobbyState = null;
 let resumeAvailable = false;
 let voice = null;
 let voiceActive = false;
+let voiceJoining = false;
 let chatHistory = [];
 let chatOpen = true;
 let chatUnread = 0;
@@ -2900,6 +2933,11 @@ function applyLanguage(lang) {
   });
   $$("[data-i18n-aria]").forEach((node) => node.setAttribute("aria-label", t(node.dataset.i18nAria)));
   $$("[data-i18n-placeholder]").forEach((node) => node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder)));
+  $$("button[data-lang]").forEach((button) => {
+    const active = button.dataset.lang === LANG;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
   const label = $("#langLabel");
   if (label) label.textContent = LANG === "en" ? "ไทย" : "EN";
   const chatToggle = $("#chatToggle");
@@ -3551,7 +3589,7 @@ async function createHostRoom(name) {
     MY_SEAT = 0;
     lobbyState.roomCode = host.code;
     await setRoomPin(generatePin(), { silent: true });
-    setLobbyStatus(t("net.lobbyOpen"), "jade");
+    setLobbyStatus("", "");
     renderLobby();
     renderNetChrome();
     syncVoicePeers();
@@ -3995,6 +4033,40 @@ function extractPasscode(text) {
   return bare ? bare[1] : "";
 }
 
+async function pasteInvite() {
+  const codeField = $("#lobbyCodeInput");
+  if (!codeField) return;
+  let text = "";
+  try {
+    text = await navigator.clipboard.readText();
+  } catch {
+    toast(t("net.pasteInviteFailed"), "wine");
+    codeField.focus();
+    return;
+  }
+  const code = normalizeRoomCode(text);
+  const pin = extractPasscode(text);
+  if (!code && !pin) {
+    toast(t("net.pasteInviteFailed"), "wine");
+    codeField.focus();
+    return;
+  }
+  if (code) {
+    codeField.value = formatRoomCode(code);
+    codeField.dispatchEvent(new Event("input", { bubbles: true }));
+    saveRoomIntent({ role: "guest", code, name: $("#lobbyNameInput")?.value || "" });
+  }
+  const pinField = $("#lobbyPinInput");
+  if (pin && pinField) {
+    pinField.value = pin;
+    pinField.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  toast(t("net.pasteInviteDone"), "jade");
+  if (code && pin) $("#lobbyConnectBtn")?.focus();
+  else if (code) ($("#lobbyPinInput") || $("#lobbyNameInput"))?.focus();
+  else codeField.focus();
+}
+
 async function pastePasscode() {
   const field = $("#lobbyPinInput");
   if (!field) return;
@@ -4048,6 +4120,8 @@ function renderPending() {
     : `<span class="pending-empty">${escapeHTML(t("net.pendingEmpty"))}</span>`;
   const approveAll = $("#lobbyApproveAll");
   if (approveAll) approveAll.hidden = entries.length === 0;
+  const pendingBlock = $("#hostPendingBlock");
+  if (pendingBlock) pendingBlock.hidden = entries.length === 0;
   const status = $("#hostSecurityStatus");
   if (status && isHost() && net?.security) {
     status.textContent = net.security.pinSet ? t("net.pinAuto") : t("net.pinApprovalOnly");
@@ -4060,6 +4134,7 @@ function renderLobby() {
   const modal = $("#lobbyModal");
   if (!modal) return;
   const view = lobbyState?.view || "menu";
+  modal.dataset.view = view;
   const views = { menu: $("#lobbyMenu"), host: $("#lobbyHostPanel"), join: $("#lobbyJoinPanel"), waiting: $("#lobbyWaitPanel"), lost: $("#lobbyWaitPanel") };
   Object.entries(views).forEach(([key, node]) => {
     if (node) node.hidden = key !== view;
@@ -4100,7 +4175,7 @@ function renderLobby() {
   const invite = code ? inviteUrl(code) : "";
   if ($("#lobbyInvite")) {
     $("#lobbyInvite").value = invite;
-    $("#lobbyInvite").hidden = !invite;
+    $("#lobbyInvite").hidden = true;
   }
   if ($("#lobbyRoster")) $("#lobbyRoster").innerHTML = lobbyRosterHTML(SEAT_PROFILES || players);
   if ($("#lobbyWaitCode")) $("#lobbyWaitCode").textContent = formatted;
@@ -4255,7 +4330,9 @@ function renderNetChrome() {
     if (isNetworked()) {
       chip.hidden = false;
       chip.dataset.mode = net.role;
-      chip.textContent = `${isHost() ? "◉" : "◇"} ${formatRoomCode(net.code)}`;
+      const compact = window.matchMedia("(max-width: 520px)").matches;
+      const code = compact ? `${net.code.slice(0, 3)}-${net.code.slice(3)}` : formatRoomCode(net.code);
+      chip.textContent = `${isHost() ? "◉" : "◇"} ${code}`;
       chip.title = t("net.chipHint");
     } else {
       chip.hidden = true;
@@ -4274,6 +4351,8 @@ function renderNetChrome() {
   if (chatPanel) chatPanel.hidden = !isNetworked();
   const chatTool = $("#chatToolBtn");
   if (chatTool) chatTool.hidden = !isNetworked();
+  const voiceCall = $("#voiceCallBtn");
+  if (voiceCall) voiceCall.hidden = !isNetworked();
   renderChatBadge();
   renderPanelRail();
 }
@@ -4627,6 +4706,23 @@ function ensureVoice() {
   return voice;
 }
 
+function joinVoice() {
+  if (!isNetworked() || voiceJoining || voice?.joined) return;
+  voiceJoining = true;
+  renderVoiceState(voice?.snapshot?.() || { joined: false });
+  const engine = ensureVoice();
+  engine.attach({
+    peer: currentVoicePeer(),
+    selfPeerId: currentVoicePeerId(),
+    selfSeat: MY_SEAT
+  });
+  engine.setPeers(voicePeers());
+  return Promise.resolve(engine.join()).finally(() => {
+    voiceJoining = false;
+    renderVoiceState(engine.snapshot());
+  });
+}
+
 function syncVoicePeers() {
   if (!isNetworked()) return;
   const engine = ensureVoice();
@@ -4660,6 +4756,22 @@ function renderVoiceState(state) {
     if (label) label.textContent = state?.deafened ? t("voice.undeafen") : t("voice.deafen");
   }
   if (leave) leave.hidden = !voiceActive;
+  const call = $("#voiceCallBtn");
+  if (call) {
+    call.hidden = !isNetworked();
+    call.disabled = voiceJoining;
+    call.classList.toggle("is-live", voiceActive && !state?.micMuted);
+    call.classList.toggle("is-muted", voiceActive && Boolean(state?.micMuted));
+    call.setAttribute("aria-pressed", String(voiceActive ? Boolean(state?.micMuted) : false));
+    const callLabel = call.querySelector(".voice-call-label");
+    if (callLabel) {
+      callLabel.textContent = voiceJoining ? t("voice.connecting")
+        : voiceActive ? (state?.micMuted ? t("voice.micMuted") : t("voice.on"))
+        : t("voice.joinAudio");
+    }
+    call.title = voiceActive ? t("voice.callHintLive") : t("voice.callHintJoin");
+    call.setAttribute("aria-label", call.title);
+  }
   const status = $("#voiceState");
   if (status) {
     if (!voiceActive) status.textContent = t("voice.off");
@@ -6067,6 +6179,9 @@ async function createScene() {
 
 function bindEvents() {
   $("#langToggle")?.addEventListener("click", () => setLanguage(LANG === "en" ? "th" : "en"));
+  $$("button[data-lang]").forEach((button) => button.addEventListener("click", () => {
+    if (button.dataset.lang !== LANG) setLanguage(button.dataset.lang);
+  }));
   $("#soundToggle")?.addEventListener("click", () => setSound(!prefs.sound));
   $("#rulesBtn")?.addEventListener("click", () => { renderRules(); openModal("rulesModal"); audio?.play("click", 0); });
   $("#aboutBtn")?.addEventListener("click", () => { renderAbout(); openModal("aboutModal"); audio?.play("click", 0); });
@@ -6188,6 +6303,7 @@ function bindEvents() {
     setDockCollapsed(!dock.classList.contains("dock-collapsed"));
   });
   window.matchMedia("(max-width: 1024px)").addEventListener("change", renderPanelRail);
+  window.matchMedia("(max-width: 520px)").addEventListener("change", renderNetChrome);
   $("#chatToolBtn")?.addEventListener("click", openChat);
   $("#joinDiagBtn")?.addEventListener("click", openDiagnostics);
   $("#hostDiagBtn")?.addEventListener("click", openDiagnostics);
@@ -6206,6 +6322,7 @@ function bindEvents() {
   $("#lobbyCopyInfo")?.addEventListener("click", copyRoomInfo);
   $("#lobbyShareBtn")?.addEventListener("click", shareRoomInfo);
   $("#lobbyPinPaste")?.addEventListener("click", pastePasscode);
+  $("#lobbyPasteInvite")?.addEventListener("click", pasteInvite);
   $("#hostPinRegenerate")?.addEventListener("click", generateRoomPin);
   $("#hostPinCopy")?.addEventListener("click", copyPin);
   $("#hostPinInfo")?.addEventListener("click", () => setPinInfo($("#pinInfoPanel")?.hidden ?? true));
@@ -6239,15 +6356,14 @@ function bindEvents() {
     if (sendChat(input.value)) input.value = "";
     input.focus();
   });
-  $("#voiceJoinBtn")?.addEventListener("click", async () => {
-    const engine = ensureVoice();
-    engine.attach({
-      peer: currentVoicePeer(),
-      selfPeerId: currentVoicePeerId(),
-      selfSeat: MY_SEAT
-    });
-    engine.setPeers(voicePeers());
-    await engine.join();
+  $("#voiceJoinBtn")?.addEventListener("click", joinVoice);
+  $("#voiceCallBtn")?.addEventListener("click", () => {
+    if (voice?.joined) {
+      voice.setMicMuted(!voice.micMuted);
+      audio?.play("click", 0);
+      return;
+    }
+    joinVoice();
   });
   $("#micBtn")?.addEventListener("click", () => {
     if (!voice?.joined) return;

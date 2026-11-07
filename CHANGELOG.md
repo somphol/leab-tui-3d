@@ -2,6 +2,22 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.7.0] — 2026-11-06
+
+### Changed
+
+- **New launch menu.** One primary **Play now** action, then **Host a game** and **Join a game** as plain-language secondary choices. Your name moved into a compact row, so the first screen is a decision, not a form.
+- **Host a game** shows the room code as a large card with **Copy invite + PIN** and **Share invite + PIN**. The raw invite field is gone, and **Join requests** only appears when someone is actually waiting.
+- **Join a game** has a single **Paste invite** button that fills both the room code and the PIN from the host's message.
+- **Join audio** is now an obvious gold pill in the top bar. It joins the microphone call in one tap, then becomes the mic mute/unmute control. The full voice panel is still in Table Chat.
+- **EN / TH switch** is available inside the launch dialog and in Display, in addition to the top bar. The choice is saved and restored on reload.
+
+### Fixed
+
+- **Table Chat and status colours on bright themes.** The chat panel kept a dark background in every theme while its text used light-theme colours, which made it look washed out on Parchment and Daybreak. The panel now follows the theme, and success/danger text uses readable per-theme tokens.
+- **Mobile top bar** no longer overflows at 390 px; the room chip compacts to the six digits on narrow screens.
+- **Host status line** cleared after the room opens instead of leaving "Opening the room…" behind.
+
 ## [1.6.6] — 2026-11-06
 
 ### Changed

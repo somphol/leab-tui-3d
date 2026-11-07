@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.6.6",
-  "version": "1.6.6",
+  "projectVersion": "1.7.0",
+  "version": "1.7.0",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-06T17:53:07-08:00",
-    "durationSeconds": 28054,
-    "durationHuman": "7h 47m 34s",
+    "packagedAt": "2026-11-06T18:36:28-08:00",
+    "durationSeconds": 30654,
+    "durationHuman": "8h 30m 54s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-07T01:53:13Z"
+    "publishedAt": "2026-11-07T02:36:36Z"
   },
   "tokens": {
-    "input": 2597848,
-    "output": 373808,
-    "reasoning": 242019,
-    "cacheRead": 489159296,
+    "input": 2770003,
+    "output": 407019,
+    "reasoning": 279800,
+    "cacheRead": 504388608,
     "cacheWrite": 1087,
-    "total": 3213675,
-    "totalWithCache": 492374058,
+    "total": 3456822,
+    "totalWithCache": 507846517,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T17:53:07-08:00, covering 1.4.0–1.6.6. The final state-record commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T18:36:28-08:00, covering 1.4.0–1.7.0. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -173,18 +173,23 @@
       "version": "1.6.6",
       "date": "2026-11-06",
       "summary": "Simplified Host a table: removed redundant Copy invite link and code-help label."
+    },
+    {
+      "version": "1.7.0",
+      "date": "2026-11-06",
+      "summary": "Friendlier launch menu, host/join panels, obvious Join audio, in-dialog EN/TH switch, theme-aware chat colours."
     }
   ],
-  "releaseNotes": "1.6.6 removes the redundant Copy invite link button and code-help label from Host a table. Copy invite + PIN and Share invite + PIN remain.",
+  "releaseNotes": "1.7.0 redesigns the launch flow around one Play now action, adds a one-tap Join audio pill, puts EN/TH inside the dialogs, and fixes washed-out chat colours on bright themes.",
   "updates": [
     {
-      "version": "1.4.0–1.6.6",
+      "version": "1.4.0–1.7.0",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-06T17:53:07-08:00",
-      "durationSeconds": 28054,
-      "durationHuman": "7h 47m 34s",
-      "tokensAdded": 3213675,
-      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, PIN, abuse caps, sharing, version/reload, diagnostics, join restore, numeric codes, iPad layout, panel rail, tile tooltip, persistent prompt and simplified host panel."
+      "completedAt": "2026-11-06T18:36:28-08:00",
+      "durationSeconds": 30654,
+      "durationHuman": "8h 30m 54s",
+      "tokensAdded": 3456822,
+      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, PIN, abuse caps, sharing, version/reload, diagnostics, join restore, numeric codes, iPad layout, panel rail, tile tooltip, persistent prompt, simpler host panel, friendlier launch flow, one-tap Join audio, in-dialog EN/TH and theme-aware chat colours."
     }
   ],
   "multiplayer": {
