@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.6] — 2026-11-07
+
+### Added
+
+- **Drag a tile onto the table to play it.** Drop a hand tile in the centre play zone to lead a single, or to send the current selection when tiles were pre-selected. Following sends the called count face-down. A **Release to play** hint appears over the zone; invalid drops or a drop outside your turn snap back with a toast. The dock buttons still work.
+
 ## [1.8.5] — 2026-11-07
 
 ### Added

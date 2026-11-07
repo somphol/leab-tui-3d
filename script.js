@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.8.5";
-import { VoiceChat } from "./voice-chat.js?v=1.8.5";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.5";
+} from "./peer-manager.js?v=1.8.6";
+import { VoiceChat } from "./voice-chat.js?v=1.8.6";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.6";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.8.5",
+  version: "1.8.6",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T09:23:58-08:00",
-    durationHuman: "23h 18m 24s",
-    tokensTotal: "6665361",
-    tokensInput: "5609397",
-    tokensOutput: "567658",
-    tokensReasoning: "488306",
-    tokensCacheRead: "658694144",
+    packagedAt: "2026-11-07T09:32:56-08:00",
+    durationHuman: "23h 27m 23s",
+    tokensTotal: "6686543",
+    tokensInput: "5620165",
+    tokensOutput: "572712",
+    tokensReasoning: "493666",
+    tokensCacheRead: "662606592",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -206,6 +206,7 @@ const SCENE_THEMES = Object.freeze({
 
 const TABLE_Y = 0.30;
 const HAND_RADIUS = 4.12;
+const HAND_PLAY_RADIUS = 2.8;
 const CENTER_RADIUS = 2.05;
 const TILE_THICKNESS = 0.15;
 const TILE_RADIUS = 0.455;
@@ -357,6 +358,7 @@ const I18N = {
     "rankRef.highest": "Highest",
     "rankRef.lowest": "Lowest",
     "camera.hint": "Drag to orbit · scroll to zoom · drag one of your tiles to arrange",
+    "play.release": "Release to play",
     "view.top": "Top view",
     "view.3d": "3D view",
     "view.topShort": "Top",
@@ -876,6 +878,7 @@ const I18N = {
     "rankRef.highest": "สูงสุด",
     "rankRef.lowest": "ต่ำสุด",
     "camera.hint": "ลากเพื่อหมุน · เลื่อนเพื่อซูม · ลากไพ่ในมือเพื่อจัดวาง",
+    "play.release": "ปล่อยเพื่อลงไพ่",
     "view.top": "มุมมองด้านบน",
     "view.3d": "มุมมอง 3D",
     "view.topShort": "บน",
@@ -7088,14 +7091,51 @@ async function createScene() {
     record.anim = null;
     record.root.position.set(target.x, TABLE_Y + TILE_THICKNESS / 2 + 0.26, target.z);
     record.root.rotation.y = -target.angle;
+    const hint = $("#playHint");
+    if (hint) hint.hidden = Math.hypot(target.x, target.z) >= HAND_PLAY_RADIUS;
+  }
+
+  function tryPlayFromHand(record) {
+    if (!state || !["lead", "follow"].includes(state.phase) || state.turn !== MY_SEAT) return false;
+    let ids = (state.selected || []).slice();
+    if (!ids.includes(record.id)) ids = ids.length ? ids : [record.id];
+    const hand = state.hands?.[MY_SEAT] || [];
+    const tiles = ids.map((id) => hand.find((tile) => tile.id === id)).filter(Boolean);
+    if (!tiles.length) return false;
+    if (state.phase === "lead") {
+      if (!detectCombo(tiles)) {
+        toast(t("toast.notLegal"), "wine");
+        return false;
+      }
+      state.selected = ids;
+      renderAll();
+      humanLead();
+      return true;
+    }
+    if (tiles.length !== state.lead.combo.count) {
+      toast(t("coach.selectMore", { n: state.lead.combo.count, m: tiles.length }), "wine");
+      return false;
+    }
+    state.selected = ids;
+    renderAll();
+    humanFollow(false);
+    return true;
   }
 
   function endHandDrag(commit) {
     if (!handDrag) return false;
-    const { record, point, moved } = handDrag;
+    const { record, point, moved, origin } = handDrag;
     handDrag = null;
     controls.enabled = true;
     canvas.classList.remove("is-dragging-tile");
+    const hint = $("#playHint");
+    if (hint) hint.hidden = true;
+    if (moved && point && Math.hypot(point.x, point.z) < HAND_PLAY_RADIUS) {
+      if (tryPlayFromHand(record)) return true;
+      record.anim = null;
+      record.root.position.copy(origin);
+      return true;
+    }
     if (moved && point) {
       handLayout.set(record.id, { x: point.x, z: point.z, angle: point.angle });
       record.anim = null;
@@ -7158,7 +7198,14 @@ async function createScene() {
     if (handDrag) endHandDrag(handDrag.moved);
     const record = pick(event);
     if (localHandRecord(record)) {
-      handDrag = { record, moved: false, startX: event.clientX, startY: event.clientY, point: null };
+      handDrag = {
+        record,
+        moved: false,
+        startX: event.clientX,
+        startY: event.clientY,
+        point: null,
+        origin: record.root.position.clone()
+      };
       controls.enabled = false;
     }
   }

@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.8.5",
-  "version": "1.8.5",
+  "projectVersion": "1.8.6",
+  "version": "1.8.6",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-07T09:23:58-08:00",
-    "durationSeconds": 83904,
-    "durationHuman": "23h 18m 24s",
+    "packagedAt": "2026-11-07T09:32:56-08:00",
+    "durationSeconds": 84443,
+    "durationHuman": "23h 27m 23s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-07T17:24:02Z"
+    "publishedAt": "2026-11-07T17:33:01Z"
   },
   "tokens": {
-    "input": 5609397,
-    "output": 567658,
-    "reasoning": 488306,
-    "cacheRead": 658694144,
+    "input": 5620165,
+    "output": 572712,
+    "reasoning": 493666,
+    "cacheRead": 662606592,
     "cacheWrite": 1087,
-    "total": 6665361,
-    "totalWithCache": 665360592,
+    "total": 6686543,
+    "totalWithCache": 669294222,
     "cost": 0.0,
-    "note": "Session total at 2026-11-07T09:23:58-08:00, covering 1.4.0–1.8.5."
+    "note": "Session total at 2026-11-07T09:32:56-08:00, covering 1.4.0–1.8.6."
   },
   "cost": {
     "usd": 0.0,
@@ -218,9 +218,14 @@
       "version": "1.8.5",
       "date": "2026-11-07",
       "summary": "Trick history browser, host auto-next toggle, boot version guard."
+    },
+    {
+      "version": "1.8.6",
+      "date": "2026-11-07",
+      "summary": "Drag a tile onto the table to play it."
     }
   ],
-  "releaseNotes": "1.8.5 adds a round/trick history browser with played tiles, a host 30s auto-next toggle and a boot version guard for cached pages.",
+  "releaseNotes": "1.8.6 adds drag-to-play: drop a hand tile in the centre to lead a single or play the current selection; following sends face-down.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
