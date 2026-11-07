@@ -604,6 +604,7 @@ a:hover { text-decoration: underline; }
   pointer-events: none;
 }
 .result-banner[hidden] { display: none; }
+.view-switch, .result-chip, #lastTrickBtn { pointer-events: auto; }
 .view-switch { padding: 3px; gap: 2px; }
 .view-switch button {
   min-width: 40px;
@@ -1215,6 +1216,14 @@ a:hover { text-decoration: underline; }
 .rules-body th, .rules-body td { padding: 6px 8px; border-bottom: 1px solid var(--line-soft); text-align: left; }
 .rules-body th { color: var(--gold); font-weight: 500; font-size: calc(10.5px * var(--fs-scale)); letter-spacing: 0.08em; text-transform: uppercase; }
 
+.party-canvas {
+  display: block;
+  width: 100%;
+  height: 150px;
+  margin: 4px 0 10px;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at 50% 85%, rgba(216, 178, 107, 0.16), transparent 65%);
+}
 .summary-body .summary-hero { display: flex; align-items: baseline; gap: 10px; margin: 4px 0 14px; }
 .summary-body .summary-hero strong { font-family: var(--serif); font-size: calc(46px * var(--fs-scale)); line-height: 1; color: var(--gold-bright); }
 .summary-body .summary-hero span { color: var(--ink-faint); font-size: calc(12px * var(--fs-scale)); }

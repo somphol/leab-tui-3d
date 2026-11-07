@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.8.1",
-  "version": "1.8.1",
+  "projectVersion": "1.8.2",
+  "version": "1.8.2",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-07T08:47:24-08:00",
-    "durationSeconds": 81710,
-    "durationHuman": "22h 41m 50s",
+    "packagedAt": "2026-11-07T09:01:18-08:00",
+    "durationSeconds": 82544,
+    "durationHuman": "22h 55m 44s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-07T16:47:29Z"
+    "publishedAt": "2026-11-07T17:01:25Z"
   },
   "tokens": {
-    "input": 5542711,
-    "output": 539554,
-    "reasoning": 461140,
-    "cacheRead": 631750656,
+    "input": 5569920,
+    "output": 548808,
+    "reasoning": 472614,
+    "cacheRead": 644896256,
     "cacheWrite": 1087,
-    "total": 6543405,
-    "totalWithCache": 638295148,
+    "total": 6591342,
+    "totalWithCache": 651488685,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-07T08:47:24-08:00, covering 1.4.0–1.8.1. The final state-record commit adds a small amount."
+    "note": "Session total at 2026-11-07T09:01:18-08:00, covering 1.4.0–1.8.2."
   },
   "cost": {
     "usd": 0.0,
@@ -198,9 +198,14 @@
       "version": "1.8.1",
       "date": "2026-11-07",
       "summary": "Manual showdown choices, result banner with host duration, last-trick panel, segmented view switch, detailed pile cards."
+    },
+    {
+      "version": "1.8.2",
+      "date": "2026-11-07",
+      "summary": "Dancing 3D summary, host-gated next round with 5s auto-start, showdown button and HUD pointer fixes."
     }
   ],
-  "releaseNotes": "1.8.1 makes every showdown reveal a choice, adds a host-timed result callout and a last-trick panel, a Top/3D switch and richer pile cards.",
+  "releaseNotes": "1.8.2 adds the 3D congratulations summary, host-only next-round control with a 5s auto-start, and fixes the missing showdown buttons and the unclickable Top/3D and Result controls.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

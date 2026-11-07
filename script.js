@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.8.1";
-import { VoiceChat } from "./voice-chat.js?v=1.8.1";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.1";
+} from "./peer-manager.js?v=1.8.2";
+import { VoiceChat } from "./voice-chat.js?v=1.8.2";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.2";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.8.1",
+  version: "1.8.2",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T08:47:24-08:00",
-    durationHuman: "22h 41m 50s",
-    tokensTotal: "6543405",
-    tokensInput: "5542711",
-    tokensOutput: "539554",
-    tokensReasoning: "461140",
-    tokensCacheRead: "631750656",
+    packagedAt: "2026-11-07T09:01:18-08:00",
+    durationHuman: "22h 55m 44s",
+    tokensTotal: "6591342",
+    tokensInput: "5569920",
+    tokensOutput: "548808",
+    tokensReasoning: "472614",
+    tokensCacheRead: "644896256",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -504,6 +504,9 @@ const I18N = {
     "toast.lang": "Language switched to English.",
     "summary.round": "Round {n} complete",
     "summary.match": "Match complete",
+    "summary.congrats": "Congratulations!",
+    "summary.waitingHost": "Waiting for the host to start the next round…",
+    "summary.nextIn": "Next round in {n}s",
     "summary.you": "You",
     "summary.points": "points",
     "summary.piles": "piles",
@@ -1008,6 +1011,12 @@ const I18N = {
     "toast.lang": "เปลี่ยนภาษาเป็นไทยแล้ว",
     "summary.round": "จบรอบที่ {n}",
     "summary.match": "จบแมตช์",
+    "summary.congrats": "ยินดีด้วย!",
+    "summary.waitingHost": "รอเจ้าบ้านเริ่มรอบถัดไป…",
+    "summary.nextIn": "รอบถัดไปใน {n} วิ",
+    "summary.congrats": "ยินดีด้วย!",
+    "summary.waitingHost": "รอเจ้าบ้านเริ่มรอบถัดไป…",
+    "summary.nextIn": "รอบถัดไปใน {n} วิ",
     "summary.you": "คุณ",
     "summary.points": "แต้ม",
     "summary.piles": "กอง",
@@ -2753,13 +2762,106 @@ function openModal(id) {
 function closeModal(id) {
   const modal = $(`#${id}`);
   if (modal) modal.hidden = true;
+  if (id === "summaryModal") stopParty();
+}
+
+let threeLib = null;
+let party = null;
+let summaryTimer = null;
+
+function stopParty() {
+  if (!party) return;
+  cancelAnimationFrame(party.raf);
+  try { party.renderer.dispose(); } catch { /* ignore */ }
+  party = null;
+}
+
+function startParty() {
+  const canvas = $("#partyCanvas");
+  if (!canvas || !threeLib) return;
+  stopParty();
+  const THREE = threeLib;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const width = canvas.clientWidth || 560;
+  const height = canvas.clientHeight || 150;
+  renderer.setSize(width, height, false);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 20);
+  camera.position.set(0, 1.5, 4.1);
+  camera.lookAt(0, 0.75, 0);
+  scene.add(new THREE.HemisphereLight(0xfff2d8, 0x40202a, 2.1));
+  const key = new THREE.DirectionalLight(0xffe3b0, 2.2);
+  key.position.set(2.4, 4, 3);
+  scene.add(key);
+
+  const make = (color, x) => {
+    const group = new THREE.Group();
+    group.position.x = x;
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.05 });
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 18), mat);
+    body.position.y = 0.35;
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.23, 24, 18), mat);
+    head.position.y = 0.82;
+    group.add(body, head);
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x1b1414 });
+    [-0.08, 0.08].forEach((dx) => {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 8), eyeMat);
+      eye.position.set(dx, 0.86, 0.2);
+      group.add(eye);
+    });
+    return { group, head };
+  };
+
+  const rabbit = make(0xf7f2ea, -1.15);
+  [-0.09, 0.09].forEach((dx) => {
+    const ear = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 0.42, 12), new THREE.MeshStandardMaterial({ color: 0xf7f2ea, roughness: 0.6 }));
+    ear.position.set(dx, 1.2, 0);
+    rabbit.group.add(ear);
+  });
+  const hippo = make(0x9b86c9, 0);
+  const snout = new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 14), new THREE.MeshStandardMaterial({ color: 0xb6a3dc, roughness: 0.6 }));
+  snout.position.set(0, 0.74, 0.19);
+  hippo.group.add(snout);
+
+  const parrot = make(0x58b88a, 1.15);
+  const beak = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.16, 10), new THREE.MeshStandardMaterial({ color: 0xe8a13a, roughness: 0.5 }));
+  beak.rotation.x = Math.PI / 2;
+  beak.position.set(0, 0.78, 0.24);
+  parrot.group.add(beak);
+  [-1, 1].forEach((side) => {
+    const wing = new THREE.Mesh(new THREE.SphereGeometry(0.16, 14, 10), new THREE.MeshStandardMaterial({ color: 0x3f8f72, roughness: 0.6 }));
+    wing.scale.set(0.45, 0.9, 0.3);
+    wing.position.set(side * 0.27, 0.42, 0);
+    parrot.group.add(wing);
+  });
+  const chars = [rabbit, hippo, parrot];
+  chars.forEach((char) => scene.add(char.group));
+  chars.forEach((char) => { char.group.rotation.y = 0.35; });
+
+  const start = performance.now();
+  const frame = (now) => {
+    if (!party) return;
+    const t = (now - start) / 1000;
+    const active = Math.floor(t / 1.4) % chars.length;
+    chars.forEach((char, index) => {
+      const isActive = index === active;
+      const bounce = isActive ? Math.abs(Math.sin(t * 7)) * 0.22 : Math.sin(t * 2.2 + index) * 0.05;
+      char.group.position.y = bounce;
+      char.group.rotation.y = 0.35 + Math.sin(t * (isActive ? 4 : 1.6) + index) * 0.35;
+      char.group.scale.setScalar(isActive ? 1.12 : 1);
+    });
+    renderer.render(scene, camera);
+    party.raf = requestAnimationFrame(frame);
+  };
+  party = { renderer, raf: requestAnimationFrame(frame), scene };
 }
 
 function showRoundSummary(matchEnded) {
   const modal = $("#summaryModal");
   if (!modal || !state) return;
   const isMatch = Boolean(matchEnded || state.phase === "matchEnd");
-  $("#summaryTitle").textContent = isMatch ? t("summary.match") : t("summary.round", { n: state.round });
+  $("#summaryTitle").textContent = isMatch ? t("summary.congrats") : t("summary.round", { n: state.round });
   const scoreRows = SEATS.map((seat) => `
     <tr>
       <td>${escapeHTML(seatName(seat.id))}${seat.id === MY_SEAT ? " ★" : ""}${isBotSeat(seat.id) ? ` <span class="mini-tag">${escapeHTML(t("net.botBadge"))}</span>` : ""}</td>
@@ -2779,13 +2881,38 @@ function showRoundSummary(matchEnded) {
     </table>
     ${chuan}
     ${winnerLine}
+    ${isClient() ? `<div class="summary-note">${escapeHTML(t("summary.waitingHost"))}</div>` : ""}
     <div class="summary-note">${escapeHTML(t("summary.note"))}</div>
     <div class="summary-note">${escapeHTML(t("summary.streak", { n: stats.currentStreak }))} · ${escapeHTML(t("summary.targetReached", { target: state.target }))}</div>`;
-  $("#summaryPrimary").textContent = isClient() ? t("net.resume") : isMatch ? t("summary.newMatch") : t("summary.next");
-  $("#summaryPrimary").dataset.action = isClient() ? "close" : isMatch ? "new" : "next";
-  $("#summarySecondary").textContent = isClient() ? t("net.solo") : isMatch ? t("actions.export") : t("summary.newMatch");
-  $("#summarySecondary").dataset.action = isClient() ? "solo" : isMatch ? "export" : "new";
+  const primary = $("#summaryPrimary");
+  const secondary = $("#summarySecondary");
+  primary.textContent = isClient() ? t("net.resume") : isMatch ? t("summary.newMatch") : t("summary.next");
+  primary.dataset.action = isClient() ? "close" : isMatch ? "new" : "next";
+  secondary.hidden = isClient();
+  if (!isClient()) {
+    secondary.textContent = isMatch ? t("actions.export") : t("summary.newMatch");
+    secondary.dataset.action = isMatch ? "export" : "new";
+  }
   modal.hidden = false;
+  requestAnimationFrame(startParty);
+  audio?.play("celebrate", 0);
+  clearInterval(summaryTimer);
+  if (!isClient() && !isMatch) {
+    let left = 5;
+    const tick = () => {
+      if (!state || state.phase !== "roundEnd") { clearInterval(summaryTimer); return; }
+      primary.textContent = t("summary.nextIn", { n: left });
+      if (left <= 0) {
+        clearInterval(summaryTimer);
+        closeModal("summaryModal");
+        startNextRound();
+        return;
+      }
+      left -= 1;
+    };
+    tick();
+    summaryTimer = setInterval(tick, 1000);
+  }
 }
 
 function buildUndoExplanation() {
@@ -2978,7 +3105,7 @@ function renderSelection() {
     return;
   }
 
-  const humanTurn = state.turn === MY_SEAT && ["lead", "follow"].includes(state.phase);
+  const humanTurn = state.turn === MY_SEAT && ["lead", "follow", "showdown", "bid"].includes(state.phase);
   hintBtn.disabled = !humanTurn;
   clearBtn.disabled = !state.selected.length;
 
@@ -3711,6 +3838,7 @@ function applyRemoteState(raw) {
     ? previousSelected.filter((id) => inHand.has(id))
     : [];
   state = next;
+  if (!["roundEnd", "matchEnd"].includes(next.phase)) closeModal("summaryModal");
   resumeAvailable = false;
   if (scene) scene.setViewSeat?.(MY_SEAT);
   renderAll();
@@ -5880,6 +6008,10 @@ class StudioAudio {
         this.noise(0.45, "bandpass", 380, 0.2, pan, 0, 2600);
         this.tone(220, 0.35, 0.07, "sine", pan, 0, 540);
         break;
+      case "celebrate":
+        [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq, index) => this.tone(freq, 0.3, 0.075, "triangle", pan, index * 0.09));
+        this.noise(0.45, "highpass", 4200, 0.05, pan, 0.1);
+        break;
       case "win":
         [523.25, 659.25, 783.99, 1046.5].forEach((freq, index) => this.tone(freq, 0.32, 0.09, "triangle", pan, index * 0.075));
         this.noise(0.5, "highpass", 3400, 0.06, pan, 0.05);
@@ -6138,6 +6270,7 @@ function capturePosition(seat, index) {
 
 async function createScene() {
   const THREE = await import("three");
+  threeLib = THREE;
   const { OrbitControls } = await import("three/addons/controls/OrbitControls.js");
   const canvas = $("#scene");
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
@@ -7404,12 +7537,14 @@ function bindEvents() {
   $("#confirmNo")?.addEventListener("click", () => closeModal("confirmModal"));
 
   $("#summaryPrimary")?.addEventListener("click", (event) => {
+    clearInterval(summaryTimer);
     const action = event.currentTarget.dataset.action;
     if (action === "close") { closeModal("summaryModal"); return; }
     if (action === "new") { closeModal("summaryModal"); beginMatch(); }
     else { closeModal("summaryModal"); startNextRound(); }
   });
   $("#summarySecondary")?.addEventListener("click", (event) => {
+    clearInterval(summaryTimer);
     const action = event.currentTarget.dataset.action;
     if (action === "solo") { closeModal("summaryModal"); backToSolo(); }
     else if (action === "export") exportGame();

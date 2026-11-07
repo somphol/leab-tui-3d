@@ -2,6 +2,18 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.2] — 2026-11-07
+
+### Fixed
+
+- **Showdown buttons were missing for the human.** The dock treated a showdown turn as "not your turn", so only Hint/Clear appeared. It now shows **Show first** / **Show & win** and **Keep hidden**.
+- **Top/3D and the Result selector did not receive clicks.** The HUD container ignores pointer events; the new controls are now explicitly clickable.
+
+### Added
+
+- **Congratulations summary.** The round/match summary now shows three dancing 3D characters (rabbit, hippo, parrot) on a small Three.js stage, with a short celebration jingle.
+- **Host-controlled summary.** Guests only get **Back to table** (no New game/Play solo). The host sees **Next round** with a 5-second countdown; if the host does nothing the next round starts automatically. Match end still waits for the host.
+
 ## [1.8.1] — 2026-11-07
 
 ### Changed

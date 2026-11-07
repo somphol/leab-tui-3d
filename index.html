@@ -24,7 +24,7 @@
     }
   </script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=1.8.1" />
+  <link rel="stylesheet" href="style.css?v=1.8.2" />
   <script type="importmap">
     {
       "imports": {
@@ -45,7 +45,7 @@
         <span class="brand-copy">
           <span class="brand-line">
             <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
-            <span id="brandVersion" class="brand-version">(v1.8.1)</span>
+            <span id="brandVersion" class="brand-version">(v1.8.2)</span>
           </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
@@ -239,7 +239,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.8.1</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.8.2</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -471,7 +471,7 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.8.1</span>
+          <span class="version-chip version-label">v1.8.2</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
@@ -547,6 +547,7 @@
         <button class="modal-close" type="button" data-close="summaryModal" aria-label="Close">×</button>
         <div id="summarySeal" class="summary-seal" aria-hidden="true">帥</div>
         <h2 id="summaryTitle">Round complete</h2>
+        <canvas id="partyCanvas" class="party-canvas" aria-hidden="true"></canvas>
         <div id="summaryBody" class="summary-body"></div>
         <div class="modal-actions">
           <button id="summaryPrimary" class="btn btn-gold" type="button">Next round</button>
@@ -645,6 +646,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.8.1"></script>
+  <script type="module" src="script.js?v=1.8.2"></script>
 </body>
 </html>
