@@ -41,6 +41,7 @@ These use the same standards (ES modules, import maps, WebGL 2, CanvasTexture, W
 - **SwiftShader** (software WebGL) is used when no GPU is available. The scene renders, but frame rate is not representative.
 - **Chrome autoplay policy** blocks an `AudioContext` created before a gesture. The code waits for the first pointer/key event; if you add an auto-playing sound, expect a console warning.
 - **GitHub Pages caching** may serve a previous `script.js` after a release. Hard-reload if the version badge and behaviour disagree.
+- **Android Chrome ICE failure.** Some Wi-Fi paths reach `ice-checking` and then time out (`host-timeout`) even though iPad and desktop join the same room. The build is STUN-only. See issue [#1](https://github.com/somphol/leab-tui-3d/issues/1) for the probe report, workarounds and TURN options.
 
 ## Testing a new browser
 

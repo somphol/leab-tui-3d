@@ -76,7 +76,7 @@ console exceptions                     none on either page
 ## Known unfinished work
 
 - Host migration or reconnection tokens.
-- A TURN relay for symmetric NAT.
+- A TURN relay for symmetric NAT. The Android Chrome failure is diagnosed and documented in issue [#1](https://github.com/somphol/leab-tui-3d/issues/1); not implemented.
 - Turn timer / idle auto-play.
 - TURN relay for voice and data.
 - Push-to-talk, noise gate, per-peer volume.

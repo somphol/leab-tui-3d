@@ -134,7 +134,7 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - Voice is full-mesh and needs microphone permission plus HTTPS/localhost; no TURN relay, noise gate, push-to-talk or recording. Chat is unmoderated and not persisted.
 - Host approval and the PIN reduce abuse but do not make the room DDoS-proof, cheat-proof or authenticated. A malicious approved guest still controls their own client; a malicious host sees every hand.
 - The PIN is public policy, not a password. Eight wrong attempts lock the room for 60 seconds; there is no account-level lockout.
-- Public STUN only, no TURN. Symmetric NAT or a strict corporate firewall can block the data channel.
+- Public STUN only, no TURN. Symmetric NAT or a strict corporate firewall can block the data channel. Confirmed on Android Chrome: join reaches `ice-checking`, then fails with `host-timeout`, while iPad joins the same room. Diagnosis, workarounds and three TURN designs are documented in issue [#1](https://github.com/somphol/leab-tui-3d/issues/1); nothing is implemented and nothing TURN-related is in the runtime.
 - Redaction keeps other hands off the wire, but the host browser knows every hand and a guest can inspect their own client. Play with people you trust.
 - The title/meta screenshots use the `?demo=1` seed state; regenerating them changes the hand and may change the coach text.
 - Five themes ship, including two bright palettes (Parchment, Daybreak); there is no dedicated high-contrast mode. Text size scales the interface but not the 3D table (by design).

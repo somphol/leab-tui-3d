@@ -186,7 +186,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 - No accounts, leaderboards or server-side storage.
 - The page is not fully offline: Three.js r160 is loaded from jsDelivr. Multiplayer also needs PeerJS from jsDelivr and the `0.peerjs.com` broker. The rule engine can still be exercised if the CDN fails, but the table and rooms will not start.
 - Mobile is verified under Chrome device emulation, not on physical iOS/Android hardware.
-- Symmetric NAT or restrictive corporate firewalls can block WebRTC. The project uses public STUN only; there is no TURN relay.
+- Symmetric NAT or restrictive corporate firewalls can block WebRTC. The project uses public STUN only; there is no TURN relay. On some Wi-Fi paths Android Chrome fails at ICE checking while iPad and desktop join the same room — documented in [#1](https://github.com/somphol/leab-tui-3d/issues/1).
 - Voice requires microphone permission and a secure page (HTTPS or localhost). Browsers without `getUserMedia` can still play and chat. Voice is full-mesh, so uplink grows with the number of speakers.
 - Chat and voice are not recorded, moderated or authenticated. Play with people you trust.
 - Host approval, PIN complexity, connection/message caps and the voice allowlist reduce abuse but do not make the room DDoS-proof or cheat-proof. A malicious approved guest still controls their own client; a malicious host sees every hand.
