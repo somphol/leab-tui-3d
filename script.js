@@ -18,14 +18,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.6.4";
-import { VoiceChat } from "./voice-chat.js?v=1.6.4";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.4";
+} from "./peer-manager.js?v=1.6.5";
+import { VoiceChat } from "./voice-chat.js?v=1.6.5";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.5";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.6.4",
+  version: "1.6.5",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -36,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T17:34:36-08:00",
-    durationHuman: "7h 29m 3s",
-    tokensTotal: "3197461",
-    tokensInput: "2592759",
-    tokensOutput: "364812",
-    tokensReasoning: "239890",
-    tokensCacheRead: "470619136",
+    packagedAt: "2026-11-06T17:45:08-08:00",
+    durationHuman: "7h 39m 34s",
+    tokensTotal: "3206120",
+    tokensInput: "2595354",
+    tokensOutput: "369515",
+    tokensReasoning: "241251",
+    tokensCacheRead: "479852544",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -6307,7 +6307,7 @@ function bindEvents() {
   $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeModal(button.dataset.close)));
   $$(".modal").forEach((modal) => {
     modal.addEventListener("pointerdown", (event) => {
-      if (event.target === modal && modal.id !== "summaryModal") modal.hidden = true;
+      if (event.target === modal && modal.id !== "summaryModal" && modal.id !== "lobbyModal") modal.hidden = true;
     });
   });
   document.addEventListener("keydown", (event) => {

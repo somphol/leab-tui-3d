@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.5] — 2026-11-06
+
+### Fixed
+
+- The **Host a table / Join a table launch prompt** no longer closes when you tap or click outside it. Use the ×, Back, or Escape; accidental backdrop taps leave the prompt open.
+
 ## [1.6.4] — 2026-11-06
 
 ### Fixed
