@@ -352,11 +352,11 @@ async function main() {
       lastWinner: LeabTui.getState().lastTrick?.winner ?? null
     })`));
     if (snapshot.phase === "showdown" && snapshot.turn === guestSeat) {
-      await guest.eval("LeabTui.showdown(false); true");
+      await guest.eval("(LeabTui.showdown(true) || LeabTui.showdown(false)); true");
       acted += 1;
       await sleep(500);
     } else if (snapshot.phase === "showdown" && snapshot.turn === hostSeat) {
-      await host.eval("LeabTui.showdown(false); true");
+      await host.eval("(LeabTui.showdown(true) || LeabTui.showdown(false)); true");
       acted += 1;
       await sleep(500);
     } else if (snapshot.phase === "follow" && snapshot.turn === guestSeat) {

@@ -2,6 +2,17 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.8.1] — 2026-11-07
+
+### Changed
+
+- **Every seat chooses to reveal.** The showdown no longer auto-opens the leader. The leader is prompted first (must show), then each follower chooses **Show & win** or **Keep hidden**. No more automatic collection; the "cannot reveal" stall is fixed.
+- **Result callout.** After the last decision, a banner names the winner, the winning set and every seat's shown/hidden set.
+- **Host-controlled duration.** A **Result** selector next to Turn/Call sets 0/2/4/6 seconds; guests follow the host's value.
+- **Last trick button.** A HUD button opens the last trick: winner, winning set, every entry, and the tile count.
+- **Top / 3D switch** is a two-button segmented control, so 3D is an explicit choice.
+- **Pile cards** now show the same 76 px tile and rank typography as the Ranks ladder, with the hanzi, Thai reading, meaning, English name and rank number; hidden tiles show a back.
+
 ## [1.8.0] — 2026-11-07
 
 ### Added

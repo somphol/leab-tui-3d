@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.8.0";
-import { VoiceChat } from "./voice-chat.js?v=1.8.0";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.0";
+} from "./peer-manager.js?v=1.8.1";
+import { VoiceChat } from "./voice-chat.js?v=1.8.1";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.8.1";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.8.0",
+  version: "1.8.1",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -35,13 +35,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-07T03:19:23-08:00",
-    durationHuman: "17h 13m 50s",
-    tokensTotal: "5926832",
-    tokensInput: "4954537",
-    tokensOutput: "525761",
-    tokensReasoning: "446534",
-    tokensCacheRead: "621505152",
+    packagedAt: "2026-11-07T08:47:24-08:00",
+    durationHuman: "22h 41m 50s",
+    tokensTotal: "6543405",
+    tokensInput: "5542711",
+    tokensOutput: "539554",
+    tokensReasoning: "461140",
+    tokensCacheRead: "631750656",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -284,6 +284,7 @@ const I18N = {
     "hud.target": "Target",
     "hud.turn": "Turn",
     "hud.call": "Call",
+    "hud.result": "Result",
     "dock.select": "Select your tiles",
     "dock.leadTitle": "Choose a combination to lead",
     "dock.leadHelp": "Click carved tiles on the table. Tap Hint if you want a suggestion.",
@@ -295,6 +296,11 @@ const I18N = {
     "dock.showdownTitle": "Show or keep hidden?",
     "dock.showdownCan": "Your {combo} beats {best}. Show it to take the trick.",
     "dock.showdownWait": "Only a revealed set can win. If yours cannot beat the table, keep it hidden.",
+    "dock.showdownFirst": "Show your set first",
+    "dock.showdownFirstHelp": "You called this shape. Reveal it to set the mark for the other seats.",
+    "dock.showdownNoBeat": "You cannot beat the table",
+    "showdown.hidden": "face-down",
+    "actions.showFirst": "Show first",
     "dock.waiting": "{seat} is thinking…",
     "dock.pick": "Select {n} tile(s) for this trick.",
     "dock.selected": "{n} selected.",
@@ -352,6 +358,8 @@ const I18N = {
     "camera.hint": "Drag to orbit · scroll to zoom · drag one of your tiles to arrange",
     "view.top": "Top view",
     "view.3d": "3D view",
+    "view.topShort": "Top",
+    "view.3dShort": "3D",
     "view.switch": "Switch between top and 3D view",
     "coach.title": "Coach",
     "coach.live": "live",
@@ -360,6 +368,9 @@ const I18N = {
     "score.points": "points",
     "score.pile": "pile",
     "score.piles": "piles",
+    "lastTrick.button": "Last trick",
+    "lastTrick.title": "Last trick",
+    "lastTrick.winner": "{seat} won {n} tiles with {combo}",
     "pile.title": "{seat} · pile {n}",
     "pile.meta": "{n} tiles · {up} face-up",
     "pile.hidden": "Face-down tile",
@@ -488,6 +499,7 @@ const I18N = {
     "toast.handTidied": "Hand tidied back into an arc.",
     "toast.modeNext": "Scoring changes apply to the next match.",
     "toast.redraw": "Redraw {n}: this round scores ×{n}.",
+    "toast.trickResult": "{winner} wins with {combo} — {entries}",
     "toast.chuan": "Chuan! Seven piles plus the last Soldier.",
     "toast.lang": "Language switched to English.",
     "summary.round": "Round {n} complete",
@@ -776,6 +788,7 @@ const I18N = {
     "hud.target": "เป้า",
     "hud.turn": "ตาเดิน",
     "hud.call": "เรียก",
+    "hud.result": "ประกาศผล",
     "dock.select": "เลือกหมากของคุณ",
     "dock.leadTitle": "เลือกชุดที่จะนำ",
     "dock.leadHelp": "คลิกหมากบนโต๊ะ หรือกด “ใบ้” เพื่อขอคำแนะนำ",
@@ -787,6 +800,11 @@ const I18N = {
     "dock.showdownTitle": "จะเปิดหรือเก็บคว่ำ?",
     "dock.showdownCan": "{combo} ของคุณชนะ {best} เปิดเพื่อกินกองนี้",
     "dock.showdownWait": "เปิดแล้วชนะเท่านั้น ถ้าสู้โต๊ะไม่ได้ให้เก็บคว่ำไว้",
+    "dock.showdownFirst": "เปิดชุดของคุณก่อน",
+    "dock.showdownFirstHelp": "คุณเป็นคนเรียก เปิดชุดนี้เพื่อตั้งมาตรฐานให้คนอื่น",
+    "dock.showdownNoBeat": "คุณสู้โต๊ะไม่ได้",
+    "showdown.hidden": "คว่ำ",
+    "actions.showFirst": "เปิดก่อน",
     "dock.waiting": "{seat} กำลังคิด…",
     "dock.pick": "เลือก {n} ตัวสำหรับตานี้",
     "dock.selected": "เลือกแล้ว {n} ตัว",
@@ -844,6 +862,8 @@ const I18N = {
     "camera.hint": "ลากเพื่อหมุน · เลื่อนเพื่อซูม · ลากไพ่ในมือเพื่อจัดวาง",
     "view.top": "มุมมองด้านบน",
     "view.3d": "มุมมอง 3D",
+    "view.topShort": "บน",
+    "view.3dShort": "3D",
     "view.switch": "สลับมุมมองด้านบนและ 3D",
     "coach.title": "โค้ช",
     "coach.live": "สด",
@@ -852,6 +872,9 @@ const I18N = {
     "score.points": "แต้ม",
     "score.pile": "กอง",
     "score.piles": "กอง",
+    "lastTrick.button": "ตาล่าสุด",
+    "lastTrick.title": "ตาล่าสุด",
+    "lastTrick.winner": "{seat} กิน {n} ตัว ด้วย {combo}",
     "pile.title": "{seat} · กอง {n}",
     "pile.meta": "{n} ตัว · เปิด {up} ตัว",
     "pile.hidden": "ไพ่คว่ำ",
@@ -980,6 +1003,7 @@ const I18N = {
     "toast.handTidied": "จัดมือกลับเป็นพัดแล้ว",
     "toast.modeNext": "การคิดแต้มใหม่จะมีผลในแมตช์ถัดไป",
     "toast.redraw": "โละครั้งที่ {n}: รอบนี้คิดแต้มคูณ {n}",
+    "toast.trickResult": "{winner} กินกองด้วย {combo} — {entries}",
     "toast.chuan": "ช้วน! เจ็ดกองกับจุกตัวสุดท้าย",
     "toast.lang": "เปลี่ยนภาษาเป็นไทยแล้ว",
     "summary.round": "จบรอบที่ {n}",
@@ -1608,7 +1632,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles" });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2 });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -1722,6 +1746,7 @@ function makeState(seed) {  return {
     mode: "piles",
     multiplier: 1,
     redraws: 0,
+    resultSeconds: 2,
     bids: null,
     bidOrder: null,
     bidTurn: 0,
@@ -1821,6 +1846,7 @@ function loadPrefs() {
   if (![20, 50, 100].includes(Number(prefs.target))) prefs.target = 20;
   if (!["cw", "ccw"].includes(prefs.direction)) prefs.direction = "cw";
   if (!["piles", "bid"].includes(prefs.mode)) prefs.mode = "piles";
+  if (![0, 2, 4, 6].includes(Number(prefs.resultSeconds))) prefs.resultSeconds = 2;
 }
 
 function loadStats() {
@@ -2149,6 +2175,7 @@ function beginMatch(options = {}) {
   state.mode = prefs.mode || "piles";
   state.multiplier = 1;
   state.redraws = 0;
+  state.resultSeconds = prefs.resultSeconds;
   state.bids = null;
   state.bidOrder = null;
   state.bidTurn = 0;
@@ -2248,9 +2275,10 @@ function submitPlay(seat, tileIds, reveal) {
 }
 
 function showdownCanBeat(seat) {
-  if (!state?.best || !state?.center) return false;
+  if (!state?.center) return false;
   const entry = state.center.find((item) => item.seat === seat);
   if (!entry?.combo) return false;
+  if (!state.best) return true;
   return entry.combo.type === state.best.combo.type && beats(entry.combo, state.best.combo);
 }
 
@@ -2258,17 +2286,15 @@ function beginShowdown() {
   if (!state || !state.lead || !state.center.length) return;
   const leaderEntry = state.center.find((entry) => entry.seat === state.lead.seat);
   if (!leaderEntry) return;
-  leaderEntry.revealed = true;
-  state.best = { seat: leaderEntry.seat, combo: leaderEntry.combo };
+  state.best = null;
   state.phase = "showdown";
   state.showdownQueue = [];
   let cursor = leaderEntry.seat;
-  for (let step = 0; step < 3; step += 1) {
-    cursor = nextSeat(cursor);
+  for (let step = 0; step < TABLE_SEATS; step += 1) {
     state.showdownQueue.push(cursor);
+    cursor = nextSeat(cursor);
   }
-  state.log.push({ kind: "showdown", trick: state.trick, seat: leaderEntry.seat, combo: clone(leaderEntry.combo) });
-  audio?.play("flip", leaderEntry.seat);
+  state.log.push({ kind: "showdown", trick: state.trick, seat: leaderEntry.seat });
   advanceShowdown();
 }
 
@@ -2279,26 +2305,6 @@ function advanceShowdown() {
     return;
   }
   state.turn = state.showdownQueue[0];
-  if (!showdownCanBeat(state.turn)) {
-    const entry = state.center.find((item) => item.seat === state.turn);
-    state.log.push({
-      kind: "hidden",
-      trick: state.trick,
-      seat: state.turn,
-      combo: entry?.combo ? clone(entry.combo) : null,
-      revealed: false
-    });
-    state.showdownQueue.shift();
-    renderAll();
-    saveMatch();
-    if (scene) scene.sync(state);
-    const token = ++actionToken;
-    setTimeout(() => {
-      if (token !== actionToken || state?.phase !== "showdown") return;
-      advanceShowdown();
-    }, state.fast ? 5 : 420);
-    return;
-  }
   renderAll();
   saveMatch();
   if (scene) scene.sync(state);
@@ -2311,6 +2317,7 @@ function showdown(seat, reveal) {
   const entry = state.center.find((item) => item.seat === seat);
   if (!entry) return false;
   const shown = Boolean(reveal && showdownCanBeat(seat));
+  if (!shown && !state.best) return false;
   entry.revealed = shown;
   if (shown) state.best = { seat, combo: entry.combo };
   state.log.push({
@@ -2367,11 +2374,14 @@ function resolveTrick() {
 
   if (scene) scene.collect(state, winner, allTiles);
   audio?.play(winner === MY_SEAT ? "win" : "sweep", winner);
-  if (winner === MY_SEAT) {
-    toast(t("coach.trickWon", { combo: comboSummary(winningCombo), piles: scoredPilesFromTiles(state.captures[MY_SEAT]) }), "gold");
-  } else {
-    toast(t("coach.trickLost", { seat: seatName(winner), combo: comboSummary(winningCombo), why: t("coach.whyUnknown") }), "");
-  }
+  const comparison = state.lastTrick.entries.map((entry) => (
+    `${seatName(entry.seat)}: ${entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden")}`
+  )).join(" · ");
+  showResult(t("toast.trickResult", {
+    winner: seatName(winner),
+    combo: comboSummary(winningCombo),
+    entries: comparison
+  }));
 
   const finish = () => {
     if (!state || state.phase !== "resolving") return;
@@ -2873,6 +2883,16 @@ function renderHUD() {
     call.hidden = !showCall;
     if (showCall) call.textContent = `${t("hud.call")}: ${comboName(state.lead.combo.type)} ×${state.lead.combo.count}`;
   }
+  const resultSelect = $("#resultSelect");
+  if (resultSelect) {
+    resultSelect.value = String(state.resultSeconds ?? prefs.resultSeconds ?? 2);
+    resultSelect.disabled = isClient();
+  }
+  const lastTrick = $("#lastTrickBtn");
+  if (lastTrick) {
+    lastTrick.hidden = !state.lastTrick;
+    lastTrick.textContent = t("lastTrick.button");
+  }
 }
 
 function renderScoreboard() {
@@ -3001,20 +3021,25 @@ function renderSelection() {
   }
 
   if (state.phase === "showdown") {
+    const leaderTurn = humanTurn && !state.best;
     const canShow = humanTurn && showdownCanBeat(MY_SEAT);
     const entry = state.center.find((item) => item.seat === MY_SEAT);
     kicker.textContent = t("dock.showdown");
-    title.textContent = canShow ? t("dock.showdownTitle") : t("dock.waiting", { seat: seatName(state.turn) });
-    detail.textContent = canShow && entry?.combo && state.best
-      ? t("dock.showdownCan", { combo: comboSummary(entry.combo), best: comboSummary(state.best.combo) })
-      : t("dock.showdownWait");
+    title.textContent = humanTurn
+      ? (leaderTurn ? t("dock.showdownFirst") : canShow ? t("dock.showdownTitle") : t("dock.showdownNoBeat"))
+      : t("dock.waiting", { seat: seatName(state.turn) });
+    detail.textContent = leaderTurn
+      ? t("dock.showdownFirstHelp")
+      : canShow && entry?.combo && state.best
+        ? t("dock.showdownCan", { combo: comboSummary(entry.combo), best: comboSummary(state.best.combo) })
+        : t("dock.showdownWait");
     pips.innerHTML = "";
     leadBtn.hidden = true;
-    revealBtn.hidden = !canShow;
+    revealBtn.hidden = !humanTurn;
     revealBtn.disabled = !canShow;
-    revealBtn.textContent = t("actions.showWin");
+    revealBtn.textContent = leaderTurn ? t("actions.showFirst") : t("actions.showWin");
     facedownBtn.hidden = !humanTurn;
-    facedownBtn.disabled = !humanTurn;
+    facedownBtn.disabled = !humanTurn || leaderTurn;
     facedownBtn.textContent = t("actions.keepHidden");
     return;
   }
@@ -3118,6 +3143,36 @@ function hideTileTip() {
   if (tip) tip.hidden = true;
 }
 
+let resultTimer = null;
+function showResult(text) {
+  const seconds = Number(state?.resultSeconds ?? prefs.resultSeconds ?? 2);
+  const banner = $("#resultBanner");
+  if (!banner) return;
+  clearTimeout(resultTimer);
+  if (!seconds || !text) { banner.hidden = true; return; }
+  banner.textContent = text;
+  banner.hidden = false;
+  resultTimer = setTimeout(() => { banner.hidden = true; }, seconds * 1000);
+}
+
+function openLastTrickModal() {
+  const last = state?.lastTrick;
+  if (!last) return;
+  const meta = $("#lastTrickMeta");
+  if (meta) meta.textContent = t("lastTrick.winner", { seat: seatName(last.winner), combo: comboSummary(last.combo), n: last.captured });
+  const list = $("#lastTrickList");
+  if (list) {
+    list.innerHTML = (last.entries || []).map((entry) => `
+      <div class="last-trick-row ${entry.seat === last.winner ? "win" : ""}">
+        <b>${escapeHTML(seatName(entry.seat))}</b>
+        <span>${escapeHTML(entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden"))}</span>
+      </div>`).join("");
+  }
+  const modal = $("#lastTrickModal");
+  if (modal) modal.hidden = false;
+  audio?.play("click", 0);
+}
+
 function openPileModal(seat, pileIndex) {
   if (!state || !Number.isInteger(seat)) return;
   const pile = state.captures?.[seat] || [];
@@ -3134,9 +3189,23 @@ function openPileModal(seat, pileIndex) {
   if (body) {
     body.innerHTML = tiles.map((tile, index) => {
       const up = !hidden[start + index];
-      return up
-        ? `<span class="mini-tile ${tile.color === "r" ? "red" : "black"}">${tile.hanzi}</span>`
-        : `<span class="mini-tile back" role="img" aria-label="${escapeHTML(t("pile.hidden"))}">?</span>`;
+      if (!up) {
+        return `<div class="pile-item back">
+          <span class="mini-tile back" role="img" aria-label="${escapeHTML(t("pile.hidden"))}">?</span>
+          <b>${escapeHTML(t("showdown.hidden"))}</b>
+          <span>${escapeHTML(t("pile.hidden"))}</span>
+        </div>`;
+      }
+      const rank = RANK_BY_ID[tile.rank] || RANK_BY_POWER[tile.power];
+      const reading = tileName(tile);
+      const primary = LANG === "th" ? reading : rank.en;
+      const secondary = LANG === "th" ? `${rank.en} · ${rank.thMeaning}` : `${reading} · ${rank.thMeaning}`;
+      return `<div class="pile-item">
+        <em>${rank.power}</em>
+        <span class="mini-tile ${tile.color === "r" ? "red" : "black"}">${tile.hanzi}</span>
+        <b>${escapeHTML(primary)}</b>
+        <span>${escapeHTML(secondary)}</span>
+      </div>`;
     }).join("");
   }
   const modal = $("#pileModal");
@@ -6855,27 +6924,25 @@ async function createScene() {
   }
 
   function updateViewToggle() {
-    const button = $("#topViewBtn");
-    if (!button) return;
-    button.setAttribute("aria-pressed", String(topView));
-    const label = button.querySelector("[data-i18n]");
-    if (label) {
-      label.dataset.i18n = topView ? "view.top" : "view.3d";
-      label.textContent = t(label.dataset.i18n);
-    }
+    const top = $("#viewTopBtn");
+    const three = $("#view3dBtn");
+    if (top) top.setAttribute("aria-pressed", String(topView));
+    if (three) three.setAttribute("aria-pressed", String(!topView));
   }
 
-  function resetView() {
-    topView = true;
-    updateViewToggle();
-    tweenCamera(topPosition, topTarget);
-  }
-
-  function toggleTopView() {
-    topView = !topView;
+  function setTopView(value) {
+    topView = Boolean(value);
     updateViewToggle();
     if (topView) tweenCamera(topPosition, topTarget);
     else tweenCamera(homePosition, homeTarget);
+  }
+
+  function resetView() {
+    setTopView(true);
+  }
+
+  function toggleTopView() {
+    setTopView(!topView);
   }
 
   function toggleCinema() {
@@ -7022,6 +7089,7 @@ async function createScene() {
     },
     resetView,
     toggleTopView,
+    setTopView,
     toggleCinema,
     exportHandSlots,
     hasCustomHand,
@@ -7059,7 +7127,9 @@ function bindEvents() {
   $("#aboutBtn")?.addEventListener("click", () => { renderAbout(); openModal("aboutModal"); audio?.play("click", 0); });
   $("#aboutBtnSide")?.addEventListener("click", () => { renderAbout(); openModal("aboutModal"); audio?.play("click", 0); });
   $("#resetViewBtn")?.addEventListener("click", () => scene?.resetView());
-  $("#topViewBtn")?.addEventListener("click", () => scene?.toggleTopView());
+  $$("[data-view]").forEach((button) => button.addEventListener("click", () => {
+    scene?.setTopView?.(button.dataset.view === "top");
+  }));
   $("#cinemaBtn")?.addEventListener("click", () => scene?.toggleCinema());
   $("#displayBtn")?.addEventListener("click", () => { renderDisplay(); openModal("displayModal"); audio?.play("click", 0); });
   $("#rankReferenceBtn")?.addEventListener("click", () => setRankReference($("#rankReference")?.hidden ?? true));
@@ -7089,6 +7159,14 @@ function bindEvents() {
   $("#chuanBtn")?.addEventListener("click", () => {
     if (isClient()) sendNetAction("chuan", [], false);
     else claimChuan(MY_SEAT);
+  });
+  $("#lastTrickBtn")?.addEventListener("click", openLastTrickModal);
+  $("#resultSelect")?.addEventListener("change", (event) => {
+    const value = Number(event.target.value);
+    prefs.resultSeconds = value;
+    if (state) state.resultSeconds = value;
+    savePrefs();
+    if (isHost()) saveMatch();
   });
   $("#bidRow")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-bid]");
@@ -7556,6 +7634,7 @@ window.LeabTui = {
   inspectHidden,
   resetView: () => scene?.resetView(),
   topView: () => scene?.toggleTopView(),
+  setTopView: (value) => scene?.setTopView?.(Boolean(value)),
   setFast: (value) => { if (state) state.fast = Boolean(value); },
   net: {
     getState: () => (isNetworked() ? {

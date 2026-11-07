@@ -84,7 +84,7 @@ const playthrough = `(async () => {
       LeabTui.hint();
       LeabTui.follow(LeabTui.getState().selected, false);
     } else if (s.turn === 0 && s.phase === 'showdown') {
-      LeabTui.showdown(false);
+      if (!LeabTui.showdown(true)) LeabTui.showdown(false);
     }
   }
   const s = LeabTui.getState();

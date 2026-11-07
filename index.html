@@ -24,7 +24,7 @@
     }
   </script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=1.8.0" />
+  <link rel="stylesheet" href="style.css?v=1.8.1" />
   <script type="importmap">
     {
       "imports": {
@@ -45,7 +45,7 @@
         <span class="brand-copy">
           <span class="brand-line">
             <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
-            <span id="brandVersion" class="brand-version">(v1.8.0)</span>
+            <span id="brandVersion" class="brand-version">(v1.8.1)</span>
           </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
@@ -81,10 +81,10 @@
         <canvas id="scene" aria-label="3D Leab-Tui table" role="img"></canvas>
         <div class="stage-hint" data-i18n="camera.hint">Drag to orbit · scroll to zoom · right-drag to pan</div>
         <div class="hud-strip">
-          <button id="topViewBtn" class="hud-chip view-toggle" type="button" aria-pressed="true" data-i18n-aria="view.switch" title="Switch view">
-            <span class="view-toggle-icon" aria-hidden="true">⇄</span>
-            <span data-i18n="view.top">Top view</span>
-          </button>
+          <div class="hud-chip view-switch" role="group" aria-label="View">
+            <button id="viewTopBtn" type="button" data-view="top" aria-pressed="true" data-i18n="view.topShort">Top</button>
+            <button id="view3dBtn" type="button" data-view="3d" aria-pressed="false" data-i18n="view.3dShort">3D</button>
+          </div>
           <div class="quick-ref-wrap">
             <button id="rankReferenceBtn" class="quick-ref-btn" type="button" aria-expanded="false" aria-controls="rankReference" aria-label="Rank order">
               <span class="quick-ref-icon" aria-hidden="true">帥</span><span data-i18n="rankRef.open">Ranks</span>
@@ -105,6 +105,16 @@
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.target">Target</span><strong id="targetChip">20</strong></span>
             <span class="hud-chip hud-turn"><span class="hud-label" data-i18n="hud.turn">Turn</span><strong id="turnChip">You</strong></span>
             <span class="hud-chip call-chip" id="callChip" hidden></span>
+            <button id="lastTrickBtn" class="hud-chip view-toggle" type="button" hidden data-i18n="lastTrick.button">Last trick</button>
+            <label class="hud-chip result-chip" title="Result announcement">
+              <span data-i18n="hud.result">Result</span>
+              <select id="resultSelect" aria-label="Result announcement seconds">
+                <option value="0">0s</option>
+                <option value="2">2s</option>
+                <option value="4">4s</option>
+                <option value="6">6s</option>
+              </select>
+            </label>
           </div>
         </div>
 
@@ -115,6 +125,7 @@
           <button id="displayBtn" class="tool-btn" type="button" title="Display settings" aria-label="Display settings">Aa</button>
         </div>
 
+        <div id="resultBanner" class="result-banner" role="status" aria-live="polite" hidden></div>
         <div id="tileTip" class="tile-tip" role="tooltip" hidden></div>
         <div id="toastLayer" class="toast-layer" aria-live="polite" aria-atomic="false"></div>
 
@@ -228,7 +239,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.8.0</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.8.1</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -460,7 +471,7 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.8.0</span>
+          <span class="version-chip version-label">v1.8.1</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
@@ -581,6 +592,18 @@
       </div>
     </div>
 
+    <div id="lastTrickModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="lastTrickTitle">
+      <div class="modal-card modal-small">
+        <button class="modal-close" type="button" data-close="lastTrickModal" aria-label="Close">×</button>
+        <h2 id="lastTrickTitle" data-i18n="lastTrick.title">Last trick</h2>
+        <p id="lastTrickMeta" class="lobby-note"></p>
+        <div id="lastTrickList" class="last-trick-list"></div>
+        <div class="modal-actions">
+          <button class="btn btn-gold" type="button" data-close="lastTrickModal" data-i18n="actions.continue">Continue</button>
+        </div>
+      </div>
+    </div>
+
     <div id="pileModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="pileTitle">
       <div class="modal-card modal-small">
         <button class="modal-close" type="button" data-close="pileModal" aria-label="Close">×</button>
@@ -622,6 +645,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.8.0"></script>
+  <script type="module" src="script.js?v=1.8.1"></script>
 </body>
 </html>
