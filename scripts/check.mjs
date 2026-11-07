@@ -188,7 +188,7 @@ ok(script.includes("syncVoicePeers") && script.includes("voice-state"), "voice r
 ok(script.includes("pendingRequests") && script.includes("approvePending") && script.includes("requestGuest"), "host approval queue exists");
 ok(script.includes("pinHash") && !/pin:\s*["']/.test(script), "PIN is stored as a digest, not plaintext");
 ok(script.includes("net.security.approval") && script.includes("setRoomApproval"), "approval can be toggled");
-ok(security.includes("PIN_MIN = 15") && security.includes("COMMON") && security.includes("validatePin"), "PIN policy and deny-list exist");
+ok(security.includes("PIN_MIN = 5") && security.includes("COMMON") && security.includes("validatePin"), "PIN policy and deny-list exist");
 ok(security.includes("crypto.subtle.digest") && security.includes("SHA-256"), "PIN is hashed in memory");
 ok(voice.includes("if (!peer || !this.joined"), "voice calls are allowlisted by roster");
 ok(peer.includes("maxConnections") && peer.includes("rateLimit") && peer.includes("size > 16384"), "host has connection, rate and payload caps");

@@ -135,7 +135,7 @@ The full message set, redaction table and invariants are in [PROTOCOL.md](PROTOC
 The room has three gates, in order:
 
 1. **Room code** — six unambiguous characters. It identifies the host PeerJS id, so it is not a secret from anyone who has it.
-2. **PIN** — optional, 15–64 characters, upper/lower/digit/symbol, deny-list and sequence checks. The host stores only a SHA-256 digest in memory; the plain PIN is shown once in the host panel for copying and is never in the roster, state, export, URL or `localStorage`.
+2. **PIN** — exactly 5 digits, common/repeat/sequence checks. The host stores only a SHA-256 digest in memory; the plain PIN is shown once in the host panel for copying and is never in the roster, state, export, URL or `localStorage`.
 3. **Host approval** — every request enters a pending queue by default. Only `approvePending` calls `acceptGuest`, which assigns a seat and sends `welcome`.
 
 `requestGuest` is async because it hashes the candidate PIN. A wrong PIN increments a per-room counter; eight failures set a 60-second `lockUntil`. Pending requests expire in 120 seconds. Denied, wrong-PIN, busy, expired and in-progress connections receive `rejected` and are closed.
@@ -215,7 +215,7 @@ The saved payload is:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "savedAt": "2026-11-06T...",
   "network": false,
   "game": { "phase": "...", "hands": [["r-general-0"], ...], ... }

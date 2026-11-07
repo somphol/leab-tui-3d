@@ -15,7 +15,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://0.peerjs.com wss://0.peerjs.com; font-src 'self' data:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=1.6.2" />
+  <link rel="stylesheet" href="style.css?v=1.6.3" />
   <script type="importmap">
     {
       "imports": {
@@ -196,7 +196,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.6.2</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.6.3</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -254,12 +254,12 @@
             <button id="lobbyJoin" class="lobby-mode" type="button">
               <span class="lobby-mode-icon" aria-hidden="true">◇</span>
               <b data-i18n="net.join">Join a table</b>
-              <span data-i18n="net.joinDesc">Enter a six-character room code.</span>
+              <span data-i18n="net.joinDesc">Enter a six-digit room code.</span>
             </button>
           </div>
           <p class="lobby-note" data-i18n="net.menuNote">No game server and no account. PeerJS brokers only the first handshake.</p>
           <div class="version-row">
-            <span class="version-chip version-label">v1.6.2</span>
+            <span class="version-chip version-label">v1.6.3</span>
             <button id="lobbyReload" class="mini-btn" type="button" data-i18n="version.reload">↻ Reload</button>
           </div>
         </section>
@@ -317,12 +317,12 @@
         <section id="lobbyJoinPanel" class="lobby-view" hidden>
           <p class="lobby-lead" data-i18n="net.joinHint">Ask the host for the six-character code.</p>
           <label class="field-label" for="lobbyCodeInput" data-i18n="net.codeLabel">Room code</label>
-          <input id="lobbyCodeInput" class="lobby-input code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="LEAB-ABC-234" data-i18n-placeholder="net.codePlaceholder" />
+          <input id="lobbyCodeInput" class="lobby-input code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="LEAB-482-173" data-i18n-placeholder="net.codePlaceholder" />
           <label class="field-label" for="lobbyNameInput" data-i18n="net.nameLabel">Your name</label>
           <input id="lobbyNameInput" class="lobby-input" type="text" maxlength="18" autocomplete="nickname" placeholder="Guest" data-i18n-placeholder="net.namePlaceholder" />
           <label class="field-label" for="lobbyPinInput" data-i18n="net.pinLabel">Room PIN</label>
           <div class="pin-line guest-pin-line">
-            <input id="lobbyPinInput" class="lobby-input pin-input" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="64" placeholder="Only if the host set one" data-i18n-placeholder="net.pinGuestPlaceholder" />
+            <input id="lobbyPinInput" class="lobby-input pin-input" type="text" inputmode="numeric" autocomplete="one-time-code" spellcheck="false" maxlength="5" placeholder="5 digits" data-i18n-placeholder="net.pinGuestPlaceholder" />
             <button id="lobbyPinPaste" class="btn btn-ghost btn-small" type="button" data-i18n="net.pinPaste">Paste</button>
           </div>
           <p class="lobby-note" data-i18n="net.pinFromMessage">Paste the passcode from the host's message.</p>
@@ -486,6 +486,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.6.2"></script>
+  <script type="module" src="script.js?v=1.6.3"></script>
 </body>
 </html>

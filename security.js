@@ -7,21 +7,16 @@
    remain the real lobby gate.
    ========================================================================== */
 
-export const PIN_MIN = 15;
-export const PIN_MAX = 64;
+export const PIN_MIN = 5;
+export const PIN_MAX = 5;
 
 /* A small starter deny-list. It is intentionally visible in the source: its
    job is to stop the obvious, not to be a full password dictionary. */
 const COMMON = new Set([
-  "12345678", "123456789", "1234567890", "87654321", "11111111", "00000000",
-  "password", "password1", "password123", "passw0rd", "p@ssw0rd", "qwerty",
-  "qwerty123", "qwertyuiop", "letmein", "welcome", "welcome1", "admin",
-  "admin123", "iloveyou", "monkey", "dragon", "football", "baseball",
-  "sunshine", "princess", "master", "shadow", "superman", "batman",
-  "trustno1", "abc12345", "abcd1234", "a1b2c3d4", "changeme", "secret",
-  "leabtui", "leabtui3d", "leab", "tui", "xiangqi", "mahjong", "poker",
-  "thailand", "bangkok", "somphol", "opencode", "deepseek", "peerjs",
-  "webRTC", "webrtc", "multiplayer", "roomcode", "hosttable", "guest"
+  "00000", "11111", "22222", "33333", "44444", "55555", "66666", "77777",
+  "88888", "99999", "12345", "54321", "12121", "11223", "12321", "11122",
+  "22211", "12312", "12332", "12344", "43210", "55512", "77777", "10000",
+  "20000", "30000", "40000", "50000", "60000", "70000", "80000", "90000"
 ].map((value) => value.toLowerCase()));
 
 const SEQUENCES = [
@@ -31,40 +26,26 @@ const SEQUENCES = [
 ];
 
 export function normalisePin(value) {
-  return String(value ?? "").trim().slice(0, PIN_MAX);
+  /* A 5-digit PIN is numeric by design; strip separators/spaces on paste. */
+  return String(value ?? "").replace(/\D/g, "").slice(0, PIN_MAX);
 }
 
 export function validatePin(value, context = {}) {
   const pin = normalisePin(value);
-  const lower = pin.toLowerCase();
   if (pin.length < PIN_MIN) return { ok: false, reason: "short" };
   if (pin.length > PIN_MAX) return { ok: false, reason: "long" };
-  if (/\s/.test(pin)) return { ok: false, reason: "space" };
-  if (!/[a-z]/.test(pin)) return { ok: false, reason: "lower" };
-  if (!/[A-Z]/.test(pin)) return { ok: false, reason: "upper" };
-  if (!/[0-9]/.test(pin)) return { ok: false, reason: "digit" };
-  if (!/[^A-Za-z0-9]/.test(pin)) return { ok: false, reason: "symbol" };
-  if (COMMON.has(lower) || COMMON.has(lower.replace(/[^a-z0-9]/g, ""))) {
-    return { ok: false, reason: "common" };
-  }
-  if (/^(.)\1+$/.test(pin)) return { ok: false, reason: "repeat" };
-  if (SEQUENCES.some((sequence) => lower.includes(sequence))) {
+  if (!/^[0-9]{5}$/.test(pin)) return { ok: false, reason: "digit" };
+  if (COMMON.has(pin)) return { ok: false, reason: "common" };
+  if (/^(.)\1{4}$/.test(pin)) return { ok: false, reason: "repeat" };
+  if (SEQUENCES.some((sequence) => pin.includes(sequence))) {
     return { ok: false, reason: "sequence" };
   }
-  const roomCode = String(context.roomCode || "").replace(/[^a-z0-9]/gi, "").toLowerCase();
-  if (roomCode.length >= 4 && lower.replace(/[^a-z0-9]/g, "").includes(roomCode)) {
-    return { ok: false, reason: "room" };
-  }
-  const name = String(context.name || "").trim().toLowerCase();
-  if (name.length >= 3 && lower.includes(name)) return { ok: false, reason: "name" };
+  const name = String(context.name || "").trim();
+  if (name.length >= 3 && name === pin) return { ok: false, reason: "name" };
   return { ok: true, reason: "", score: pinStrength(pin) };
 }
 
-const PIN_LOWER = "abcdefghjkmnpqrstuvwxyz";
-const PIN_UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-const PIN_DIGITS = "23456789";
-const PIN_SYMBOLS = "!@$%*+";
-const PIN_ALL = PIN_LOWER + PIN_UPPER + PIN_DIGITS + PIN_SYMBOLS;
+const PIN_ALL = "0123456789";
 
 function randomInt(max) {
   if (globalThis.crypto?.getRandomValues) {
@@ -76,37 +57,25 @@ function randomInt(max) {
 }
 
 /**
- * 20 unambiguous characters in four groups, guaranteed to contain lower,
- * upper, digit and symbol. Example: K7mQ9-xTa2p-Rw4!n-Z8vB3.
+ * Five digits from a CSPRNG, rejecting common/repeated/sequential values.
+ * Example: 48213.
  */
 export function generatePin() {
   for (let attempt = 0; attempt < 40; attempt += 1) {
-    const chars = Array.from({ length: 20 }, () => PIN_ALL[randomInt(PIN_ALL.length)]);
-    chars[0] = PIN_UPPER[randomInt(PIN_UPPER.length)];
-    chars[1] = PIN_LOWER[randomInt(PIN_LOWER.length)];
-    chars[2] = PIN_DIGITS[randomInt(PIN_DIGITS.length)];
-    chars[3] = PIN_SYMBOLS[randomInt(PIN_SYMBOLS.length)];
-    for (let index = chars.length - 1; index > 0; index -= 1) {
-      const swap = randomInt(index + 1);
-      [chars[index], chars[swap]] = [chars[swap], chars[index]];
-    }
-    const groups = [];
-    for (let index = 0; index < chars.length; index += 5) groups.push(chars.slice(index, index + 5).join(""));
-    const pin = groups.join("-");
+    let pin = "";
+    for (let index = 0; index < 5; index += 1) pin += PIN_ALL[randomInt(PIN_ALL.length)];
     if (validatePin(pin).ok) return pin;
   }
-  return "K7mQ9-xTa2p-Rw4!n-Z8vB3";
+  return "48213";
 }
 
 export function pinStrength(value) {
   const pin = normalisePin(value);
   let score = 0;
-  if (pin.length >= PIN_MIN) score += 1;
-  if (pin.length >= 20) score += 1;
-  if (/[a-z]/.test(pin) && /[A-Z]/.test(pin)) score += 1;
-  if (/[0-9]/.test(pin)) score += 1;
-  if (/[^A-Za-z0-9]/.test(pin)) score += 1;
-  return Math.min(5, score);
+  if (pin.length === PIN_MIN) score += 2;
+  if (/^[0-9]+$/.test(pin)) score += 1;
+  if (!COMMON.has(pin)) score += 1;
+  return Math.min(4, score);
 }
 
 /**
@@ -130,7 +99,7 @@ export async function hashPin(value) {
 export const PIN_POLICY = Object.freeze({
   min: PIN_MIN,
   max: PIN_MAX,
-  classes: ["lowercase", "uppercase", "digit", "symbol"],
+  classes: ["digit"], length: 5,
   denyListSize: COMMON.size,
   hash: "SHA-256, memory only"
 });

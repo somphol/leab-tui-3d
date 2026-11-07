@@ -22,7 +22,7 @@ Sent once after a valid `hello`.
 {
   "__leab": 1,
   "type": "welcome",
-  "roomCode": "ABC234",
+  "roomCode": "482173",
   "protocol": 1,
   "seat": 1,
   "hostName": "Ana",
@@ -39,7 +39,7 @@ Roster update while the room is open.
 ```json
 {
   "type": "lobby",
-  "roomCode": "ABC234",
+  "roomCode": "482173",
   "hostName": "Ana",
   "players": [ ... ],
   "canStart": true,
@@ -55,7 +55,7 @@ Sent immediately before the first `state` of a match.
 ```json
 {
   "type": "start",
-  "roomCode": "ABC234",
+  "roomCode": "482173",
   "seat": 1,
   "players": [ ... ],
   "hostName": "Ana"
@@ -69,7 +69,7 @@ The authoritative game snapshot, redacted for the recipient. `seq` increases mon
 ```json
 {
   "type": "state",
-  "roomCode": "ABC234",
+  "roomCode": "482173",
   "seq": 17,
   "seat": 1,
   "players": [ ... ],
@@ -264,7 +264,7 @@ The broker only signals the media call. Game state remains on the data channel a
 - Chat: 200 characters, 350 ms per guest.
 - Actions: at most six tile IDs; the host re-validates ownership and legality.
 - Voice: calls only from approved roster peer IDs.
-- PIN: 15–64 chars, four character classes, deny-list/sequence checks, 8 wrong attempts -> 60 s room-wide lockout.
+- PIN: exactly 5 digits, deny-list/sequence checks, 8 wrong attempts -> 60 s room-wide lockout.
 
 These are mitigation, not a DDoS guarantee.
 

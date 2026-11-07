@@ -59,7 +59,7 @@ The layout is built for 390×844 and verified in headless Chrome. Physical iOS/A
 
 **Is there online multiplayer?**
 
-Yes — a serverless host/guest table over WebRTC. The host shares a six-character code, two humans are enough to start, empty seats become bots, and a guest who leaves is replaced by a bot. See [MULTIPLAYER.md](MULTIPLAYER.md).
+Yes — a serverless host/guest table over WebRTC. The host shares a six-digit code, two humans are enough to start, empty seats become bots, and a guest who leaves is replaced by a bot. See [MULTIPLAYER.md](MULTIPLAYER.md).
 
 **Why only four seats?**
 
@@ -79,7 +79,7 @@ Yes. **Table chat** is host-routed, escaped, capped at 200 characters and kept i
 
 **Does the room have a PIN?**
 
-Yes, optional. Set a 15–64 character passphrase with upper case, lower case, a digit and a symbol, or press **Generate** for a 20-character grouped PIN. The host stores only a SHA-256 digest; the link never contains it. **Copy room info** can copy code + PIN + link for convenience.
+Yes, optional. Set a 5-digit PIN, or press **New PIN** to rotate it. The host stores only a SHA-256 digest; the link never contains it. **Copy room info** can copy code + PIN + link for convenience.
 
 **Is the PIN enough security?**
 

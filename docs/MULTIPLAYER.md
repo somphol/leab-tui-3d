@@ -42,7 +42,7 @@ Every human sets a name in the launch flow before hosting or joining. The name i
 The protocol is public. Do not treat the room code or PIN as authentication.
 
 - **Host approval is on by default.** A guest sends `hello`; the host sees a pending request with the name and time, then **Approve** or **Deny**. No seat, roster entry or game state is sent before approval. Pending requests expire after 120 seconds; six can wait at once.
-- **PIN is generated automatically.** **New PIN** rotates it before sharing. Policy: 15–64 characters, lower case, upper case, a digit and a symbol; no whitespace; rejected if common, sequential, repeated, or containing the room code/host name. **New PIN** creates a fresh 20-character grouped PIN; the first one is generated automatically.
+- **PIN is generated automatically.** **New PIN** rotates it before sharing. Policy: exactly 5 digits; reject common, repeated and obvious sequential values. **New PIN** creates a fresh 5-digit PIN; the first one is generated automatically. A 5-digit PIN has only 100,000 possibilities, so approval remains the real access control and 8 wrong attempts trigger a 60-second lockout.
 - **The host stores only a SHA-256 digest** in memory. The plain PIN is shown once in the host panel for copying, never in the invite URL, roster, state, export or `localStorage`.
 - **Copy room info** writes the code, PIN and link. That is convenient but puts the PIN in the clipboard; share it only in a trusted channel. **Copy invite link** never includes the PIN.
 - **Wrong PIN / denied / expired / busy** connections receive a `rejected` reason and are closed. Eight wrong PINs trigger a 60-second room-wide lockout.
@@ -74,15 +74,14 @@ The launch overlay appears on every normal load. `?mode=solo` skips it. `?mode=h
 
 ## Room codes
 
-A code is six characters from an unambiguous alphabet: `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (no `0`, `O`, `1`, `I`). It is displayed as `LEAB-ABC-234`.
+A code is six digits, displayed as `LEAB-482-173`.
 
-- Case does not matter.
 - Spaces, dashes and the `LEAB` prefix are stripped.
 - A full invite URL is accepted.
-- The PeerJS ID is `leabtui-v1-<lowercase code>`.
+- The PeerJS ID is `leabtui-v1-<code>`.
 - Code collisions are retried up to four times (`unavailable-id`).
 
-There are 32⁶ ≈ 1.07 billion codes. The broker does not provide a directory; a code is only useful while the host page is open.
+There are 10⁶ = 1,000,000 codes. A numeric code is a convenience identifier, not a secret; the PIN and host approval gate the room. The broker does not provide a directory; a code is only useful while the host page is open.
 
 ## Leaving the room
 
@@ -176,8 +175,8 @@ Without a TURN relay, symmetric NAT and some corporate firewalls will fail. The 
 | --- | --- |
 | `?mode=solo` | Skip the launch overlay |
 | `?mode=host&name=Ana` | Open a room immediately |
-| `?room=ABC234` | Open the join panel with the code prefilled; no connection until the guest confirms a name |
-| `?room=ABC234&name=Bea` | Join immediately as Bea (used by the net-check harness) |
+| `?room=482173` | Open the join panel with the code prefilled; no connection until the guest confirms a name |
+| `?room=482173&name=Bea` | Join immediately as Bea (used by the net-check harness) |
 | `?lobby=1` | Force the launch overlay |
 | `LeabTui.net.getState()` | Role, formatted code, seat, roster, PeerJS ID |
 | `LeabTui.net.host(name)` | Open a room from the console |

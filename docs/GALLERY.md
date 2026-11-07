@@ -120,7 +120,7 @@ The chat panel at 390×844: **Leave room** is still visible in Actions, the glas
 
 ![Host security](../screenshots/host-security.jpg)
 
-Approval is on, a generated 20-character PIN is set, and **Copy room info** sits next to **Copy invite link**. The plain PIN is shown once in the host panel; state, roster, URL and export contain only the digest. The warning explains that Copy room info puts the PIN in the clipboard.
+Approval is on, a generated 5-digit PIN is set, and **Copy room info** sits next to **Copy invite link**. The plain PIN is shown once in the host panel; state, roster, URL and export contain only the digest. The warning explains that Copy room info puts the PIN in the clipboard.
 
 ## What is not shown
 

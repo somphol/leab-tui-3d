@@ -174,7 +174,7 @@ async function main() {
   if (hostState.role === "host" && /^LEAB-/.test(hostState.code)) pass("host opened a branded room", hostState.code);
   else fail("host opened a branded room", hostNet);
   const code = hostState.code.replace("LEAB-", "").replace("-", "");
-  const roomPin = "Lb-4821-xA!z7Qm";
+  const roomPin = "48213";
   await host.eval(`LeabTui.net.setPin(${JSON.stringify(roomPin)})`);
 
   const guestWs = await newTarget(`${BASE}?room=${code}&name=Guest&pin=${encodeURIComponent(roomPin)}`);
@@ -210,7 +210,7 @@ async function main() {
   if (players.filter((player) => player.kind === "host" || player.kind === "human").length === 2) pass("lobby sees two humans");
   else fail("lobby sees two humans", roster);
 
-  const badWs = await newTarget(`${BASE}?room=${code}&name=Mallory&pin=000000000000000`);
+  const badWs = await newTarget(`${BASE}?room=${code}&name=Mallory&pin=00000`);
   const bad = await Session.connect(badWs);
   await sleep(2500);
   const badStatus = await bad.waitFor(

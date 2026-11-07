@@ -40,7 +40,7 @@
 | **Chuan bonus** | The 16-point score for eight piles. |
 | **P2P** | Peer-to-peer. Game traffic flows directly between browsers; no game server. |
 | **PeerJS** | The WebRTC wrapper pinned at `1.5.4`; its public broker performs the initial handshake. |
-| **Room code** | The six-character `LEAB-XXX-XXX` code that identifies a host peer. |
+| **Room code** | The six-digit `LEAB-482-173` code that identifies a host peer. |
 | **Host** | Seat 0; the only browser that runs the rules, deals and AI. |
 | **Guest** | Seat 1–3; sends intent and renders the host's redacted state. |
 | **Bot fill** | Empty seats are filled with heuristic AI before a network match starts. |
@@ -59,6 +59,6 @@
 | **`getUserMedia`** | The browser API that asks for microphone permission and returns a MediaStream. |
 | **DTLS-SRTP** | The encryption used by WebRTC media and data channels in transit. |
 | **Approval queue** | Guests who passed the PIN wait for the host to approve or deny a seat. |
-| **Room PIN** | Optional 15–64 char passphrase with four classes; stored as an in-memory SHA-256 digest. |
+| **Room PIN** | 5-digit convenience gate; stored as an in-memory SHA-256 digest. Approval is the real control. |
 | **Deny-list** | Small public list of obvious passwords rejected by the PIN policy. |
 | **Payload cap** | 16 KB inbound envelope limit enforced by the host transport. |

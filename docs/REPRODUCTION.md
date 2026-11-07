@@ -158,7 +158,7 @@ Do this **after** the solo game is correct. Network code magnifies an unstable e
 Treat the source as public. The room code is an identifier, not a secret. Add three gates:
 
 1. **Host approval** on by default. `hello` goes to a pending queue; only host `approve` assigns a seat and sends `welcome`. Pending entries expire.
-2. **Optional PIN** with a real policy: 15–64 chars, upper/lower/digit/symbol, no whitespace, deny-list and sequence checks, no room code or host name. Hash it with SHA-256 and keep only the digest in memory. Show the plain PIN once for copying; never put it in the URL, roster, export or localStorage.
+2. **Optional PIN** with a clear policy: exactly 5 digits, common/repeat/sequence checks. Hash it with SHA-256 and keep only the digest in memory. Show the plain PIN once for copying; never put it in the URL, roster, export or localStorage. Treat 5 digits as a convenience gate only — approval is the real access control.
 3. **Caps and allowlists**: connections, pending requests, messages/second, payload size, chat rate, action tile count, voice calls only from approved roster peer IDs.
 
 The PIN is not authentication. Say so in the UI and the docs. The host approval click is the access-control decision. Add **Generate** and **Copy room info** so the host can use a strong PIN without choosing a weak one; warn that Copy room info puts the PIN in the clipboard.

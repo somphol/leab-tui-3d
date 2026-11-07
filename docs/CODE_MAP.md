@@ -63,7 +63,7 @@
 - **Seeded shuffle:** `?seed=123`.
 - **Launch overlay:** no parameter, or `?lobby=1`.
 - **Host a room:** `?mode=host&name=Ana`.
-- **Join a room:** `?room=ABC234&name=Bea`.
+- **Join a room:** `?room=482173&name=Bea`.
 
 ## Where to change what
 

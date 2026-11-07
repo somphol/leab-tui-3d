@@ -4,7 +4,7 @@
 
 A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat and independent full-mesh voice chat (mic mute + deafen). It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.6.2**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.6.3**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -45,7 +45,7 @@ git push origin main
 
 `?selftest=1` runs 38 pure-rule, serialization, redaction, chat and PIN checks and sets the document title to `SELFTEST PASS 38/38`. `?demo=1` auto-leads one human combination after dealing so a screenshot shows a real trick. `?seed=123` makes the shuffle reproducible.
 
-Launch modes: no parameter or `?lobby=1` shows the lobby on every normal load, including a saved solo game (Resume match); `?mode=solo` skips it; `?mode=host&name=Ana` opens a room; `?room=ABC234` opens the join panel with the code prefilled (guests confirm their name); `&name=Bea` joins immediately. Network rooms are not resumable. The host/guest exit is **Leave room** in Actions, with confirmation.
+Launch modes: no parameter or `?lobby=1` shows the lobby on every normal load, including a saved solo game (Resume match); `?mode=solo` skips it; `?mode=host&name=Ana` opens a room; `?room=482173` opens the join panel with the code prefilled (guests confirm their name); `&name=Bea` joins immediately. Network rooms are not resumable. The host/guest exit is **Leave room** in Actions, with confirmation.
 
 ## 3. Architecture
 
@@ -81,9 +81,9 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.6.2"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.6.3"
 prefs: theme mahogany|jade|midnight|parchment|daybreak; fontSize sm|md|lg|xl; CSS --fs-scale 0.9/1/1.12/1.24
-room: LEAB-ABC-234; peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
+room: LEAB-482-173; peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
 
 Persistence saves `{format, version, savedAt, network, game}` where `game` is the ID-based `serializableState`. The snapshot for Undo is also ID-based; `undoLastTrick` maps IDs back to `TILE_BY_ID`. Do **not** store live tile objects in a snapshot or in localStorage — that was a real bug during the build. Network saves carry `network: true` and are rejected by `loadMatch`.
@@ -104,7 +104,7 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **Disconnect.** A dropped guest keeps their seat, hand, captures and score; the profile becomes a bot and the host schedules AI if it is their turn. Do not delete or reseat mid-match.
 - **No host migration.** A closed host ends the room. Guests see "Table closed". Do not pretend the match resumes.
 - **Approval is the real gate.** A guest is not seated on `hello`; `requestGuest` checks the PIN, then queues. Only `approvePending` calls `acceptGuest` and sends `welcome`. Pending requests expire; denied/wrong-PIN connections close.
-- **PIN is a gate, not authentication.** 15–64 chars, upper/lower/digit/symbol, deny-list and sequence checks. Store only the SHA-256 digest in memory. Never put the plain PIN in state, roster, URL, export or localStorage. The host's plain copy is UI-only for Copy room info.
+- **PIN is a gate, not authentication.** Exactly 5 digits, common/repeat/sequence checks. Only 100,000 possibilities, so approval remains primary. Store only the SHA-256 digest in memory. Never put the plain PIN in state, roster, URL, export or localStorage. The host's plain copy is UI-only for Copy room info.
 - **Assume the source is public.** The code, protocol, policy and deny-list are readable. Do not rely on hidden message names or secret endpoints. Caps are part of the boundary: 16 connections, 6 pending, 80 messages/10 s, 16 KB payload, 200-char/350 ms chat, six action tiles.
 - **Voice calls are allowlisted.** `VoiceChat._answer` closes calls from peer IDs not in the approved roster; the host PeerJS id is deterministic from the room code.
 - **Chat goes through the host.** `sendChat` → host `hostChat` → append once → broadcast one entry to every guest. Cap at 200 chars and rate-limit guests (350 ms). Never inject chat with `innerHTML`.

@@ -18,14 +18,14 @@ Assume the attacker has read this repository and knows the protocol, message nam
 | Seat ownership | A guest acts for another seat | Actions are tied to the sender's `connId` profile and re-validated by the host |
 | Room availability | A stranger opens many connections or floods actions/chat | 16-connection cap, 6 pending requests, 80 messages/10 s per connection, 16 KB payload cap, 350 ms chat limit |
 | Voice mesh | A stranger calls the deterministic host peer id | Media calls are accepted only from peer IDs already in the approved roster |
-| PIN | Offline guessing from source or online guessing | 15–64 chars, four classes, deny-list + sequence checks, SHA-256 digest in memory, 8-attempt lockout |
+| PIN | Offline guessing from source or online guessing | 5 digits, deny-list + sequence checks, SHA-256 digest in memory, 8-attempt lockout |
 | Chat | XSS or impersonation | `escapeHTML`/`textContent`, 200-char cap, sender profile, host relay |
 | Saved game | Malformed JSON | Shape/ID validation; malformed saves start a new match |
 
 ## Lobby gate
 
-1. The host generates a room code (six unambiguous characters, `LEAB-ABC-234`).
-2. A 20-character PIN is generated when the room opens; **New PIN** rotates it. The PIN is **never in the invite URL**, never in the roster, never in `localStorage`, and never in the exported game.
+1. The host generates a room code (six digits, `LEAB-482-173`).
+2. A 5-digit PIN is generated when the room opens; **New PIN** rotates it. The PIN is **never in the invite URL**, never in the roster, never in `localStorage`, and never in the exported game.
 3. A guest sends the room code, name and PIN over the encrypted WebRTC data channel.
 4. The host verifies the PIN against an in-memory SHA-256 digest and then puts the request in the **approval queue**.
 5. The host approves or denies each request. Only after approval is a seat assigned and a `welcome` sent.
@@ -35,12 +35,11 @@ The PIN is a **gate**, not authentication. Host approval is the real access-cont
 
 ## PIN policy
 
-- 15–64 characters.
-- At least one lower-case letter, one upper-case letter, one digit and one symbol.
-- No whitespace.
-- Rejected if it is in the bundled common-password deny-list, contains the room code, contains the host name, is one repeated character, or contains an obvious sequence.
+- Exactly 5 digits.
+- Rejected if it is in the bundled common-PIN deny-list, is one repeated digit, or is an obvious sequence.
 - The host stores only `SHA-256(PIN)` in memory. The plain PIN is shown once in the host panel so it can be copied; it is never stored in app state, the roster, an export or localStorage.
-- **New PIN** creates a fresh 20-character grouped PIN with all four classes. The first PIN is generated automatically.
+- **New PIN** creates a fresh 5-digit PIN. The first PIN is generated automatically.
+- **A 5-digit PIN is not strong authentication.** There are only 100,000 values. It is a convenience gate; host approval is the real access-control decision. Keep approval on for any room you do not fully trust.
 - **Copy room info** includes the PIN and the link. Share it only in a trusted channel; for maximum separation, send the link and the PIN in different channels.
 - Eight wrong attempts trigger a 60-second room-wide lockout.
 - Changing the PIN affects future joins, not already-approved guests.

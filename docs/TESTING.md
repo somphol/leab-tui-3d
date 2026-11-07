@@ -60,9 +60,9 @@ node scripts/net-check.mjs   # real broker, needs outbound 0.peerjs.com
 | 24 | i18n keys symmetrical | EN and TH share every key |
 | 25 | export payload shape | app + credits + 4 scores |
 | 26 | chat text | whitespace collapsed, 200-character cap |
-| 27 | PIN policy | 15+ chars, four classes, deny-list |
+| 27 | PIN policy | exactly 5 digits, deny-list |
 | 28 | room code | six chars from the unambiguous alphabet |
-| 29 | code normalization | `leab-abc-234` → `ABC234` |
+| 29 | code normalization | `leab-abc-234` → `482173` |
 | 30 | incomplete code rejected | `ABC` → `null` |
 | 31 | formatted code | starts with `LEAB-` |
 | 32 | peer id stability | uppercase and dashed codes collide intentionally |
@@ -167,7 +167,7 @@ The saved game survived the reload and the scene re-synced. A saved `roundEnd` o
 (`?room=CODE&name=Guest`) in the same headless Chrome, then asserts:
 
 ```text
-host room             LEAB-ABC-234   (branded, six-char code)
+host room             LEAB-482-173   (branded, six-char code)
 guest seat            1
 lobby humans          2
 start                 host + guest + Bot 1 + Bot 2
@@ -187,7 +187,7 @@ The privacy check is the important one: it reads the guest's `LeabTui.getState()
 
 - [ ] A normal load shows Choose how to play before dealing a game.
 - [ ] Host approval is on by default; a guest waits for Approve/Deny.
-- [ ] A generated PIN has 15+ characters, four classes and is not in state/URL.
+- [ ] A generated PIN is 5 digits and is not in state/URL.
 - [ ] Wrong PIN is rejected; eight wrong attempts lock the room briefly.
 - [ ] Troubleshoot reports broker/host reachability and PIN accepted/not accepted.
 - [ ] Reload button busts cached assets; version chip and update banner show the running/latest version.

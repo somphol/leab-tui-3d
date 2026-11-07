@@ -19,12 +19,13 @@ export const PEER_ID_PREFIX = "leabtui-v1-";
 export const PEERJS_VERSION = "1.5.4";
 export const PEERJS_CDN = `https://cdn.jsdelivr.net/npm/peerjs@${PEERJS_VERSION}/dist/peerjs.min.js`;
 
-/* No 0/O/1/I: the code is read aloud and typed on phones. */
-const ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+/* Numeric-only codes are easiest to read over the phone. */
+const ROOM_ALPHABET = "0123456789";
 
 /**
- * Six characters from a 32-symbol alphabet (1.07 billion combinations).
- * `rand` is injectable so the self-test is deterministic.
+ * Six digits (1,000,000 combinations). `rand` is injectable so the self-test
+ * is deterministic. A numeric code is a convenience identifier, not a secret;
+ * host approval and the PIN gate the room.
  */
 export function makeRoomCode(rand = Math.random) {
   let out = "";
@@ -50,9 +51,8 @@ export function normalizeRoomCode(input) {
       /* fall through to character stripping */
     }
   }
-  value = value.replace(/^LEAB[\s-]*/, "").replace(/[^A-Z0-9]/g, "");
+  value = value.replace(/^LEAB[\s-]*/, "").replace(/[^0-9]/g, "");
   if (value.length !== ROOM_CODE_LENGTH) return null;
-  if ([...value].some((character) => !ROOM_ALPHABET.includes(character))) return null;
   return value;
 }
 

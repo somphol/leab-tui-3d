@@ -18,14 +18,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.6.2";
-import { VoiceChat } from "./voice-chat.js?v=1.6.2";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.2";
+} from "./peer-manager.js?v=1.6.3";
+import { VoiceChat } from "./voice-chat.js?v=1.6.3";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.6.3";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.6.2",
+  version: "1.6.3",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -36,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T16:33:42-08:00",
-    durationHuman: "6h 28m 9s",
-    tokensTotal: "1724077",
-    tokensInput: "1204904",
-    tokensOutput: "325577",
-    tokensReasoning: "193596",
-    tokensCacheRead: "385355776",
+    packagedAt: "2026-11-06T17:06:51-08:00",
+    durationHuman: "7h 1m 18s",
+    tokensTotal: "3124203",
+    tokensInput: "2574113",
+    tokensOutput: "343142",
+    tokensReasoning: "206948",
+    tokensCacheRead: "424088960",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -535,7 +535,7 @@ const I18N = {
     "net.joinDesc": "Enter a six-character room code.",
     "net.hostTitle": "Host a table",
     "net.roomCode": "Room code",
-    "net.codeHelp": "Share this code. Letter case does not matter.",
+    "net.codeHelp": "Share this six-digit code.",
     "net.copyLink": "Copy invite link",
     "net.roster": "Seats",
     "net.startTable": "Start table",
@@ -544,7 +544,7 @@ const I18N = {
     "net.needTwoLong": "At least two humans must be connected. Empty seats become bots.",
     "net.joinTitle": "Join a table",
     "net.codeLabel": "Room code",
-    "net.codePlaceholder": "LEAB-ABC-234",
+    "net.codePlaceholder": "LEAB-482-173",
     "net.nameLabel": "Your name",
     "net.namePlaceholder": "Guest",
     "net.yourName": "Your name",
@@ -552,12 +552,12 @@ const I18N = {
     "net.enterName": "Enter your name before hosting or joining.",
     "net.approvalLabel": "Approve each guest before they get a seat",
     "net.pinLabel": "Room PIN",
-    "net.pinPlaceholder": "15+ chars: upper, lower, number, symbol",
-    "net.pinGuestPlaceholder": "Only if the host set one",
-    "net.pinPolicy": "Use 15–64 characters with upper case, lower case, a number and a symbol. Avoid names, the room code and common passwords.",
+    "net.pinPlaceholder": "5 digits",
+    "net.pinGuestPlaceholder": "5 digits",
+    "net.pinPolicy": "A 5-digit PIN is generated for convenience. Approval is the real access control.",
     "net.pinSecureOnly": "PIN hashing needs HTTPS or localhost.",
-    "net.pinRule.short": "PIN must be at least 15 characters.",
-    "net.pinRule.long": "PIN must be at most 64 characters.",
+    "net.pinRule.short": "PIN must be 5 digits.",
+    "net.pinRule.long": "PIN must be 5 digits.",
     "net.pinRule.lower": "PIN needs a lower-case letter.",
     "net.pinRule.upper": "PIN needs an upper-case letter.",
     "net.pinRule.digit": "PIN needs a number.",
@@ -571,12 +571,12 @@ const I18N = {
     "net.pinSave": "Save PIN",
     "net.pinGenerate": "Generate",
     "net.pinNew": "New PIN",
-    "net.pinAuto": "Auto-generated · stored as a digest",
+    "net.pinAuto": "Auto-generated · 5 digits · digest only",
     "net.pinApprovalOnly": "Approval only (no PIN)",
     "net.pinInfoAria": "About the room PIN",
     "net.pinInfoTitle": "How the PIN works",
-    "net.pinInfoBody": "A 20-character PIN is generated for each room. New PIN replaces it for future joins. Guests need the code + PIN, then you approve them.",
-    "net.pinInfoDigest": "The host keeps only a SHA-256 digest in memory. The PIN is not in the invite link, saved game or exported file. Copy invite + PIN is the one-paste share text.",
+    "net.pinInfoBody": "A 5-digit PIN is generated for each room. New PIN replaces it for future joins. Guests need the code + PIN, then you approve them. The PIN is a convenience gate, not authentication.",
+    "net.pinInfoDigest": "Only a SHA-256 digest is kept in memory. The PIN is not in the invite link, saved game or export. Copy invite + PIN is the one-paste share text.",
     "net.pinReveal": "PIN to share",
     "net.pinCopy": "Copy PIN",
     "net.pinCopied": "PIN copied.",
@@ -633,7 +633,7 @@ const I18N = {
     "net.hostFailed": "Could not open the room: {error}",
     "net.joinFailed": "Could not join: {error}",
     "net.roomNotFound": "Room not found. Check the code and that the host page is open.",
-    "net.badCode": "A room code is six letters or digits.",
+    "net.badCode": "A room code is six digits.",
     "net.versionMismatch": "Protocol mismatch. Both pages must run protocol {version}.",
     "net.hostLeft": "The host left the table. You can join another room or play solo.",
     "net.reconnecting": "Signalling connection lost. Reconnecting…",
@@ -659,7 +659,7 @@ const I18N = {
     "net.leaveBodyGuest": "You will leave the table. A bot will take over your seat and the match will continue.",
     "net.matchInProgress": "Match in progress",
     "net.alreadyStarted": "The match is already running. Use New match for a rematch, or leave the room.",
-    "net.joinHint": "Ask the host for the six-character code.",
+    "net.joinHint": "Ask the host for the six-digit code.",
     "net.reconnectHint": "Room {code} restored. Enter the PIN again to reconnect.",
     "diag.open": "Troubleshoot",
     "diag.title": "Troubleshoot connection",
@@ -965,7 +965,7 @@ const I18N = {
     "net.joinDesc": "กรอกรหัสห้องหกตัว",
     "net.hostTitle": "เปิดโต๊ะ",
     "net.roomCode": "รหัสห้อง",
-    "net.codeHelp": "แชร์รหัสนี้ ตัวพิมพ์เล็กใหญ่ไม่มีผล",
+    "net.codeHelp": "แชร์รหัสหกหลักนี้",
     "net.copyLink": "คัดลอกลิงก์เชิญ",
     "net.roster": "ที่นั่ง",
     "net.startTable": "เริ่มโต๊ะ",
@@ -974,7 +974,7 @@ const I18N = {
     "net.needTwoLong": "ต้องมีมนุษย์อย่างน้อยสองคน ที่นั่งที่เหลือจะเป็นบอท",
     "net.joinTitle": "เข้าร่วมโต๊ะ",
     "net.codeLabel": "รหัสห้อง",
-    "net.codePlaceholder": "LEAB-ABC-234",
+    "net.codePlaceholder": "LEAB-482-173",
     "net.nameLabel": "ชื่อของคุณ",
     "net.namePlaceholder": "แขก",
     "net.yourName": "ชื่อของคุณ",
@@ -982,12 +982,12 @@ const I18N = {
     "net.enterName": "กรอกชื่อของคุณก่อนเปิดหรือเข้าร่วมโต๊ะ",
     "net.approvalLabel": "ให้เจ้าบ้านอนุมัติแขกทีละคนก่อนได้ที่นั่ง",
     "net.pinLabel": "PIN ห้อง",
-    "net.pinPlaceholder": "15 ตัวขึ้นไป: ใหญ่ เล็ก ตัวเลข สัญลักษณ์",
-    "net.pinGuestPlaceholder": "ใส่เฉพาะเมื่อเจ้าบ้านตั้งไว้",
-    "net.pinPolicy": "ใช้ 15–64 ตัว มีตัวพิมพ์ใหญ่ เล็ก ตัวเลข และสัญลักษณ์ หลีกเลี่ยงชื่อ รหัสห้อง และรหัสผ่านยอดนิยม",
+    "net.pinPlaceholder": "5 หลัก",
+    "net.pinGuestPlaceholder": "5 หลัก",
+    "net.pinPolicy": "ระบบสร้าง PIN 5 หลักเพื่อความสะดวก การอนุมัติเป็นตัวกันหลัก",
     "net.pinSecureOnly": "การแฮช PIN ต้องใช้ HTTPS หรือ localhost",
-    "net.pinRule.short": "PIN ต้องมีอย่างน้อย 15 ตัว",
-    "net.pinRule.long": "PIN ต้องมีไม่เกิน 64 ตัว",
+    "net.pinRule.short": "PIN ต้องมี 5 หลัก",
+    "net.pinRule.long": "PIN ต้องมี 5 หลัก",
     "net.pinRule.lower": "PIN ต้องมีตัวพิมพ์เล็ก",
     "net.pinRule.upper": "PIN ต้องมีตัวพิมพ์ใหญ่",
     "net.pinRule.digit": "PIN ต้องมีตัวเลข",
@@ -1001,12 +1001,12 @@ const I18N = {
     "net.pinSave": "บันทึก PIN",
     "net.pinGenerate": "สร้าง PIN",
     "net.pinNew": "PIN ใหม่",
-    "net.pinAuto": "สร้างอัตโนมัติ · เก็บเฉพาะค่าแฮช",
+    "net.pinAuto": "สร้างอัตโนมัติ · 5 หลัก · เก็บเฉพาะแฮช",
     "net.pinApprovalOnly": "ใช้การอนุมัติอย่างเดียว (ไม่มี PIN)",
     "net.pinInfoAria": "เกี่ยวกับ PIN ห้อง",
     "net.pinInfoTitle": "PIN ทำงานอย่างไร",
-    "net.pinInfoBody": "ระบบสร้าง PIN 20 ตัวต่อห้อง ปุ่ม PIN ใหม่จะเปลี่ยนสำหรับคนที่เข้าหลังจากนี้ แขกต้องใช้รหัสห้อง + PIN แล้วเจ้าบ้านอนุมัติ",
-    "net.pinInfoDigest": "เจ้าบ้านเก็บเฉพาะค่าแฮช SHA-256 ในหน่วยความจำ PIN ไม่อยู่ในลิงก์เชิญ ไฟล์เซฟ หรือไฟล์ส่งออก ใช้คัดลอกลิงก์ + PIN เพื่อแชร์ครั้งเดียว",
+    "net.pinInfoBody": "ระบบสร้าง PIN 5 หลักต่อห้อง ปุ่ม PIN ใหม่จะเปลี่ยนสำหรับคนที่เข้าหลังจากนี้ แขกต้องใช้รหัสห้อง + PIN แล้วเจ้าบ้านอนุมัติ PIN เป็นเพียงประตูสะดวก ไม่ใช่การยืนยันตัวตน",
+    "net.pinInfoDigest": "เก็บเฉพาะค่าแฮช SHA-256 ในหน่วยความจำ PIN ไม่อยู่ในลิงก์เชิญ ไฟล์เซฟ หรือไฟล์ส่งออก ใช้คัดลอกลิงก์ + PIN เพื่อแชร์ครั้งเดียว",
     "net.pinReveal": "PIN สำหรับแชร์",
     "net.pinCopy": "คัดลอก PIN",
     "net.pinCopied": "คัดลอก PIN แล้ว",
@@ -1063,7 +1063,7 @@ const I18N = {
     "net.hostFailed": "เปิดห้องไม่ได้: {error}",
     "net.joinFailed": "เข้าร่วมไม่ได้: {error}",
     "net.roomNotFound": "ไม่พบห้อง ตรวจรหัสและหน้าเจ้าบ้าน",
-    "net.badCode": "รหัสห้องมีหกตัวอักษรหรือตัวเลข",
+    "net.badCode": "รหัสห้องต้องเป็นตัวเลขหกหลัก",
     "net.versionMismatch": "โปรโตคอลไม่ตรงกัน ต้องใช้รุ่น {version}",
     "net.hostLeft": "เจ้าบ้านออกจากโต๊ะแล้ว คุณสามารถเข้าห้องอื่นหรือเล่นคนเดียว",
     "net.reconnecting": "การเชื่อมต่อสัญญาณขาด กำลังเชื่อมใหม่…",
@@ -1089,7 +1089,7 @@ const I18N = {
     "net.leaveBodyGuest": "คุณจะออกจากโต๊ะ บอทจะรับที่นั่งของคุณและแมตช์จะดำเนินต่อ",
     "net.matchInProgress": "แมตช์กำลังเล่น",
     "net.alreadyStarted": "แมตช์เริ่มแล้ว ใช้ปุ่มสร้างแมตช์ใหม่เพื่อเล่นอีกครั้ง หรือออกจากห้อง",
-    "net.joinHint": "ขอรหัสหกตัวจากเจ้าบ้าน",
+    "net.joinHint": "ขอรหัสหกหลักจากเจ้าบ้าน",
     "net.reconnectHint": "กู้ห้อง {code} แล้ว กรอก PIN อีกครั้งเพื่อเชื่อมต่อใหม่",
     "diag.open": "ตรวจสอบปัญหา",
     "diag.title": "ตรวจสอบการเชื่อมต่อ",
@@ -3925,7 +3925,9 @@ function preferredPin() {
 function extractPasscode(text) {
   const source = String(text || "");
   const match = source.match(/(?:pass(?:code)?|pin|รหัส(?:ผ่าน)?)\s*[:：=]\s*([^\s]+)/i);
-  return normalisePin(match ? match[1] : source);
+  if (match) return normalisePin(match[1]);
+  const bare = source.match(/(?:^|\D)(\d{5})(?:\D|$)/);
+  return bare ? bare[1] : "";
 }
 
 async function pastePasscode() {
@@ -4520,13 +4522,13 @@ function netSelfTest() {
     }
   };
 
-  check("room code is six unambiguous characters", () => {
+  check("room code is six digits", () => {
     const code = makeRoomCode(() => 0.42);
-    return /^[A-HJ-NP-Z2-9]{6}$/.test(code) && code.length === 6;
+    return /^[0-9]{6}$/.test(code) && code.length === 6;
   });
-  check("room code normalization accepts LEAB and separators", () => normalizeRoomCode("leab-abc-234") === "ABC234");
-  check("room code rejects an incomplete code", () => normalizeRoomCode("ABC") === null);
-  check("formatted room code is branded", () => formatRoomCode("abc234").startsWith(ROOM_PREFIX));
+  check("room code normalization accepts LEAB and separators", () => normalizeRoomCode("leab-482-173") === "482173");
+  check("room code rejects an incomplete code", () => normalizeRoomCode("173") === null && normalizeRoomCode("LEAB-ABC-234") === null);
+  check("formatted room code is branded", () => formatRoomCode("482173") === "LEAB-482-173");
   check("peer id is stable and lowercase", () => peerIdForCode("ABC234") === peerIdForCode("abc-234"));
   check("sanitized state hides another hand", () => {
     if (!state) return "no state";
@@ -4653,17 +4655,17 @@ function selfTest() {
     normaliseChat("  hello \n  table  ") === "hello table" && normaliseChat("x".repeat(300)).length === 200
   ));
 
-  check("room PIN policy requires 15+ mixed characters", () => (
-    normalisePin(" Lb-4821-xA!z7Qm ") === "Lb-4821-xA!z7Qm"
-      && validatePin("Lb-4821-xA!z7Qm", { roomCode: "ABC234", name: "Host" }).ok
-      && !validatePin("abc12345").ok
-      && !validatePin("Password123").ok
-      && !validatePin("Lb4821xAzz7Qmzz").ok
+  check("room PIN is exactly five digits", () => (
+    normalisePin(" 48-213 ") === "48213"
+      && validatePin("48213", { roomCode: "ABC234", name: "Host" }).ok
+      && !validatePin("12345").ok
+      && !validatePin("00000").ok
+      && !validatePin("1234").ok
   ));
 
   check("invite text extracts the passcode", () => (
-    extractPasscode("Join my table\nPIN: Lb-4821-xA!z7Qm\nLink: https://example.test/?room=ABC234") === "Lb-4821-xA!z7Qm"
-      && extractPasscode("Lb-4821-xA!z7Qm") === "Lb-4821-xA!z7Qm"
+    extractPasscode("Join my table\nPIN: 48213\nLink: https://example.test/?room=ABC234") === "48213"
+      && extractPasscode("48213") === "48213"
   ));
 
   for (const result of netSelfTest()) results.push(result);
