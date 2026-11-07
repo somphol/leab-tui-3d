@@ -23,6 +23,10 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.9.9 — table draft switch and a readable PIN
+
+The Draft mode gets a **Draft: on/off** chip in the HUD so the host can switch it without opening Actions; the change applies to the next deal and may be made while a draft is running. Every pick, including bot picks, appears in the live Turn log. The host room PIN now uses the same 28 px mono treatment as the room number, in its own gold card.
+
 ## Release 1.9.8 — one comparison popup
 
 The reveal result and the turn-history detail now use the captured-pile popup language: one frame per seat, the played tiles as mini cards, a large green ✓ and gold frame on the winner, and the comparison plus reason in the gold-bordered note. The sidebar live log and the flat captured-pile grid are unchanged.

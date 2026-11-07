@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.8";
-import { VoiceChat } from "./voice-chat.js?v=1.9.8";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.8";
+} from "./peer-manager.js?v=1.9.9";
+import { VoiceChat } from "./voice-chat.js?v=1.9.9";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.9";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.8",
+  version: "1.9.9",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -335,6 +335,11 @@ const I18N = {
     "draft.toggle": "Draft next deal (experimental)",
     "draft.toggleHost": "Draft mode: pick 2 tiles ×4 (experimental)",
     "draft.toggleToast": "Draft mode will apply to the next deal.",
+    "draft.chipOn": "Draft: on",
+    "draft.chipOff": "Draft: off",
+    "draft.chipTitle": "Draft deal (experimental): every seat picks 2 tiles ×4",
+    "draft.onToast": "Draft on: the next deal lets every seat pick 2 tiles.",
+    "draft.offToast": "Draft off: the next deal is automatic.",
     "actions.title": "Actions",
     "actions.newMatch": "New match",
     "actions.nextRound": "Next round",
@@ -398,6 +403,7 @@ const I18N = {
     "log.winner": "Winner",
     "log.why": "Only revealed sets compete; the highest revealed set takes the trick. Face-down tiles stay hidden.",
     "log.chuan": "Chuan",
+    "log.draftPick": "picked 2 tiles",
     "log.chuanWhy": "Chuan claim: seven piles plus the last Soldier. The Soldier takes the final trick by the special rule, not by rank.",
     "log.empty": "No tricks recorded yet.",
     "summary.viewLog": "View trick log",
@@ -896,6 +902,11 @@ const I18N = {
     "draft.toggle": "เลือกไพ่เองตอนแจกถัดไป (ทดลอง)",
     "draft.toggleHost": "โหมดเลือกไพ่: หยิบ 2 ใบ ×4 (ทดลอง)",
     "draft.toggleToast": "โหมดเลือกไพ่จะมีผลตอนแจกครั้งถัดไป",
+    "draft.chipOn": "เลือกไพ่: เปิด",
+    "draft.chipOff": "เลือกไพ่: ปิด",
+    "draft.chipTitle": "โหมดเลือกไพ่ (ทดลอง): ทุกที่นั่งหยิบ 2 ใบ ×4",
+    "draft.onToast": "เปิดโหมดเลือกไพ่: การแจกครั้งถัดไปทุกคนหยิบเอง 2 ใบ ×4",
+    "draft.offToast": "ปิดโหมดเลือกไพ่: การแจกครั้งถัดไปเป็นอัตโนมัติ",
     "actions.title": "การกระทำ",
     "actions.newMatch": "แมตช์ใหม่",
     "actions.nextRound": "รอบถัดไป",
@@ -959,6 +970,7 @@ const I18N = {
     "log.winner": "ผู้ชนะ",
     "log.why": "เฉพาะชุดที่เปิดเท่านั้นที่แข่งกัน ชุดที่เปิดสูงสุดกินกอง ไพ่ที่คว่ำจะถูกซ่อนไว้",
     "log.chuan": "ช้วน",
+    "log.draftPick": "หยิบ 2 ใบ",
     "log.chuanWhy": "ช้วน: เจ็ดกองกับจุกตัวสุดท้าย จุกกินตาสุดท้ายได้ด้วยกติกาพิเศษ ไม่ใช่เพราะศักดิ์ใหญ่กว่า",
     "log.empty": "ยังไม่มีประวัติตา",
     "summary.viewLog": "ดูประวัติการเล่น",
@@ -2267,6 +2279,7 @@ function draftPick(seat, ids) {
     if (!state.hiddenTags[seat][tile.id]) state.hiddenTags[seat][tile.id] = `${GHOST_PREFIX}${seat}-${index}`;
   });
   state.handCounts = handCounts();
+  state.log.push({ kind: "draft", trick: 0, seat, count: tiles.length });
   state.draftIndex = (state.draftIndex + 1) % TABLE_SEATS;
   if (state.draftIndex === 0) state.draftCycle += 1;
   if (state.hands.every((hand) => hand.length === 8)) { finishDraft(); return true; }
@@ -3850,9 +3863,10 @@ function renderLog() {
   }
   const items = state.log.slice(-12);
   list.innerHTML = items.map((entry) => {
-    const time = String(entry.trick).padStart(2, "0");
+    const time = entry.kind === "draft" ? "D" : String(entry.trick).padStart(2, "0");
     let text = "";
-    if (entry.kind === "lead") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.lead"))} ${escapeHTML(comboName(entry.callType))} ×${entry.callCount}`;
+    if (entry.kind === "draft") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("log.draftPick"))}`;
+    else if (entry.kind === "lead") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.lead"))} ${escapeHTML(comboName(entry.callType))} ×${entry.callCount}`;
     else if (entry.kind === "challenge") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.revealLog"))} ${escapeHTML(comboSummary(entry.combo))}`;
     else if (entry.kind === "hidden") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.facedown"))}`;
     else if (entry.kind === "win") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> +${entry.count} ${escapeHTML(t("summary.piles"))} · ${escapeHTML(comboSummary(entry.combo))}`;
@@ -5885,17 +5899,36 @@ let draftSelection = [];
 let draftSig = "";
 let draftSent = false;
 
+function setDraftMode(enabled) {
+  if (isClient()) {
+    toast(t("net.hostOnly"));
+    return false;
+  }
+  prefs.draftMode = Boolean(enabled);
+  if (state) state.draftMode = prefs.draftMode;
+  savePrefs();
+  if (isHost()) saveMatch();
+  renderDraft();
+  toast(t(state?.phase === "draft"
+    ? "draft.toggleToast"
+    : (prefs.draftMode ? "draft.onToast" : "draft.offToast")), "jade");
+  return true;
+}
+
 function renderDraft() {
   const modal = $("#draftModal");
   if (!modal) return;
   const mode = state ? state.draftMode === true : prefs.draftMode === true;
-  const drafting = Boolean(state && state.phase === "draft");
-  $$("[data-draft-toggle]").forEach((input) => {
-    input.checked = mode;
-    input.disabled = drafting;
-  });
+  $$("[data-draft-toggle]").forEach((input) => { input.checked = mode; });
   const wrap = $("#draftToggleWrap");
   if (wrap) wrap.hidden = isClient();
+  const chip = $("#draftChip");
+  if (chip) {
+    chip.hidden = isClient() || !state;
+    chip.textContent = t(mode ? "draft.chipOn" : "draft.chipOff");
+    chip.title = t("draft.chipTitle");
+    chip.setAttribute("aria-pressed", String(mode));
+  }
   if (!state || state.phase !== "draft") {
     draftSelection = [];
     draftSig = "";
@@ -8034,14 +8067,12 @@ function bindEvents() {
     renderDraft();
   });
   $$("[data-draft-toggle]").forEach((input) => input.addEventListener("change", () => {
-    if (state && state.phase === "draft") { input.checked = state.draftMode === true; return; }
-    prefs.draftMode = input.checked;
-    if (state && !isClient()) state.draftMode = input.checked;
-    savePrefs();
-    if (isHost()) saveMatch();
-    $$("[data-draft-toggle]").forEach((other) => { other.checked = input.checked; });
-    toast(t("draft.toggleToast"), "jade");
+    setDraftMode(input.checked);
   }));
+  $("#draftChip")?.addEventListener("click", () => {
+    const current = state ? state.draftMode === true : prefs.draftMode === true;
+    setDraftMode(!current);
+  });
   $("#summaryAutoNext")?.addEventListener("change", (event) => {
     prefs.autoNext = event.target.checked;
     savePrefs();

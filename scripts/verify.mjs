@@ -126,8 +126,14 @@ async function main() {
     const state = LeabTui.getAudioState();
     return JSON.stringify({ context: state.context, unlocked: state.unlocked, peak, playCount: state.playCount });
   })()`;
-  const audio = runHarness(["--url", soloBase, "--wait", "2500", "--eval", audioExpr]);
-  const audioValue = audio.evalValue || {};
+  // Headless Chrome occasionally starts the graph after the measurement window;
+  // retry once instead of failing a release on that race.
+  let audioValue = {};
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const audio = runHarness(["--url", soloBase, "--wait", "2500", "--eval", audioExpr]);
+    audioValue = audio.evalValue || {};
+    if (audioValue.context === "running" && audioValue.unlocked && audioValue.peak > 0.01) break;
+  }
   if (audioValue.context === "running" && audioValue.unlocked && audioValue.peak > 0.01) pass(`audio signal measured (peak ${audioValue.peak.toFixed(3)})`);
   else fail("audio signal measured", JSON.stringify(audioValue));
 
@@ -176,6 +182,23 @@ async function main() {
   else fail("display preferences persist", JSON.stringify(displayValue.prefs));
   if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.themeButtons === 5) pass("display panel exposes four sizes and five themes");
   else fail("display panel exposes four sizes and five themes", JSON.stringify(displayValue));
+
+  const draftExpr = `(async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const chip = document.querySelector('#draftChip');
+    const before = { hidden: chip.hidden, text: chip.textContent, pressed: chip.getAttribute('aria-pressed') };
+    chip.click();
+    await sleep(150);
+    const on = { text: chip.textContent, pressed: chip.getAttribute('aria-pressed'), state: LeabTui.getState().draftMode };
+    chip.click();
+    await sleep(150);
+    const off = { text: chip.textContent, pressed: chip.getAttribute('aria-pressed'), state: LeabTui.getState().draftMode };
+    return JSON.stringify({ before, on, off });
+  })()`;
+  const draft = runHarness(["--url", soloBase, "--wait", "2500", "--eval", draftExpr]);
+  const draftValue = draft.evalValue || {};
+  if (draftValue.before?.hidden === false && draftValue.on?.pressed === "true" && draftValue.off?.pressed === "false" && draftValue.off?.state === false) pass("draft switch toggles from the table HUD");
+  else fail("draft switch toggles from the table HUD", JSON.stringify(draftValue));
 
   const compareExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

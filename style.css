@@ -2120,19 +2120,33 @@ a:hover { text-decoration: underline; }
   cursor: pointer;
 }
 .pin-info-btn:hover, .pin-info-btn.active { color: var(--gold-bright); border-color: var(--gold); }
-.pin-ready { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin: 5px 0 2px; }
+.pin-ready {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid rgba(216, 178, 107, 0.45);
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(216, 178, 107, 0.15), rgba(216, 178, 107, 0.04));
+}
 .pin-ready[hidden] { display: none; }
 .pin-ready code {
   flex: 1 1 100%;
-  padding: 7px 9px;
-  border: 1px solid rgba(216, 178, 107, 0.3);
-  border-radius: 7px;
-  background: var(--btn-ghost-bg);
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--gold-bright);
   font-family: var(--mono);
-  font-size: calc(11px * var(--fs-scale));
-  overflow-wrap: anywhere;
+  font-size: calc(28px * var(--fs-scale));
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: 0.18em;
+  overflow-wrap: normal;
+  user-select: all;
 }
+.pin-ready .mini-btn { flex: 1 1 0; min-height: 34px; }
 .pin-info-panel {
   margin: 6px 0 2px;
   padding: 9px 10px;

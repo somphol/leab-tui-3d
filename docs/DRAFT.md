@@ -22,19 +22,25 @@ The turn order for picking follows `nextSeat`, so the direction setting applies.
 
 ## Turning it on
 
-Only the host can change the mode, in two places:
+Only the host can change the mode, in three places:
 
 - **Before the room / match** — the host panel in the lobby has
   *"Draft mode: pick 2 tiles ×4 (experimental)"*. It is stored in preferences
   and copied into the match when it starts.
-- **During a match** — Actions has *"Draft next deal (experimental)"*. The
-  change applies to the **next deal**, not to a hand already in play. The
-  control is disabled while a draft is in progress.
+- **At the table** — a **Draft: on/off** chip in the HUD (next to Last trick)
+  toggles it without opening a panel. It is hidden for guests.
+- **Actions** — *"Draft next deal (experimental)"* carries the same switch.
 
-Guests never see the toggle; the host's state is authoritative and is published
-with the rest of the match state.
+All three apply to the **next deal**, not to a hand already in play. Changing
+the setting while a draft is running is allowed: the current draft finishes, and
+the new setting takes effect on the following deal. Guests never see a toggle;
+the host's state is authoritative and is published with the rest of the match
+state.
 
-In solo play a human always picks their own tiles. Bots pick automatically.
+In solo play a human always picks their own tiles. Bots pick automatically, one
+seat at a time, and every pick (human or bot) is written to the live Turn log as
+*"{seat} picked 2 tiles"* with a `D` time marker. That makes it explicit that
+the bots are drafting too, rather than silently skipping their turns.
 
 ## Bots
 
@@ -89,6 +95,7 @@ The host runs the draft, exactly like every other phase:
 | Validate and apply a pick | `draftPick` |
 | Hand-over to play, red-General leader | `finishDraft` |
 | Bot choice | `aiDraftPick` |
-| Modal, selection, host toggle | `renderDraft`, `#draftModal`, `[data-draft-toggle]` |
+| Modal, selection, host toggles | `renderDraft`, `#draftModal`, `#draftChip`, `[data-draft-toggle]`, `setDraftMode` |
+| Pick log | `draftPick` → `state.log` kind `draft` → `renderLog` (`log.draftPick`) |
 | Network action | host `message.kind === "draft"` branch |
 | Save / hydrate | `serializableState` / `hydrateRemoteState` (`draftPool`, `draftOrder`, `draftCycle`, `draftIndex`, `draftSeat`, `draftMode`) |

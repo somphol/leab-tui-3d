@@ -181,6 +181,23 @@ console               no exceptions on either page
 
 The privacy check is the important one: it reads the guest's `LeabTui.getState()` and asserts that every id outside the guest's own seat starts with `ghost-`. That value comes from the actual data channel, not from a unit stub.
 
+### Draft switch and PIN
+
+On a solo table the HUD has a **Draft: on/off** chip (hidden for guests):
+
+```text
+chip before          Draft: off, aria-pressed="false"
+after click          Draft: on,  aria-pressed="true", state.draftMode=true
+after second click   Draft: off, aria-pressed="false"
+draft with bots      4 human picks, 16 picks total, hands [8,8,8,8]
+live Turn log        16 draft entries, e.g. "East picked 2 tiles" with a D marker
+mid-draft change     current draft finishes; next deal is automatic
+```
+
+The create-room panel shows the room number and the 5-digit PIN at the same
+computed font size (28 px), the PIN digits select as one block, and no toast or
+chip overlaps the PIN card at 1280×900.
+
 ### Comparison popups
 
 The reveal result and the Turn history detail share `trickCompareMarkup`. Drive

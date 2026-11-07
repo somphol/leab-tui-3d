@@ -223,6 +223,8 @@ ok(index.includes('id="draftModal"') && index.includes("data-draft-toggle"), "dr
 ok(script.includes("function startDraft") && script.includes("function draftPick") && script.includes("function finishDraft"), "draft engine exists");
 ok(/state\.hands\.every\(\(hand\) => hand\.length === 8\)/.test(script), "draft finishes only when every hand has 8 tiles");
 ok(/kind === "draft"[\s\S]{0,80}draftPick\(profile\.seat/.test(script), "draft picks are relayed through the host");
+ok(index.includes('id="draftChip"') && script.includes("function setDraftMode"), "draft can be toggled at the table");
+ok(script.includes('kind: "draft"') && script.includes('"log.draftPick"'), "bot draft picks are recorded in the log");
 ok(script.includes("prefs.draftMode = prefs.draftMode === true"), "draft mode defaults off");
 ok(script.includes("copy.draftPool") && script.includes("game.draftPool"), "draft pool survives save and hydrate");
 ok(script.includes("function trickCompareMarkup"), "one comparison renderer is shared");

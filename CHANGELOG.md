@@ -2,6 +2,22 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.9] — 2026-11-07
+
+### Added
+
+- **Draft: on/off chip in the HUD.** The host can switch the experimental draft deal from the table without opening the Actions panel. It shows the current setting, is hidden for guests, and applies to the next deal.
+- **Bot picks are visible.** Every draft pick — human or bot — is written to the live Turn log as “{seat} picked 2 tiles” with a `D` time marker, so the bots are clearly taking part instead of appearing to skip.
+
+### Changed
+
+- **The mode can be changed during a draft.** The current draft finishes normally and the new setting applies to the following deal; the control is no longer disabled mid-draft.
+- **The host PIN is now as large as the room number.** The 5 digits use the same 28 px mono treatment in their own gold card, with Copy PIN and New PIN below; clicking the digits selects the whole PIN.
+
+### Fixed
+
+- The stale “20-character PIN” fallback copy now says 5 digits.
+
 ## [1.9.8] — 2026-11-07
 
 ### Changed
