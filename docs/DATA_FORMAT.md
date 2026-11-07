@@ -13,7 +13,7 @@ There are two JSON files with different jobs:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.9.6",
+  "version": "1.9.7",
   "savedAt": "2026-11-06T10:00:00.000Z",
   "network": false,
   "game": { "...": "see Game" }
@@ -47,11 +47,11 @@ The autosave is written after every action, on `visibilitychange` when hidden, a
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.9.6",
+  "version": "1.9.7",
   "exportedAt": "2026-11-04T01:10:00.000Z",
   "app": {
     "name": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-    "version": "1.9.6",
+    "version": "1.9.7",
     "repository": "https://github.com/somphol/leab-tui-3d",
     "live": "https://somphol.github.io/leab-tui-3d/",
     "license": "MIT"
@@ -76,6 +76,12 @@ A guest's export is intentionally partial: it contains that guest's own hand and
 ```json
 {
   "phase": "lead",
+  "draftMode": false,
+  "draftPool": null,
+  "draftOrder": null,
+  "draftCycle": 0,
+  "draftIndex": 0,
+  "draftSeat": null,
   "round": 1,
   "trick": 3,
   "dealer": 3,
@@ -175,12 +181,22 @@ History is capped at 40 entries. A match counts only when a score reaches the ta
 2. `game.hands` is an array of four arrays, each length ≤ 8.
 3. Every tile ID exists in the deck.
 4. `game.scores` is an array of four numbers.
-5. `game.phase` is `lead`, `follow`, `roundEnd` or `matchEnd`.
+5. `game.phase` is `lead`, `follow`, `roundEnd`, `matchEnd` or, for the experimental draft, `draft`.
 
 It then rebuilds tile objects, recomputes centre combos with `detectCombo`, rebuilds `lead`/`best` from the saved seats, clears `selected`, and reopens the summary for `roundEnd`/`matchEnd`. A failure returns `false` and the app deals a new match.
 
 Undo snapshots are **not** persisted. A reload can resume the live game but cannot undo the trick before the reload.
 
+### Draft fields
+
+`draftMode` is the host's experimental draft setting for the current match. While
+`phase` is `draft`, `draftPool` holds the remaining tile ids, `draftOrder` lists
+the four seats in pick order, `draftCycle` (0–3) and `draftIndex` (0–3) locate the
+pick, and `draftSeat` is the seat picking now (equal to `turn`). Outside a draft `draftPool`,
+`draftOrder` and `draftSeat` are `null`; the two counters keep their last values
+but are ignored. `draftPool` is public; hands are still redacted per seat on
+the wire. See [DRAFT.md](DRAFT.md).
+
 ## Versioning
 
-`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code as of 1.9.6; the loader is strict and falls back to a new match. New preference fields are additive and validated on load.
+`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code as of 1.9.7; the loader is strict and falls back to a new match. New preference fields are additive and validated on load.

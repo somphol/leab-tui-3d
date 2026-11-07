@@ -128,6 +128,14 @@ This is an independent, open-source teaching implementation. It is not affiliate
 - **Redraw (โละ):** before the first play, a seat with no tile from the red Elephant up may redeal. The requester leads; the round scores ×2, ×3 … per redraw.
 - **Chuan special:** with seven piles and the last Soldier, the final follower may reveal it and take the last trick, reaching eight piles for 16.
 
+## Experimental draft deal (not standard)
+
+An optional deal variant lets each seat pick **2 tiles at a time from a public
+pool, four times**, for an 8-tile hand. It is **off by default**, host-only, and
+is not part of the Navee source. It changes only the deal; Chuan, bidding,
+scoring and showdown are unchanged. The red-General holder leads. See
+**[DRAFT.md](DRAFT.md)** for the full behaviour and the bot heuristic.
+
 ## Chuan and “Soldier beats General”
 
 **Chuan is a standard Leab-Tui rule, not a house rule.** Both routes are in the

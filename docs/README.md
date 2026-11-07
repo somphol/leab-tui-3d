@@ -5,6 +5,7 @@ Start here depending on what you need:
 | Document | Purpose |
 | --- | --- |
 | [RULES.md](RULES.md) | The rule contract: equipment, hierarchy, calls, comparisons, flow, scoring, interpretation choices |
+| [DRAFT.md](DRAFT.md) | Experimental draft deal: pick 2 ×4, host toggle, bot choices, multiplayer relay |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Layers, state machine, 3D mapping, serialization, camera, audio, failure model |
 | [MULTIPLAYER.md](MULTIPLAYER.md) | Serverless P2P rooms, seat model, bots, privacy, NAT, troubleshooting |
 | [PROTOCOL.md](PROTOCOL.md) | Wire envelopes, seat assignment, redaction and authority invariants |

@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.6";
-import { VoiceChat } from "./voice-chat.js?v=1.9.6";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.6";
+} from "./peer-manager.js?v=1.9.7";
+import { VoiceChat } from "./voice-chat.js?v=1.9.7";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.7";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.6",
+  version: "1.9.7",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -325,6 +325,14 @@ const I18N = {
     "actions.tidy": "Tidy hand",
     "actions.revealLog": "showed",
     "actions.facedown": "Play face-down",
+    "draft.title": "Draft — pick 2 tiles",
+    "draft.metaYou": "You have {n} tiles · pick 2 from the pool ({step}/4). {pool} left.",
+    "draft.waiting": "{seat} is picking 2 tiles…",
+    "draft.waitingShort": "Waiting…",
+    "draft.confirm": "Take these 2",
+    "draft.toggle": "Draft next deal (experimental)",
+    "draft.toggleHost": "Draft mode: pick 2 tiles ×4 (experimental)",
+    "draft.toggleToast": "Draft mode will apply to the next deal.",
     "actions.title": "Actions",
     "actions.newMatch": "New match",
     "actions.nextRound": "Next round",
@@ -525,6 +533,7 @@ const I18N = {
     "toast.trickResult": "{winner} wins with {combo} — {entries}",
     "toast.trickResultChuan": "{winner} completes Chuan with the last Soldier — {entries}",
     "toast.chuan": "Chuan! Seven piles plus the last Soldier.",
+    "toast.draftDone": "Draft complete. The red General holder leads.",
     "toast.stayZone": "Keep your tiles inside your own area.",
     "toast.needMore": "Selected {n}/{m} — drag another tile.",
     "toast.stagedLead": "Staged {n} tile(s). Press Lead to play.",
@@ -875,6 +884,14 @@ const I18N = {
     "actions.tidy": "จัดมือ",
     "actions.revealLog": "เปิด",
     "actions.facedown": "ลงคว่ำ",
+    "draft.title": "เลือกไพ่ — หยิบ 2 ใบ",
+    "draft.metaYou": "คุณมี {n} ใบ · เลือก 2 ใบจากกองกลาง (รอบ {step}/4) เหลือ {pool} ใบ",
+    "draft.waiting": "{seat} กำลังเลือก 2 ใบ…",
+    "draft.waitingShort": "รอ…",
+    "draft.confirm": "หยิบ 2 ใบนี้",
+    "draft.toggle": "เลือกไพ่เองตอนแจกถัดไป (ทดลอง)",
+    "draft.toggleHost": "โหมดเลือกไพ่: หยิบ 2 ใบ ×4 (ทดลอง)",
+    "draft.toggleToast": "โหมดเลือกไพ่จะมีผลตอนแจกครั้งถัดไป",
     "actions.title": "การกระทำ",
     "actions.newMatch": "แมตช์ใหม่",
     "actions.nextRound": "รอบถัดไป",
@@ -1075,6 +1092,7 @@ const I18N = {
     "toast.trickResult": "{winner} กินกองด้วย {combo} — {entries}",
     "toast.trickResultChuan": "{winner} ปิดช้วนด้วยจุกตัวสุดท้าย — {entries}",
     "toast.chuan": "ช้วน! เจ็ดกองกับจุกตัวสุดท้าย",
+    "toast.draftDone": "เลือกครบแล้ว คนถือตี่แดงเริ่มก่อน",
     "toast.stayZone": "วางไพ่ไว้ในโซนของคุณเท่านั้น",
     "toast.needMore": "เลือกแล้ว {n}/{m} — ลากไพ่อีกใบ",
     "toast.stagedLead": "เตรียมไว้ {n} ตัว กด Lead เพื่อลง",
@@ -1728,7 +1746,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -1846,6 +1864,12 @@ function makeState(seed) {  return {
     multiplier: 1,
     redraws: 0,
     resultSeconds: 2,
+    draftMode: false,
+    draftPool: null,
+    draftOrder: null,
+    draftCycle: 0,
+    draftIndex: 0,
+    draftSeat: null,
     bids: null,
     bidOrder: null,
     bidTurn: 0,
@@ -1900,6 +1924,7 @@ function serializableState(source = state) {
       tiles: (entry.tiles || []).map((tile) => (tile && tile.id ? tile.id : "hidden"))
     }))
   }));
+  copy.draftPool = source.draftPool ? source.draftPool.map((tile) => (typeof tile === "string" ? tile : tile.id)) : null;
   copy.captureTrick = [0, 1, 2, 3].map((seat) => (
     (source.captures[seat] || []).map((_, index) => (
       Number.isInteger(source.captureTrick?.[seat]?.[index]) ? source.captureTrick[seat][index] : null
@@ -1966,6 +1991,7 @@ function loadPrefs() {
   if (!["piles", "bid"].includes(prefs.mode)) prefs.mode = "piles";
   if (![0, 2, 4, 6].includes(Number(prefs.resultSeconds))) prefs.resultSeconds = 2;
   prefs.autoNext = prefs.autoNext !== false;
+  prefs.draftMode = prefs.draftMode === true;
 }
 
 function loadStats() {
@@ -1988,7 +2014,7 @@ function loadMatch() {
     const game = parsed.game;
     if (!Array.isArray(game.hands) || game.hands.length !== 4) return false;
     if (!Array.isArray(game.scores) || game.scores.length !== 4) return false;
-    if (!["lead", "follow", "showdown", "roundEnd", "matchEnd"].includes(game.phase)) return false;
+    if (!["lead", "follow", "showdown", "roundEnd", "matchEnd", "draft"].includes(game.phase)) return false;
     const tileIds = new Set(DECK.map((tile) => tile.id));
     for (const hand of game.hands) {
       if (!Array.isArray(hand) || hand.length > 8) return false;
@@ -2001,6 +2027,7 @@ function loadMatch() {
     state.captureHidden = [0, 1, 2, 3].map((seat) => (
       (state.captures[seat] || []).map((_, index) => Boolean(game.captureHidden?.[seat]?.[index]))
     ));
+    state.draftPool = game.draftPool ? game.draftPool.map((id) => TILE_BY_ID[id]).filter(Boolean) : null;
     state.captureTrick = [0, 1, 2, 3].map((seat) => (
       (state.captures[seat] || []).map((_, index) => (
         Number.isInteger(game.captureTrick?.[seat]?.[index]) ? game.captureTrick[seat][index] : null
@@ -2027,9 +2054,17 @@ function loadMatch() {
       || null;
     state.best = bestEntry ? { seat: bestEntry.seat, combo: bestEntry.combo } : null;
     state.selected = [];
-    if (savedPhase === "roundEnd" || savedPhase === "matchEnd") state.phase = savedPhase;
+    if (savedPhase === "roundEnd" || savedPhase === "matchEnd" || savedPhase === "draft") state.phase = savedPhase;
     else state.phase = state.center.length ? "follow" : "lead";
     if (state.phase === "lead" && state.turn !== state.leader) state.turn = state.leader;
+    if (state.phase === "draft") {
+      state.draftPool = state.draftPool || [];
+      state.draftOrder = Array.isArray(state.draftOrder) && state.draftOrder.length === 4
+        ? state.draftOrder
+        : [0, 1, 2, 3];
+      if (!Number.isInteger(state.draftSeat)) state.draftSeat = state.draftOrder[0];
+      state.turn = state.draftSeat;
+    }
     if (state.snapshot) state.snapshot = null;
     return true;
   } catch {
@@ -2066,7 +2101,8 @@ function handHasHigh(hand) {
 }
 
 function canRedraw(seat) {
-  if (!state || !["lead", "bid"].includes(state.phase)) return false;
+  if (!state || state.draftMode) return false;
+  if (!["lead", "bid"].includes(state.phase)) return false;
   if (state.trick !== 0 && state.phase !== "bid") return false;
   if (state.center.length || state.lead) return false;
   if (state.phase === "bid" && state.bidTurn > 0) return false;
@@ -2177,6 +2213,91 @@ function aiBid(seat) {
   placeBid(seat, value);
 }
 
+function startDraft() {
+  clearTimeout(actionTimer);
+  actionToken += 1;
+  const deck = shuffle(buildDeck());
+  state.hands = [[], [], [], []];
+  state.hiddenTags = [{}, {}, {}, {}];
+  state.captures = [[], [], [], []];
+  state.captureHidden = [[], [], [], []];
+  state.captureFrom = [[], [], [], []];
+  state.captureTrick = [[], [], [], []];
+  state.center = [];
+  state.lead = null;
+  state.best = null;
+  state.selected = [];
+  state.lastTrick = null;
+  state.trick = 0;
+  state.phase = "draft";
+  state.handCounts = [0, 0, 0, 0];
+  state.winner = null;
+  state.snapshot = null;
+  state.draftPool = deck;
+  state.draftOrder = [];
+  let cursor = state.dealer;
+  for (let i = 0; i < TABLE_SEATS; i += 1) {
+    cursor = nextSeat(cursor);
+    state.draftOrder.push(cursor);
+  }
+  state.draftCycle = 0;
+  state.draftIndex = 0;
+  state.draftSeat = state.draftOrder[0];
+  state.turn = state.draftSeat;
+  renderAll();
+  saveMatch();
+  audio?.play("shuffle", 0);
+  if (isBotSeat(state.turn)) scheduleAI(650);
+}
+
+function draftPick(seat, ids) {
+  if (!state || state.phase !== "draft" || state.turn !== seat) return false;
+  if ((state.hands[seat] || []).length >= 8) return false;
+  const wanted = Array.isArray(ids) ? ids.filter((id) => typeof id === "string").slice(0, 2) : [];
+  if (wanted.length !== 2) return false;
+  const tiles = wanted.map((id) => state.draftPool.find((tile) => tile.id === id)).filter(Boolean);
+  if (tiles.length !== 2) return false;
+  state.draftPool = state.draftPool.filter((tile) => !tiles.includes(tile));
+  state.hands[seat].push(...tiles);
+  state.hands[seat].forEach((tile, index) => {
+    if (!state.hiddenTags[seat][tile.id]) state.hiddenTags[seat][tile.id] = `${GHOST_PREFIX}${seat}-${index}`;
+  });
+  state.handCounts = handCounts();
+  state.draftIndex = (state.draftIndex + 1) % TABLE_SEATS;
+  if (state.draftIndex === 0) state.draftCycle += 1;
+  if (state.hands.every((hand) => hand.length === 8)) { finishDraft(); return true; }
+  state.draftSeat = state.draftOrder[state.draftIndex];
+  state.turn = state.draftSeat;
+  renderAll();
+  saveMatch();
+  if (scene) scene.sync(state);
+  if (isBotSeat(state.turn)) scheduleAI(600);
+  return true;
+}
+
+function finishDraft() {
+  state.draftPool = null;
+  state.draftSeat = null;
+  state.draftOrder = null;
+  const holder = state.hands.findIndex((hand) => hand.some((tile) => tile.id === "r-general-0"));
+  state.leader = holder >= 0 ? holder : 0;
+  state.turn = state.leader;
+  state.phase = "lead";
+  state.handCounts = handCounts();
+  if (scene) scene.sync(state);
+  beginTrick();
+  toast(t("toast.draftDone"), "jade");
+}
+
+function aiDraftPick(seat) {
+  if (!state || state.phase !== "draft" || state.turn !== seat) return;
+  const picks = state.draftPool.slice()
+    .sort((a, b) => b.power - a.power || (a.color === "r" ? -1 : 1))
+    .slice(0, 2)
+    .map((tile) => tile.id);
+  draftPick(seat, picks);
+}
+
 function beginTrick() {
   if (!state) return;
   clearTimeout(actionTimer);
@@ -2210,14 +2331,15 @@ function scheduleAI(delay = 1000) {
   clearTimeout(actionTimer);
   if (!state) return;
   if (!isBotSeat(state.turn)) return;
-  if (!["lead", "follow", "showdown", "bid"].includes(state.phase)) return;
+  if (!["lead", "follow", "showdown", "bid", "draft"].includes(state.phase)) return;
   const token = ++actionToken;
   const seat = state.turn;
   actionTimer = setTimeout(() => {
     if (!state || token !== actionToken) return;
-    if (!["lead", "follow", "showdown", "bid"].includes(state.phase) || state.turn !== seat) return;
+    if (!["lead", "follow", "showdown", "bid", "draft"].includes(state.phase) || state.turn !== seat) return;
     if (!isBotSeat(seat)) return;
-    if (state.phase === "bid") aiBid(seat);
+    if (state.phase === "draft") aiDraftPick(seat);
+    else if (state.phase === "bid") aiBid(seat);
     else if (canClaimChuan(seat)) claimChuan(seat);
     else if (state.phase === "lead") aiLead(seat);
     else if (state.phase === "showdown") aiShowdown(seat);
@@ -2227,6 +2349,7 @@ function scheduleAI(delay = 1000) {
 
 function dealRound(leaderHint = null) {
   if (!state) return;
+  if (state.draftMode) { startDraft(); return; }
   clearTimeout(actionTimer);
   actionToken += 1;
   random = state.seed ? mulberry32(state.seed + state.round * 7919) : Math.random;
@@ -2309,6 +2432,7 @@ function beginMatch(options = {}) {
   state.multiplier = 1;
   state.redraws = 0;
   state.resultSeconds = prefs.resultSeconds;
+  state.draftMode = prefs.draftMode === true;
   state.bids = null;
   state.bidOrder = null;
   state.bidTurn = 0;
@@ -3206,6 +3330,7 @@ function renderAll() {
   if (dock) dock.classList.toggle("is-turn", state.turn === MY_SEAT && ["lead", "follow"].includes(state.phase));
   renderNetChrome();
   maybePublishHandLayout();
+  renderDraft();
 }
 
 function renderHUD() {
@@ -4149,6 +4274,7 @@ function hydrateRemoteState(raw) {
   game.captureHidden = [0, 1, 2, 3].map((seat) => (
     (raw.captures?.[seat] || []).map((_, index) => Boolean(raw.captureHidden?.[seat]?.[index]))
   ));
+  game.draftPool = raw.draftPool ? raw.draftPool.map((id) => TILE_BY_ID[id]).filter(Boolean) : null;
   game.trickArchive = (raw.trickArchive || []).map((record) => ({
     ...record,
     combo: record.combo || null,
@@ -4514,7 +4640,9 @@ function hostMessage({ connId, message }) {
                 ? claimChuan(profile.seat)
                 : message.kind === "bid"
                   ? placeBid(profile.seat, Number(message.value))
-                  : false;
+                  : message.kind === "draft"
+                    ? draftPick(profile.seat, message.tiles)
+                    : false;
       if (!ok) net.host.send(connId, { type: "rejected", reason: "illegal" });
       break;
     }
@@ -4974,8 +5102,9 @@ function resumeSavedMatch() {
   closeLobby();
   if (state.phase === "roundEnd" || state.phase === "matchEnd") {
     showRoundSummary(state.phase === "matchEnd");
-  } else if (scene) {
-    scene.sync(state);
+  } else {
+    renderAll();
+    if (scene) scene.sync(state);
   }
   toast(t("toast.resumed"), "jade");
 }
@@ -5724,6 +5853,60 @@ function chatClock(at) {
     return new Date(at).toLocaleTimeString(LANG === "th" ? "th-TH" : "en-US", { hour: "2-digit", minute: "2-digit" });
   } catch {
     return "";
+  }
+}
+
+let draftSelection = [];
+let draftSig = "";
+let draftSent = false;
+
+function renderDraft() {
+  const modal = $("#draftModal");
+  if (!modal) return;
+  const mode = state ? state.draftMode === true : prefs.draftMode === true;
+  const drafting = Boolean(state && state.phase === "draft");
+  $$("[data-draft-toggle]").forEach((input) => {
+    input.checked = mode;
+    input.disabled = drafting;
+  });
+  const wrap = $("#draftToggleWrap");
+  if (wrap) wrap.hidden = isClient();
+  if (!state || state.phase !== "draft") {
+    draftSelection = [];
+    draftSig = "";
+    modal.hidden = true;
+    return;
+  }
+  const humanTurn = state.turn === MY_SEAT && !draftSent;
+  const sig = `${state.turn}:${state.draftCycle}:${state.draftIndex}:${state.hands[MY_SEAT]?.length ?? 0}`;
+  if (sig !== draftSig) {
+    draftSig = sig;
+    draftSelection = [];
+    draftSent = false;
+  }
+  modal.hidden = false;
+  const meta = $("#draftMeta");
+  if (meta) {
+    meta.textContent = humanTurn
+      ? t("draft.metaYou", {
+        n: state.hands[MY_SEAT]?.length ?? 0,
+        step: Math.min(state.draftCycle + 1, 4),
+        pool: state.draftPool?.length ?? 0
+      })
+      : t("draft.waiting", { seat: seatName(state.turn) });
+  }
+  const pool = $("#draftPool");
+  if (pool) {
+    pool.innerHTML = (state.draftPool || []).map((tile) => (
+      `<button type="button" class="draft-tile ${tile.color === "r" ? "red" : "black"} ${draftSelection.includes(tile.id) ? "selected" : ""}" data-draft-id="${tile.id}" ${humanTurn ? "" : "disabled"}>${tile.hanzi}</button>`
+    )).join("");
+  }
+  const confirm = $("#draftConfirm");
+  if (confirm) {
+    confirm.disabled = !humanTurn || draftSelection.length !== 2;
+    confirm.textContent = state.turn === MY_SEAT
+      ? (draftSent ? t("draft.waitingShort") : t("draft.confirm"))
+      : t("draft.waitingShort");
   }
 }
 
@@ -7805,6 +7988,35 @@ function bindEvents() {
   $("#logTrickSelect")?.addEventListener("change", (event) => renderLogBrowser($("#logRoundSelect")?.value, event.target.value));
   $("#revealContinue")?.addEventListener("click", finishRevealResult);
   $("#revealModal [data-close]")?.addEventListener("click", finishRevealResult);
+  $("#draftPool")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-draft-id]");
+    if (!button || button.disabled || !state || state.phase !== "draft" || state.turn !== MY_SEAT) return;
+    const id = button.dataset.draftId;
+    if (draftSelection.includes(id)) draftSelection = draftSelection.filter((value) => value !== id);
+    else if (draftSelection.length < 2) draftSelection.push(id);
+    else return;
+    renderDraft();
+  });
+  $("#draftConfirm")?.addEventListener("click", () => {
+    if (draftSelection.length !== 2 || !state || state.phase !== "draft" || state.turn !== MY_SEAT || draftSent) return;
+    if (isClient()) {
+      draftSent = sendNetAction("draft", draftSelection, false);
+      renderDraft();
+      return;
+    }
+    draftPick(MY_SEAT, draftSelection);
+    draftSelection = [];
+    renderDraft();
+  });
+  $$("[data-draft-toggle]").forEach((input) => input.addEventListener("change", () => {
+    if (state && state.phase === "draft") { input.checked = state.draftMode === true; return; }
+    prefs.draftMode = input.checked;
+    if (state && !isClient()) state.draftMode = input.checked;
+    savePrefs();
+    if (isHost()) saveMatch();
+    $$("[data-draft-toggle]").forEach((other) => { other.checked = input.checked; });
+    toast(t("draft.toggleToast"), "jade");
+  }));
   $("#summaryAutoNext")?.addEventListener("change", (event) => {
     prefs.autoNext = event.target.checked;
     savePrefs();
@@ -8174,7 +8386,7 @@ async function boot() {
 
   if (!restored && !willPrompt) {
     dealRound();
-  } else if (restored && (state.phase === "lead" || state.phase === "follow")) {
+  } else if (restored && (state.phase === "lead" || state.phase === "follow" || state.phase === "draft")) {
     if (isBotSeat(state.turn)) scheduleAI(900);
     else coachTick();
     if (scene) scene.sync(state);

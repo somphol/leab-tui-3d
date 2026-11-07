@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Release **1.9.6** of Leab-Tui 3D is built, verified and published. It adds version/reload controls, connection diagnostics and mobile join restore, and hardens the room with host approval, an auto-generated strong PIN with memory-only digest, connection/message caps and a voice allowlist, on top of chat and full-mesh voice.
+Release **1.9.7** of Leab-Tui 3D is built, verified and published. It adds the table interaction layer (zones, drag-to-play, showdown pause, captured piles), Chuan-aware result explanations, a Turn-Log-style reveal panel, winner badges, and an off-by-default **experimental draft deal**: the host toggles it in the lobby or in Actions, seats take turns picking 2 tiles four times from a public pool, bots pick automatically, and picks are relayed through the host.
 
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Live: <https://somphol.github.io/leab-tui-3d/>
@@ -22,8 +22,9 @@ Release **1.9.6** of Leab-Tui 3D is built, verified and published. It adds versi
 | Chat | Host-routed, escaped, 200-char cap, 350 ms guest limit, 30-message history |
 | Voice | Full-mesh PeerJS media, mic mute, deafen, speaking pulse, no recording |
 | Audio | Synthesised shuffle/clack/flip/sweep/win/lose, gesture-unlocked |
+| Draft | Off-by-default host toggle (lobby + Actions), 2 tiles ×4 from a public pool, bot auto-pick, P2P relay, mid-draft resume |
 | Persistence | Autosave, solo resume, stats, versioned JSON export; network saves marked non-resumable |
-| Verification | 38/38 self-test, 342-check static check, CDP harness, full-round evidence, 23-check two-browser WebRTC suite |
+| Verification | 38/38 self-test, 360-check static check, CDP harness, full-round evidence, draft flow, 23-check two-browser WebRTC suite |
 | Release docs | README, AGENTS, STATE, rules, architecture, multiplayer, protocol, tests, deployment, reproduction, data format, controls, accessibility, performance, design, browser support, FAQ, roadmap, release checklist, gallery, glossary |
 | Skill | `leab-tui-p2p-studio`, mirrored to `~/Projects/opencode-skills/` and published |
 
@@ -32,11 +33,13 @@ Release **1.9.6** of Leab-Tui 3D is built, verified and published. It adds versi
 ```text
 node --check script.js                 PASS
 node --check peer-manager.js           PASS
-node scripts/check.mjs                 PASS (292 checks)
+node scripts/check.mjs                 PASS (360 checks)
 ?selftest=1                            SELFTEST PASS 38/38
 node scripts/verify.mjs                ALL BROWSER CHECKS PASSED
 node scripts/net-check.mjs             ALL 17 MULTIPLAYER CHECKS PASSED
 full round                             roundEnd, 32 tiles, points sum 0
+draft deal                             4 human picks, hands [8,8,8,8], 32 unique ids, leader = red General
+draft resume                           phase draft, pool and seat restored, modal open
 host + guest                           2 humans + Bot 1 + Bot 2
 guest privacy                          own 8 real ids, other 24 ghost ids
 lead/follow                            11 actions crossed the data channel, trick resolved

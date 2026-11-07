@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.9.6-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.9.7-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -17,6 +17,7 @@ A bilingual, interactive 3D studio for **เลี๊ยบตุ่ย (Leab-Tu
 ## What makes it different
 
 - **A real trick-taking engine, not a toy.** Leab (single), Tui (pair), Sa Hoo, See Hoo, Ngoh Hoo, Lak Hoo, and the Soldier sets; red-beats-black tie-breaking; face-down submissions; revealed-only comparison; the eight-pile Chuan bonus.
+- **Experimental draft deal.** A host-only, off-by-default variant replaces the automatic deal: each seat picks 2 tiles from a public pool, four times, to build an 8-tile hand. Bots pick automatically; a human always picks their own. It applies to the next deal, works in solo and P2P, and resumes mid-draft. See **[docs/DRAFT.md](docs/DRAFT.md)**.
 - **Serverless P2P multiplayer.** Host a room, share a six-digit code or invite link, and play with up to three guests over a WebRTC data channel. The host browser is authoritative; each guest receives only their own hand. Two humans are enough to start — empty seats become bots, and a guest who leaves mid-game is replaced by a bot without stopping the table. See **[docs/MULTIPLAYER.md](docs/MULTIPLAYER.md)**.
 - **Host approval and an optional strong PIN.** Guests request a seat; the host approves or denies each one. A 5-digit PIN is generated automatically; **New PIN** rotates it is checked against an in-memory SHA-256 digest and never appears in the invite link or saved game. One-click **Copy room info** includes the code, link and PIN; **Copy invite link** never includes the PIN.
 - **Version and troubleshooting built in.** The footer and every launch dialog show the running version with a large **Reload version** button. The app checks once on open (at most once every 5 minutes), updates itself from the launch menu when a new build is live, and otherwise shows an update banner. A **Troubleshoot** panel probes the host with or without the PIN and reports reachability, PIN state, approval, started state and free seats.
@@ -183,6 +184,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 - Online play is host-authoritative and serverless. There is no host migration: if the host closes the tab, the room ends. Guests are not authenticated.
 - Redaction keeps other hands off the wire, but the host browser knows every hand and a determined guest can inspect their own client. There is no collusion or cheating detection.
 - The rules follow the Thai description cited in [docs/RULES.md](docs/RULES.md); where that source is ambiguous, the studio documents a playable interpretation. It is not an official tournament rulebook.
+- The draft deal is an experimental house variant, not part of the source rules. Its bot picks greedily (highest power first) and redraw is disabled while it is on.
 - No accounts, leaderboards or server-side storage.
 - The page is not fully offline: Three.js r160 is loaded from jsDelivr. Multiplayer also needs PeerJS from jsDelivr and the `0.peerjs.com` broker. The rule engine can still be exercised if the CDN fails, but the table and rooms will not start.
 - Mobile is verified under Chrome device emulation, not on physical iOS/Android hardware.
@@ -193,7 +195,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 
 ## Credits
 
-Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.9.6**; the original table was 1.0.0.
+Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.9.7**; the original table was 1.0.0.
 
 Rules reference: Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016), linked in [docs/RULES.md](docs/RULES.md). Three.js and PeerJS are MIT-licensed; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

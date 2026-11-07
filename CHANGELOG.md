@@ -2,6 +2,20 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.7] — 2026-11-07
+
+### Added
+
+- **Experimental draft deal.** A host-only, off-by-default toggle in the lobby and in Actions replaces the automatic deal with a public pool: seats take turns picking 2 tiles, four times, for an 8-tile hand. The red-General holder leads. Bots pick automatically; a human always picks their own. It applies to the next deal, works in solo and P2P, resumes mid-draft, and is relayed as a host-validated `draft` action.
+- **`docs/DRAFT.md`** plus a `RULES.md` section explain the variant and state plainly that it is not part of the source rules.
+- **Draft modal** with the public pool, a 2-tile selection, step/pool counts and a host toggle in the Actions panel; the lobby toggle covers the pre-room case.
+
+### Changed
+
+- **Redraw is disabled while draft mode is on.** A drafted hand is the player's own choice, so the softening rule does not apply.
+- **Draft completion requires all four hands to reach 8 tiles** rather than counting cycles, so a rejected or replayed pick cannot end the draft early.
+- Saved games keep `draftPool`, `draftOrder`, `draftCycle`, `draftIndex` and `draftSeat`, so a reload mid-draft reopens the pool on the right seat.
+
 ## [1.9.6] — 2026-11-07
 
 ### Added

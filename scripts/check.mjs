@@ -219,6 +219,12 @@ ok(script.includes("return piles - 2;"), "par scoring is piles - 2");
 ok(script.includes('["single", "pair", "triple", "quad", "quint", "sahoo", "seehoo", "ngohoo", "lakhoo"]'), "all nine combination types are declared");
 ok(/if \(n === 2\) \{[\s\S]*?tiles\[0\]\.power !== 7/.test(script), "General pair is rejected in detection");
 ok(script.includes("CORE_BIG") && script.includes("CORE_SMALL"), "both straight cores are declared");
+ok(index.includes('id="draftModal"') && index.includes("data-draft-toggle"), "draft modal and host toggles exist");
+ok(script.includes("function startDraft") && script.includes("function draftPick") && script.includes("function finishDraft"), "draft engine exists");
+ok(/state\.hands\.every\(\(hand\) => hand\.length === 8\)/.test(script), "draft finishes only when every hand has 8 tiles");
+ok(/kind === "draft"[\s\S]{0,80}draftPick\(profile\.seat/.test(script), "draft picks are relayed through the host");
+ok(script.includes("prefs.draftMode = prefs.draftMode === true"), "draft mode defaults off");
+ok(script.includes("copy.draftPool") && script.includes("game.draftPool"), "draft pool survives save and hydrate");
 ok(script.includes("function simulateRound"), "round simulation exists");
 ok(script.includes("function selfTest"), "self-test exists");
 

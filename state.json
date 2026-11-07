@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.6",
-  "version": "1.9.6",
+  "projectVersion": "1.9.7",
+  "version": "1.9.7",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,13 +9,13 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-07T10:35:11-08:00",
-    "durationSeconds": 88177,
-    "durationHuman": "24h 29m 37s",
+    "packagedAt": "2026-11-07T11:26:50-08:00",
+    "durationSeconds": 91277,
+    "durationHuman": "25h 21m 17s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-07T18:35:15Z"
+    "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror. plus 1.9.2–1.9.7: arrangement/showdown/piles, Chuan-aware results, Turn-Log reveal, winner badges and the experimental draft deal.",
+    "publishedAt": "2026-11-07T19:26:50Z"
   },
   "tokens": {
     "input": 6615671,
@@ -26,7 +26,7 @@
     "total": 7758531,
     "totalWithCache": 712947458,
     "cost": 0.0,
-    "note": "Session total at 2026-11-07T10:35:11-08:00, covering 1.4.0–1.9.1."
+    "note": "Session total at 2026-11-07T11:26:50-08:00, covering 1.4.0–1.9.7."
   },
   "cost": {
     "usd": 0.0,
@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (348 checks)",
+    "staticCheck": "scripts/check.mjs (360 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
     "multiplayer": "scripts/net-check.mjs — 23/23",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
@@ -273,9 +273,14 @@
       "version": "1.9.6",
       "date": "2026-11-07",
       "summary": "Large winner badge on captured pile cards."
+    },
+    {
+      "version": "1.9.7",
+      "date": "2026-11-07",
+      "summary": "Experimental draft deal with host toggle and P2P relay."
     }
   ],
-  "releaseNotes": "1.9.6 marks the winning seat’s cards in the captured pile with a large green check and gold frame.",
+  "releaseNotes": "1.9.7 adds an off-by-default experimental draft deal: host toggle, public pool, 2 tiles ×4, bot auto-picks, P2P relay and mid-draft resume.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

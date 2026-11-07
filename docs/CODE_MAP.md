@@ -13,7 +13,7 @@
 | 4. Rules | 988–1168 | `buildDeck`, `detectCombo`, `compareScores`, `beats`, `allCombos`, `scorePiles` |
 | 5. AI | 1169–1246 | `chooseLead`, `chooseFollow`, `recommendedFollow`, `comboPower` |
 | 6. State | 1247–1489 | `MY_SEAT`, `SEAT_PROFILES`, `net`, `isBotSeat`, `makeState`, `serializableState`, `saveMatch`, `loadMatch` |
-| 7. Flow | 1490–1884 | `beginMatch`, `dealRound`, `beginTrick`, `leadTrick`, `submitPlay`, `resolveTrick`, `endRound`, `undoLastTrick`, `aiLead`, `aiFollow` |
+| 7. Flow | 1490–1884 | `beginMatch`, `dealRound`, `startDraft`, `draftPick`, `finishDraft`, `aiDraftPick`, `beginTrick`, `leadTrick`, `submitPlay`, `resolveTrick`, `endRound`, `undoLastTrick`, `aiLead`, `aiFollow` |
 | 8. Human + coach | 1885–2081 | `humanLead`, `humanFollow`, `sendNetAction`, `toggleTile`, `applyHint`, `coachMessage`, `coachMeta` |
 | 9. Toasts + summaries | 2082–2191 | `toast`, `showRoundSummary`, `buildUndoExplanation` |
 | 10. Rendering | 2192–2514 | `renderAll`, `renderHUD`, `renderScoreboard`, `renderHandList`, `renderSelection`, `renderInspector`, `renderLog`, `renderRules`, `renderAbout` |

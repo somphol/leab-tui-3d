@@ -181,6 +181,29 @@ console               no exceptions on either page
 
 The privacy check is the important one: it reads the guest's `LeabTui.getState()` and asserts that every id outside the guest's own seat starts with `ghost-`. That value comes from the actual data channel, not from a unit stub.
 
+### Draft deal
+
+Run with `?mode=solo`, enable **Draft next deal**, then `LeabTui.newMatch()`:
+
+```text
+pool at start          32 tiles
+human picks            4 × 2 = 8 tiles
+hands after finish     [8, 8, 8, 8]
+unique ids             32
+phase / trick          lead / 1
+leader                 seat holding r-general-0
+draft modal            hidden
+```
+
+Also checked: the toggle defaults off (automatic 8-tile deal, no modal); an
+in-match toggle applies to the next deal (`nextRound()` → phase `draft`); and a
+reload mid-draft restores `phase: draft`, the pool, the current seat and an open
+modal. The draft end condition is "every hand has 8 tiles", not a cycle count.
+
+The P2P relay (`kind:"draft"`) shares the same action envelope as `bid` and is
+host-validated, but a dedicated two-browser draft test is not part of
+`net-check.mjs` yet; see Known gaps.
+
 ## Manual checklist
 
 ### Launch
@@ -291,6 +314,7 @@ A green suite does not prove the table looks right. Inspect the screenshots afte
 - The AI is not benchmarked for strength; only its legality and conservation are tested.
 - `scripts/net-check.mjs` needs outbound access to `0.peerjs.com`; it is not part of the default `verify.mjs` run.
 - Redaction is tested from the guest's JavaScript state, not by inspecting every packet. The host is trusted by design.
+- The experimental draft is verified in solo and on resume; its host-relayed guest pick is code-reviewed but not exercised by `net-check.mjs`.
 
 ## Adding a test
 

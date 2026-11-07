@@ -164,3 +164,13 @@ node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?lobby=1" --wait 350
 ```
 
 Then convert with `sips -s format jpeg -s formatOptions 86 screenshots/hero.png --out screenshots/hero.jpg` (or any image tool). The PNGs are working files; the repository ships the JPGs.
+
+## Experimental draft deal
+
+![Draft modal on desktop](../screenshots/draft-modal.png)
+
+The host-only draft deal (off by default): the public 32-tile pool, a step counter, the remaining pool size and the two-tile confirm button. The host toggle sits in Actions and is disabled while a draft is in progress; the lobby has the same switch before a room starts.
+
+![Draft modal on a phone](../screenshots/draft-modal-mobile.png)
+
+The same modal at 390×844: five tiles per row, a scrollable pool of 436 px and the confirm button still inside the card, with no horizontal overflow.

@@ -3,14 +3,14 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.9.6**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.9.7**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.9.6` |
+| App version | `1.9.7` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
 | Primary branch | `main` |
@@ -22,6 +22,10 @@
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.9.7 — experimental draft deal
+
+The host can enable a draft deal (off by default) in the lobby or from Actions. The automatic deal is replaced by a public pool: seats take turns taking 2 tiles, four times, for 8 each; bots pick automatically and the red-General holder leads. The draft is host-validated and relayed in P2P, resumes mid-draft, and disables redraw. Documented as experimental in `docs/DRAFT.md`.
 
 ## Release 1.9.6 — winner badge on captured cards
 

@@ -91,12 +91,15 @@ A combination is:
 
 ```text
 dealing ──► lead ──► follow ──► resolving ──► lead (next trick)
+   │
+   └──► draft (experimental) ──► lead
                  │                     │
                  └──── undo ───────────┘
                                        └──► roundEnd ──► lead (next round)
                                                      └──► matchEnd
 ```
 
+- `startDraft` (experimental, default off) builds a public pool and rotates seats; `draftPick` applies one 2-tile pick and `finishDraft` hands over to `beginTrick` with the red-General holder leading.
 - `beginTrick` stores `state.snapshot = { game: serializableState(state), stats }` before changing anything.
 - `leadTrick` removes the leader's tiles, sets `lead`/`best`, and advances the turn.
 - `submitPlay` removes exactly `lead.count` tiles; `revealed` is true only when the set matches the call and strictly beats `best`.
@@ -215,7 +218,7 @@ The saved payload is:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.9.6",
+  "version": "1.9.7",
   "savedAt": "2026-11-06T...",
   "network": false,
   "game": { "phase": "...", "hands": [["r-general-0"], ...], ... }

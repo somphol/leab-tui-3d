@@ -1,0 +1,94 @@
+# Draft deal (experimental)
+
+Draft is an **optional, experimental** way to deal a round. It is **off by
+default**: a normal table deals eight tiles to each seat automatically and the
+game starts immediately.
+
+Draft is **not** part of the Navee 2016 rule source. It is a deck-building
+variant for players who want the deal to be a decision instead of luck. Do not
+describe it as a standard Leab-Tui rule.
+
+## How it works
+
+1. The 32 tiles are shuffled into a public pool.
+2. Seats pick **in turn**, starting after the dealer (clockwise by default, so
+   seat 0 when the dealer is seat 3).
+3. A pick takes **2 tiles** from the pool. Then the next seat picks.
+4. After all four seats have picked, the cycle repeats. **Four cycles** give
+   every seat **8 tiles**.
+5. The seat holding the **red General** leads the first trick.
+
+The turn order for picking follows `nextSeat`, so the direction setting applies.
+
+## Turning it on
+
+Only the host can change the mode, in two places:
+
+- **Before the room / match** — the host panel in the lobby has
+  *"Draft mode: pick 2 tiles ×4 (experimental)"*. It is stored in preferences
+  and copied into the match when it starts.
+- **During a match** — Actions has *"Draft next deal (experimental)"*. The
+  change applies to the **next deal**, not to a hand already in play. The
+  control is disabled while a draft is in progress.
+
+Guests never see the toggle; the host's state is authoritative and is published
+with the rest of the match state.
+
+In solo play a human always picks their own tiles. Bots pick automatically.
+
+## Bots
+
+The experimental bot picks the two highest-power tiles still in the pool (red
+first on a tie). This is intentionally simple and greedy; it does not plan a
+hand or deny the human a known combination. Treat bot drafting as a placeholder,
+not a strong opponent model.
+
+## Interactions with the rest of the rules
+
+- **No redraw (โละ) in draft mode.** The redraw rule exists to soften a bad
+  random deal; a drafted hand is the player's own choice, so `canRedraw` returns
+  false whenever draft mode is on.
+- **Chuan, bidding, scoring, captures and reveal/showdown are unchanged.** The
+  draft only replaces the deal.
+- **Lead** is the red-General holder rather than the previous trick's winner.
+  This is the same idea as the first-round lead rule, applied to each drafted
+  round.
+- **Resume** works mid-draft: the pool, order, cycle, current seat and hands are
+  saved, and the draft modal reopens on reload. Network rooms are still not
+  resumable.
+- **Undo** is disabled during the draft (there is no resolved trick to rewind).
+
+## Multiplayer
+
+The host runs the draft, exactly like every other phase:
+
+- A guest pick is sent as `{type:"action", kind:"draft", tiles:[id,id]}`.
+- The host validates that it is that seat's turn and that both ids are still in
+  the pool, then applies the pick, advances the seat and publishes the new
+  state.
+- The **pool is public** (it is the board, not a hand). Every guest receives the
+  full pool plus their own hand; other hands stay ghosted through
+  `sanitizeForSeat`.
+- The pick is rejected if the seat is not current or a tile was already taken,
+  so a double-click cannot take four tiles.
+
+## Failure modes
+
+- If a pick message is lost, the host is still waiting on that seat; the guest
+  can resend after their local "waiting" state clears on the next publish.
+- A guest who disconnects during their pick is converted to a bot and the bot
+  completes the draft.
+- A host who closes the room ends the draft with the room; there is no
+  migration.
+
+## Where it lives
+
+| Concern | Code |
+| --- | --- |
+| Start / order / pool | `startDraft` |
+| Validate and apply a pick | `draftPick` |
+| Hand-over to play, red-General leader | `finishDraft` |
+| Bot choice | `aiDraftPick` |
+| Modal, selection, host toggle | `renderDraft`, `#draftModal`, `[data-draft-toggle]` |
+| Network action | host `message.kind === "draft"` branch |
+| Save / hydrate | `serializableState` / `hydrateRemoteState` (`draftPool`, `draftOrder`, `draftCycle`, `draftIndex`, `draftSeat`, `draftMode`) |

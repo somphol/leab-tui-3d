@@ -6,7 +6,7 @@
   <title>Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio</title>
   <meta name="description" content="A bilingual, offline-friendly 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with 32 Chinese chess tiles. Vanilla HTML, CSS and Three.js." />
   <meta name="theme-color" content="#e8f0f2" />
-  <meta name="app-version" content="1.9.6" />
+  <meta name="app-version" content="1.9.7" />
   <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta property="og:type" content="website" />
@@ -47,7 +47,7 @@
     })();
   </script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=1.9.6" />
+  <link rel="stylesheet" href="style.css?v=1.9.7" />
   <script type="importmap">
     {
       "imports": {
@@ -68,7 +68,7 @@
         <span class="brand-copy">
           <span class="brand-line">
             <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
-            <span id="brandVersion" class="brand-version">(v1.9.6)</span>
+            <span id="brandVersion" class="brand-version">(v1.9.7)</span>
           </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
@@ -211,6 +211,10 @@
             <button id="lobbyBtn" class="btn btn-ghost" type="button" data-i18n="net.openLobby">Multiplayer</button>
             <button id="leaveRoomBtn" class="btn btn-ghost btn-wine" type="button" hidden data-i18n="net.leave">Leave room</button>
           </div>
+          <label id="draftToggleWrap" class="lobby-check action-toggle">
+            <input type="checkbox" data-draft-toggle />
+            <span data-i18n="draft.toggle">Draft next deal (experimental)</span>
+          </label>
         </section>
 
         <section class="panel chat-panel" id="chatPanel" hidden>
@@ -267,7 +271,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.9.6</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.9.7</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -444,6 +448,10 @@
             <input type="checkbox" data-auto-audio checked />
             <span data-i18n="net.autoAudio">Join audio chat when the table starts</span>
           </label>
+          <label class="lobby-check draft-check">
+            <input type="checkbox" data-draft-toggle />
+            <span data-i18n="draft.toggleHost">Draft mode: pick 2 tiles ×4 (experimental)</span>
+          </label>
           <div class="modal-actions">
             <button id="hostDiagBtn" class="btn btn-ghost" type="button" data-i18n="diag.open">Troubleshoot</button>
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
@@ -500,7 +508,7 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.9.6</span>
+          <span class="version-chip version-label">v1.9.7</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
@@ -642,6 +650,17 @@
       </div>
     </div>
 
+    <div id="draftModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="draftTitle">
+      <div class="modal-card modal-wide">
+        <h2 id="draftTitle" data-i18n="draft.title">Draft — pick 2 tiles</h2>
+        <p id="draftMeta" class="lobby-note"></p>
+        <div id="draftPool" class="draft-pool"></div>
+        <div class="modal-actions">
+          <button id="draftConfirm" class="btn btn-gold" type="button" disabled data-i18n="draft.confirm">Pick 2 tiles</button>
+        </div>
+      </div>
+    </div>
+
     <div id="revealModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="revealTitle">
       <div class="modal-card modal-small reveal-result">
         <button class="modal-close" type="button" data-close="revealModal" aria-label="Close">×</button>
@@ -693,6 +712,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.9.6"></script>
+  <script type="module" src="script.js?v=1.9.7"></script>
 </body>
 </html>
