@@ -15,7 +15,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://0.peerjs.com wss://0.peerjs.com; font-src 'self' data:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=1.7.0" />
+  <link rel="stylesheet" href="style.css?v=1.7.1" />
   <script type="importmap">
     {
       "imports": {
@@ -203,7 +203,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.7.0</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.7.1</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -301,8 +301,13 @@
             <span class="lobby-name-hint" data-i18n="net.yourNameHint">Shown to other players.</span>
           </div>
 
+          <label class="lobby-check auto-audio-check">
+            <input type="checkbox" data-auto-audio checked />
+            <span data-i18n="net.autoAudio">Join audio chat when the table starts</span>
+          </label>
+
           <div class="version-row">
-            <span class="version-chip version-label">v1.7.0</span>
+            <span class="version-chip version-label">v1.7.1</span>
             <button id="lobbyReload" class="mini-btn" type="button" data-i18n="version.reload">↻ Reload</button>
           </div>
         </section>
@@ -352,6 +357,10 @@
           <h3 data-i18n="net.roster">Seats</h3>
           <div id="lobbyRoster" class="lobby-roster"></div>
           <p class="lobby-note" data-i18n="net.fourSeats">Leab-Tui is a four-seat game: the host plus up to three guests. Empty seats are filled with bots.</p>
+          <label class="lobby-check auto-audio-check">
+            <input type="checkbox" data-auto-audio checked />
+            <span data-i18n="net.autoAudio">Join audio chat when the table starts</span>
+          </label>
           <div class="modal-actions">
             <button id="hostDiagBtn" class="btn btn-ghost" type="button" data-i18n="diag.open">Troubleshoot</button>
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
@@ -380,13 +389,17 @@
           <label class="field-label" for="lobbyNameInput" data-i18n="net.nameLabel">Your name</label>
           <input id="lobbyNameInput" class="lobby-input" type="text" maxlength="18" autocomplete="nickname" placeholder="Guest" data-i18n-placeholder="net.namePlaceholder" />
           <p class="lobby-note" data-i18n="net.joinNote">The host still has to approve you before you get a seat.</p>
+          <label class="lobby-check auto-audio-check">
+            <input type="checkbox" data-auto-audio checked />
+            <span data-i18n="net.autoAudio">Join audio chat when the table starts</span>
+          </label>
           <div class="modal-actions">
             <button id="joinDiagBtn" class="btn btn-ghost" type="button" data-i18n="diag.open">Troubleshoot</button>
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
             <button id="lobbyConnectBtn" class="btn btn-gold" type="button" data-i18n="net.connect">Connect</button>
           </div>
           <div class="version-row join-version-row">
-            <span class="version-chip version-label">v1.7.0</span>
+            <span class="version-chip version-label">v1.7.1</span>
             <button id="joinReload" class="mini-btn" type="button" data-i18n="version.reload">Reload</button>
           </div>
         </section>
@@ -551,6 +564,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.7.0"></script>
+  <script type="module" src="script.js?v=1.7.1"></script>
 </body>
 </html>

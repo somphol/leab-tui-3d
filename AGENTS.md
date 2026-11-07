@@ -4,7 +4,7 @@
 
 A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat and independent full-mesh voice chat (mic mute + deafen). It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.7.0**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.7.1**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -81,8 +81,8 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.7.0"
-prefs: theme mahogany|jade|midnight|parchment|daybreak; fontSize sm|md|lg|xl; CSS --fs-scale 0.9/1/1.12/1.24
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.7.1"
+prefs: theme mahogany|jade|midnight|parchment|daybreak; fontSize sm|md|lg|xl; autoAudio on by default; CSS --fs-scale 0.9/1/1.12/1.24
 room: LEAB-482-173; peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
 
@@ -110,7 +110,7 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **Chat goes through the host.** `sendChat` → host `hostChat` → append once → broadcast one entry to every guest. Cap at 200 chars and rate-limit guests (350 ms). Never inject chat with `innerHTML`.
 - **Voice does not go through the host.** It is a full mesh of PeerJS media calls between voice-active humans. The host only relays `voice-state` and the roster's `peerId`/`voice` flags. Do not route voice over the data channel.
 - **Mic mute is `track.enabled = false`**, not `track.stop()` and not closing the call. Deafen is `audio.muted` on every remote element, not the local mic.
-- **Voice is opt-in.** Never call `getUserMedia` on load; it must be a user gesture with HTTPS/localhost. Render `<audio autoplay playsinline>` only after a stream arrives.
+- **Voice is opt-in.** Never call `getUserMedia` on load; it must be a user gesture with HTTPS/localhost. Render `<audio autoplay playsinline>` only after a stream arrives. `prefs.autoAudio` (default on) preloads the mic only from the Connect/Start click, skips silent `?room=&name=` auto-joins, and joins with the preloaded stream once the seat exists. Denial never blocks the match; the **Join audio** pill remains.
 - **Speaking meter** uses `AudioContext` analysers and a 120 ms interval; it must not connect to `destination` (playback is the `<audio>` element).
 - **The 3D scene is a view.** `scene.sync(state)` is idempotent; it animates only targets that differ. Never mutate `state` from inside the scene except through the public callbacks (`toggleTile`, `inspect*`).
 - **Camera.** Desktop home is `(0, 10.2, 11.4)` target `(0, 0.22, 0.9)`; portrait is `(0, 14.3, 17.2)` target `(0, 0.18, 0.7)` with FOV 46. The wider portrait framing is required so the human hand is not cropped. The mobile hand dock must stay under ~110 px or it hides the hand.

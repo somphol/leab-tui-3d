@@ -1381,6 +1381,8 @@ a:hover { text-decoration: underline; }
 }
 .lobby-name-row .lobby-input { flex: 1 1 160px; min-height: 34px; }
 .lobby-name-hint { flex: 0 1 auto; color: var(--ink-faint); font-size: calc(10px * var(--fs-scale)); }
+.auto-audio-check { margin: 12px 0 4px; }
+.auto-audio-check input { accent-color: var(--gold); }
 
 .host-code-card {
   display: flex;

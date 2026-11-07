@@ -2,6 +2,18 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.7.1] — 2026-11-07
+
+### Added
+
+- **Automatic audio join.** A new checkbox, **Join audio chat when the table starts**, is on by default in the launch menu, **Host a game** and **Join a game**. The microphone prompt appears on the Connect / Start click; if allowed, voice joins as the table starts.
+- The choice persists as `autoAudio` in preferences. Turning it off restores the manual **Join audio** pill.
+
+### Notes
+
+- Auto-join never blocks the game. A denied or unavailable microphone is ignored and the **Join audio** pill stays available.
+- Links that auto-join on load (`?room=…&name=…`) skip the mic request because there is no user gesture; the pill is still there.
+
 ## [1.7.0] — 2026-11-06
 
 ### Changed

@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.7.0-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.7.1-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -193,7 +193,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 
 ## Credits
 
-Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.7.0**; the original table was 1.0.0.
+Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.7.1**; the original table was 1.0.0.
 
 Rules reference: Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016), linked in [docs/RULES.md](docs/RULES.md). Three.js and PeerJS are MIT-licensed; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

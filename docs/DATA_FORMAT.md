@@ -13,7 +13,7 @@ There are two JSON files with different jobs:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "savedAt": "2026-11-06T10:00:00.000Z",
   "network": false,
   "game": { "...": "see Game" }
@@ -32,11 +32,12 @@ Preferences shape:
   "cinema": false,
   "tileList": true,
   "theme": "mahogany",
-  "fontSize": "md"
+  "fontSize": "md",
+  "autoAudio": true
 }
 ```
 
-`theme` is `mahogany`, `jade`, `midnight`, `parchment` or `daybreak`; `fontSize` is `sm`, `md`, `lg` or `xl`. Invalid values fall back to `mahogany` and `md`. The display fields were added in 1.1.0; 1.4.0 adds the `network` flag. Neither changes the core game schema.
+`theme` is `mahogany`, `jade`, `midnight`, `parchment` or `daybreak`; `fontSize` is `sm`, `md`, `lg` or `xl`. Invalid values fall back to `mahogany` and `md`. The display fields were added in 1.1.0; 1.4.0 adds the `network` flag and 1.7.1 adds `autoAudio` (default `true`). Neither changes the core game schema.
 
 The autosave is written after every action, on `visibilitychange` when hidden, and on `beforeunload`. `network: true` marks a hosted room; `loadMatch` rejects it because a WebRTC room cannot be restored after a reload. A guest never writes the autosave.
 
@@ -46,11 +47,11 @@ The autosave is written after every action, on `visibilitychange` when hidden, a
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "exportedAt": "2026-11-04T01:10:00.000Z",
   "app": {
     "name": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-    "version": "1.7.0",
+    "version": "1.7.1",
     "repository": "https://github.com/somphol/leab-tui-3d",
     "live": "https://somphol.github.io/leab-tui-3d/",
     "license": "MIT"
@@ -182,4 +183,4 @@ Undo snapshots are **not** persisted. A reload can resume the live game but cann
 
 ## Versioning
 
-`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code as of 1.7.0; the loader is strict and falls back to a new match. New preference fields are additive and validated on load.
+`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code as of 1.7.1; the loader is strict and falls back to a new match. New preference fields are additive and validated on load.

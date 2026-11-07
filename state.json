@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.7.0",
-  "version": "1.7.0",
+  "projectVersion": "1.7.1",
+  "version": "1.7.1",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,24 +9,24 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-06T18:36:28-08:00",
-    "durationSeconds": 30654,
-    "durationHuman": "8h 30m 54s",
+    "packagedAt": "2026-11-07T00:03:30-08:00",
+    "durationSeconds": 50277,
+    "durationHuman": "13h 57m 57s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
     "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror.",
-    "publishedAt": "2026-11-07T02:36:36Z"
+    "publishedAt": "2026-11-07T08:03:37Z"
   },
   "tokens": {
-    "input": 2770003,
-    "output": 407019,
-    "reasoning": 279800,
-    "cacheRead": 504388608,
+    "input": 3082282,
+    "output": 434253,
+    "reasoning": 310903,
+    "cacheRead": 521038848,
     "cacheWrite": 1087,
-    "total": 3456822,
-    "totalWithCache": 507846517,
+    "total": 3827438,
+    "totalWithCache": 524867373,
     "cost": 0.0,
-    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-06T18:36:28-08:00, covering 1.4.0–1.7.0. The final state-record commit adds a small amount."
+    "note": "Session total from OpenCode session ses_e4df670e0ffeOm01DFj236fffs at 2026-11-07T00:03:30-08:00, covering 1.4.0–1.7.1. The final state-record commit adds a small amount."
   },
   "cost": {
     "usd": 0.0,
@@ -178,18 +178,23 @@
       "version": "1.7.0",
       "date": "2026-11-06",
       "summary": "Friendlier launch menu, host/join panels, obvious Join audio, in-dialog EN/TH switch, theme-aware chat colours."
+    },
+    {
+      "version": "1.7.1",
+      "date": "2026-11-07",
+      "summary": "Automatic audio join on start/connect, with a persisted opt-out checkbox."
     }
   ],
-  "releaseNotes": "1.7.0 redesigns the launch flow around one Play now action, adds a one-tap Join audio pill, puts EN/TH inside the dialogs, and fixes washed-out chat colours on bright themes.",
+  "releaseNotes": "1.7.1 joins audio chat automatically on Connect/Start, with an on-by-default checkbox that persists as autoAudio.",
   "updates": [
     {
-      "version": "1.4.0–1.7.0",
+      "version": "1.4.0–1.7.1",
       "startedAt": "2026-11-06T10:05:33-08:00",
-      "completedAt": "2026-11-06T18:36:28-08:00",
-      "durationSeconds": 30654,
-      "durationHuman": "8h 30m 54s",
-      "tokensAdded": 3456822,
-      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, PIN, abuse caps, sharing, version/reload, diagnostics, join restore, numeric codes, iPad layout, panel rail, tile tooltip, persistent prompt, simpler host panel, friendlier launch flow, one-tap Join audio, in-dialog EN/TH and theme-aware chat colours."
+      "completedAt": "2026-11-07T00:03:30-08:00",
+      "durationSeconds": 50277,
+      "durationHuman": "13h 57m 57s",
+      "tokensAdded": 3827438,
+      "summary": "Serverless multiplayer, launch/identity/leave, chat, voice, approval, PIN, abuse caps, sharing, version/reload, diagnostics, join restore, numeric codes, iPad layout, panel rail, tile tooltip, persistent prompt, simpler host panel, friendlier launch flow, one-tap Join audio, in-dialog EN/TH, theme-aware chat colours and automatic audio join."
     }
   ],
   "multiplayer": {

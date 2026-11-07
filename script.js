@@ -18,14 +18,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.7.0";
-import { VoiceChat } from "./voice-chat.js?v=1.7.0";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.7.0";
+} from "./peer-manager.js?v=1.7.1";
+import { VoiceChat } from "./voice-chat.js?v=1.7.1";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.7.1";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.7.0",
+  version: "1.7.1",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -36,13 +36,13 @@ const APP = Object.freeze({
   license: "MIT",
   build: {
     startedAt: "2026-11-06T10:05:33-08:00",
-    packagedAt: "2026-11-06T18:36:28-08:00",
-    durationHuman: "8h 30m 54s",
-    tokensTotal: "3456822",
-    tokensInput: "2770003",
-    tokensOutput: "407019",
-    tokensReasoning: "279800",
-    tokensCacheRead: "504388608",
+    packagedAt: "2026-11-07T00:03:30-08:00",
+    durationHuman: "13h 57m 57s",
+    tokensTotal: "3827438",
+    tokensInput: "3082282",
+    tokensOutput: "434253",
+    tokensReasoning: "310903",
+    tokensCacheRead: "521038848",
     sessionId: "ses_e4df670e0ffeOm01DFj236fffs",
     harness: "OpenCode 2.2.5",
     model: "DeepSeek V4.1 Flash (opencode-go/deepseek-v4.1-flash)"
@@ -538,6 +538,7 @@ const I18N = {
     "net.join": "Join a game",
     "net.joinDesc": "A friend sent you a code? Paste it here.",
     "net.yourNameHint": "Shown to other players.",
+    "net.autoAudio": "Join audio chat when the table starts",
     "net.hostLead": "Send the invite, approve your friends, then start.",
     "net.joinLead": "Paste the message your host sent, or type the code.",
     "net.joinNote": "The host still has to approve you before you get a seat.",
@@ -986,6 +987,7 @@ const I18N = {
     "net.join": "เข้าร่วมโต๊ะ",
     "net.joinDesc": "เพื่อนส่งรหสมา? วางที่นี่",
     "net.yourNameHint": "ชื่อนี้จะแสดงให้ผู้เล่นคนอื่นเห็น",
+    "net.autoAudio": "เข้าร่วมแชทเสียงเมื่อเริ่มโต๊ะ",
     "net.hostLead": "ส่งคำเชิญ อนุมัติเพื่อน แล้วเริ่มโต๊ะ",
     "net.joinLead": "วางข้อความที่เจ้าบ้านส่งมา หรือพิมพ์รหัสเอง",
     "net.joinNote": "เจ้าบ้านยังต้องอนุมัติก่อนคุณจะได้ที่นั่ง",
@@ -1511,7 +1513,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "mahogany", fontSize: "md", chatOpen: true, dockCollapsed: true });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "mahogany", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -3799,6 +3801,7 @@ async function joinRoom(code, name, pin = "") {
     net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false };
     return client;
   };
+  const autoMic = prefs.autoAudio ? preloadAudio() : null;
   try {
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       if (token !== joinToken) return;
@@ -3806,6 +3809,12 @@ async function joinRoom(code, name, pin = "") {
       try {
         await client.connect();
         if (token !== joinToken) return;
+        if (autoMic) {
+          autoMic.then((stream) => {
+            if (stream && token === joinToken && isClient()) joinAudioWithStream(stream);
+            else if (stream && !voice?.joined) releaseAutoAudio();
+          });
+        }
         savePlayerName(handle);
         if (connectButton) {
           connectButton.disabled = false;
@@ -3837,10 +3846,12 @@ async function joinRoom(code, name, pin = "") {
       connectButton.disabled = false;
       if (connectButton.textContent === t("net.connecting")) connectButton.textContent = t("net.retry");
     }
+    if (!isNetworked()) releaseAutoAudio();
   }
 }
 
 function leaveRoom({ silent = false, keepState = false } = {}) {
+  releaseAutoAudio();
   clearTimeout(publishTimer);
   actionToken += 1;
   joinToken += 1;
@@ -4135,6 +4146,7 @@ function renderLobby() {
   if (!modal) return;
   const view = lobbyState?.view || "menu";
   modal.dataset.view = view;
+  renderAutoAudio();
   const views = { menu: $("#lobbyMenu"), host: $("#lobbyHostPanel"), join: $("#lobbyJoinPanel"), waiting: $("#lobbyWaitPanel"), lost: $("#lobbyWaitPanel") };
   Object.entries(views).forEach(([key, node]) => {
     if (node) node.hidden = key !== view;
@@ -4704,6 +4716,64 @@ function ensureVoice() {
     }
   });
   return voice;
+}
+
+let autoAudioStream = null;
+let autoAudioRequest = null;
+
+function preloadAudio() {
+  if (!prefs.autoAudio || voice?.joined) return null;
+  if (autoAudioStream) return Promise.resolve(autoAudioStream);
+  if (autoAudioRequest) return autoAudioRequest;
+  if (!navigator.mediaDevices?.getUserMedia) return null;
+  /* getUserMedia needs a gesture; skip silent auto-join links rather than
+     showing a permission prompt the browser will refuse. */
+  if (navigator.userActivation && navigator.userActivation.isActive === false) return null;
+  autoAudioRequest = navigator.mediaDevices.getUserMedia({
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    video: false
+  }).then((stream) => {
+    autoAudioStream = stream;
+    autoAudioRequest = null;
+    return stream;
+  }).catch((error) => {
+    autoAudioRequest = null;
+    if (error?.name !== "NotAllowedError" && error?.name !== "AbortError") {
+      toast(t("voice.unavailable"), "wine");
+    }
+    return null;
+  });
+  return autoAudioRequest;
+}
+
+function joinAudioWithStream(stream) {
+  if (!stream || voice?.joined || !isNetworked()) return false;
+  const engine = ensureVoice();
+  engine.attach({
+    peer: currentVoicePeer(),
+    selfPeerId: currentVoicePeerId(),
+    selfSeat: MY_SEAT
+  });
+  engine.setPeers(voicePeers());
+  const joined = engine.joinWithStream(stream);
+  if (joined) autoAudioStream = stream;
+  return joined;
+}
+
+function releaseAutoAudio() {
+  if (autoAudioStream && !voice?.joined) {
+    for (const track of autoAudioStream.getTracks()) {
+      try { track.stop(); } catch { /* ignore */ }
+    }
+  }
+  autoAudioStream = null;
+  autoAudioRequest = null;
+}
+
+function renderAutoAudio() {
+  $$("[data-auto-audio]").forEach((input) => {
+    input.checked = prefs.autoAudio !== false;
+  });
 }
 
 function joinVoice() {
@@ -6315,6 +6385,11 @@ function bindEvents() {
     await copyText(`${body}\n${status}`.trim(), t("diag.copied"));
   });
   $("#reloadAppBtn")?.addEventListener("click", forceReload);
+  $$("[data-auto-audio]").forEach((input) => input.addEventListener("change", () => {
+    prefs.autoAudio = input.checked;
+    savePrefs();
+    renderAutoAudio();
+  }));
   $("#lobbyReload")?.addEventListener("click", forceReload);
   $("#joinReload")?.addEventListener("click", forceReload);
   $("#updateReload")?.addEventListener("click", forceReload);
@@ -6337,7 +6412,17 @@ function bindEvents() {
     if (button.hasAttribute("data-approve")) approvePending(connId);
     else denyPending(connId);
   });
-  $("#lobbyStartBtn")?.addEventListener("click", startHostedMatch);
+  $("#lobbyStartBtn")?.addEventListener("click", () => {
+    startHostedMatch();
+    if (!isHost() || !net?.started) return;
+    const mic = prefs.autoAudio ? preloadAudio() : null;
+    if (mic) {
+      mic.then((stream) => {
+        if (stream && isHost() && net?.started) joinAudioWithStream(stream);
+        else if (stream && !voice?.joined) releaseAutoAudio();
+      });
+    }
+  });
   $("#lobbyWaitLeave")?.addEventListener("click", requestLeaveRoom);
   $("#lobbyResumeBtn")?.addEventListener("click", closeLobby);
   $("#lobbySoloFromLost")?.addEventListener("click", backToSolo);
@@ -6379,6 +6464,7 @@ function bindEvents() {
   $$("[data-lobby-back]").forEach((button) => button.addEventListener("click", () => {
     if (net) requestLeaveRoom();
     else {
+      releaseAutoAudio();
       clearRoomIntent();
       showLobby("menu");
     }
