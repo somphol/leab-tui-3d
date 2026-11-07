@@ -127,3 +127,29 @@ This is an independent, open-source teaching implementation. It is not affiliate
 - **Scoring:** most piles (default) or **bid piles**. In bid piles each seat bids 0–8; the last bidder may not make the total exactly 8. A hit scores bid + 5 (zero bid + 3); a miss scores minus the difference.
 - **Redraw (โละ):** before the first play, a seat with no tile from the red Elephant up may redeal. The requester leads; the round scores ×2, ×3 … per redraw.
 - **Chuan special:** with seven piles and the last Soldier, the final follower may reveal it and take the last trick, reaching eight piles for 16.
+
+## “Soldier beats General” — interpretation
+
+The Navee 2016 source gives a strict order: **General > Advisor > Elephant >
+Chariot > Horse > Cannon > Soldier**, with red over black and the earlier reveal
+winning ties. It contains **no** general Soldier-over-General exception.
+
+The only Soldier exception in the source is the **Chuan claim**: a player who
+already holds seven piles and has the **last Soldier** in hand may reveal it to
+take the final trick and complete the eighth pile. That is a final-trick
+allowance for the Chuan, not a permanent reversal of rank.
+
+Some local descriptions (including Facebook posts) say “จุกกินตี่” as if the
+Soldier beats the General in every comparison. That creates a cycle — Soldier >
+General > every other rank > Soldier — which contradicts the source and changes
+the value of the General for the whole round. The app therefore keeps the source
+order on every turn.
+
+If a table wants a house rule, state it explicitly and choose one:
+
+- **Chuan-only (source):** the Soldier can win only the final trick, and only
+  with seven piles and the last Soldier in hand. This is implemented.
+- **Final-trick only:** the Soldier beats the General on the last trick of the
+  round, regardless of piles. This is a local variant, not implemented.
+- **Permanent:** the Soldier beats the General in every single comparison. This
+  is a cycle variant, not recommended, not implemented.
