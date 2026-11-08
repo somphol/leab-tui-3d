@@ -78,11 +78,21 @@ The turn order follows the source:
   bot reveals when it can beat the mark.
 - **Double-click** (or double-tap) a player's own tile in the centre during
   showdown is a shortcut for **Show set**.
-- A local reveal opens a **result panel in the captured-pile style**: one frame
-  per seat in play order, the seat's tiles as mini cards (backs while hidden),
-  a large green ✓ and gold frame on the current winner, and the comparison and
-  reason in the gold-bordered note below. The showdown state is not mutated and
-  the trick is not swept until Continue, × or the backdrop is used.
+- **Show set applies immediately.** The local cards flip and the turn passes to
+  the next seat; there is no intermediate reveal popup. The coach and the dock
+  already describe the set and whether it can beat the mark.
+- **No winner is decided until the circle is complete.** Every seat must choose
+  Show set or Keep hidden (a seat without a mark to beat cannot hide). Only
+  after the last decision does `resolveTrick` compare the sets, sweep the
+  centre and record the winner.
+- **Then the trick result opens for every human** — the host and every guest,
+  whether that player revealed or stayed hidden. It uses the captured-pile
+  style: one frame per seat in play order, the chosen tiles as mini cards (backs
+  for hidden sets), a large green ✓ and gold frame on the winner, and the
+  winner/reason note below. The history browser uses the same
+  `trickCompareMarkup`.
+- In solo the next trick waits for **Continue** on the result; in a P2P room the
+  table continues and each client closes the summary at their own pace.
 - The final winner takes all `4 × N` tiles; only then are they added to the
   winner's pile.
 
@@ -90,8 +100,16 @@ The turn order follows the source:
 
 - One trick produces **one pile**, not one pile per four tiles. A pair trick
   (8 tiles) is a single stack; a three-tile call (12 tiles) is a single stack.
-- Tiles are stacked within the pile; the base of each pile is spread along the
-  table edge, grouped by trick (`captureTrick`).
+- Tiles are stacked within the pile; each pile's base sits on the rim at
+  `CAPTURE_RADIUS = 5.90`, and piles are spaced **along the rim arc** by
+  `CAPTURE_PILE_SPACING = 1.02`, grouped by trick (`captureTrick`). Do not go
+  back to a straight tangent fan: at eight piles it left the table.
+- Seat nameplates sit inward at 5.15, between the hand and the captured piles.
+- Automatic centre plays use `CENTER_TILE_SPACING = 0.96` (was 0.52), so a
+  pair/triple/six-tile set does not interpenetrate.
+- The history modal refreshes from `state.trickArchive` while open and follows
+  the latest trick unless the player picks an older one; when the turn reaches
+  the local player it closes with a “Your turn” toast.
 - Visibility is preserved per tile (`captureHidden`): a tile shown at showdown
   is face-up in the pile, a hidden tile stays face-down forever.
 - Provenance is preserved per tile (`captureFrom`): the pile popup shows
@@ -101,7 +119,7 @@ The turn order follows the source:
 - The **Turn history** browser uses the same comparison layout after a round
   and turn are selected: one frame per seat, the actual tiles as mini cards
   (backs for hidden sets), a large green ✓ on the winning frame, and the winner
-  line plus the reason in the same gold-bordered note. The reveal result and the
+  line plus the reason in the same gold-bordered note. The trick result and the
   history share `trickCompareMarkup`; do not fork the layout again.
 
 ## 6. Layout relay
@@ -137,9 +155,12 @@ To avoid the collision between a card-game “trick” and a player's turn:
 
 These are deliberate and should not be “simplified” away:
 
-- No automatic reveal. A human always chooses Show set or Keep hidden.
-- No automatic collection. The reveal result panel must be dismissed before the
-  trick is swept.
+- No automatic reveal. A human always chooses Show set or Keep hidden; Show
+  applies immediately.
+- No early verdict. The winner is decided only after every seat has shown or
+  stayed hidden, and only then does the trick result open.
+- The same summary for everyone. The result modal opens for the host and every
+  guest, not only for players who revealed.
 - Hidden stays hidden. A face-down tile is never revealed by a capture, a pile
   popup or the history browser.
 - No arrangement outside the private arc; the centre is only a play target.
@@ -156,6 +177,6 @@ These are deliberate and should not be “simplified” away:
 | Zones, drag, reveal, piles | `script.js` → `createScene` (`personalZone`, `battleRing`, `tryPlayFromHand`, `endHandDrag`, `showdown`, `capturePosition`) |
 | Hand layout + relay | `handLayout`, `seatLayouts`, `exportHandSlots`, `publishHandLayout` |
 | Captured visibility / source / trick | `captureHidden`, `captureFrom`, `captureTrick` in `state` |
-| Reveal panel | `#revealModal`, `revealPending`, `trickCompareMarkup`, `applyShowdown` |
+| Trick result | `#trickResultModal`, `showTrickResult`, `trickCompareMarkup`, `closeTrickResult` |
 | History browser | `trickArchive`, `renderLogBrowser`, `trickCompareMarkup`, `#lastTrickModal` |
 | Pile popup | `openPileModal`, `captureGroupsFor` |

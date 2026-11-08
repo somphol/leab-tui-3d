@@ -231,7 +231,9 @@ ok(script.includes('kind: "draft"') && script.includes('"log.draftPick"'), "bot 
 ok(script.includes("prefs.draftMode = prefs.draftMode === true"), "draft mode defaults off");
 ok(script.includes("copy.draftPool") && script.includes("game.draftPool"), "draft pool survives save and hydrate");
 ok(script.includes("function trickCompareMarkup"), "one comparison renderer is shared");
-ok(/trickCompareMarkup\(state\.center/.test(script) && /trickCompareMarkup\(record\.entries/.test(script), "reveal and history both use the comparison renderer");
+ok(/if \(!isClient\(\)\) \{\s*showTrickResult\(record\)/.test(script), "every local seat sees the trick result");
+ok(/next\.phase === "resolving" && resultRecord/.test(script), "guests see the trick result when the host resolves");
+ok(/function showTrickResult/.test(script) && /trickCompareMarkup\(record\.entries/.test(script), "trick result and history share the comparison renderer");
 ok(css.includes(".trick-compare") && css.includes(".seat-tick"), "comparison layout CSS exists");
 ok(script.includes("function simulateRound"), "round simulation exists");
 ok(script.includes("function selfTest"), "self-test exists");

@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.11";
-import { VoiceChat } from "./voice-chat.js?v=1.9.11";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.11";
+} from "./peer-manager.js?v=1.9.12";
+import { VoiceChat } from "./voice-chat.js?v=1.9.12";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.12";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.11",
+  version: "1.9.12",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -207,6 +207,9 @@ const SCENE_THEMES = Object.freeze({
 const TABLE_Y = 0.30;
 const HAND_RADIUS = 4.12;
 const HAND_PLAY_RADIUS = 2.8;
+const CAPTURE_RADIUS = 5.9;
+const CAPTURE_PILE_SPACING = 1.02;
+const CENTER_TILE_SPACING = 0.96;
 const CENTER_RADIUS = 2.05;
 const TILE_THICKNESS = 0.15;
 const TILE_RADIUS = 0.455;
@@ -306,12 +309,7 @@ const I18N = {
     "dock.showdownNoBeat": "You cannot beat the table",
     "showdown.hidden": "face-down",
     "actions.showFirst": "Show first",
-    "reveal.title": "Reveal result",
-    "reveal.first": "You set the mark to beat.",
-    "reveal.ahead": "You are ahead — the trick is yours so far.",
-    "reveal.trails": "The trick stays with {seat}.",
-    "reveal.lead": "{seat} leads with {combo}.",
-    "reveal.leadYou": "You lead with {combo}.",
+    "result.title": "Trick result",
     "dock.waiting": "{seat} is thinking…",
     "dock.pick": "Select {n} tile(s) for this trick.",
     "dock.selected": "{n} selected.",
@@ -382,11 +380,11 @@ const I18N = {
     "rankRef.lowest": "Lowest",
     "camera.hint": "Drag to orbit · drag a tile to arrange · drop it in the centre ring to play",
     "play.release": "Release to play",
-    "view.top": "Top view",
+    "view.top": "2D view",
     "view.3d": "3D view",
-    "view.topShort": "Top",
+    "view.topShort": "2D",
     "view.3dShort": "3D",
-    "view.switch": "Switch between top and 3D view",
+    "view.switch": "Switch between 2D and 3D view",
     "coach.title": "Coach",
     "coach.live": "live",
     "score.title": "Match",
@@ -742,6 +740,7 @@ const I18N = {
     "net.iceFailed": "WebRTC could not find a direct path. Try another network or a phone hotspot.",
     "net.handshake": "Connected. Waiting for the host…",
     "net.connectedWaiting": "Connected. The host will start when ready.",
+    "net.reconnected": "Reconnected — restoring your seat…",
     "net.lobbyOpen": "Room open. Share the code or invite link.",
     "net.listening": "Listening for guests…",
     "net.hostKeepOpen": "Keep this host tab open and awake. If it closes or sleeps, guests cannot connect.",
@@ -838,6 +837,9 @@ const I18N = {
     "voice.localOnly": "Voice is peer-to-peer and not recorded.",
     "toast.netGuest": "{name} joined the table.",
     "toast.netGuestLeft": "{name} left the lobby.",
+    "toast.netGuestHeld": "{name} disconnected — the seat is held for rejoin.",
+    "toast.netRejoin": "{name} reconnected to their seat.",
+    "toast.yourTurn": "Your turn — the table is waiting.",
     "toast.netBot": "{name} left — a bot takes the seat.",
     "toast.netStarted": "Table {code} started.",
     "toast.netLeft": "Left the table.",
@@ -873,12 +875,7 @@ const I18N = {
     "dock.showdownNoBeat": "คุณสู้โต๊ะไม่ได้",
     "showdown.hidden": "คว่ำ",
     "actions.showFirst": "เปิดก่อน",
-    "reveal.title": "ผลการเปิด",
-    "reveal.first": "คุณตั้งมาตรฐานให้คนอื่น",
-    "reveal.ahead": "คุณนำอยู่ — กองนี้เป็นของคุณตอนนี้",
-    "reveal.trails": "กองนี้ยังเป็นของ {seat}",
-    "reveal.lead": "{seat} นำด้วย {combo}",
-    "reveal.leadYou": "คุณนำด้วย {combo}",
+    "result.title": "ผลของตา",
     "dock.waiting": "{seat} กำลังคิด…",
     "dock.pick": "เลือก {n} ตัวสำหรับตานี้",
     "dock.selected": "เลือกแล้ว {n} ตัว",
@@ -949,11 +946,11 @@ const I18N = {
     "rankRef.lowest": "ต่ำสุด",
     "camera.hint": "ลากเพื่อหมุน · ลากไพ่เพื่อจัดวาง · ปล่อยในวงกลางเพื่อลงไพ่",
     "play.release": "ปล่อยเพื่อลงไพ่",
-    "view.top": "มุมมองด้านบน",
+    "view.top": "มุมมอง 2D",
     "view.3d": "มุมมอง 3D",
-    "view.topShort": "บน",
+    "view.topShort": "2D",
     "view.3dShort": "3D",
-    "view.switch": "สลับมุมมองด้านบนและ 3D",
+    "view.switch": "สลับมุมมอง 2D และ 3D",
     "coach.title": "โค้ช",
     "coach.live": "สด",
     "score.title": "คะแนน",
@@ -1312,6 +1309,7 @@ const I18N = {
     "net.iceFailed": "WebRTC หาเส้นทางตรงไม่ได้ ลองเครือข่ายอื่นหรือฮอตสปอตมือถือ",
     "net.handshake": "เชื่อมต่อแล้ว กำลังรอเจ้าบ้าน…",
     "net.connectedWaiting": "เชื่อมต่อแล้ว เจ้าบ้านจะเริ่มเมื่อพร้อม",
+    "net.reconnected": "กลับเข้าห้องแล้ว — กำลังคืนที่นั่ง…",
     "net.lobbyOpen": "ห้องเปิดอยู่ แชร์รหัสหรือลิงก์เชิญ",
     "net.listening": "กำลังรอแขก…",
     "net.hostKeepOpen": "เปิดแท็บเจ้าบ้านไว้และอย่าให้เครื่องหลับ ถ้าปิดหรือหลับ แขกจะเชื่อมต่อไม่ได้",
@@ -1408,6 +1406,9 @@ const I18N = {
     "voice.localOnly": "เสียงส่งแบบเพียร์ทูเพียร์และไม่มีการบันทึก",
     "toast.netGuest": "{name} เข้าร่วมโต๊ะ",
     "toast.netGuestLeft": "{name} ออกจากห้องรับแขก",
+    "toast.netGuestHeld": "{name} หลุด — เก็บที่นั่งไว้ให้กลับมา",
+    "toast.netRejoin": "{name} กลับเข้าที่นั่งเดิมแล้ว",
+    "toast.yourTurn": "ถึงตาคุณแล้ว — โต๊ะรออยู่",
     "toast.netBot": "{name} ออก — บอทรับที่นั่งแทน",
     "toast.netStarted": "โต๊ะ {code} เริ่มแล้ว",
     "toast.netLeft": "ออกจากโต๊ะแล้ว",
@@ -1813,6 +1814,7 @@ const AUTO_RELOAD_KEY = "leabtui.autoReload.v1";
 const VERSION_CHECK_MS = 5 * 60 * 1000;
 const PLAYER_NAME_KEY = "leabtui.name.v1";
 const ROOM_INTENT_KEY = "leabtui.room.v1";
+const REJOIN_KEY = "leabtui.rejoin.v1";
 const LAUNCH_KEY = "leabtui.launch.v1";
 
 function isNetworked() {
@@ -2444,6 +2446,10 @@ function beginMatch(options = {}) {
   clearTimeout(actionTimer);
   actionToken += 1;
   resumeAvailable = false;
+  pendingTrickFinish = null;
+  trickResultGate = false;
+  lastResultKey = "";
+  lastFocusKey = "";
   state = makeState(options.seed ?? bootSeed ?? Math.floor(Math.random() * 1e9));
   state.fast = Boolean(options.fast);
   state.dealer = 3;
@@ -2480,6 +2486,10 @@ function startNextRound() {
   }
   if (!state || state.phase === "matchEnd") return;
   clearTimeout(actionTimer);
+  pendingTrickFinish = null;
+  trickResultGate = false;
+  lastResultKey = "";
+  closeModal("trickResultModal");
   state.round += 1;
   state.dealer = (state.dealer + 1) % 4;
   state.target = state.target || 20;
@@ -2603,15 +2613,6 @@ function advanceShowdown() {
   if (isBotSeat(state.turn)) scheduleAI(900);
 }
 
-let revealPending = null;
-
-function finishRevealResult() {
-  const callback = revealPending;
-  revealPending = null;
-  closeModal("revealModal");
-  if (callback) callback();
-}
-
 function trickCardsMarkup(entry, showTiles, isWinner) {
   const tiles = entry.tiles || [];
   if (!showTiles) {
@@ -2645,28 +2646,35 @@ function trickCompareMarkup(entries, winnerSeat, showFor = null) {
   }).join("")}</div>`;
 }
 
-function openRevealResult(entry, beats, callback) {
-  revealPending = callback;
-  const body = $("#revealBody");
-  const winnerSeat = beats ? entry.seat : state.best?.seat ?? entry.seat;
-  const winnerCombo = beats ? entry.combo : state.best?.combo ?? entry.combo;
-  const note = !state.best
-    ? t("reveal.first")
-    : beats
-      ? t("reveal.ahead")
-      : t("reveal.trails", { seat: seatName(state.best.seat) });
+let pendingTrickFinish = null;
+let trickResultGate = false;
+let lastResultKey = "";
+
+/* The final trick summary is shown only after every seat has shown or stayed hidden. */
+function showTrickResult(record) {
+  if (!record) return;
+  const key = `${record.round}:${record.trick}`;
+  if (lastResultKey === key) return;
+  lastResultKey = key;
+  const body = $("#trickResultBody");
   if (body) {
-    body.innerHTML = `${trickCompareMarkup(state.center, winnerSeat, MY_SEAT)}
+    body.innerHTML = `${trickCompareMarkup(record.entries || [], record.winner)}
       <div class="pile-why">
-        <b>${escapeHTML(winnerSeat === MY_SEAT
-          ? t("reveal.leadYou", { combo: comboSummary(winnerCombo) })
-          : t("reveal.lead", { seat: seatName(winnerSeat), combo: comboSummary(winnerCombo) }))}</b>
-        <p>${escapeHTML(note)}</p>
+        <b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummary(record.combo), n: record.captured }))}</b>
+        <p>${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</p>
       </div>`;
   }
-  const modal = $("#revealModal");
+  const modal = $("#trickResultModal");
   if (modal) modal.hidden = false;
-  audio?.play(beats ? "win" : "lose", 0);
+  audio?.play(record.winner === MY_SEAT ? "win" : "lose", 0);
+}
+
+function closeTrickResult() {
+  closeModal("trickResultModal");
+  const next = pendingTrickFinish;
+  pendingTrickFinish = null;
+  trickResultGate = false;
+  if (next) setTimeout(next, 200);
 }
 
 function applyShowdown(seat, shown) {
@@ -2698,10 +2706,6 @@ function showdown(seat, reveal) {
   if (!entry) return false;
   const shown = Boolean(reveal && showdownCanShow(seat));
   if (!shown && !state.best) return false;
-  if (shown && seat === MY_SEAT && !revealPending) {
-    openRevealResult(entry, showdownCanBeat(seat), () => applyShowdown(seat, true));
-    return true;
-  }
   return applyShowdown(seat, shown);
 }
 
@@ -2722,7 +2726,7 @@ function resolveTrick() {
   state.captureFrom[winner].push(...captureFrom);
   state.captureTrick[winner].push(...captureTrick);
   state.trickArchive = state.trickArchive || [];
-  state.trickArchive.push({
+  const record = {
     round: state.round,
     trick: state.trick,
     leader: state.lead?.seat ?? null,
@@ -2739,7 +2743,8 @@ function resolveTrick() {
         id: tile.id, hanzi: tile.hanzi, color: tile.color, rank: tile.rank, power: tile.power
       }))
     }))
-  });
+  };
+  state.trickArchive.push(record);
   if (state.trickArchive.length > 400) state.trickArchive.splice(0, state.trickArchive.length - 400);
   state.lastTrick = {
     winner,
@@ -2777,6 +2782,11 @@ function resolveTrick() {
     entries: comparison
   }));
 
+  if (!isClient()) {
+    showTrickResult(record);
+    trickResultGate = !isNetworked();
+  }
+
   const finish = () => {
     if (!state || state.phase !== "resolving") return;
     if (state.hands.every((hand) => hand.length === 0)) {
@@ -2786,11 +2796,15 @@ function resolveTrick() {
       beginTrick();
     }
   };
-  setTimeout(finish, state.fast ? 5 : 1250);
+  if (trickResultGate) pendingTrickFinish = finish;
+  else setTimeout(finish, state.fast ? 5 : 1250);
 }
 
 function endRound() {
   if (!state) return;
+  closeModal("trickResultModal");
+  pendingTrickFinish = null;
+  trickResultGate = false;
   clearTimeout(actionTimer);
   const piles = state.captures.map((pile) => scoredPilesFromTiles(pile));
   const multiplier = state.multiplier || 1;
@@ -2859,6 +2873,10 @@ function undoLastTrick() {
     toast(t("net.hostOnly"));
     return false;
   }
+  pendingTrickFinish = null;
+  trickResultGate = false;
+  lastResultKey = "";
+  closeModal("trickResultModal");
   if (!state || !state.snapshot) {
     toast(t("toast.noUndo"));
     return false;
@@ -3390,6 +3408,45 @@ function renderAll() {
   renderNetChrome();
   maybePublishHandLayout();
   renderDraft();
+  focusTurnIfNeeded();
+  refreshHistoryModal();
+}
+
+let historyFollowLatest = true;
+
+function refreshHistoryModal() {
+  const modal = $("#lastTrickModal");
+  if (!modal || modal.hidden) return;
+  if (historyFollowLatest) renderLogBrowser();
+  else renderLogBrowser($("#logRoundSelect")?.value, $("#logTrickSelect")?.value);
+}
+
+let lastFocusKey = "";
+
+function focusTurnIfNeeded() {
+  if (!state) return;
+  const key = `${state.round}:${state.trick}:${state.phase}:${state.turn}`;
+  const changed = key !== lastFocusKey;
+  lastFocusKey = key;
+  if (!changed || state.turn !== MY_SEAT) return;
+  if (!["lead", "follow", "showdown", "draft"].includes(state.phase)) return;
+  const closed = [];
+  const history = $("#lastTrickModal");
+  if (history && !history.hidden) {
+    closeModal("lastTrickModal");
+    closed.push("history");
+  }
+  const pile = $("#pileModal");
+  if (pile && !pile.hidden) {
+    closeModal("pileModal");
+    closed.push("pile");
+  }
+  const result = $("#trickResultModal");
+  if (isNetworked() && result && !result.hidden) {
+    closeTrickResult();
+    closed.push("result");
+  }
+  if (closed.length) toast(t("toast.yourTurn"), "gold");
 }
 
 function renderHUD() {
@@ -3734,6 +3791,7 @@ function renderLogBrowser(round, trick) {
 function openLastTrickModal(round = null, trick = null) {
   const records = state?.trickArchive || [];
   if (!records.length) return;
+  historyFollowLatest = round == null && trick == null;
   const latest = records[records.length - 1];
   renderLogBrowser(round ?? latest.round, trick ?? latest.trick);
   const modal = $("#lastTrickModal");
@@ -4376,7 +4434,12 @@ function applyRemoteState(raw) {
     scene.setSelected(state.selected);
   }
   maybePublishHandLayout();
-  if (next.phase === "roundEnd" || next.phase === "matchEnd") showRoundSummary(next.phase === "matchEnd");
+  const resultRecord = next.trickArchive?.[next.trickArchive.length - 1];
+  if (next.phase === "resolving" && resultRecord) showTrickResult(resultRecord);
+  if (next.phase === "roundEnd" || next.phase === "matchEnd") {
+    closeModal("trickResultModal");
+    showRoundSummary(next.phase === "matchEnd");
+  }
   if (next.phase === "dealing") scene?.flipHumanHand?.(state);
   if (lobbyState?.view === "waiting") {
     lobbyState.view = "table";
@@ -4448,6 +4511,7 @@ function nextBotName() {
 function convertSeatToBot(seat, reason = "left") {
   if (!SEAT_PROFILES?.[seat]) return;
   const former = SEAT_PROFILES[seat];
+  const keepRejoin = reason !== "left";
   SEAT_PROFILES[seat] = {
     seat,
     name: nextBotName(),
@@ -4455,7 +4519,10 @@ function convertSeatToBot(seat, reason = "left") {
     connected: true,
     voice: false,
     replaced: former.name || former.handle,
-    since: nowISO()
+    since: nowISO(),
+    rejoinToken: keepRejoin ? (former.rejoinToken || null) : null,
+    rejoinName: former.rejoinName || former.name || "",
+    clientId: former.clientId || null
   };
   if (state) {
     // The seat stays occupied; the hand and score are untouched.
@@ -4466,6 +4533,16 @@ function convertSeatToBot(seat, reason = "left") {
   queuePublish();
   syncVoicePeers();
   if (state && state.turn === seat && ["lead", "follow"].includes(state.phase)) scheduleAI(700);
+}
+
+function makeRejoinToken() {
+  try {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  } catch {
+    return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
+  }
 }
 
 function acceptGuest(connId, name) {
@@ -4492,7 +4569,9 @@ function acceptGuest(connId, name) {
     connId,
     peerId: connId,
     voice: false,
-    clientId: `guest-${net.seatSeq}`
+    clientId: `guest-${net.seatSeq}`,
+    rejoinToken: makeRejoinToken(),
+    rejoinName: clean
   };
   net.host.send(connId, {
     type: "welcome",
@@ -4502,7 +4581,9 @@ function acceptGuest(connId, name) {
     hostName: net.name,
     players: serialiseRoster(),
     chat: chatHistory.slice(-30),
-    canStart: SEAT_PROFILES.filter((profile) => profile && profile.connected).length >= 2
+    canStart: SEAT_PROFILES.filter((profile) => profile && profile.connected).length >= 2,
+    rejoinToken: SEAT_PROFILES[seat].rejoinToken,
+    started: false
   });
   sendLobbyToGuests();
   renderLobby();
@@ -4541,8 +4622,58 @@ function expirePending(connId) {
   renderLobby();
 }
 
+function reattachGuest(connId, seat, token) {
+  if (!isHost() || !net?.host) return false;
+  const current = SEAT_PROFILES?.[seat];
+  if (!current || !token || current.rejoinToken !== token) return false;
+  clearPending(connId);
+  const name = cleanGuestName(current.rejoinName || current.name || "", `Guest ${seat}`);
+  SEAT_PROFILES[seat] = {
+    seat,
+    name,
+    kind: "human",
+    connected: true,
+    connId,
+    peerId: connId,
+    voice: false,
+    clientId: current.clientId || `guest-${seat}`,
+    rejoinToken: token,
+    rejoinName: name
+  };
+  const started = Boolean(net.started && state);
+  net.host.send(connId, {
+    type: "welcome",
+    roomCode: net.code,
+    protocol: PROTOCOL_VERSION,
+    seat,
+    hostName: net.name,
+    players: serialiseRoster(),
+    chat: chatHistory.slice(-30),
+    canStart: SEAT_PROFILES.filter((profile) => profile && profile.connected).length >= 2,
+    rejoinToken: token,
+    rejoin: true,
+    started,
+    state: started ? sanitizeForSeat(state, seat) : null
+  });
+  if (started) {
+    queuePublish();
+    renderAll();
+  } else {
+    renderLobby();
+  }
+  sendLobbyToGuests();
+  syncVoicePeers();
+  toast(t("toast.netRejoin", { name }), "jade");
+  return true;
+}
+
 async function requestGuest(connId, message) {
   if (!isHost() || !net?.host) return;
+  const rejoinToken = typeof message.rejoinToken === "string" ? message.rejoinToken.trim() : "";
+  if (rejoinToken) {
+    const seat = SEAT_PROFILES?.findIndex((profile) => profile && profile.rejoinToken === rejoinToken) ?? -1;
+    if (seat > 0 && reattachGuest(connId, seat, rejoinToken)) return;
+  }
   if (net.started) {
     rejectConnection(connId, "in-progress");
     return;
@@ -4764,11 +4895,19 @@ function hostConnectionLost({ connId }) {
   if (net?.started && state) {
     convertSeatToBot(profile.seat, "disconnected");
   } else {
-    SEAT_PROFILES[profile.seat] = null;
+    SEAT_PROFILES[profile.seat] = {
+      ...profile,
+      connected: false,
+      connId: null,
+      peerId: null,
+      voice: false,
+      rejoinToken: profile.rejoinToken || null,
+      rejoinName: profile.rejoinName || profile.name
+    };
     sendLobbyToGuests();
     renderLobby();
     syncVoicePeers();
-    toast(t("toast.netGuestLeft", { name: profile.name }), "wine");
+    toast(t("toast.netGuestHeld", { name: profile.name }), "wine");
   }
 }
 
@@ -4852,7 +4991,13 @@ function startHostedMatch() {
   SEAT_PROFILES = [0, 1, 2, 3].map((seat) => {
     const profile = SEAT_PROFILES[seat];
     if (profile && (profile.kind === "host" || profile.kind === "human") && profile.connected) return profile;
-    return { seat, name: `Bot ${botIndex++}`, kind: "bot", connected: true };
+    const bot = { seat, name: `Bot ${botIndex++}`, kind: "bot", connected: true };
+    if (profile?.rejoinToken) {
+      bot.rejoinToken = profile.rejoinToken;
+      bot.rejoinName = profile.rejoinName || profile.name || "";
+      bot.clientId = profile.clientId || null;
+    }
+    return bot;
   });
   net.started = true;
   net.seq = 0;
@@ -4878,28 +5023,43 @@ function startHostedMatch() {
 function clientMessage({ message }) {
   if (!isProtocolMessage(message)) return;
   switch (message.type) {
-    case "welcome":
+    case "welcome": {
       MY_SEAT = Number(message.seat) || 1;
       SEAT_PROFILES = message.players.map((player) => ({ ...player }));
       net.seat = MY_SEAT;
       net.name = message.players?.[MY_SEAT]?.name || net.name;
+      const rejoinToken = typeof message.rejoinToken === "string" ? message.rejoinToken : "";
+      if (rejoinToken) {
+        saveRejoinSeat({
+          code: message.roomCode,
+          seat: MY_SEAT,
+          token: rejoinToken,
+          name: net.name
+        });
+      }
+      net.started = Boolean(message.started) || Boolean(message.rejoin && message.state);
       lobbyState = {
         view: "waiting",
         roomCode: message.roomCode,
         hostName: message.hostName,
         players: message.players,
-        status: t("net.connectedWaiting"),
-        started: false,
+        status: message.rejoin ? t("net.reconnected") : t("net.connectedWaiting"),
+        started: net.started,
         pending: false
       };
-      showLobby("waiting");
-      renderLobby();
-      renderNetChrome();
       chatHistory = Array.isArray(message.chat) ? message.chat.slice(-30) : [];
+      if (message.rejoin && message.state) {
+        applyRemoteState(message.state);
+      } else {
+        showLobby("waiting");
+        renderLobby();
+      }
+      renderNetChrome();
       renderChat();
       syncVoicePeers();
       audio?.play("win", 0);
       break;
+    }
     case "lobby":
       if (SEAT_PROFILES && message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
       if (lobbyState) {
@@ -4953,6 +5113,7 @@ function clientMessage({ message }) {
         toast(t("net.rejected.illegal"), "wine");
         break;
       }
+      if (["bad-pin", "in-progress", "denied"].includes(message.reason)) clearRejoinSeat();
       if (lobbyState?.view !== "table") {
         lobbyState = {
           ...(lobbyState || {}),
@@ -4996,7 +5157,7 @@ function handleHostLost() {
   showLobby("lost");
 }
 
-async function joinRoom(code, name, pin = "") {
+async function joinRoom(code, name, pin = "", rejoinToken = "") {
   if (net) leaveRoom({ silent: true });
   const normalized = normalizeRoomCode(code);
   if (!normalized) {
@@ -5005,6 +5166,7 @@ async function joinRoom(code, name, pin = "") {
   }
   const handle = cleanGuestName(name, t("net.guestDefault"));
   const roomPin = normalisePin(pin);
+  const storedRejoin = rejoinToken || loadRejoinSeat(normalized)?.token || "";
   saveRoomIntent({ role: "guest", code: normalized, name: handle });
   const token = ++joinToken;
   MY_SEAT = 0;
@@ -5024,7 +5186,7 @@ async function joinRoom(code, name, pin = "") {
       connectTimeoutMs: 11000,
       onMessage: clientMessage,
       onOpen: () => {
-        client.send({ type: "hello", name: handle, pin: roomPin, protocol: PROTOCOL_VERSION });
+        client.send({ type: "hello", name: handle, pin: roomPin, protocol: PROTOCOL_VERSION, rejoinToken: storedRejoin });
         setLobbyStatus(t("net.handshake"), "jade");
       },
       onClose: () => {
@@ -5222,6 +5384,34 @@ function loadRoomIntent() {
 
 function clearRoomIntent() {
   try { sessionStorage.removeItem(ROOM_INTENT_KEY); } catch { /* ignore */ }
+  clearRejoinSeat();
+}
+
+function saveRejoinSeat(info) {
+  try {
+    if (!info?.token) return;
+    const code = normalizeRoomCode(info.code || "");
+    if (!code) return;
+    sessionStorage.setItem(REJOIN_KEY, JSON.stringify({
+      code,
+      seat: Number(info.seat) || 0,
+      token: String(info.token),
+      name: cleanGuestName(info.name || "", "")
+    }));
+  } catch { /* storage may be denied */ }
+}
+
+function loadRejoinSeat(code) {
+  try {
+    const normalized = normalizeRoomCode(code || "");
+    const parsed = JSON.parse(sessionStorage.getItem(REJOIN_KEY) || "null");
+    if (!parsed || parsed.code !== normalized || !parsed.token) return null;
+    return { code: normalized, seat: Number(parsed.seat) || 0, token: String(parsed.token), name: cleanGuestName(parsed.name || "", "") };
+  } catch { return null; }
+}
+
+function clearRejoinSeat() {
+  try { sessionStorage.removeItem(REJOIN_KEY); } catch { /* ignore */ }
 }
 
 function renderRuleSelects() {
@@ -5332,9 +5522,11 @@ async function checkForUpdate({ force = false } = {}) {
     if (!response.ok) return;
     const data = await response.json();
     if (!data?.version || !isNewerVersion(data.version, APP.version)) return;
+    const hadVersion = Boolean(availableVersion);
     availableVersion = data.version;
     renderVersion();
     if (canAutoReload() && autoReloadFor(data.version)) return;
+    if (!hadVersion && isNetworked()) toast(t("version.updateAvailable", { version: data.version }), "gold");
     const banner = $("#updateBanner");
     const text = $("#updateText");
     if (text) text.textContent = t("version.updateAvailable", { version: data.version });
@@ -6846,8 +7038,8 @@ function centerPosition(seat, index, count) {
   const rows = Math.ceil(count / cols);
   const col = index % cols;
   const row = Math.floor(index / cols);
-  const tangentOffset = (col - (cols - 1) / 2) * 0.52;
-  const radialOffset = (row - (rows - 1) / 2) * 0.52;
+  const tangentOffset = (col - (cols - 1) / 2) * CENTER_TILE_SPACING;
+  const radialOffset = (row - (rows - 1) / 2) * CENTER_TILE_SPACING;
   const base = seatVector(seat, CENTER_RADIUS);
   const tangent = seatTangent(seat);
   const radial = { x: Math.sin(SEATS[seat].angle), z: Math.cos(SEATS[seat].angle) };
@@ -6875,13 +7067,12 @@ function captureGroupsFor(game, seat) {
 }
 
 function capturePosition(seat, pileIndex = 0, within = 0, pileCount = 1) {
-  const base = seatVector(seat, 5.35);
-  const tangent = seatTangent(seat);
-  const tangentOffset = (pileIndex - (pileCount - 1) / 2) * 0.58;
+  const step = CAPTURE_PILE_SPACING / CAPTURE_RADIUS;
+  const angle = SEATS[seat].angle + (pileIndex - (pileCount - 1) / 2) * step;
   return {
-    x: base.x + tangent.x * tangentOffset,
+    x: Math.sin(angle) * CAPTURE_RADIUS,
     y: TABLE_Y + TILE_THICKNESS / 2 + 0.014 + within * 0.036,
-    z: base.z + tangent.z * tangentOffset
+    z: Math.cos(angle) * CAPTURE_RADIUS
   };
 }
 
@@ -7204,7 +7395,7 @@ async function createScene() {
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = 8;
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
-    const lp = seatVector(seat.id, 5.78);
+    const lp = seatVector(seat.id, 5.15);
     sprite.position.set(lp.x, 0.66, lp.z);
     sprite.scale.set(1.95, 0.61, 1);
     sprite.renderOrder = 4;
@@ -8052,10 +8243,16 @@ function bindEvents() {
   $("#summaryBody")?.addEventListener("click", (event) => {
     if (event.target.closest("#summaryLogBtn")) openLastTrickModal();
   });
-  $("#logRoundSelect")?.addEventListener("change", (event) => renderLogBrowser(event.target.value, null));
-  $("#logTrickSelect")?.addEventListener("change", (event) => renderLogBrowser($("#logRoundSelect")?.value, event.target.value));
-  $("#revealContinue")?.addEventListener("click", finishRevealResult);
-  $("#revealModal [data-close]")?.addEventListener("click", finishRevealResult);
+  $("#logRoundSelect")?.addEventListener("change", (event) => {
+    historyFollowLatest = false;
+    renderLogBrowser(event.target.value, null);
+  });
+  $("#logTrickSelect")?.addEventListener("change", (event) => {
+    historyFollowLatest = false;
+    renderLogBrowser($("#logRoundSelect")?.value, event.target.value);
+  });
+  $("#trickResultContinue")?.addEventListener("click", closeTrickResult);
+  $("#trickResultModal [data-close]")?.addEventListener("click", closeTrickResult);
   $("#draftPool")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-draft-id]");
     if (!button || button.disabled || !state || state.phase !== "draft" || state.turn !== MY_SEAT) return;
@@ -8351,14 +8548,14 @@ function bindEvents() {
   $$(".modal").forEach((modal) => {
     modal.addEventListener("pointerdown", (event) => {
       if (event.target !== modal) return;
-      if (modal.id === "revealModal") { finishRevealResult(); return; }
+      if (modal.id === "trickResultModal") { closeTrickResult(); return; }
       if (modal.id !== "summaryModal" && modal.id !== "lobbyModal") modal.hidden = true;
     });
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       const open = $$(".modal").find((modal) => !modal.hidden);
-      if (open && open.id === "revealModal") finishRevealResult();
+      if (open && open.id === "trickResultModal") closeTrickResult();
       else if (open && open.id !== "summaryModal") open.hidden = true;
       setRankReference(false);
       setPinInfo(false);
@@ -8508,6 +8705,12 @@ async function boot() {
       if (field) field.value = formatRoomCode(autoRoom);
       const explicitName = cleanGuestName(params.get("name") || "", "");
       const explicitPin = normalisePin(params.get("pin") || "");
+      const rejoin = loadRejoinSeat(autoRoom);
+      if (rejoin) {
+        const rejoinName = restoreName || rejoin.name || explicitName || loadPlayerName();
+        joinRoom(autoRoom, rejoinName, "", rejoin.token);
+        return;
+      }
       if (explicitName) {
         joinRoom(autoRoom, explicitName, explicitPin);
         return;

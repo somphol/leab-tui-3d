@@ -23,6 +23,10 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.9.12 — the verdict waits, and everyone sees it
+
+Showing a set applies immediately; there is no intermediate reveal popup. The trick is judged only after every seat has chosen Show or Keep hidden, and the result summary then opens for **every human** — host and guests, reveal or hidden — with the shared card comparison and reason. In solo the next trick waits for Continue. Guests also rejoin the same seat automatically after a reload or version update via a per-seat token, while the host stays open. The captured piles now sit on the rim with arc spacing, centre plays use a wider grid, the history modal refreshes live and closes when the turn reaches you, the view toggle reads **2D / 3D**, and older iPad Safari gets `vh` fallbacks.
+
 ## Release 1.9.11 — the seed reaches the draft
 
 `?seed=123` (and `newMatch({ seed })`) now flows into `state.seed` at boot, so the draft pool shuffle and the random bot draws are reproducible across reloads. Rounds derive from the match seed, and a redraw uses a derived seed, so it deals a different hand.

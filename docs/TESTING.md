@@ -175,6 +175,7 @@ guest own hand        8 real tile ids
 other hands           24 ghost ids, no real ids on the wire
 host in-game controls leave button visible, Start hidden, "Match in progress"
 actions               9–12 moves crossed the channel, a trick resolved
+guest reload          token reused, auto-rejoined seat 1 without PIN/approval
 guest tab closed      seat 1 became Bot 3, score/hand preserved
 console               no exceptions on either page
 ```
@@ -199,24 +200,27 @@ The create-room panel shows the room number and the 5-digit PIN at the same
 computed font size (28 px), the PIN digits select as one block, and no toast or
 chip overlaps the PIN card at 1280×900.
 
-### Comparison popups
+### Trick result and history
 
-The reveal result and the Turn history detail share `trickCompareMarkup`. Drive
-one trick and assert the DOM:
+Showing a set applies immediately; there is **no** intermediate reveal popup.
+The trick is judged only after every seat has chosen Show or Keep hidden, and
+then `trickResultModal` opens for the local human — whether they showed or hid.
 
 ```text
-reveal result       4 seat frames, 1 winner frame, 1 big tick
-reveal cards        centre tiles count; backs for hidden seats
-reveal note         "West leads with Red Advisor." / "The trick stays with West."
-history (1 trick)   4 seat frames, 1 winner frame, 1 big tick
-history note        "East won 4 tiles with Red Advisor"
-history selector    changing Round/Turn re-renders the same layout
-mobile 390×844      1 column, no horizontal overflow, card scrolls internally
+after Show            #revealModal absent; centre entry revealed; turn advanced
+result timing         result modal opens only at phase "resolving", centre 0
+result frames         4 seat frames, 1 winner frame, 1 big tick
+result cards          the trick's tiles; backs for every hidden set
+result note           "North won 4 tiles with Black General" + reason
+hidden human          still gets the result modal (tested by choosing Keep hidden)
+history (1 trick)     4 seat frames, 1 winner frame, 1 big tick
+history note          "East won 4 tiles with Red Advisor"
+history selector      changing Round/Turn re-renders the same layout
+mobile 390×844        1 column, no horizontal overflow, card scrolls internally
 ```
 
-The reveal modal was checked for all three outcomes: the leader's first show
-(no mark yet), a show that takes the lead, and a losing show. The sidebar live
-log still uses its compact row layout; only the modal detail changed.
+In solo the next trick waits for **Continue** on the result; in a network room
+the result is informational and every human (host and guests) receives it.
 
 ### Draft deal
 

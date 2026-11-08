@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.9.11-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.9.12-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -18,12 +18,12 @@ A bilingual, interactive 3D studio for **เลี๊ยบตุ่ย (Leab-Tu
 
 - **A real trick-taking engine, not a toy.** Leab (single), Tui (pair), Sa Hoo, See Hoo, Ngoh Hoo, Lak Hoo, and the Soldier sets; red-beats-black tie-breaking; face-down submissions; revealed-only comparison; the eight-pile Chuan bonus.
 - **Experimental draft deal.** A host-only, off-by-default variant replaces the automatic deal: each seat picks 2 tiles from a public pool, four times, to build an 8-tile hand. Bots pick automatically; a human always picks their own. It applies to the next deal, is switchable from the table HUD or Actions, works in solo and P2P, logs every bot pick, and resumes mid-draft. See **[docs/DRAFT.md](docs/DRAFT.md)**.
-- **Serverless P2P multiplayer.** Host a room, share a six-digit code or invite link, and play with up to three guests over a WebRTC data channel. The host browser is authoritative; each guest receives only their own hand. Two humans are enough to start — empty seats become bots, and a guest who leaves mid-game is replaced by a bot without stopping the table. See **[docs/MULTIPLAYER.md](docs/MULTIPLAYER.md)**.
+- **Serverless P2P multiplayer.** Host a room, share a six-digit code or invite link, and play with up to three guests over a WebRTC data channel. The host browser is authoritative; each guest receives only their own hand. Two humans are enough to start — empty seats become bots, and a guest who leaves mid-game is replaced by a bot without stopping the table. A guest who reloads or updates rejoins the same seat automatically while the host stays open. See **[docs/MULTIPLAYER.md](docs/MULTIPLAYER.md)**.
 - **Host approval and an optional strong PIN.** Guests request a seat; the host approves or denies each one. A 5-digit PIN is generated automatically; **New PIN** rotates it is checked against an in-memory SHA-256 digest and never appears in the invite link or saved game. One-click **Copy room info** includes the code, link and PIN; **Copy invite link** never includes the PIN.
 - **Version and troubleshooting built in.** The footer and every launch dialog show the running version with a large **Reload version** button. The app checks once on open (at most once every 5 minutes), updates itself from the launch menu when a new build is live, and otherwise shows an update banner. A **Troubleshoot** panel probes the host with or without the PIN and reports reachability, PIN state, approval, started state and free seats.
 - **Table chat and independent P2P voice.** A collapsible glass chat routes messages through the host; a full-mesh voice call carries audio directly between browsers. **Mute mic** toggles the local track, **Mute others** mutes every remote `<audio>` element, and a green pulse marks the active speaker. No voice is recorded.
 - **Carved 3D Xiangqi tiles.** Every tile is a bevelled cylinder with a procedurally painted Hanzi face, raised rim and a lacquered back. Dealing, flipping, playing and capture sweeps are animated with lerped transforms.
-- **A table you can orbit.** Drag to rotate, scroll to zoom, right-drag to pan. Reset, top view and a cinematic orbit are one click away.
+- **A table you can orbit.** Drag to rotate, scroll to zoom, right-drag to pan. Reset, 2D view and a cinematic orbit are one click away.
 - **A coach that explains the trick.** The side panel names a legal lead, warns when a set cannot beat the table, counts the remaining tiles and explains rank dominance. It never plays for you.
 - **A rank-order quick reference.** The **Ranks** button at the top-left HUD opens a pictorial ladder — red and black Hanzi, Thai/English names, rank numbers and the red/earlier-play tie rules. Click again, press `Esc`, or click outside to hide.
 - **Display settings for long sessions.** Four interface text sizes (Small, Default, Large, Extra large) and five themes — **Mahogany**, **Jade Court**, **Midnight Lacquer**, **Parchment** and **Daybreak** — that recolour both the panels and the 3D felt, wood, inlay and lighting. Two of them are genuinely bright. Preferences persist.
@@ -195,7 +195,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 
 ## Credits
 
-Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.9.11**; the original table was 1.0.0.
+Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.9.12**; the original table was 1.0.0.
 
 Rules reference: Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016), linked in [docs/RULES.md](docs/RULES.md). Three.js and PeerJS are MIT-licensed; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

@@ -125,16 +125,43 @@ The host may keep waiting for more humans; the button is disabled until the seco
 
 ## Disconnection
 
-When a guest connection closes or sends `leave`:
+When a guest connection closes, the host holds the seat:
 
 1. The host keeps the seat, hand, captures and score.
-2. It replaces the profile with a bot, preserving turn order.
+2. It replaces the profile with a bot, preserving turn order, and keeps the
+   guest's **rejoin token** plus their display name on that seat.
 3. It publishes the new roster and state.
 4. If it was that seat's turn, `scheduleAI(700)` takes over.
 
-The seat is **not** deleted, so the running round and scoring remain valid. A guest cannot reclaim the seat in the same room; they can rejoin only if a seat is free and the match has not started.
+A guest **reclaims the same seat automatically after a reload or version
+update** by presenting the token:
 
-If the **host** closes the tab, the data channels close. Guests see a "Table closed" panel with **Play solo** and **Leave room**. There is no host migration.
+1. `acceptGuest` issues a random 16-byte token and sends it in `welcome`.
+2. The guest stores `{code, seat, token, name}` in `sessionStorage`, never in the
+   URL, saved game or export.
+3. On boot with a stored room intent, the guest sends `hello` with
+   `rejoinToken`; the host matches it to the seat **before** the PIN and
+   approval checks and reattaches the connection (`reattachGuest`).
+4. The welcome carries `rejoin: true`, `started` and a per-seat redacted
+   `state`, so the table is restored immediately.
+5. If the seat had become a bot, the bot stops; the hand, captures and score are
+   exactly where the bot left them.
+
+The token is a **bearer credential for that seat**, not a room password. Anyone
+who obtains it can claim the seat; it is kept in sessionStorage and in the
+host's memory only. An intentional **Leave room** clears the token, so a later
+connection cannot reclaim the seat. If the token is missing or stale, the guest
+falls back to the normal PIN + approval flow.
+
+While the match has not started, a disconnected guest's seat is held with
+`connected: false`; starting the match turns it into a bot that keeps the token,
+so the guest can still return mid-match.
+
+If the **host** closes the tab, the data channels close and the room ends.
+Guests see a "Table closed" panel with **Play solo** and **Leave room**. There
+is still **no host migration**: the host's tokens and state are memory-only.
+Reload the page as the host and the room is gone; a guest update only survives
+because the host stayed open.
 
 ## Privacy model
 
@@ -195,7 +222,7 @@ The host panel shows **Listening for guests…** until a guest's data channel ac
 
 A failed join retries once automatically and turns **Connect** into **Retry**. The status line distinguishes broker, host and ICE failures rather than showing a generic timeout.
 
-The **two-client** verification is `node scripts/net-check.mjs`. It uses the real broker and checks: host room, guest join, two-human start, bot fill, own-hand privacy, ghosted other hands, host controls, text chat, voice mesh attachment, mic mute, deafen, actions in both directions, a resolved trick, and disconnect-to-bot. Voice media is exercised with a synthetic oscillator stream so headless Chrome does not need a real microphone; the production path still uses `getUserMedia`. It is separate from `scripts/verify.mjs` so offline CI stays deterministic. Set `GUEST_SHOT=screenshots/guest-play.png` to capture the guest table during the run.
+The **two-client** verification is `node scripts/net-check.mjs`. It uses the real broker and checks: host room, guest join, two-human start, bot fill, own-hand privacy, ghosted other hands, host controls, text chat, voice mesh attachment, mic mute, deafen, actions in both directions, a resolved trick, **reload → auto-rejoin to the same seat**, and disconnect-to-bot. Voice media is exercised with a synthetic oscillator stream so headless Chrome does not need a real microphone; the production path still uses `getUserMedia`. It is separate from `scripts/verify.mjs` so offline CI stays deterministic. Set `GUEST_SHOT=screenshots/guest-play.png` to capture the guest table during the run.
 
 ## Troubleshooting
 

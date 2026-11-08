@@ -84,8 +84,13 @@ const playthrough = `(async () => {
       LeabTui.hint();
       LeabTui.follow(LeabTui.getState().selected, false);
     } else if (s.turn === 0 && s.phase === 'showdown') {
-      if (!LeabTui.showdown(true)) LeabTui.showdown(false);
+      LeabTui.showdown(true);
+      await wait(40);
+      const next = LeabTui.getState();
+      if (next.phase === 'showdown' && next.turn === 0) LeabTui.showdown(false);
     }
+    const trickResult = document.querySelector('#trickResultModal');
+    if (!trickResult.hidden) document.querySelector('#trickResultContinue').click();
   }
   const s = LeabTui.getState();
   return JSON.stringify({ ok: false, phase: s.phase, turn: s.turn, trick: s.trick, hands: s.hands.map((h) => h.length), center: s.center.length });
@@ -205,16 +210,13 @@ async function main() {
     LeabTui.setFast(true);
     LeabTui.newMatch({ fast: true });
     await sleep(250);
-    const act = async (allowReveal) => {
+    const act = async () => {
       const st = LeabTui.getState();
       if (!st) return 'end';
       if (st.phase === 'showdown' && st.turn === 0) {
         LeabTui.showdown(true);
         await sleep(60);
-        if (!document.querySelector('#revealModal').hidden) return 'reveal';
-        const next = LeabTui.getState();
-        if (next.phase === 'showdown' && next.turn === 0) LeabTui.showdown(false);
-        return 'acted';
+        return 'revealed';
       }
       if (st.phase === 'lead' && st.turn === 0) { LeabTui.hint(); LeabTui.lead(LeabTui.getState().selected); }
       else if (st.phase === 'follow' && st.turn === 0) { LeabTui.hint(); LeabTui.follow(LeabTui.getState().selected); }
@@ -224,25 +226,30 @@ async function main() {
     let revealed = false;
     for (let i = 0; i < 500 && !revealed; i += 1) {
       await sleep(20);
-      if (await act(true) === 'reveal') revealed = true;
+      if (await act() === 'revealed') revealed = true;
     }
-    const body = document.querySelector('#revealBody');
-    const reveal = {
-      opened: revealed,
-      seats: body.querySelectorAll('.trick-seat').length,
-      tick: body.querySelectorAll('.seat-tick').length,
-      why: body.querySelector('.pile-why b')?.textContent || ''
-    };
+    const noPopup = document.querySelector('#revealModal') === null;
+    let result = null;
     if (revealed) {
-      document.querySelector('#revealContinue').click();
-      await sleep(80);
+      for (let i = 0; i < 220; i += 1) {
+        await sleep(30);
+        if (!document.querySelector('#trickResultModal').hidden) {
+          const modal = document.querySelector('#trickResultModal');
+          result = {
+            seats: modal.querySelectorAll('.trick-seat').length,
+            tick: modal.querySelectorAll('.seat-tick').length,
+            why: modal.querySelector('.pile-why b')?.textContent || '',
+            title: document.querySelector('#trickResultTitle').textContent,
+            phase: LeabTui.getState().phase,
+            center: LeabTui.getState().center.length
+          };
+          break;
+        }
+      }
     }
-    for (let i = 0; i < 400; i += 1) {
-      await sleep(20);
-      const st = LeabTui.getState();
-      if (!st) break;
-      if ((st.trickArchive || []).length >= 1) break;
-      if (await act(false) === 'reveal') document.querySelector('#revealContinue').click();
+    if (result) {
+      document.querySelector('#trickResultContinue').click();
+      await sleep(450);
     }
     document.querySelector('#logHistoryBtn').click();
     await sleep(250);
@@ -253,12 +260,15 @@ async function main() {
       tick: list.querySelectorAll('.seat-tick').length,
       why: list.querySelector('.pile-why b')?.textContent || ''
     };
-    return JSON.stringify({ reveal, history });
+    const after = { phase: LeabTui.getState().phase, trick: LeabTui.getState().trick };
+    return JSON.stringify({ noPopup, result, history, after });
   })()`;
   const compare = runHarness(["--url", soloBase, "--wait", "2500", "--eval", compareExpr]);
   const compareValue = compare.evalValue || {};
-  if (compareValue.reveal?.opened && compareValue.reveal.seats === 4 && compareValue.reveal.tick === 1) pass("reveal result uses the comparison cards");
-  else fail("reveal result uses the comparison cards", JSON.stringify(compareValue.reveal));
+  if (compareValue.noPopup === true) pass("reveal applies without an intermediate popup");
+  else fail("reveal applies without an intermediate popup", JSON.stringify(compareValue.noPopup));
+  if (compareValue.result?.seats === 4 && compareValue.result.tick === 1 && compareValue.result.phase === "resolving" && compareValue.result.center === 0) pass("trick result waits for every decision");
+  else fail("trick result waits for every decision", JSON.stringify(compareValue.result));
   if (compareValue.history?.open && compareValue.history.seats === 4 && compareValue.history.tick === 1) pass("turn history uses the comparison cards");
   else fail("turn history uses the comparison cards", JSON.stringify(compareValue.history));
 

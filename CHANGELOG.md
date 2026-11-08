@@ -2,10 +2,27 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.12] — 2026-11-08
+
+### Changed
+
+- **No verdict before the full circle.** The trick is judged only after every seat has chosen **Show set** or **Keep hidden**. Previously the comparison and a winner tick appeared as soon as the local player revealed, even with the other three still face-down.
+- **Show set applies immediately.** The intermediate “Reveal your set” popup is gone; the cards flip, the turn advances, and the showdown continues.
+- **The trick result opens for everyone.** After the last decision, `trickResultModal` opens for the host and every guest — whether they revealed or stayed hidden — with all four seat frames, mini cards (backs while hidden), the large ✓ and gold frame on the winner, and the winner/reason note. In solo the next trick waits for Continue; in a P2P room the summary is informational and the table continues.
+
+### Added
+
+- **Captured piles sit on the rim.** They moved from radius 5.35 to **5.90** and are spaced along the rim arc by 1.02 (was a straight tangent fan at 0.58), so two piles no longer overlap and none push past the table edge. The seat nameplates moved inward to 5.15 so they are not buried under the piles.
+- **Centre plays no longer overlap.** The automatic grid spacing went from 0.52 to **0.96**, so a pair, triple or six-tile set has a visible gap instead of interpenetrating.
+- **The view toggle reads 2D / 3D.** The old “Top” label is now **2D** in both languages; the default remains the 2D view. The header Update pill also raises a toast when a new version appears during a match, so an iPad can find it without opening the lobby.
+- **The Turn history stays live.** While the history modal is open it follows the latest trick (unless you pick an older round/turn) and re-renders on every state update. If the turn reaches you while it is open, it closes with a “Your turn” toast so the board is never hidden behind a stale Log.
+- **Guest auto-rejoin after a reload or version update.** Each seat gets a random 16-byte rejoin token in `welcome`; the guest keeps it in `sessionStorage` with the room code and seat. On the next load, `hello.rejoinToken` is checked before the PIN/approval gate and the host reattaches the same seat, even mid-match and even if the seat had become a bot. The token is never in the roster, state, URL, export or localStorage; an intentional Leave clears it. A host reload still ends the room.
+
 ## [1.9.11] — 2026-11-07
 
 ### Fixed
 
+- **Older iOS/iPadOS sizes.** `vh` fallbacks now precede the `dvh` modal and dock heights, so a Safari version without `dvh` still keeps the history/result modal inside the screen.
 - **The URL seed now reaches the draft.** `?seed=123` was only setting a temporary RNG at boot; `beginMatch` and the boot deal replaced it with a fresh random seed. The seed is now parsed into `bootSeed`, copied into `state.seed`, and used by `dealRound` before `startDraft`, so a reload with the same URL reproduces the pool and every random bot draw.
 - **Seeded rounds are stable.** `startNextRound` no longer replaces `state.seed` with a new random value; each round derives from the match seed.
 - **Redraw deals a different hand.** The deal RNG includes the redraw count, so a redraw no longer replays the same shuffle.

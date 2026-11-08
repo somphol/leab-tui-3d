@@ -28,9 +28,16 @@ Sent once after a valid `hello`.
   "hostName": "Ana",
   "players": [ { "seat": 0, "name": "Ana", "kind": "host", "connected": true, "bot": false }, ... ],
   "canStart": true,
-  "chat": [ { "seat": 0, "name": "Ana", "text": "Welcome", "at": 1793989000000 } ]
+  "chat": [ { "seat": 0, "name": "Ana", "text": "Welcome", "at": 1793989000000 } ],
+  "rejoinToken": "9f2c…",
+  "started": false
 }
 ```
+
+`rejoinToken` is issued once per seat and stored by the guest in
+`sessionStorage`. It is never in the roster, state, export or URL. On a rejoin
+the host sends `"rejoin": true`, `"started": true` and a per-seat redacted
+`state` in the same welcome; the guest applies it directly to the table.
 
 ### `lobby`
 
@@ -148,10 +155,14 @@ Echo of a guest `ping`. The guest stores `Date.now() - at` as a rough clock offs
 Sent once the data channel opens.
 
 ```json
-{ "type": "hello", "name": "Bea", "protocol": 1 }
+{ "type": "hello", "name": "Bea", "protocol": 1, "rejoinToken": "" }
 ```
 
-The host verifies the optional PIN against an in-memory SHA-256 digest, then either queues the request (`pending`) or rejects it. The host assigns the lowest free seat 1–3 only after approval. Names are trimmed to 18 characters; control characters and angle brackets are stripped. Empty names become `Guest n`.
+The host checks `rejoinToken` **first**. A valid token is matched to its seat
+(host memory only) and reattaches the connection without a PIN or approval,
+even while the match is running. Otherwise the host verifies the optional PIN
+against an in-memory SHA-256 digest, then either queues the request (`pending`)
+or rejects it. The host assigns the lowest free seat 1–3 only after approval. Names are trimmed to 18 characters; control characters and angle brackets are stripped. Empty names become `Guest n`.
 
 `bad-pin`, `denied`, `busy`, `timeout`, `full` and `in-progress` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s.
 

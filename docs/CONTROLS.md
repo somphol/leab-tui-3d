@@ -15,7 +15,7 @@
 | `Esc` | Clear selection (or close the open modal) |
 | `?` button | Rules |
 | `i` button | About / credits |
-| Camera buttons (top-right) | Reset view · top view · cinematic orbit |
+| Camera buttons (top-right) | Reset view · 2D view · cinematic orbit |
 | **Aa** (stage toolbar) | Display settings: text size and theme |
 | **Ranks** (top-left HUD) | Show/hide the pictorial rank-order reference |
 | **Multiplayer** (Actions) | Open the lobby: solo / host / join; set your name here |

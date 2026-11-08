@@ -175,30 +175,20 @@ The host-only draft deal (off by default): the public 32-tile pool, a step count
 
 The same modal at 390×844: five tiles per row, a scrollable pool of 436 px and the confirm button still inside the card, with no horizontal overflow.
 
-## Reveal result and turn history
+## Trick result and turn history
 
-![Reveal result on desktop](../screenshots/reveal-result.jpg)
+![Trick result on desktop](../screenshots/trick-result.jpg)
 
-The reveal result uses the same language as the captured-pile popup: one frame per seat in play order, the played set as mini tile cards (a striped back while the set is hidden), a large green ✓ with a gold frame on the current winner, and a note that names the leader and explains whether the trick moved. Continue applies the reveal; ×, Escape and the backdrop do the same rather than stranding the showdown.
+After every seat has chosen Show set or Keep hidden, the trick is judged and this summary opens for everyone — host and guests, whether they revealed or hid. One frame per seat in play order, the played tiles as mini cards (backs for hidden sets), a large green ✓ with a gold frame on the winner, and the winner/reason note. Continue starts the next trick in solo; in a room the summary is informational.
 
 ![Turn history on desktop](../screenshots/trick-history.jpg)
 
-Turn history after choosing a round and turn: the same seat frames and cards, the winning frame's ✓, and the winner/reason note. The Round and Turn selects re-render this detail; the live sidebar log keeps its compact rows.
+Turn history after choosing a round and turn: the same seat frames and cards, the winning frame's ✓, and the winner/reason note. The Round and Turn selects re-render this detail.
 
-![Reveal result on a phone](../screenshots/reveal-result-mobile.jpg)
+![Trick result on a phone](../screenshots/trick-result-mobile.jpg)
 
-At 390×844 the seat frames fall to one column and the tile cards and note stay inside the card without horizontal overflow.
+At 390×844 the seat frames fall to one column and the cards and note stay inside the modal without horizontal overflow.
 
 ![Turn history on a phone](../screenshots/trick-history-mobile.jpg)
 
 The same history detail on a phone: one column, the four seat frames, and a modal that scrolls internally to the note and Continue.
-
-## Host PIN and the table draft switch
-
-![Host room code and PIN](../screenshots/host-pin.jpg)
-
-The create-room panel: the room number and the 5-digit PIN now use the same 28 px mono treatment. The PIN sits in its own gold card with Copy PIN and New PIN below, and clicking the digits selects the whole PIN. The room number keeps Copy invite + PIN and Share invite + PIN.
-
-![Draft switch on the table](../screenshots/draft-controls.jpg)
-
-The host can switch the experimental draft from the table: the gold **Draft: on/off** chip in the HUD (next to the call chip) and the Actions checkbox stay in sync. A change applies to the next deal; it can also be made while a draft is running. Guests do not see either control.

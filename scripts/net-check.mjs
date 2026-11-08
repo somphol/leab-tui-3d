@@ -391,6 +391,26 @@ async function main() {
   if (after.lastWinner !== null || after.trick >= 2 || resolved) pass("a trick resolved and state advanced", JSON.stringify(after));
   else fail("a trick resolved and state advanced", JSON.stringify(after));
 
+  // Rejoin after a reload (the version-update path): the guest keeps a token
+  // in sessionStorage and must reclaim the same seat without PIN or approval.
+  const rejoinInfo = JSON.parse(await guest.eval("JSON.stringify(JSON.parse(sessionStorage.getItem('leabtui.rejoin.v1') || 'null'))"));
+  if (rejoinInfo?.token && rejoinInfo?.code) pass("guest stored a rejoin token", `seat ${rejoinInfo.seat}`);
+  else fail("guest stored a rejoin token", JSON.stringify(rejoinInfo));
+  const beforeReload = JSON.parse(await guest.eval("JSON.stringify({seat:LeabTui.net.getState().mySeat,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase})"));
+  await guest.send("Page.reload");
+  const rejoinedRaw = await guest.waitFor(
+    "window.LeabTui?.net?.getState?.().role === 'client' && window.LeabTui?.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase}) : ''",
+    "guest auto-rejoin",
+    30000
+  );
+  const rejoined = JSON.parse(rejoinedRaw);
+  if (rejoined.seat === beforeReload.seat && rejoined.trick >= beforeReload.trick) pass("guest auto-rejoined the same seat", `seat ${rejoined.seat}, trick ${rejoined.trick}`);
+  else fail("guest auto-rejoined the same seat", JSON.stringify({ beforeReload, rejoined }));
+  const rosterAfterReload = JSON.parse(await host.eval("JSON.stringify(LeabTui.net.getState().players)"));
+  const seatAfterReload = rosterAfterReload[beforeReload.seat];
+  if (seatAfterReload?.kind === "human" && seatAfterReload?.connected) pass("host reclaimed the seat for the guest", seatAfterReload.name);
+  else fail("host reclaimed the seat for the guest", JSON.stringify(seatAfterReload));
+
   // Disconnect handling: close the guest tab, host must replace the seat with a bot.
   await guest.closePage();
   const takeover = await host.waitFor("window.LeabTui?.net.getState?.().players?.[1]?.kind === 'bot' ? JSON.stringify(window.LeabTui.net.getState().players) : ''", "host roster after close", 20000);
