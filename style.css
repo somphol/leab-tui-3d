@@ -740,7 +740,7 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
 /* Toasts */
 .toast-layer {
   position: absolute;
-  z-index: 6;
+  z-index: 9;
   top: 66px;
   left: 50%;
   transform: translateX(-50%);

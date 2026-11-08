@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.19",
-  "version": "1.9.19",
+  "projectVersion": "1.9.20",
+  "version": "1.9.20",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,13 +9,13 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-08T22:42:10.474Z",
-    "durationSeconds": 189397,
-    "durationHuman": "52h 36m 37s",
+    "packagedAt": "2026-11-08T23:52:45.400Z",
+    "durationSeconds": 193632,
+    "durationHuman": "53h 47m 12s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation.",
-    "publishedAt": "2026-11-08T22:42:10.479Z"
+    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls.",
+    "publishedAt": "2026-11-08T23:52:45.400Z"
   },
   "tokens": {
     "input": 6615671,
@@ -71,8 +71,8 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (401 checks)",
-    "browserCheck": "scripts/verify.mjs — 32 checks incl. iPad portrait/landscape framing and shadows; boot, scene, audio, display, full round, no exceptions",
+    "staticCheck": "scripts/check.mjs (406 checks)",
+    "browserCheck": "scripts/verify.mjs — 38 checks incl. iPad portrait/landscape framing, shadows, hint placement and inspector",
     "multiplayer": "scripts/net-check.mjs — 37/37 (local and live)",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
@@ -86,7 +86,7 @@
     "copyRoomInfo": "host Actions button + host chip title",
     "hostReload": "same room code, trick preserved, guest reconnected",
     "showdownLegality": "illegal pair explained; legal losing sets remain showable",
-    "ipad": "820x1180 portrait and 1180x820 landscape: rim on-screen, clear of dock, 2D shadow-free, 3D shadows on"
+    "ipad": "820x1180 portrait and 1180x820 landscape: rim on-screen, clear of dock, 2D shadow-free, 3D shadows on, hint toast below HUD, inspector opens on selection"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -345,9 +345,14 @@
       "version": "1.9.19",
       "date": "2026-11-08",
       "summary": "Shadow-free 2D and iPad portrait/landscape table fitting with emulated checks."
+    },
+    {
+      "version": "1.9.20",
+      "date": "2026-11-08",
+      "summary": "iPad hint placement, inspector selection fallback and H hand controls."
     }
   ],
-  "releaseNotes": "1.9.19 removes 2D cast shadows and fits the whole table to iPad portrait and landscape, with device-emulated verification.",
+  "releaseNotes": "1.9.20 keeps iPad hints clear of the HUD, opens the inspector on the selected tile and replaces the two 手 controls with H.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

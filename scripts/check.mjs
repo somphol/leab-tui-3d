@@ -109,7 +109,8 @@ const required = [
   "screenshots/mobile-chat.jpg",
   "screenshots/host-security.jpg",
   "screenshots/ipad-portrait-1919.jpg",
-  "screenshots/ipad-landscape-1919.jpg"
+  "screenshots/ipad-landscape-1919.jpg",
+  "screenshots/ipad-hints-1920.jpg"
 ];
 
 for (const file of required) {
@@ -296,6 +297,9 @@ ok(css.includes("@media (max-width: 640px)"), "phone breakpoint exists");
 ok(script.includes("function fitTopFraming") && script.includes("TABLE_FIT_RADIUS"), "2D framing fits the live stage between HUD and dock");
 ok(script.includes("function applyShadowMode") && script.includes("renderer.shadowMap.enabled = false"), "2D starts without shadows and 3D toggles them");
 ok(script.includes("getFraming: () => scene?.framing"), "2D framing is exposed for verification");
+ok(index.includes('data-panel="handPanel" aria-label="Your hand" title="Your hand">H</button>') && script.includes('button.textContent = collapsed ? "H" : "⌄"'), "hand controls use a readable H label");
+ok(script.includes("function positionToastLayer") && script.includes('layer.style.top'), "toasts position below the HUD strip");
+ok(script.includes("inspector.emptyTouch") && script.includes("const fallback = state?.selected?.length"), "inspector falls back to the selected tile");
 const harness = read("scripts/browser-check.mjs");
 ok(harness.includes("const DEVICES") && harness.includes("setDeviceMetricsOverride") && harness.includes("setTouchEmulationEnabled"), "browser harness has iPad device emulation");
 ok(css.includes("prefers-reduced-motion"), "reduced-motion support exists");

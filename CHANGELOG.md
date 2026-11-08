@@ -2,6 +2,14 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.20] — 2026-11-08
+
+### Fixed
+
+- **iPad hints stay above the HUD.** The toast layer is repositioned from the measured HUD bottom before every toast, so a wrapped Thai HUD no longer covers the message. Toasts also sit above the HUD on the z-axis as a fallback. The **Hint** toast now names the suggested set (`Hint: Red Advisor`) or the discard count instead of only saying “Hint applied”.
+- **The tile inspector opens on the selected tile.** Selecting a tile with a tap, the hand list or Hint records it for the inspector, and opening the `i` orb falls back to the newest selection. The empty prompt now says **tap** on touch devices instead of “hover or click”.
+- **Readable hand buttons.** The two circular controls that showed **手** — the panel-rail hand orb and the collapsed hand dock — now show **H** with the same `Your hand` / `Expand hand dock` labels.
+
 ## [1.9.19] — 2026-11-08
 
 ### Fixed

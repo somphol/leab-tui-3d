@@ -275,6 +275,20 @@ async function main() {
   const tabletExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const initial = { w: innerWidth, h: innerHeight, cam: LeabTui.getCamera(), frame: LeabTui.getFraming() };
+    const handId = LeabTui.getState()?.hands?.[0]?.[0] || null;
+    if (handId) LeabTui.toggleTile(handId);
+    await sleep(350);
+    document.querySelector('.panel-orb[data-panel="inspectorCard"]')?.click();
+    await sleep(350);
+    const inspector = document.querySelector('#inspectorBody')?.textContent.replace(/\\s+/g, ' ').trim() || '';
+    document.querySelector('#panelSheetClose')?.click();
+    await sleep(250);
+    document.querySelector('#hintBtn')?.click();
+    await sleep(400);
+    const toasts = [...document.querySelectorAll('.toast')].map((node) => node.textContent.trim());
+    const toastRect = document.querySelector('.toast-layer')?.getBoundingClientRect();
+    const hudRect = document.querySelector('.hud-strip')?.getBoundingClientRect();
+    const toastClear = Boolean(toastRect && hudRect && toastRect.top >= hudRect.bottom - 1);
     document.querySelector('#dockFold')?.click();
     await sleep(1000);
     const expanded = LeabTui.getFraming();
@@ -287,6 +301,9 @@ async function main() {
     return JSON.stringify({
       initial,
       expanded,
+      inspector,
+      toasts,
+      toastClear,
       three: { topView: three?.topView, shadows: three?.shadows },
       two: { topView: two.cam?.topView, shadows: two.cam?.shadows, frame: two.frame },
       coarse: matchMedia('(pointer: coarse)').matches,
@@ -304,6 +321,12 @@ async function main() {
     else fail(`iPad ${orientation} 2D fits the whole table above the dock with no shadows`, JSON.stringify(value.initial?.frame));
     if (value.expanded?.fits && value.expanded?.clearOfDock) pass(`iPad ${orientation} expanded dock re-fits the table clear of the hand`);
     else fail(`iPad ${orientation} expanded dock re-fits the table clear of the hand`, JSON.stringify(value.expanded));
+    if (value.inspector?.includes("Selected for play")) pass(`iPad ${orientation} inspector opens on the selected tile`);
+    else fail(`iPad ${orientation} inspector opens on the selected tile`, value.inspector);
+    if (Array.isArray(value.toasts) && value.toasts.some((text) => text.startsWith("Hint:"))) pass(`iPad ${orientation} hint toast names the suggested set`);
+    else fail(`iPad ${orientation} hint toast names the suggested set`, JSON.stringify(value.toasts));
+    if (value.toastClear === true) pass(`iPad ${orientation} toast clears the HUD strip`);
+    else fail(`iPad ${orientation} toast clears the HUD strip`, JSON.stringify({ toasts: value.toasts, clear: value.toastClear }));
     if (value.three?.topView === false && value.three?.shadows === true) pass(`iPad ${orientation} 3D enables shadows`);
     else fail(`iPad ${orientation} 3D enables shadows`, JSON.stringify(value.three));
     if (value.two?.topView === true && value.two?.shadows === false && value.two?.frame?.fits && value.two?.frame?.clearOfDock) pass(`iPad ${orientation} returns to a fitted, shadow-free 2D view`);

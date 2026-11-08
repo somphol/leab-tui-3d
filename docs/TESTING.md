@@ -155,6 +155,9 @@ LeabTui.getFraming()                   → fits true, clearOfDock true
 2D                                     → shadows false
 3D                                     → shadows true
 back to 2D                             → shadows false, framing refitted
+hint toast                             → below the HUD, names "Hint: …"
+inspector orb                          → selected tile, "Selected for play"
+hand controls                          → H, not 手
 ```
 
 `getFraming()` projects 64 points of the 6.83-radius rim through the live camera and returns NDC bounds plus the dock's top edge. This catches a fixed camera distance that crops portrait or lets an expanded dock cover the hand. The emulator matches viewport, DPR, touch and coarse pointer; it does not reproduce Safari's toolbar, safe-area insets or GPU timing, so a physical iPad pass is still listed for layout-critical releases.

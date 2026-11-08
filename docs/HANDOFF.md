@@ -1,14 +1,15 @@
-# Handoff — Leab-Tui 3D 1.9.19
+# Handoff — Leab-Tui 3D 1.9.20
 
 **Session:** 2026-11-08 · OpenCode 2.2.5 · DeepSeek V4.1 Flash
 
 ## Outcome
 
-Release **1.9.19** is built, verified and published. This session fixed the two iPad table problems reported after 1.9.18:
+Release **1.9.20** is built, verified and published. It follows the 1.9.19 iPad work with three usability fixes:
 
-- **2D is shadow-free.** The default top-down table no longer renders cast shadows under every tile and on the rim. The shadow pass starts disabled and is enabled only when the 3D view is selected; switching back disables it again.
-- **iPad portrait no longer crops the table.** The 2D camera now fits the whole rim to the live stage aspect between the HUD strip and the hand dock, instead of reusing the desktop distance. iPad portrait (820×1180) and landscape (1180×820) both show the complete table, and an expanded dock re-fits the board so the hand stays clear.
-- **iPad emulation is part of the harness.** `scripts/browser-check.mjs --device ipad|ipad-air|ipad-mini|ipad-pro-11|ipad-pro-13 --orientation portrait|landscape` sets viewport, DPR, touch, coarse pointer and a Safari UA. `scripts/verify.mjs` checks both orientations, the 2D/3D shadow switch and `LeabTui.getFraming()`.
+- **Hints clear the HUD.** `positionToastLayer()` measures the HUD strip before every toast, so a wrapped Thai HUD cannot cover the message; the layer also sits above the HUD on the z-axis. The Hint toast now names the suggested set (`Hint: Red Advisor`) or the discard count.
+- **The inspector opens on the selected tile.** A tap, hand-list click or Hint records the tile, and opening the `i` orb falls back to the newest selection instead of the empty prompt. Touch devices get a tap-specific prompt.
+- **Readable hand controls.** The two circular buttons that showed **手** — the panel-rail hand orb and the collapsed hand dock — now show **H**, with the same `Your hand` / `Expand hand dock` labels.
+- Release **1.9.19** in the same session removed 2D cast shadows and fitted the whole table to iPad portrait and landscape, with `--device ipad` emulation and `getFraming()` checks.
 - Live: [https://somphol.github.io/leab-tui-3d/](https://somphol.github.io/leab-tui-3d/)
 - Repository: [https://github.com/somphol/leab-tui-3d](https://github.com/somphol/leab-tui-3d)
 - Local master: `~/Projects/leab-tui-3d`
@@ -23,7 +24,8 @@ Release **1.9.19** is built, verified and published. This session fixed the two 
 | AI | Heuristic lead/follow; fills empty network seats; random draft picks |
 | Draft | Off-by-default, public 32-tile pool, 2×4 picks, seeded, logged |
 | 3D | Carved tiles, ghosts, captured piles on the rim, 2D pan/zoom and 3D orbit, reset-board, safe area |
-| 2D framing | Fit to stage aspect and HUD/dock occupancy; no cast shadows |
+| 2D framing | Fit to stage aspect and HUD/dock/rail occupancy; no cast shadows |
+| Hints / inspector | HUD-aware toasts, combo named in the hint, inspector follows the selection |
 | Showdown | Face-down sends, full circle, legal losing sets showable, result for everyone, Chuan-aware reason |
 | History | Turn Log live, Turn history card comparison, pile popup with winner/reason |
 | Multiplayer | Host-authoritative WebRTC; guest rejoin tokens; host same-tab reload recovery; late join into bot seats; viewers; 30-min join pause |
@@ -31,22 +33,24 @@ Release **1.9.19** is built, verified and published. This session fixed the two 
 | Chat / voice | Host-routed chat; full-mesh voice with mute/deafen; viewers have neither |
 | Full screen | `manifest.webmanifest`, icons, Apple meta, Display → Full screen |
 | Persistence | Autosave, solo resume, stats, JSON export; network saves non-resumable; sessionStorage rejoin/host recovery |
-| Verification | 38/38 self-test, 401 static checks, 32 browser checks (incl. iPad portrait/landscape), 37-check two-browser WebRTC suite (local and live) |
+| Verification | 38/38 self-test, 406 static checks, 38 browser checks (incl. iPad portrait/landscape), 37-check two-browser WebRTC suite (local and live) |
 | Docs | README, AGENTS, STATE, CONTINUATION, rules, architecture, multiplayer, protocol, tests, deployment, data, controls, accessibility, performance, design, browsers, FAQ, roadmap, checklist, gallery, glossary |
 
 ## Evidence
 
 ```
 node --check script.js / peer-manager.js / voice-chat.js / security.js   PASS
-node scripts/check.mjs                                                  PASS (401 checks)
+node scripts/check.mjs                                                  PASS (406 checks)
 ?selftest=1                                                             SELFTEST PASS 38/38
-node scripts/verify.mjs                                                 ALL 32 BROWSER CHECKS PASSED
+node scripts/verify.mjs                                                 ALL 38 BROWSER CHECKS PASSED
 AUDIO_TEST=1 node scripts/verify.mjs                                    audio peak measured
 node scripts/net-check.mjs                                              ALL 37 PASSED
 BASE_URL=https://somphol.github.io/leab-tui-3d/ node scripts/net-check.mjs  ALL 37 PASSED
 iPad portrait 820×1180    whole rim on-screen, clear of dock, 2D shadows off, 3D shadows on
 iPad landscape 1180×820   whole rim on-screen, clear of dock, 2D shadows off, 3D shadows on
-dock expand               board re-fits; table minY stays above the dock top
+iPad hint                 toast below the HUD, names the suggested set
+iPad inspector            opens with the selected tile and "Selected for play"
+hand controls             panel rail and collapsed dock both read H
 host + guest              2 humans + 2 bots; guest privacy (8 real / 24 ghost)
 late join                 third guest approved into bot seat 2 with a live hand
 viewer                    seat -1, all hands ghosted, hand dock hidden, console clean
@@ -59,7 +63,7 @@ full round                roundEnd, 32 tiles conserved, points sum 0
 
 ## Decisions a next agent must not silently change
 
-See **[CONTINUATION.md](CONTINUATION.md) §3** and **[../AGENTS.md](../AGENTS.md) §4**. The short list: full-circle judgement; legal losing sets can be shown; redaction/seat `-1` for viewers; host authority; session-only PIN/token/recovery handling; draft is experimental; 2D is fixed-orientation; **2D has no cast shadows**; **2D framing is computed from the live stage, not a fixed distance**; all version strings move together.
+See **[CONTINUATION.md](CONTINUATION.md) §3** and **[../AGENTS.md](../AGENTS.md) §4**. The short list: full-circle judgement; legal losing sets can be shown; redaction/seat `-1` for viewers; host authority; session-only PIN/token/recovery handling; draft is experimental; 2D is fixed-orientation; **2D has no cast shadows**; **2D framing is computed from the live stage**; **toasts measure the HUD**; **inspector follows the selection**; **hand orbs use H**; all version strings move together.
 
 ## Open items
 

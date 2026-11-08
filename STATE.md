@@ -3,7 +3,7 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.9.19**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.9.20**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 >
 > **Continuation handoff:** [`docs/CONTINUATION.md`](docs/CONTINUATION.md) — current behaviour, invariants, open items and release routine.
 
@@ -12,18 +12,22 @@
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.9.19` |
+| App version | `1.9.20` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.9.19, self-test 38/38) |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.9.20, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js`, `manifest.webmanifest`, `icons/` |
-| Source lines | 14,004 |
-| Source size | 589,144 bytes |
+| Source lines | 14,055 |
+| Source size | 591,819 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.9.20 — readable hints and hand controls on iPad
+
+The toast layer now measures the HUD and positions below it, so a wrapped Thai HUD cannot cover the hint, and the Hint toast names the suggested set instead of only confirming. Selecting a tile records it for the inspector, and opening the `i` orb falls back to that selection instead of showing the empty prompt; touch devices see a tap-specific prompt. The two circular **手** controls (panel rail and collapsed dock) now read **H**.
 
 ## Release 1.9.19 — clean 2D, fitted iPad
 

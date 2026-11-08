@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.19";
-import { VoiceChat } from "./voice-chat.js?v=1.9.19";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.19";
+} from "./peer-manager.js?v=1.9.20";
+import { VoiceChat } from "./voice-chat.js?v=1.9.20";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.20";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.19",
+  version: "1.9.20",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -424,7 +424,9 @@ const I18N = {
     "pile.from": "from {seat}",
     "inspector.title": "Tile inspector",
     "inspector.hover": "hover",
+    "inspector.tap": "tap",
     "inspector.empty": "Hover or click a carved tile to see its Thai name, English name and rank.",
+    "inspector.emptyTouch": "Tap a carved tile to see its Thai name, English name and rank.",
     "inspector.rank": "Rank",
     "inspector.copies": "Copies",
     "inspector.color": "Colour",
@@ -541,6 +543,8 @@ const I18N = {
     "toast.soundOff": "Sound muted.",
     "toast.soundOn": "Sound on.",
     "toast.hint": "Hint applied to your selection.",
+    "toast.hintCombo": "Hint: {combo}",
+    "toast.hintDiscard": "Hint: discard {n} tiles face-down.",
     "toast.noUndo": "Nothing to undo yet.",
     "toast.selectFirst": "Select the required tiles first.",
     "toast.notLegal": "That set cannot be revealed for this call.",
@@ -1026,7 +1030,9 @@ const I18N = {
     "pile.from": "จาก {seat}",
     "inspector.title": "ตรวจหมาก",
     "inspector.hover": "ชี้",
+    "inspector.tap": "แตะ",
     "inspector.empty": "ชี้หรือคลิกหมากเพื่อดูชื่อไทย ชื่ออังกฤษ และอันดับ",
+    "inspector.emptyTouch": "แตะหมากเพื่อดูชื่อไทย ชื่ออังกฤษ และอันดับ",
     "inspector.rank": "อันดับ",
     "inspector.copies": "จำนวน",
     "inspector.color": "สี",
@@ -1143,6 +1149,8 @@ const I18N = {
     "toast.soundOff": "ปิดเสียงแล้ว",
     "toast.soundOn": "เปิดเสียงแล้ว",
     "toast.hint": "เลือกหมากตามคำใบ้แล้ว",
+    "toast.hintCombo": "คำใบ้: {combo}",
+    "toast.hintDiscard": "คำใบ้: ทิ้ง {n} ใบลงคว่ำ",
     "toast.noUndo": "ยังไม่มีอะไรให้ย้อน",
     "toast.selectFirst": "เลือกหมากให้ครบก่อน",
     "toast.notLegal": "ชุดนี้เปิดสู้กับตานี้ไม่ได้",
@@ -3144,6 +3152,11 @@ function toggleTile(id, options = {}) {
     }
   }
   if (prefs.sound) audio?.play("click", 0);
+  const inspected = TILE_BY_ID[id];
+  if (inspected) {
+    inspectedTileId = id;
+    renderInspector(inspected);
+  }
   expandDock();
   renderAll();
   if (scene) scene.setSelected(state.selected);
@@ -3163,15 +3176,16 @@ function applyHint() {
     const combo = chooseLead(state.hands[MY_SEAT], { jitter: false });
     if (!combo) return;
     state.selected = combo.tiles.map((tile) => tile.id);
-    toast(t("toast.hint"), "jade");
+    toast(t("toast.hintCombo", { combo: comboSummary(combo) }), "jade");
   } else {
     const recommendation = recommendedFollow(state.hands[MY_SEAT], state.lead.combo, state.lead.combo);
     if (recommendation.kind === "beat") {
       state.selected = recommendation.combo.tiles.map((tile) => tile.id);
+      toast(t("toast.hintCombo", { combo: comboSummary(recommendation.combo) }), "jade");
     } else {
       state.selected = recommendation.tiles.map((tile) => tile.id);
+      toast(t("toast.hintDiscard", { n: recommendation.tiles.length }), "jade");
     }
-    toast(t("toast.hint"), "jade");
   }
   renderAll();
   if (scene) scene.setSelected(state.selected);
@@ -3276,9 +3290,19 @@ function coachMeta() {
    9. Toasts and summaries
    -------------------------------------------------------------------------- */
 
+function positionToastLayer() {
+  const layer = $("#toastLayer");
+  const stage = $(".stage-wrap");
+  const hud = $(".hud-strip");
+  if (!layer || !stage || !hud) return;
+  const top = hud.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 10;
+  layer.style.top = `${Math.round(Math.max(66, top))}px`;
+}
+
 function toast(message, tone = "") {
   const layer = $("#toastLayer");
   if (!layer) return;
+  positionToastLayer();
   const node = document.createElement("div");
   node.className = `toast ${tone}`.trim();
   node.textContent = message;
@@ -3891,6 +3915,8 @@ function showTileTip(id, options = {}) {
   if (!tip) return;
   const tile = TILE_BY_ID[id];
   if (!tile) { hideTileTip(); return; }
+  inspectedTileId = id;
+  renderInspector(tile);
   const rank = RANK_BY_ID[tile.rank];
   tip.innerHTML = `
     <span class="tile-tip-medallion ${tile.color === "b" ? "black" : ""}">${tile.hanzi}</span>
@@ -4082,7 +4108,8 @@ function renderInspector(tile = null, pinned = false) {
   }
   if (!tile && inspectedTileId) tile = TILE_BY_ID[inspectedTileId] || null;
   if (!tile) {
-    body.innerHTML = `<div class="inspector-empty"><span class="ghost-tile" aria-hidden="true">兵</span><p>${escapeHTML(t("inspector.empty"))}</p></div>`;
+    const empty = window.matchMedia("(pointer: coarse)").matches ? t("inspector.emptyTouch") : t("inspector.empty");
+    body.innerHTML = `<div class="inspector-empty"><span class="ghost-tile" aria-hidden="true">兵</span><p>${escapeHTML(empty)}</p></div>`;
     return;
   }
   const rank = RANK_BY_ID[tile.rank];
@@ -6381,9 +6408,10 @@ function setDockCollapsed(collapsed, options = {}) {
   dock.classList.toggle("dock-collapsed", Boolean(collapsed));
   prefs.dockCollapsed = Boolean(collapsed);
   if (button) {
-    button.textContent = collapsed ? "手" : "⌄";
+    button.textContent = collapsed ? "H" : "⌄";
     button.setAttribute("aria-expanded", String(!collapsed));
     button.setAttribute("aria-label", collapsed ? t("dock.expand") : t("dock.collapse"));
+    button.setAttribute("title", collapsed ? t("dock.expand") : t("dock.collapse"));
   }
   if (scene?.refreshFraming) requestAnimationFrame(() => scene.refreshFraming());
   if (!options.silent) savePrefs();
@@ -6412,6 +6440,16 @@ function openPanelSheet(id) {
   }
   const panel = document.getElementById(id);
   if (!panel || panel.hidden) return;
+  if (id === "inspectorCard") {
+    /* A tap that selects a tile may not have reached the 3D inspector path.
+       Fall back to the newest selection so opening the orb never shows the
+       empty "tap a tile" prompt while a tile is already selected. */
+    const fallback = state?.selected?.length ? state.selected[state.selected.length - 1] : null;
+    if (fallback && (!inspectedTileId || !TILE_BY_ID[inspectedTileId])) inspectedTileId = fallback;
+    renderInspector();
+    const badge = panel.querySelector(".badge");
+    if (badge) badge.textContent = t(window.matchMedia("(pointer: coarse)").matches ? "inspector.tap" : "inspector.hover");
+  }
   panelHome = { parent: panel.parentElement, next: panel.nextElementSibling };
   const title = panel.querySelector(".panel-head h2")?.textContent || "";
   const titleNode = $("#panelSheetTitle");
@@ -9183,6 +9221,7 @@ function bindEvents() {
   window.matchMedia("(max-width: 1024px)").addEventListener("change", renderPanelRail);
   window.matchMedia("(max-width: 520px)").addEventListener("change", renderNetChrome);
   window.addEventListener("resize", () => requestAnimationFrame(updateLobbyScrollState));
+  window.addEventListener("resize", () => requestAnimationFrame(positionToastLayer));
   $("#chatToolBtn")?.addEventListener("click", openChat);
   $("#joinDiagBtn")?.addEventListener("click", openDiagnostics);
   $("#hostDiagBtn")?.addEventListener("click", openDiagnostics);

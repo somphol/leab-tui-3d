@@ -134,6 +134,12 @@ The join sheet at 1024×768: top-aligned, internally scrollable, 16 px inputs so
 
 The 820×1180 portrait stage fitted to the whole rim: the 2D camera computes its distance from the live aspect and the HUD/dock occupancy. No cast shadows; the collapsed hand dock sits bottom-right.
 
+## iPad hints — 1.9.20
+
+![iPad hints](../screenshots/ipad-hints-1920.jpg)
+
+The Thai hint toast sits below the HUD and names the suggested set. The inspector opens on the selected tile, and both hand controls read **H** in the panel rail and collapsed dock.
+
 ## iPad landscape — table
 
 ![iPad landscape table](../screenshots/ipad-landscape-1919.jpg)

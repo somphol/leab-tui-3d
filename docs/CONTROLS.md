@@ -21,6 +21,8 @@
 | 3D view | Drag to orbit, scroll/pinch to zoom, right-drag/two-finger to pan |
 | **Aa** (stage toolbar) | Display settings: text size and theme |
 | **Ranks** (top-left HUD) | Show/hide the pictorial rank-order reference |
+| **Panel rail** (touch/tablet, right edge) | **C** coach · **M** match · **A** actions · **💬** chat · **i** tile inspector · **H** your hand · **L** trick log |
+| **H** (collapsed hand dock) | Reopen the hand dock. The keyboard shortcut `H` is Hint. |
 | **Multiplayer** (Actions) | Open the lobby: solo / host / join; set your name here |
 | **Leave room** (Actions) | Confirmed exit from a network room; hidden in solo |
 | **Table chat** | Collapsible room chat; type and press Enter |
