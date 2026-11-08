@@ -2,6 +2,18 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.19] — 2026-11-08
+
+### Fixed
+
+- **2D mode no longer renders cast shadows.** The default top-down table had a soft shadow under every tile and the rim, which read as dark noise. The shadow pass now starts disabled and is enabled only for the 3D view; toggling views rebuilds materials so the change is immediate.
+- **iPad portrait no longer crops the table.** The 2D camera now fits the whole rim to the live stage aspect between the HUD strip and the hand dock, instead of reusing the desktop distance. iPad portrait (820×1180) and landscape (1180×820) both show the complete table, and an expanded dock reframes the board so it stays clear.
+
+### Added
+
+- **iPad device emulation in the browser harness.** `scripts/browser-check.mjs --device ipad|ipad-air|ipad-mini|ipad-pro-11|ipad-pro-13 --orientation portrait|landscape` sets the viewport, DPR, touch, coarse pointer and Safari UA. `scripts/verify.mjs` now checks both iPad orientations, the 2D/3D shadow switch, and a `getFraming()` report that asserts the rim is on-screen and above the dock.
+- **Framing API.** `LeabTui.getFraming()` returns projected table bounds, dock clearance and the current shadow state for regression checks.
+
 ## [1.9.18] — 2026-11-08
 
 ### Fixed

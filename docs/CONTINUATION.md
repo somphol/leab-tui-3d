@@ -1,12 +1,12 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-08 · release 1.9.18**
+**As of 2026-11-08 · release 1.9.19**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `2bedb24` — *Release Leab-Tui 3D 1.9.18: show legal losing sets, explain illegal submissions*
+- Last release commit: `596e42d` — *Release Leab-Tui 3D 1.9.19: shadow-free 2D and a fitted iPad table*
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -56,6 +56,7 @@ Current table/network model:
 | 1.9.16 | Installable full-screen web app; same-tab host reload recovery |
 | 1.9.17 | Late join/bot replacement, viewers, 30-minute join pause, in-room Copy room info |
 | 1.9.18 | Legal losing sets stay showable; illegal submissions explained |
+| 1.9.19 | 2D shadows off; 2D camera fits iPad portrait/landscape; device-emulated checks |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),
@@ -82,6 +83,13 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
   pick uniformly at random; the pool is public; redraw is disabled in draft.
 - **2D is fixed orientation.** Rotation disabled; drag pans; wheel/pinch
   zooms. 3D orbits. Do not let a page pinch/double-tap zoom the game (iOS).
+- **2D framing (1.9.19).** `fitTopFraming` fits `TABLE_FIT_RADIUS` to the live
+  stage aspect between the HUD strip and the hand dock, and re-fits (tween) when
+  the dock expands. Do not restore a fixed desktop top distance — it cropped
+  iPad portrait and hid the hand behind the dock in landscape.
+- **Shadows (1.9.19).** The shadow pass is **off in 2D** and on in 3D;
+  `applyShadowMode` toggles both shadow-casting lights and rebuilds materials.
+  A shadow in the top view is a regression, not a style choice.
 - **Version strings.** Bump `APP.version`, `<meta name="app-version">`,
   `style.css?v=`, `script.js?v=`, the three module imports in `script.js`, and
   the docs; `check.mjs` enforces most of them.
@@ -92,9 +100,9 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 cd ~/Projects/leab-tui-3d
 node --check script.js && node --check peer-manager.js
 node --check voice-chat.js && node --check security.js
-node scripts/check.mjs                 # 394/394
+node scripts/check.mjs                 # 401/401
 python3 -m http.server 8123 &          # if not running
-node scripts/verify.mjs                # ALL BROWSER CHECKS PASSED
+node scripts/verify.mjs                # ALL BROWSER CHECKS PASSED (includes iPad portrait/landscape)
 AUDIO_TEST=1 node scripts/verify.mjs   # includes a real audio peak
 node scripts/net-check.mjs             # ALL 37 MULTIPLAYER CHECKS PASSED
 BASE_URL="https://somphol.github.io/leab-tui-3d/" node scripts/net-check.mjs
@@ -104,7 +112,8 @@ BASE_URL="https://somphol.github.io/leab-tui-3d/" node scripts/net-check.mjs
 guest reload rejoin, **host reload recovery**, **late join → bot seat**,
 **viewer mode**, **30-minute join pause**, **copy-room-info UI**, and
 disconnect-to-bot. `verify.mjs` covers boot, 3D, audio, display, the full
-round, the showdown/result/history layout, and no console exceptions.
+round, the showdown/result/history layout, **iPad portrait/landscape framing
+and the 2D/3D shadow switch**, and no console exceptions.
 
 ## 5. Open items / sensible next work
 
@@ -127,6 +136,10 @@ round, the showdown/result/history layout, and no console exceptions.
    live site; the CDN is still required for Three.js/PeerJS.
 8. **Showdown follow UX** now warns before sending an illegal set; if a real
    legal losing set ever disables Show, that is a regression — see invariant 1.
+9. **iPad checks are emulated.** `scripts/browser-check.mjs --device ipad`
+   matches CSS viewport, DPR, touch/coarse pointer and a Safari UA; it does not
+   reproduce Safari's toolbar, safe-area insets or real GPU timing. Keep the
+   physical iPad pass in a release when layout-critical code changes.
 
 ## 6. Files that matter
 
@@ -138,9 +151,10 @@ round, the showdown/result/history layout, and no console exceptions.
 | Host room / late join / viewers | `createHostRoom`, `requestGuest`, `approvePending`, `approveBotSeat`, `approveViewer`, `publishState` |
 | Rejoin / host recovery | `saveRejoinSeat`, `reattachGuest`, `saveHostRecovery`, `resumeHostRoom`, `resumeHostFlow` |
 | Join pause / copy info | `pauseJoinRequests`, `resumeJoinRequests`, `copyRoomInfo`, `#copyRoomBtn`, `#netChip` |
-| 3D layout / view | `capturePosition`, `centerPosition`, `applyViewMode`, `#boardResetBtn` |
+| 3D layout / view | `capturePosition`, `centerPosition`, `applyViewMode`, `fitTopFraming`, `#boardResetBtn` |
+| Shadows / framing probe | `applyShadowMode`, `framing`, `LeabTui.getFraming()` |
 | PWA / full screen | `manifest.webmanifest`, `icons/`, `#fullscreenBtn`, safe-area CSS |
-| Verification | `scripts/check.mjs`, `scripts/verify.mjs`, `scripts/net-check.mjs` |
+| Verification | `scripts/check.mjs`, `scripts/verify.mjs`, `scripts/net-check.mjs`, iPad profiles in `scripts/browser-check.mjs` |
 
 ## 7. Release/handoff routine
 

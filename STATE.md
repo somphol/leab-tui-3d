@@ -3,7 +3,7 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.9.18**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.9.19**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 >
 > **Continuation handoff:** [`docs/CONTINUATION.md`](docs/CONTINUATION.md) — current behaviour, invariants, open items and release routine.
 
@@ -12,18 +12,22 @@
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.9.18` |
+| App version | `1.9.19` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.9.18, self-test 38/38) |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.9.19, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js`, `manifest.webmanifest`, `icons/` |
-| Source lines | 13,884 |
-| Source size | 584,155 bytes |
+| Source lines | 14,004 |
+| Source size | 589,144 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.9.19 — clean 2D, fitted iPad
+
+2D is now shadow-free: the top-down table no longer pays for a shadow pass, and the 3D view still enables cast shadows when toggled. The 2D camera also fits the whole table rim to the live stage aspect between the HUD strip and the hand dock, so iPad portrait no longer crops the rim and both iPad orientations frame the table consistently; expanding the dock re-fits the board. `scripts/browser-check.mjs` gains `--device ipad` profiles with viewport, DPR, touch, coarse pointer and Safari UA, and `scripts/verify.mjs` checks both orientations, the shadow switch and `LeabTui.getFraming()`.
 
 ## Release 1.9.18 — show a losing legal set, explain an illegal one
 

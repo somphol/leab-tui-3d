@@ -29,10 +29,31 @@ const evalExpr2 = arg("--eval2");
 const reload = args.includes("--reload");
 const reloadUrl = arg("--reload-url");
 const waitMs = Number(arg("--wait", "9000"));
-const width = Number(arg("--width", "1440"));
 const click = arg("--click");
-const height = Number(arg("--height", "900"));
 const port = Number(arg("--port", String(9300 + Math.floor(Math.random() * 400))));
+
+/* Device emulation profiles use CSS pixels and iPad Safari dimensions. Chrome
+   can approximate the viewport, touch and pointer media features; it cannot
+   reproduce Safari's toolbar or safe-area insets, so physical-device checks
+   still matter for those. */
+const DEVICES = {
+  "ipad": { width: 820, height: 1180, dpr: 2, platform: "iPad" },
+  "ipad-air": { width: 820, height: 1180, dpr: 2, platform: "iPad" },
+  "ipad-mini": { width: 744, height: 1133, dpr: 2, platform: "iPad" },
+  "ipad-pro-11": { width: 834, height: 1194, dpr: 2, platform: "iPad" },
+  "ipad-pro-13": { width: 1024, height: 1366, dpr: 2, platform: "iPad" },
+  "iphone": { width: 390, height: 844, dpr: 3, platform: "iPhone" }
+};
+const IPAD_UA = "Mozilla/5.0 (iPad; CPU OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1";
+const deviceName = arg("--device");
+const device = DEVICES[deviceName] || null;
+const orientation = arg("--orientation", "portrait") === "landscape" ? "landscape" : "portrait";
+const width = device
+  ? (orientation === "landscape" ? device.height : device.width)
+  : Number(arg("--width", "1440"));
+const height = device
+  ? (orientation === "landscape" ? device.width : device.height)
+  : Number(arg("--height", "900"));
 const chromePath = process.env.CHROME_PATH || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const profile = mkdtempSync(join(tmpdir(), "leab-cdp-"));
 const chrome = spawn(chromePath, [
@@ -46,6 +67,7 @@ const chrome = spawn(chromePath, [
   `--window-size=${width},${height}`,
   `--user-data-dir=${profile}`,
   `--remote-debugging-port=${port}`,
+  ...(device ? ["--touch-events=enabled"] : []),
   ...(process.env.AUDIO_TEST ? ["--autoplay-policy=no-user-gesture-required"] : []),
   ...(process.env.FAKE_MEDIA ? ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"] : []),
   "about:blank"
@@ -124,7 +146,30 @@ async function main() {
   await send("Runtime.enable");
   await send("Log.enable");
   await send("Network.enable");
-  await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
+  if (device) {
+    await send("Emulation.setDeviceMetricsOverride", {
+      width,
+      height,
+      deviceScaleFactor: device.dpr,
+      mobile: true,
+      screenOrientation: orientation === "landscape"
+        ? { type: "landscapePrimary", angle: 90 }
+        : { type: "portraitPrimary", angle: 0 }
+    });
+    await send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
+    await send("Emulation.setUserAgentOverride", {
+      userAgent: IPAD_UA.replace("iPad", device.platform === "iPhone" ? "iPhone" : "iPad"),
+      platform: device.platform
+    });
+    await send("Emulation.setEmulatedMedia", {
+      features: [
+        { name: "pointer", value: "coarse" },
+        { name: "hover", value: "none" }
+      ]
+    });
+  } else {
+    await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
+  }
   await send("Page.navigate", { url });
   await sleep(waitMs);
   if (click) {
@@ -160,6 +205,9 @@ async function main() {
     evalValue: value,
     evalError,
     url,
+    device: deviceName || null,
+    orientation: device ? orientation : null,
+    viewport: { width, height, dpr: device?.dpr || 1 },
     title: value?.title,
     ready: value?.ready,
     selftest: value?.selftest,

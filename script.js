@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.18";
-import { VoiceChat } from "./voice-chat.js?v=1.9.18";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.18";
+} from "./peer-manager.js?v=1.9.19";
+import { VoiceChat } from "./voice-chat.js?v=1.9.19";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.19";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.18",
+  version: "1.9.19",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -6385,6 +6385,7 @@ function setDockCollapsed(collapsed, options = {}) {
     button.setAttribute("aria-expanded", String(!collapsed));
     button.setAttribute("aria-label", collapsed ? t("dock.expand") : t("dock.collapse"));
   }
+  if (scene?.refreshFraming) requestAnimationFrame(() => scene.refreshFraming());
   if (!options.silent) savePrefs();
 }
 
@@ -7685,7 +7686,10 @@ async function createScene() {
   if (!renderer.capabilities.isWebGL2) throw new Error("WebGL 2 is required");
 
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.shadowMap.enabled = true;
+  /* 2D is the default view. A top-down table has no useful cast shadows —
+     they only add dark noise around every tile — so the shadow pass starts
+     off and is enabled only for the 3D view (applyShadowMode). */
+  renderer.shadowMap.enabled = false;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -7721,16 +7725,12 @@ async function createScene() {
   let viewAngle = -SEATS[viewSeat].angle;
 
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 80);
-  const portrait = window.matchMedia("(max-width: 640px)").matches;
-  camera.fov = portrait ? 46 : 40;
-  const homePosition = portrait
-    ? new THREE.Vector3(0, 14.3, 17.2)
-    : new THREE.Vector3(0, 10.2, 11.4);
-  const homeTarget = portrait
-    ? new THREE.Vector3(0, 0.18, 0.7)
-    : new THREE.Vector3(0, 0.22, 0.9);
-  const topTarget = new THREE.Vector3(0, 0, portrait ? 0.95 : 0.75);
-  const topPosition = new THREE.Vector3(0, portrait ? 24.8 : 18.6, topTarget.z + 0.01);
+  /* The 2D framing is fitted to the live stage below. These are placeholders
+     until the first resize; they keep the camera sane if layout is deferred. */
+  const homePosition = new THREE.Vector3(0, 10.2, 11.4);
+  const homeTarget = new THREE.Vector3(0, 0.22, 0.9);
+  const topTarget = new THREE.Vector3(0, 0, 0.75);
+  const topPosition = new THREE.Vector3(0, 18.6, 0.76);
   camera.position.copy(topPosition);
 
   const controls = new OrbitControls(camera, canvas);
@@ -7738,7 +7738,7 @@ async function createScene() {
   controls.enableDamping = true;
   controls.dampingFactor = 0.075;
   controls.minDistance = 7.4;
-  controls.maxDistance = 32;
+  controls.maxDistance = 42;
   controls.minPolarAngle = 0.02;
   controls.maxPolarAngle = 1.32;
   controls.enablePan = true;
@@ -7755,7 +7755,7 @@ async function createScene() {
 
   const key = new THREE.DirectionalLight(scenePalette.key, 2.6);
   key.position.set(6.5, 13, 7.5);
-  key.castShadow = true;
+  key.castShadow = false;
   key.shadow.mapSize.set(2048, 2048);
   key.shadow.camera.left = -10;
   key.shadow.camera.right = 10;
@@ -7774,7 +7774,7 @@ async function createScene() {
   const warm = new THREE.SpotLight(scenePalette.warm, 95, 26, 0.62, 0.55, 1.7);
   warm.position.set(0, 12.5, 3.5);
   warm.target.position.set(0, 0, 0);
-  warm.castShadow = true;
+  warm.castShadow = false;
   warm.shadow.mapSize.set(1024, 1024);
   warm.shadow.bias = -0.0008;
   scene.add(warm);
@@ -8060,6 +8060,80 @@ async function createScene() {
   let cinema = false;
   let cameraTween = null;
 
+  /* 2D framing: fit the whole table rim inside the stage, between the HUD
+     strip and the hand dock. iPad portrait used to reuse the desktop camera
+     and crop the rim on both sides; fitting by the live aspect fixes that and
+     keeps portrait/landscape visually consistent. */
+  const TABLE_FIT_RADIUS = 7.08;
+  let lastFitKey = null;
+
+  function stageOccupancy(width, height) {
+    const dock = $("#handDock");
+    let dockPx = 0;
+    if (dock && !dock.hidden && getComputedStyle(dock).display !== "none") {
+      dockPx = dock.offsetHeight + 12;
+    }
+    dockPx = clamp(dockPx, 0, height * 0.34);
+    const hudPx = clamp(54, 0, height * 0.16);
+    /* On a tablet in portrait the round panel rail sits over the right rim.
+       Reserve that gutter so the rail never covers tiles; phones keep the
+       full width because the rail is the only way to reach the panels. */
+    const railPx = isPanelRailMode() && width > 640 && width / height < 1 ? 56 : 0;
+    return {
+      dockPx,
+      hudPx,
+      railPx,
+      usableH: Math.max(120, height - hudPx - dockPx),
+      usableW: Math.max(120, width - railPx)
+    };
+  }
+
+  function fitTopFraming(force = false) {
+    const width = canvas.clientWidth || canvas.parentElement.clientWidth;
+    const height = canvas.clientHeight || canvas.parentElement.clientHeight;
+    if (!width || !height) return false;
+    const aspect = width / height;
+    const { dockPx, hudPx, railPx, usableH, usableW } = stageOccupancy(width, height);
+    const key = `${aspect.toFixed(3)}:${Math.round(dockPx)}:${Math.round(hudPx)}:${railPx}`;
+    if (!force && key === lastFitKey) return false;
+    const first = lastFitKey === null;
+    lastFitKey = key;
+
+    const fov = aspect < 0.9 ? 46 : 40;
+    const tan = Math.tan((fov * Math.PI) / 360);
+    /* Vertical fit uses the space above the dock and below the HUD; horizontal
+       fit uses the width left of the panel rail. The larger distance frames
+       both. */
+    const distance = Math.max(
+      (TABLE_FIT_RADIUS * height) / (tan * usableH),
+      (TABLE_FIT_RADIUS * width) / (tan * aspect * usableW)
+    ) * 1.015;
+    const worldPerPx = (2 * distance * tan) / height;
+    const targetZ = 0.75 + ((dockPx - hudPx) / 2) * worldPerPx;
+    const targetX = (railPx / 2) * worldPerPx;
+
+    camera.fov = fov;
+    camera.updateProjectionMatrix();
+    topTarget.set(targetX, 0, targetZ);
+    topPosition.set(targetX, distance, targetZ + 0.01);
+
+    const narrow = aspect < 1;
+    homePosition.set(0, narrow ? 14.3 : 10.2, narrow ? 17.2 : 11.4);
+    homeTarget.set(0, narrow ? 0.18 : 0.22, narrow ? 0.7 : 0.9);
+
+    if (topView) {
+      if (force || first) {
+        cameraTween = null;
+        camera.position.copy(topPosition);
+        controls.target.copy(topTarget);
+        controls.update();
+      } else {
+        tweenCamera(topPosition, topTarget, 420);
+      }
+    }
+    return true;
+  }
+
   function resize() {
     const width = canvas.clientWidth || canvas.parentElement.clientWidth;
     const height = canvas.clientHeight || canvas.parentElement.clientHeight;
@@ -8067,6 +8141,7 @@ async function createScene() {
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
+    fitTopFraming(false);
   }
   resize();
   const observer = new ResizeObserver(resize);
@@ -8611,6 +8686,22 @@ async function createScene() {
     if (three) three.setAttribute("aria-pressed", String(!topView));
   }
 
+  function applyShadowMode() {
+    const enabled = !topView;
+    if (renderer.shadowMap.enabled === enabled) return;
+    renderer.shadowMap.enabled = enabled;
+    key.castShadow = enabled;
+    warm.castShadow = enabled;
+    /* Shadow support is part of the compiled material program, so flag the
+       materials for a rebuild when the pass is toggled. */
+    scene.traverse((object) => {
+      if (!object.material) return;
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      materials.forEach((material) => { material.needsUpdate = true; });
+    });
+    renderer.shadowMap.needsUpdate = enabled;
+  }
+
   function applyViewMode() {
     controls.enableRotate = !topView;
     controls.enablePan = true;
@@ -8619,6 +8710,7 @@ async function createScene() {
     controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
     controls.touches.ONE = topView ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE;
     controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
+    applyShadowMode();
     if (topView && cinema) {
       cinema = false;
       controls.autoRotate = false;
@@ -8630,6 +8722,7 @@ async function createScene() {
     topView = Boolean(value);
     updateViewToggle();
     applyViewMode();
+    fitTopFraming(true);
     if (topView) tweenCamera(topPosition, topTarget);
     else tweenCamera(homePosition, homeTarget);
   }
@@ -8641,6 +8734,7 @@ async function createScene() {
   function resetBoard() {
     setViewSeat(MY_SEAT);
     setTopView(true);
+    fitTopFraming(true);
     cameraTween = null;
     camera.position.copy(topPosition);
     controls.target.copy(topTarget);
@@ -8815,6 +8909,42 @@ async function createScene() {
     setSeatLayout,
     getSeatLayout(seat) { return seatLayouts.get(Number(seat)) || null; },
     tileScreen,
+    refreshFraming() { return fitTopFraming(false); },
+    framing() {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      world.updateMatrixWorld();
+      camera.updateMatrixWorld();
+      const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+      for (let index = 0; index < 64; index += 1) {
+        const angle = (index / 64) * Math.PI * 2;
+        const point = new THREE.Vector3(Math.sin(angle) * 6.83, TABLE_Y, Math.cos(angle) * 6.83);
+        point.applyMatrix4(world.matrixWorld).project(camera);
+        bounds.minX = Math.min(bounds.minX, point.x);
+        bounds.maxX = Math.max(bounds.maxX, point.x);
+        bounds.minY = Math.min(bounds.minY, point.y);
+        bounds.maxY = Math.max(bounds.maxY, point.y);
+      }
+      const dock = $("#handDock");
+      let dockTopNdc = null;
+      if (dock && !dock.hidden && getComputedStyle(dock).display !== "none") {
+        const dockRect = dock.getBoundingClientRect();
+        if (dockRect.height > 0) dockTopNdc = 1 - 2 * ((dockRect.top - rect.top) / rect.height);
+      }
+      const fits = bounds.minX >= -1.001 && bounds.maxX <= 1.001
+        && bounds.minY >= -1.001 && bounds.maxY <= 1.001;
+      const clearOfDock = dockTopNdc === null || bounds.minY >= dockTopNdc - 0.005;
+      return {
+        topView,
+        shadows: renderer.shadowMap.enabled,
+        fov: camera.fov,
+        aspect: Number(camera.aspect.toFixed(3)),
+        bounds,
+        dockTopNdc,
+        fits,
+        clearOfDock
+      };
+    },
     getState() {
       return {
         position: camera.position.toArray(),
@@ -8825,6 +8955,7 @@ async function createScene() {
         pan: controls.enablePan,
         zoom: controls.enableZoom,
         drag: topView ? "pan" : "orbit",
+        shadows: renderer.shadowMap.enabled,
         theme: currentThemeId,
         viewSeat,
         background: scene.background?.getHexString?.(),
@@ -9436,6 +9567,7 @@ window.LeabTui = {
   simulateRound,
   detectCombo: (ids) => detectCombo(ids.map((id) => TILE_BY_ID[id]).filter(Boolean)),
   getCamera: () => scene?.getState?.() || null,
+  getFraming: () => scene?.framing?.() || null,
   applyFontSize,
   applyTheme,
   getDisplay: () => ({ fontSize: prefs.fontSize, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),

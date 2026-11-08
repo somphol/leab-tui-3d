@@ -71,7 +71,7 @@
 | --- | --- |
 | Add a combination | `detectCombo`, `allCombos`, `comboPower`, `comboSummary`, `COMBO_TYPES`, `COMBO_COUNT`, both `I18N` dictionaries, rules modal, `docs/RULES.md`, self-test |
 | Change AI | `chooseLead`, `chooseFollow`, `recommendedFollow`, `tileKeepValue`, `isBotSeat` |
-| Change table/camera | `createScene`, `handPosition`, `centerPosition`, `capturePosition`, `homePosition`/`homeTarget`, `style.css` responsive rules |
+| Change table/camera | `createScene`, `handPosition`, `centerPosition`, `capturePosition`, `fitTopFraming`, `applyShadowMode`, `homePosition`/`homeTarget`, `style.css` responsive rules |
 | Change seat layout | `SEATS`, `TABLE_SEATS`, `dealRound`, `hiddenTags`, scoreboard, scene seat vectors, `docs/MULTIPLAYER.md` |
 | Change UI copy | `I18N.en`/`I18N.th`; static `data-i18n` attributes in `index.html` |
 | Change scoring | `scorePiles`, `endRound`, `showRoundSummary`, `docs/RULES.md` |

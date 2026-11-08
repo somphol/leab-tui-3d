@@ -4,7 +4,7 @@
 
 A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files plus a web-app manifest and icons, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat, independent full-mesh voice chat (mic mute + deafen), late join/bot replacement, read-only viewers, same-tab host reload recovery, installable full-screen mode, and an off-by-default experimental draft deal. It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.18**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.19**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -38,6 +38,11 @@ node scripts/net-check.mjs
 node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?selftest=1"
 node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?demo=1" --wait 16000 --out screenshots/hero.png
 node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?lobby=1" --wait 3500 --out screenshots/lobby.png
+
+# iPad emulation (viewport, DPR, touch/coarse pointer, Safari UA)
+node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?mode=solo" \
+  --device ipad --orientation portrait --wait 6000 \
+  --eval "LeabTui.getFraming()" --out screenshots/ipad-portrait.png
 
 # deploy (GitHub Pages serves the repository root from main)
 git push origin main
@@ -81,14 +86,14 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.18"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.19"
 prefs: theme daybreak (default)|mahogany|jade|midnight|parchment; fontSize sm|md|lg|xl; autoAudio on by default; CSS --fs-scale 0.9/1/1.12/1.24
 room: 482-173 (display; the peer id still carries a private leab prefix); peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
 
 Persistence saves `{format, version, savedAt, network, game}` where `game` is the ID-based `serializableState`. The snapshot for Undo is also ID-based; `undoLastTrick` maps IDs back to `TILE_BY_ID`. Do **not** store live tile objects in a snapshot or in localStorage — that was a real bug during the build. Network saves carry `network: true` and are rejected by `loadMatch`.
 
-`window.LeabTui` exposes: `getState`, `getStats`, `getPrefs`, `getLanguage`, `setLanguage`, `newMatch`, `nextRound`, `lead`, `follow`, `toggleTile`, `clearSelection`, `hint`, `undo`, `exportPayload`, `selfTest`, `simulateRound`, `detectCombo`, `getCamera`, `resetView`, `resetBoard`, `topView`, `setTopView`, `setFast`, `inspect`, `inspectHidden`, `applyFontSize`, `applyTheme`, `getDisplay`, `getVersionState`, and `net` (`getState`, `openLobby`, `closeLobby`, `host`, `join`, `start`, `approve`, `deny`, `pauseJoins`, `resumeJoins`, `leave`, `solo`, `selfTest`, `sanitize`, `hydrate`, `roomCode`, `copyInvite`).
+`window.LeabTui` exposes: `getState`, `getStats`, `getPrefs`, `getLanguage`, `setLanguage`, `newMatch`, `nextRound`, `lead`, `follow`, `toggleTile`, `clearSelection`, `hint`, `undo`, `exportPayload`, `selfTest`, `simulateRound`, `detectCombo`, `getCamera`, `getFraming`, `resetView`, `resetBoard`, `topView`, `setTopView`, `setFast`, `inspect`, `inspectHidden`, `applyFontSize`, `applyTheme`, `getDisplay`, `getVersionState`, and `net` (`getState`, `openLobby`, `closeLobby`, `host`, `join`, `start`, `approve`, `deny`, `pauseJoins`, `resumeJoins`, `leave`, `solo`, `selfTest`, `sanitize`, `hydrate`, `roomCode`, `copyInvite`).
 
 ## 4. Decisions and constraints
 
@@ -125,7 +130,8 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **Voice is opt-in.** Never call `getUserMedia` on load; it must be a user gesture with HTTPS/localhost. Render `<audio autoplay playsinline>` only after a stream arrives. `prefs.autoAudio` (default on) preloads the mic only from the Connect/Start click, skips silent `?room=&name=` auto-joins, and joins with the preloaded stream once the seat exists. Denial never blocks the match; the **Join audio** pill remains.
 - **Speaking meter** uses `AudioContext` analysers and a 120 ms interval; it must not connect to `destination` (playback is the `<audio>` element).
 - **The 3D scene is a view.** `scene.sync(state)` is idempotent; it animates only targets that differ. Never mutate `state` from inside the scene except through the public callbacks (`toggleTile`, `inspect*`).
-- **Camera.** The default is a **2D top view** (the HUD label is 2D / 3D): `(0, 18.6, 0.76)` target `(0, 0, 0.75)` on desktop, `(0, 24.8, 0.96)` target `(0, 0, 0.95)` on portrait with FOV 46. `#topViewBtn` is a labelled HUD toggle (2D view / 3D view); `resetView` returns to the top view. Touch and ≤1024 px layouts show a bottom-right **reset board** button (`#boardResetBtn`) that re-seats the world to `MY_SEAT`, returns to 2D, re-fits the canvas and re-syncs; if the WebGL context is lost it reloads (a guest auto-rejoins). Touch Safari page autozoom is disabled with `maximum-scale=1`, `touch-action: manipulation` on controls and 16 px coarse-pointer inputs; the canvas keeps `touch-action: none` so OrbitControls still pinch-zooms the table. **2D is not an orbit view**: rotation is disabled, left-drag/one-finger drag pans the table (target clamped to 4.2), and wheel/pinch still zooms. 3D maps left/one-finger to orbit and keeps two-finger dolly-pan. The 3D home is desktop `(0, 10.2, 11.4)` target `(0, 0.22, 0.9)`, portrait `(0, 14.3, 17.2)` target `(0, 0.18, 0.7)`. `controls.maxDistance` is 32 so the portrait top view can frame the table. The mobile hand dock must stay under ~110 px or it hides the hand.
+- **Camera.** The default is a **2D top view** (the HUD label is 2D / 3D). `fitTopFraming()` computes the distance from `TABLE_FIT_RADIUS` (7.08), the live canvas aspect, and the space between a 54 px HUD reserve and the measured hand dock; it shifts the target so the rim clears the dock, and re-fits when the dock expands. FOV is 46 when the aspect is below 0.9, otherwise 40. Do not replace this with a fixed desktop/portrait distance: that cropped iPad portrait and hid the hand behind the dock in landscape. `LeabTui.getFraming()` reports projected rim bounds, dock clearance and the shadow state. `#topViewBtn` is a labelled HUD toggle (2D view / 3D view); `resetView` returns to the top view. Touch and ≤1024 px layouts show a bottom-right **reset board** button (`#boardResetBtn`) that re-seats the world to `MY_SEAT`, returns to 2D, re-fits the canvas and re-syncs; if the WebGL context is lost it reloads (a guest auto-rejoins). Touch Safari page autozoom is disabled with `maximum-scale=1`, `touch-action: manipulation` on controls and 16 px coarse-pointer inputs; the canvas keeps `touch-action: none` so OrbitControls still pinch-zooms the table. **2D is not an orbit view**: rotation is disabled, left-drag/one-finger drag pans the table (target clamped to 4.2), and wheel/pinch still zooms. 3D maps left/one-finger to orbit and keeps two-finger dolly-pan. The 3D home is desktop `(0, 10.2, 11.4)` target `(0, 0.22, 0.9)`, narrow `(0, 14.3, 17.2)` target `(0, 0.18, 0.7)`. `controls.maxDistance` is 42 so the narrow portrait top view can frame the whole rim. The mobile hand dock must stay under ~110 px or it hides the hand.
+- **Shadows.** The 2D top view renders **no cast shadows**; the shadow pass starts disabled and `applyShadowMode()` enables it only in 3D, toggling both shadow-casting lights and flagging materials for a rebuild. A shadow in the 2D table is a regression, not a style preference.
 - **Show vs Keep hidden.** `showdownCanShow` requires a legal combo of the called type; it does not require beating the best. `renderSelection` must keep the Show button enabled for a legal losing set and explain an illegal/wrong-type submission (`dock.showdownNoSet`/`WrongType`); never say “cannot beat” when the real issue is legality. The follow dock warns (`dock.followInvalid`).
 - **Reveal and trick result.** **Show set applies immediately**; there is no intermediate reveal popup. Every seat must choose Show or Keep hidden before the trick is judged. Only when the showdown queue is empty does `resolveTrick` compare the sets, sweep, and open `trickResultModal` for **every local human** — host and guests, whether they revealed or stayed hidden. The modal uses `trickCompareMarkup` (mini cards, backs for hidden sets, a big ✓ and gold frame on the winner, winner/reason note). In solo the next trick waits for **Continue**; in a network room the summary is informational and the table continues. The Turn-history detail uses the same renderer; do not fork the layout.
 - **Table zones.** A faint gold **battle ring** marks the centre play area and an arc marks the player's private zone. Arrangement drops outside the personal arc (other seats or the centre) snap back; the centre is only for a play drop.
@@ -154,7 +160,7 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - `Ngoh Hoo` and the `Lak Hoo` colour rule are interpretations of an ambiguous source; documented in `docs/RULES.md`.
 - Undo is a one-trick rewind and is not available after a page reload (the snapshot is deliberately not persisted; only the live game is). It is host-only in multiplayer.
 - The AI is heuristic, not a search engine. It conserves strong sets and challenges with a probability, but it does not model opponents' hands.
-- The mobile layout is verified in headless Chrome at 390×844, not on physical iOS/Android hardware. Safe-area insets are not handled.
+- The mobile layout is verified in headless Chrome at 390×844, and iPad at 820×1180 / 1180×820 via device emulation, not on physical iOS/Android hardware. Emulation matches CSS viewport, DPR, touch and coarse pointer, but not Safari's toolbar, safe-area insets or GPU timing.
 - The page requires network access for Three.js. Multiplayer also needs jsDelivr for PeerJS and `0.peerjs.com` for signalling. The HUD and coach work without them; the table and rooms do not.
 - Multiplayer is host-authoritative with no host migration, authentication, turn timer or anti-cheat. A closed host ends the room; an idle guest can stall the table.
 - Voice is full-mesh and needs microphone permission plus HTTPS/localhost; no TURN relay, noise gate, push-to-talk or recording. Chat is unmoderated and not persisted.

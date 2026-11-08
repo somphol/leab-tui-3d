@@ -178,7 +178,8 @@ Voice is a full mesh: every active speaker calls every other active speaker. Wit
 
 ```js
 { deal, sync, collect, flipHumanHand, setSelected, setViewSeat, reset,
-  resetView, toggleTopView, toggleCinema, getState }
+  resetView, resetBoard, toggleTopView, setTopView, toggleCinema, refreshFraming,
+  framing, getState }
 ```
 
 `placementMap(state)` decides every tile's location. `gameState.mySeat ?? MY_SEAT` is the local seat; its fan is sorted and face-up, other hands are face-down.
@@ -200,10 +201,11 @@ The scene stores `root → lift → tilt` groups:
 
 ## Camera and responsive framing
 
-- Desktop: `PerspectiveCamera(40)`, home `(0, 10.2, 11.4)`, target `(0, 0.22, 0.9)`.
-- Portrait (`max-width: 640px`): FOV 46, home `(0, 14.3, 17.2)`, target `(0, 0.18, 0.7)`.
-- `OrbitControls`: damping, min distance 7.4, max distance 18.5, polar 0.14–1.32, pan clamped to radius 4.2.
-- The wider portrait framing is required because the human hand fans across the full stage width and the mobile dock overlays the bottom ~100 px.
+- **2D (`fitTopFraming`)**: distance is computed from `TABLE_FIT_RADIUS` (7.08), the live canvas aspect and the space between a 54 px HUD reserve and the measured hand-dock height. It shifts the target so the rim clears the dock and re-fits when the dock expands. FOV is 46 when the aspect is below 0.9, otherwise 40. This is why iPad portrait (820×1180) and landscape (1180×820) both show the whole table instead of reusing one fixed distance.
+- **3D home**: desktop `(0, 10.2, 11.4)` target `(0, 0.22, 0.9)`; narrow `(0, 14.3, 17.2)` target `(0, 0.18, 0.7)`.
+- `OrbitControls`: damping, min distance 7.4, max distance 42, polar 0.02–1.32, pan clamped to radius 4.2.
+- **Shadows**: off in the 2D top view (`applyShadowMode`), on in 3D. The key directional and warm spot lights cast; `renderer.shadowMap` starts disabled and materials are flagged when the mode changes.
+- `LeabTui.getFraming()` exposes projected rim bounds, dock clearance and the shadow state; `scripts/verify.mjs` asserts both iPad orientations.
 
 ## Serialization boundary
 
@@ -218,7 +220,7 @@ The saved payload is:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.9.18",
+  "version": "1.9.19",
   "savedAt": "2026-11-06T...",
   "network": false,
   "game": { "phase": "...", "hands": [["r-general-0"], ...], ... }

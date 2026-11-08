@@ -9,8 +9,9 @@
 | Rules + protocol | `?selftest=1` → `selfTest()` | 38 pure checks: deck, hierarchy, combos, comparisons, scoring, simulation, i18n, export, chat normalization, room codes, redaction, hydration, loopback |
 | Browser | `node scripts/verify.mjs` | Chrome loads the page, no console exceptions, the table renders, the self-test passes |
 | Flow | CDP playthrough (below) | a complete round, 32-tile conservation |
+| Tablet | `scripts/browser-check.mjs --device ipad` | 820×1180 / 1180×820 viewport, coarse pointer, whole rim on screen, clear of the dock, 2D shadows off / 3D on |
 | Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, PIN/approval, probe, chat, voice mesh, mute/deafen, actions, disconnect-to-bot |
-| Visual | screenshots in `screenshots/` | desktop EN, desktop TH, rules drawer, 390×844 phone, lobby |
+| Visual | screenshots in `screenshots/` | desktop EN, desktop TH, rules drawer, 390×844 phone, iPad portrait/landscape, lobby |
 
 Run the static checks first:
 
@@ -30,7 +31,7 @@ node scripts/net-check.mjs   # real broker, needs outbound 0.peerjs.com
 
 `scripts/verify.mjs` starts its own server on port 8123 if one is not already running, launches Chrome through `scripts/browser-check.mjs`, reads `window.__selftest`, and fails on any console exception. `scripts/net-check.mjs` is separate because it depends on the public broker; it launches two pages in one headless Chrome.
 
-## The 35 self-checks
+## The 38 self-checks
 
 | # | Check | Expected |
 | --- | --- | --- |
@@ -142,6 +143,21 @@ panel                → 4 font buttons, 5 theme buttons
 ```
 
 The browser harness asserts that **Jade and bright Parchment reach the 3D scene**, not just the CSS. The scene updates felt, wood, rim, inlay, floor, lights and tile side/edge/back; old textures are disposed.
+
+### iPad framing and 2D shadows
+
+`scripts/verify.mjs` runs the same page twice through iPad emulation:
+
+```text
+--device ipad --orientation portrait   → 820×1180, DPR 2, coarse pointer
+--device ipad --orientation landscape  → 1180×820, DPR 2, coarse pointer
+LeabTui.getFraming()                   → fits true, clearOfDock true
+2D                                     → shadows false
+3D                                     → shadows true
+back to 2D                             → shadows false, framing refitted
+```
+
+`getFraming()` projects 64 points of the 6.83-radius rim through the live camera and returns NDC bounds plus the dock's top edge. This catches a fixed camera distance that crops portrait or lets an expanded dock cover the hand. The emulator matches viewport, DPR, touch and coarse pointer; it does not reproduce Safari's toolbar, safe-area insets or GPU timing, so a physical iPad pass is still listed for layout-critical releases.
 
 ### Reload resume
 

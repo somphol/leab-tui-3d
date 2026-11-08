@@ -54,4 +54,5 @@ Add to Home Screen (Chrome or Safari) uses `manifest.webmanifest` and the Apple 
 3. Open the page, orbit, select a tile, lead/follow one trick.
 4. Check the inspector, rules modal, language toggle, export and reload.
 5. On mobile, check 390×844 and a landscape orientation; confirm the hand is not behind the dock.
-6. Record the result here with the browser version and platform.
+6. For iPad, run the emulated pass first: `node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?mode=solo" --device ipad --orientation portrait --wait 6000 --eval "LeabTui.getFraming()"`, then repeat with `--orientation landscape`. Confirm `fits` and `clearOfDock` are true and that 2D reports `shadows: false`; then check a physical iPad for Safari toolbar and safe-area behaviour.
+7. Record the result here with the browser version and platform.

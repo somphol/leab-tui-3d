@@ -272,6 +272,46 @@ async function main() {
   if (compareValue.history?.open && compareValue.history.seats === 4 && compareValue.history.tick === 1) pass("turn history uses the comparison cards");
   else fail("turn history uses the comparison cards", JSON.stringify(compareValue.history));
 
+  const tabletExpr = `(async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const initial = { w: innerWidth, h: innerHeight, cam: LeabTui.getCamera(), frame: LeabTui.getFraming() };
+    document.querySelector('#dockFold')?.click();
+    await sleep(1000);
+    const expanded = LeabTui.getFraming();
+    LeabTui.setTopView(false);
+    await sleep(1200);
+    const three = LeabTui.getCamera();
+    LeabTui.setTopView(true);
+    await sleep(1200);
+    const two = { cam: LeabTui.getCamera(), frame: LeabTui.getFraming() };
+    return JSON.stringify({
+      initial,
+      expanded,
+      three: { topView: three?.topView, shadows: three?.shadows },
+      two: { topView: two.cam?.topView, shadows: two.cam?.shadows, frame: two.frame },
+      coarse: matchMedia('(pointer: coarse)').matches,
+      dockCollapsed: document.querySelector('#handDock')?.classList.contains('dock-collapsed')
+    });
+  })()`;
+  for (const orientation of ["portrait", "landscape"]) {
+    const tablet = runHarness(["--url", soloBase, "--device", "ipad", "--orientation", orientation, "--wait", "6000", "--eval", tabletExpr]);
+    const value = tablet.evalValue || {};
+    const expected = orientation === "portrait" ? { w: 820, h: 1180 } : { w: 1180, h: 820 };
+    const tabletExceptions = (tablet.events || []).filter((event) => event.type === "exception");
+    if (value.initial?.w === expected.w && value.initial?.h === expected.h && value.coarse) pass(`iPad ${orientation} emulates ${expected.w}×${expected.h} at coarse pointer`);
+    else fail(`iPad ${orientation} emulates ${expected.w}×${expected.h} at coarse pointer`, JSON.stringify({ w: value.initial?.w, h: value.initial?.h, coarse: value.coarse }));
+    if (value.initial?.frame?.fits && value.initial?.frame?.clearOfDock && value.initial?.cam?.shadows === false) pass(`iPad ${orientation} 2D fits the whole table above the dock with no shadows`);
+    else fail(`iPad ${orientation} 2D fits the whole table above the dock with no shadows`, JSON.stringify(value.initial?.frame));
+    if (value.expanded?.fits && value.expanded?.clearOfDock) pass(`iPad ${orientation} expanded dock re-fits the table clear of the hand`);
+    else fail(`iPad ${orientation} expanded dock re-fits the table clear of the hand`, JSON.stringify(value.expanded));
+    if (value.three?.topView === false && value.three?.shadows === true) pass(`iPad ${orientation} 3D enables shadows`);
+    else fail(`iPad ${orientation} 3D enables shadows`, JSON.stringify(value.three));
+    if (value.two?.topView === true && value.two?.shadows === false && value.two?.frame?.fits && value.two?.frame?.clearOfDock) pass(`iPad ${orientation} returns to a fitted, shadow-free 2D view`);
+    else fail(`iPad ${orientation} returns to a fitted, shadow-free 2D view`, JSON.stringify(value.two));
+    if (!tabletExceptions.length) pass(`iPad ${orientation} console clean`);
+    else fail(`iPad ${orientation} console clean`, tabletExceptions.map((event) => event.text).join(" | "));
+  }
+
   const flow = runHarness(["--url", soloBase, "--wait", "900", "--eval", playthrough]);
   const value = flow.evalValue || {};
   const flowExceptions = (flow.events || []).filter((event) => event.type === "exception");

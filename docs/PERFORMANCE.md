@@ -6,13 +6,13 @@
 | --- | --- | --- |
 | Tiles | 32 + 32 ghost back-only meshes | one shared cylinder geometry; 14 cached face textures (7 ranks × 2 colours); one shared back texture |
 | Table | 1 top + rim + inlay + pedestal + foot + floor | 96-segment cylinder, 120-segment torus |
-| Lights | 1 hemisphere, 1 ambient, 1 key directional (shadow), 1 rim directional, 1 spot (shadow), 2 points | 2048 and 1024 shadow maps |
+| Lights | 1 hemisphere, 1 ambient, 1 key directional (3D shadow), 1 rim directional, 1 spot (3D shadow), 2 points | 2048 and 1024 shadow maps, skipped entirely in 2D |
 | Sprites | 3 AI labels + 1 hidden human label | canvas textures, redrawn on score change |
 | Particles | 220 dust points | one buffer geometry |
 | Animations | 32 real + 32 ghost tile records | position + flip records, no tween library |
 | Draw calls | roughly 60–120 | no post-processing |
 
-The scene is tiny by WebGL standards. The dominant costs are the two shadow maps and the 2048 px key light, not the tile count.
+The scene is tiny by WebGL standards. In 3D the dominant costs are the two shadow maps and the 2048 px key light, not the tile count. The default 2D view disables the shadow pass, which removes that cost and the dark halos around tiles on iPad.
 
 ## Runtime behaviour
 
@@ -68,6 +68,6 @@ A desktop GPU should hold 60 fps comfortably. Headless SwiftShader is slower; no
 
 ## Mobile notes
 
-The portrait layout uses a wider camera and a compact dock. The canvas is 368×756 CSS px at 390×844, pixel ratio capped at 2. The table is intentionally cropped at the extreme left/right; the human hand, centre and coach are prioritised. The 3D hand still receives pointer events; the dock does not cover it after the compact CSS.
+The portrait layout uses a computed 2D fit and a compact dock. The canvas is 368×756 CSS px at 390×844, pixel ratio capped at 2. The whole rim is fitted to the stage with the HUD and dock reserves; the 3D hand still receives pointer events and the dock does not cover it after the compact CSS.
 
 If you need a locked 60 fps on low-end phones, reduce the shadow maps and dust count first, then cap pixel ratio at 1.5.

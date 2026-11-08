@@ -107,7 +107,9 @@ const required = [
   "screenshots/mobile-leave.jpg",
   "screenshots/chat-voice.jpg",
   "screenshots/mobile-chat.jpg",
-  "screenshots/host-security.jpg"
+  "screenshots/host-security.jpg",
+  "screenshots/ipad-portrait-1919.jpg",
+  "screenshots/ipad-landscape-1919.jpg"
 ];
 
 for (const file of required) {
@@ -291,6 +293,11 @@ for (const file of markdownFiles) {
 
 ok(css.includes("@media (max-width: 960px)"), "tablet breakpoint exists");
 ok(css.includes("@media (max-width: 640px)"), "phone breakpoint exists");
+ok(script.includes("function fitTopFraming") && script.includes("TABLE_FIT_RADIUS"), "2D framing fits the live stage between HUD and dock");
+ok(script.includes("function applyShadowMode") && script.includes("renderer.shadowMap.enabled = false"), "2D starts without shadows and 3D toggles them");
+ok(script.includes("getFraming: () => scene?.framing"), "2D framing is exposed for verification");
+const harness = read("scripts/browser-check.mjs");
+ok(harness.includes("const DEVICES") && harness.includes("setDeviceMetricsOverride") && harness.includes("setTouchEmulationEnabled"), "browser harness has iPad device emulation");
 ok(css.includes("prefers-reduced-motion"), "reduced-motion support exists");
 ok(css.includes(".hand-dock"), "hand dock styles exist");
 ok(css.includes(".modal"), "modal styles exist");

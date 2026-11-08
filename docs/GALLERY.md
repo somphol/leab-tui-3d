@@ -130,9 +130,15 @@ The join sheet at 1024×768: top-aligned, internally scrollable, 16 px inputs so
 
 ## iPad portrait — table
 
-![iPad portrait table](../screenshots/ipad-portrait.jpg)
+![iPad portrait table](../screenshots/ipad-portrait-1919.jpg)
 
-The 768×1024 layout uses the same circular panel rail and collapsed hand dock.
+The 820×1180 portrait stage fitted to the whole rim: the 2D camera computes its distance from the live aspect and the HUD/dock occupancy. No cast shadows; the collapsed hand dock sits bottom-right.
+
+## iPad landscape — table
+
+![iPad landscape table](../screenshots/ipad-landscape-1919.jpg)
+
+The 1180×820 landscape stage with the same fit: the rim is fully on-screen, the dock is clear of the hand, and 3D remains available from the HUD toggle.
 
 ## Approval actions
 

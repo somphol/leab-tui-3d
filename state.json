@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.18",
-  "version": "1.9.18",
+  "projectVersion": "1.9.19",
+  "version": "1.9.19",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,13 +9,13 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-08T13:25:26-08:00",
-    "durationSeconds": 184793,
-    "durationHuman": "51h 19m 53s",
+    "packagedAt": "2026-11-08T22:42:10.474Z",
+    "durationSeconds": 189397,
+    "durationHuman": "52h 36m 37s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality.",
-    "publishedAt": "2026-11-08T21:25:26Z"
+    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation.",
+    "publishedAt": "2026-11-08T22:42:10.479Z"
   },
   "tokens": {
     "input": 6615671,
@@ -25,11 +25,11 @@
     "cacheWrite": 1087,
     "total": 7758531,
     "totalWithCache": 712947458,
-    "cost": 0.0,
-    "note": "Session total at 2026-11-08T13:25:26-08:00. Token counters were last measured at 1.9.1; later releases share this session."
+    "cost": 0,
+    "note": "Session total carried forward; counters were last measured at 1.9.1 and later releases share this session."
   },
   "cost": {
-    "usd": 0.0,
+    "usd": 0,
     "note": "As reported by the OpenCode session record."
   },
   "sessionId": "ses_e4df670e0ffeOm01DFj236fffs",
@@ -71,21 +71,22 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (394 checks)",
-    "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
+    "staticCheck": "scripts/check.mjs (401 checks)",
+    "browserCheck": "scripts/verify.mjs — 32 checks incl. iPad portrait/landscape framing and shadows; boot, scene, audio, display, full round, no exceptions",
     "multiplayer": "scripts/net-check.mjs — 37/37 (local and live)",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
     "consoleExceptions": "none on host or guest",
-    "screenshots": "hero, Thai, rules, mobile, lobby, lobby-host, lobby-mobile, guest-play",
+    "screenshots": "hero, Thai, rules, mobile, lobby, lobby-host, lobby-mobile, guest-play, iPad portrait, iPad landscape",
     "pages": "published",
     "lateJoin": "started guest queued and approved into a bot seat; live hand inherited",
     "viewer": "seat -1, all hands ghosted, hand dock hidden, clean console",
     "joinPause": "new guest rejected with suppressed; resume works",
     "copyRoomInfo": "host Actions button + host chip title",
     "hostReload": "same room code, trick preserved, guest reconnected",
-    "showdownLegality": "illegal pair explained; legal losing sets remain showable"
+    "showdownLegality": "illegal pair explained; legal losing sets remain showable",
+    "ipad": "820x1180 portrait and 1180x820 landscape: rim on-screen, clear of dock, 2D shadow-free, 3D shadows on"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -339,9 +340,14 @@
       "version": "1.9.18",
       "date": "2026-11-08",
       "summary": "Show legal losing sets; explain illegal submissions."
+    },
+    {
+      "version": "1.9.19",
+      "date": "2026-11-08",
+      "summary": "Shadow-free 2D and iPad portrait/landscape table fitting with emulated checks."
     }
   ],
-  "releaseNotes": "1.9.18 keeps Show set enabled for any legal losing set and explains illegal face-down submissions instead of saying they cannot beat the table.",
+  "releaseNotes": "1.9.19 removes 2D cast shadows and fits the whole table to iPad portrait and landscape, with device-emulated verification.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
