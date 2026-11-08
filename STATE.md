@@ -23,6 +23,10 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.9.11 — the seed reaches the draft
+
+`?seed=123` (and `newMatch({ seed })`) now flows into `state.seed` at boot, so the draft pool shuffle and the random bot draws are reproducible across reloads. Rounds derive from the match seed, and a redraw uses a derived seed, so it deals a different hand.
+
 ## Release 1.9.10 — random bot picks
 
 The experimental bot no longer takes the two strongest tiles. It draws two tiles uniformly at random from the remaining pool, so a bot hand is not simply the best available cards. The pool shuffle and bot draws are reproducible when a seed is set.

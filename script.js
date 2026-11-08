@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.10";
-import { VoiceChat } from "./voice-chat.js?v=1.9.10";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.10";
+} from "./peer-manager.js?v=1.9.11";
+import { VoiceChat } from "./voice-chat.js?v=1.9.11";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.11";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.10",
+  version: "1.9.11",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -240,6 +240,7 @@ function mulberry32(seed) {
 }
 
 let random = Math.random;
+let bootSeed = null;
 function shuffle(list) {
   const out = list.slice();
   for (let i = out.length - 1; i > 0; i -= 1) {
@@ -2374,7 +2375,9 @@ function scheduleAI(delay = 1000) {
 
 function dealRound(leaderHint = null) {
   if (!state) return;
-  random = state.seed ? mulberry32(state.seed + state.round * 7919) : Math.random;
+  random = Number.isFinite(state.seed)
+    ? mulberry32(state.seed + state.round * 7919 + (state.redraws || 0) * 104729)
+    : Math.random;
   if (state.draftMode) { startDraft(); return; }
   clearTimeout(actionTimer);
   actionToken += 1;
@@ -2441,7 +2444,7 @@ function beginMatch(options = {}) {
   clearTimeout(actionTimer);
   actionToken += 1;
   resumeAvailable = false;
-  state = makeState(options.seed ?? Math.floor(Math.random() * 1e9));
+  state = makeState(options.seed ?? bootSeed ?? Math.floor(Math.random() * 1e9));
   state.fast = Boolean(options.fast);
   state.dealer = 3;
   state.round = options.round ?? 1;
@@ -2488,7 +2491,6 @@ function startNextRound() {
   state.lastRound = null;
   state.winner = null;
   state.log = [];
-  state.seed = Math.floor(Math.random() * 1e9);
   state.snapshot = null;
   const lastWinner = state.lastTrick?.winner ?? state.dealer;
   hideAllModals();
@@ -8416,7 +8418,10 @@ async function boot() {
   const params = new URLSearchParams(location.search);
   if (params.get("seed")) {
     const seed = Number(params.get("seed"));
-    if (Number.isFinite(seed)) random = mulberry32(seed);
+    if (Number.isFinite(seed)) {
+      bootSeed = seed;
+      random = mulberry32(seed);
+    }
   }
 
   const autoHost = params.get("mode") === "host" || params.get("host") === "1";
@@ -8436,7 +8441,7 @@ async function boot() {
     renderAll();
     if (state.phase === "roundEnd" || state.phase === "matchEnd") showRoundSummary(state.phase === "matchEnd");
   } else if (!willPrompt) {
-    state = makeState();
+    state = makeState(bootSeed ?? undefined);
     state.target = 20;
     renderAll();
   } else {

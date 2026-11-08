@@ -2,6 +2,14 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.11] — 2026-11-07
+
+### Fixed
+
+- **The URL seed now reaches the draft.** `?seed=123` was only setting a temporary RNG at boot; `beginMatch` and the boot deal replaced it with a fresh random seed. The seed is now parsed into `bootSeed`, copied into `state.seed`, and used by `dealRound` before `startDraft`, so a reload with the same URL reproduces the pool and every random bot draw.
+- **Seeded rounds are stable.** `startNextRound` no longer replaces `state.seed` with a new random value; each round derives from the match seed.
+- **Redraw deals a different hand.** The deal RNG includes the redraw count, so a redraw no longer replays the same shuffle.
+
 ## [1.9.10] — 2026-11-07
 
 ### Changed

@@ -225,6 +225,7 @@ ok(/state\.hands\.every\(\(hand\) => hand\.length === 8\)/.test(script), "draft 
 ok(/kind === "draft"[\s\S]{0,80}draftPick\(profile\.seat/.test(script), "draft picks are relayed through the host");
 ok(index.includes('id="draftChip"') && script.includes("function setDraftMode"), "draft can be toggled at the table");
 const aiDraftBody = script.slice(script.indexOf("function aiDraftPick"), script.indexOf("function beginTrick"));
+ok(script.includes("let bootSeed") && /makeState\(options\.seed \?\? bootSeed/.test(script), "the URL seed reaches the match and the draft");
 ok(aiDraftBody.includes("randomDraftPair") && !aiDraftBody.includes(".sort("), "bot draft picks are uniformly random");
 ok(script.includes('kind: "draft"') && script.includes('"log.draftPick"'), "bot draft picks are recorded in the log");
 ok(script.includes("prefs.draftMode = prefs.draftMode === true"), "draft mode defaults off");

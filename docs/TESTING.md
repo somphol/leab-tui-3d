@@ -192,6 +192,7 @@ after second click   Draft: off, aria-pressed="false"
 draft with bots      4 human picks, 16 picks total, hands [8,8,8,8]
 live Turn log        16 draft entries, e.g. "East picked 2 tiles" with a D marker
 mid-draft change     current draft finishes; next deal is automatic
+seeded draft         ?seed=777 reloads to the same pool, bot draws and hands
 ```
 
 The create-room panel shows the room number and the 5-digit PIN at the same

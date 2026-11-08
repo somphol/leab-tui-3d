@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Release **1.9.10** of Leab-Tui 3D is built, verified and published. It adds the table interaction layer (zones, drag-to-play, showdown pause, captured piles), Chuan-aware result explanations, a Turn-Log-style reveal panel, winner badges, and an off-by-default **experimental draft deal**: the host toggles it in the lobby or in Actions, seats take turns picking 2 tiles four times from a public pool, bots pick automatically, and picks are relayed through the host. 1.9.10 unifies the reveal result and the Turn-history detail with the captured-pile comparison popup.
+Release **1.9.11** of Leab-Tui 3D is built, verified and published. It adds the table interaction layer (zones, drag-to-play, showdown pause, captured piles), Chuan-aware result explanations, a Turn-Log-style reveal panel, winner badges, and an off-by-default **experimental draft deal**: the host toggles it in the lobby or in Actions, seats take turns picking 2 tiles four times from a public pool, bots pick automatically, and picks are relayed through the host. 1.9.11 unifies the reveal result and the Turn-history detail with the captured-pile comparison popup.
 
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Live: <https://somphol.github.io/leab-tui-3d/>
@@ -45,6 +45,7 @@ history comparison                     4 seat frames, 1 tick, "won N tiles with 
 draft HUD chip                         off → on → off, aria-pressed and state in sync
 draft with bots                        16 picks logged, hands [8,8,8,8]
 host PIN                               28 px, same computed size as the room number
+seeded draft                           ?seed=777 reproduces pool + bot draws across reloads
 host + guest                           2 humans + Bot 1 + Bot 2
 guest privacy                          own 8 real ids, other 24 ghost ids
 lead/follow                            11 actions crossed the data channel, trick resolved

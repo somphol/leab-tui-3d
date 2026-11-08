@@ -50,8 +50,12 @@ combination. The pool is public in this variant, so every seat can see the
 available tiles; the random pick is a fairness/feel decision, not a hidden
 information one.
 
-With a `?seed=` or an explicit `seed`, the pool shuffle and the bot picks are
-reproducible for the same round; human picks still change the pool.
+With `?seed=123` in the URL (or `LeabTui.newMatch({ seed })`), the pool shuffle,
+every bot draw and the round seeds are reproducible. The URL seed is now copied
+into `state.seed` at boot, re-seeding `dealRound` before `startDraft`, so a
+reload with the same URL deals the same pool and the bots make the same picks.
+Human picks still change the pool, and a redraw uses a derived seed so it deals
+a different hand.
 
 ## Interactions with the rest of the rules
 

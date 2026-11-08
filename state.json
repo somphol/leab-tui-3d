@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.10",
-  "version": "1.9.10",
+  "projectVersion": "1.9.11",
+  "version": "1.9.11",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (372 checks)",
+    "staticCheck": "scripts/check.mjs (373 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
     "multiplayer": "scripts/net-check.mjs — 23/23",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
@@ -293,9 +293,14 @@
       "version": "1.9.10",
       "date": "2026-11-07",
       "summary": "Random bot draft picks."
+    },
+    {
+      "version": "1.9.11",
+      "date": "2026-11-07",
+      "summary": "Seed reaches the draft; redraw deals a different hand."
     }
   ],
-  "releaseNotes": "1.9.10 makes bot draft picks uniformly random and seeds the draft pool from the round.",
+  "releaseNotes": "1.9.11 carries ?seed= into the match and the draft, keeps rounds seeded, and makes redraw deal a different hand.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
