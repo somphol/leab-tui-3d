@@ -747,6 +747,8 @@ const I18N = {
     "net.connectedWaiting": "Connected. The host will start when ready.",
     "net.reconnected": "Reconnected — restoring your seat…",
     "net.reconnecting": "Reconnecting to your seat…",
+    "net.hostRestarting": "The host is restarting — reconnecting…",
+    "net.resumingHost": "Restoring the hosted room…",
     "net.lobbyOpen": "Room open. Share the code or invite link.",
     "net.listening": "Listening for guests…",
     "net.hostKeepOpen": "Keep this host tab open and awake. If it closes or sleeps, guests cannot connect.",
@@ -769,6 +771,7 @@ const I18N = {
     "net.badCode": "A room number is six digits.",
     "net.versionMismatch": "Protocol mismatch. Both pages must run protocol {version}.",
     "net.hostLeft": "The host left the table. You can join another room or play solo.",
+    "net.hostResumeFailed": "Could not restore the hosted room ({error}). The room is closed.",
     "net.reconnecting": "Signalling connection lost. Reconnecting…",
     "net.hostOnly": "Only the host can undo a networked trick.",
     "net.chipHint": "Your room. Click to copy the invite link.",
@@ -812,7 +815,7 @@ const I18N = {
     "version.updateTo": "Update to v{version}",
     "version.autoUpdating": "New version v{version}. Updating…",
     "version.reloadHint": "Force reload the app and its scripts",
-    "version.reloadConfirm": "Reloading closes the current room or match. Continue?",
+    "version.reloadConfirm": "Reload the new version? Your table and room are restored; guests reconnect automatically.",
     "version.updateAvailable": "New version {version} is available. Reload to update.",
     "chat.title": "Table chat",
     "chat.hide": "hide",
@@ -851,6 +854,7 @@ const I18N = {
     "toast.boardReload": "The board was lost — reloading. A guest will rejoin the room.",
     "toast.boardUnavailable": "The 3D board is unavailable on this device. The rules and log still work.",
     "toast.resumedAfterUpdate": "Updated — your table is restored.",
+    "toast.hostResumed": "Host room restored — guests are reconnecting.",
     "toast.cinema3d": "Cinematic orbit is available in 3D.",
     "board.resetAria": "Reset the board view to 2D",
     "toast.netBot": "{name} left — a bot takes the seat.",
@@ -1329,6 +1333,8 @@ const I18N = {
     "net.connectedWaiting": "เชื่อมต่อแล้ว เจ้าบ้านจะเริ่มเมื่อพร้อม",
     "net.reconnected": "กลับเข้าห้องแล้ว — กำลังคืนที่นั่ง…",
     "net.reconnecting": "กำลังกลับเข้าที่นั่งเดิม…",
+    "net.hostRestarting": "เจ้าบ้านกำลังรีสตาร์ท — กำลังเชื่อมต่อใหม่…",
+    "net.resumingHost": "กำลังคืนห้องที่เปิดอยู่…",
     "net.lobbyOpen": "ห้องเปิดอยู่ แชร์รหัสหรือลิงก์เชิญ",
     "net.listening": "กำลังรอแขก…",
     "net.hostKeepOpen": "เปิดแท็บเจ้าบ้านไว้และอย่าให้เครื่องหลับ ถ้าปิดหรือหลับ แขกจะเชื่อมต่อไม่ได้",
@@ -1351,6 +1357,7 @@ const I18N = {
     "net.badCode": "เลขห้องต้องเป็นตัวเลขหกหลัก",
     "net.versionMismatch": "โปรโตคอลไม่ตรงกัน ต้องใช้รุ่น {version}",
     "net.hostLeft": "เจ้าบ้านออกจากโต๊ะแล้ว คุณสามารถเข้าห้องอื่นหรือเล่นคนเดียว",
+    "net.hostResumeFailed": "คืนห้องที่เปิดอยู่ไม่ได้ ({error}) ห้องถูกปิด",
     "net.reconnecting": "การเชื่อมต่อสัญญาณขาด กำลังเชื่อมใหม่…",
     "net.hostOnly": "เฉพาะเจ้าบ้านจึงจะย้อนตาในเกมออนไลน์ได้",
     "net.chipHint": "ห้องของคุณ คลิกเพื่อคัดลอกลิงก์เชิญ",
@@ -1394,7 +1401,7 @@ const I18N = {
     "version.updateTo": "อัปเดตเป็น v{version}",
     "version.autoUpdating": "มีเวอร์ชันใหม่ v{version} กำลังอัปเดต…",
     "version.reloadHint": "บังคับโหลดแอปและสคริปต์ใหม่",
-    "version.reloadConfirm": "การโหลดใหม่จะปิดห้องหรือแมตช์ปัจจุบัน ดำเนินการต่อหรือไม่?",
+    "version.reloadConfirm": "โหลดเวอร์ชันใหม่หรือไม่? โต๊ะและห้องจะถูกคืนสถานะให้ แขกจะกลับเข้าที่นั่งอัตโนมัติ",
     "version.updateAvailable": "มีเวอร์ชันใหม่ {version} โหลดใหม่เพื่ออัปเดต",
     "chat.title": "แชทโต๊ะ",
     "chat.hide": "ซ่อน",
@@ -1433,6 +1440,7 @@ const I18N = {
     "toast.boardReload": "กระดานหลุด — กำลังโหลดใหม่ ผู้เล่นจะกลับเข้าห้องอัตโนมัติ",
     "toast.boardUnavailable": "อุปกรณ์นี้แสดงกระดาน 3D ไม่ได้ แต่กฎและบันทึกยังใช้ได้",
     "toast.resumedAfterUpdate": "อัปเดตแล้ว — กลับมาที่โต๊ะเดิมของคุณ",
+    "toast.hostResumed": "คืนห้องแล้ว — แขกกำลังกลับเข้าที่นั่ง",
     "toast.cinema3d": "การหมุนอัตโนมัติใช้ในโหมด 3D",
     "board.resetAria": "จัดกระดานกลับเป็นมุมมอง 2D",
     "toast.netBot": "{name} ออก — บอทรับที่นั่งแทน",
@@ -1825,6 +1833,24 @@ let pendingRequests = new Map();
 const pendingTimers = new Map();
 let roomPinPlain = "";
 let joinToken = 0;
+let hostRejoinTimer = null;
+let hostRejoinAttempts = 0;
+
+function resetHostRejoin() {
+  if (hostRejoinTimer) clearTimeout(hostRejoinTimer);
+  hostRejoinTimer = null;
+  hostRejoinAttempts = 0;
+}
+
+function scheduleHostRejoin(code, name, token) {
+  if (!code || !token || hostRejoinTimer) return;
+  const first = hostRejoinAttempts === 0;
+  hostRejoinTimer = setTimeout(() => {
+    hostRejoinTimer = null;
+    hostRejoinAttempts += 1;
+    joinRoom(code, name, "", token, { auto: true });
+  }, first ? 1200 : 2500);
+}
 let availableVersion = "";
 let lastNetError = "";
 let lastNetStage = "";
@@ -1841,6 +1867,7 @@ const VERSION_CHECK_MS = 5 * 60 * 1000;
 const PLAYER_NAME_KEY = "leabtui.name.v1";
 const ROOM_INTENT_KEY = "leabtui.room.v1";
 const REJOIN_KEY = "leabtui.rejoin.v1";
+const HOST_RECOVERY_KEY = "leabtui.host.v1";
 const LAUNCH_KEY = "leabtui.launch.v1";
 
 function isNetworked() {
@@ -2011,16 +2038,59 @@ function saveStats() {
 function saveMatch() {
   if (!state) return;
   if (isClient()) return; // a guest view is not a resumable game
+  const game = serializableState();
   try {
     localStorage.setItem(APP.storageKey, JSON.stringify({
       format: APP.format,
       version: APP.version,
       savedAt: nowISO(),
       network: isNetworked(),
-      game: serializableState()
+      game
     }));
   } catch { /* ignore */ }
-  if (isHost()) queuePublish();
+  if (isHost()) {
+    saveHostRecovery(game);
+    queuePublish();
+  }
+}
+
+function saveHostRecovery(game = null) {
+  if (!isHost() || !net || !SEAT_PROFILES) return;
+  try {
+    sessionStorage.setItem(HOST_RECOVERY_KEY, JSON.stringify({
+      at: Date.now(),
+      code: net.code,
+      name: net.name,
+      started: Boolean(net.started && state),
+      seatSeq: net.seatSeq || 0,
+      stats: clone(stats),
+      chat: chatHistory.slice(-30),
+      state: game || (state ? serializableState() : null),
+      profiles: SEAT_PROFILES.map((profile) => (profile ? {
+        seat: profile.seat,
+        name: profile.name,
+        kind: profile.kind,
+        host: Boolean(profile.host),
+        rejoinToken: profile.rejoinToken || null,
+        rejoinName: profile.rejoinName || null,
+        clientId: profile.clientId || null
+      } : null))
+    }));
+  } catch { /* storage may be denied or full */ }
+}
+
+function loadHostRecovery() {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(HOST_RECOVERY_KEY) || "null");
+    if (!parsed?.code || !Array.isArray(parsed.profiles) || parsed.profiles.length !== TABLE_SEATS) return null;
+    if (!parsed.profiles.some((profile) => profile?.kind === "host")) return null;
+    if (parsed.started && !parsed.state) return null;
+    return parsed;
+  } catch { return null; }
+}
+
+function clearHostRecovery() {
+  try { sessionStorage.removeItem(HOST_RECOVERY_KEY); } catch { /* ignore */ }
 }
 
 function loadPrefs() {
@@ -4588,6 +4658,7 @@ function convertSeatToBot(seat, reason = "left") {
   queuePublish();
   syncVoicePeers();
   if (state && state.turn === seat && ["lead", "follow"].includes(state.phase)) scheduleAI(700);
+  saveHostRecovery();
 }
 
 function makeRejoinToken() {
@@ -4645,6 +4716,7 @@ function acceptGuest(connId, name) {
   syncVoicePeers();
   toast(t("toast.netGuest", { name: clean }), "jade");
   audio?.play("click", 0);
+  saveHostRecovery();
 }
 
 function cleanGuestName(name, fallback = "Guest") {
@@ -4719,6 +4791,7 @@ function reattachGuest(connId, seat, token) {
   sendLobbyToGuests();
   syncVoicePeers();
   toast(t("toast.netRejoin", { name }), "jade");
+  saveHostRecovery();
   return true;
 }
 
@@ -4922,7 +4995,7 @@ function hostMessage({ connId, message }) {
         renderLobby();
         return;
       }
-      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      const profile = connId ? SEAT_PROFILES?.find((entry) => entry?.connId === connId) : null;
       if (profile) {
         if (net.started && state) convertSeatToBot(profile.seat);
         else {
@@ -4930,6 +5003,7 @@ function hostMessage({ connId, message }) {
           sendLobbyToGuests();
           renderLobby();
           syncVoicePeers();
+          saveHostRecovery();
         }
       }
       break;
@@ -4939,7 +5013,8 @@ function hostMessage({ connId, message }) {
   }
 }
 
-function hostConnectionLost({ connId }) {
+function hostConnectionLost({ connId } = {}) {
+  if (!connId) return;
   if (pendingRequests.has(connId)) {
     clearPending(connId);
     renderLobby();
@@ -4963,6 +5038,7 @@ function hostConnectionLost({ connId }) {
     renderLobby();
     syncVoicePeers();
     toast(t("toast.netGuestHeld", { name: profile.name }), "wine");
+    saveHostRecovery();
   }
 }
 
@@ -4979,14 +5055,8 @@ function releaseHostWakeLock() {
   hostWakeLock = null;
 }
 
-async function createHostRoom(name) {
-  if (net) leaveRoom({ silent: true });
-  clearRoomIntent();
-  roomPinPlain = "";
-  const handle = String(name || "").trim().slice(0, 18) || t("net.hostDefault");
-  lobbyState = { view: "host", roomCode: "", status: t("net.startingHost"), error: "", players: [], hostName: handle, started: false };
-  showLobby("host");
-  const hostHandlers = {
+function hostPeerHandlers() {
+  return {
     onConnection: () => {
       setLobbyStatus(t("net.guestConnecting"), "");
       renderLobby();
@@ -5002,8 +5072,17 @@ async function createHostRoom(name) {
       if (status === "reconnecting") setLobbyStatus(t("net.reconnecting"), "wine");
     }
   };
+}
+
+async function createHostRoom(name) {
+  if (net) leaveRoom({ silent: true });
+  clearRoomIntent();
+  roomPinPlain = "";
+  const handle = String(name || "").trim().slice(0, 18) || t("net.hostDefault");
+  lobbyState = { view: "host", roomCode: "", status: t("net.startingHost"), error: "", players: [], hostName: handle, started: false };
+  showLobby("host");
   try {
-    const host = await openHostWithRetry({ name: handle, ...hostHandlers });
+    const host = await openHostWithRetry({ name: handle, ...hostPeerHandlers() });
     net = {
       role: "host",
       host,
@@ -5025,8 +5104,152 @@ async function createHostRoom(name) {
     acquireHostWakeLock();
     audio?.play("win", 0);
     savePlayerName(handle);
+    saveHostRecovery();
   } catch (error) {
     setLobbyStatus(t("net.hostFailed", { error: error?.type || error?.message || "unknown" }), "wine");
+  }
+}
+
+function resumeHostFlow() {
+  if (!state) return;
+  updateUndoButton();
+  if (state.phase === "dealing") {
+    setTimeout(() => {
+      if (state?.phase === "dealing") beginTrick();
+    }, 500);
+    return;
+  }
+  if (state.phase === "resolving") {
+    setTimeout(() => {
+      if (!state || state.phase !== "resolving") return;
+      if (state.hands.every((hand) => hand.length === 0)) endRound();
+      else {
+        state.leader = state.lastTrick?.winner ?? state.leader;
+        beginTrick();
+      }
+    }, 700);
+    return;
+  }
+  if (state.phase === "showdown") {
+    if (!state.showdownQueue?.length) { if (state.best) resolveTrick(); return; }
+    if (isBotSeat(state.turn)) scheduleAI(900);
+    else coachTick();
+    return;
+  }
+  if (state.phase === "draft") {
+    renderDraft();
+    if (isBotSeat(state.turn)) scheduleAI(700);
+    return;
+  }
+  if (state.phase === "bid") {
+    if (isBotSeat(state.turn)) scheduleAI(900);
+    return;
+  }
+  if (state.phase === "lead" || state.phase === "follow") {
+    if (isBotSeat(state.turn)) scheduleAI(900);
+    else coachTick();
+    return;
+  }
+  if (state.phase === "roundEnd" || state.phase === "matchEnd") showRoundSummary(state.phase === "matchEnd");
+}
+
+async function resumeHostRoom(recovery) {
+  if (!recovery?.code || net) return;
+  const handle = cleanGuestName(recovery.name, t("net.hostDefault"));
+  lobbyState = {
+    view: "host",
+    roomCode: recovery.code,
+    status: t("net.resumingHost"),
+    error: "",
+    players: recovery.profiles || [],
+    hostName: handle,
+    started: Boolean(recovery.started)
+  };
+  showLobby("host");
+  setLobbyStatus(t("net.resumingHost"), "");
+  try {
+    const host = await openHostWithRetry({
+      code: recovery.code,
+      name: handle,
+      attempts: 8,
+      ...hostPeerHandlers()
+    });
+    net = {
+      role: "host",
+      host,
+      code: host.code,
+      name: handle,
+      seq: 0,
+      started: Boolean(recovery.started),
+      seatSeq: Number(recovery.seatSeq) || 0,
+      security: { approval: true, pinHash: null, pinSet: false, pinFails: 0, lockUntil: 0 }
+    };
+    SEAT_PROFILES = [0, 1, 2, 3].map((seat) => {
+      const saved = recovery.profiles?.[seat];
+      if (!saved) return null;
+      const isHost = saved.kind === "host" || saved.host;
+      return {
+        seat,
+        name: saved.kind === "bot" ? saved.name : cleanGuestName(saved.name, `Guest ${seat}`),
+        kind: saved.kind || "human",
+        connected: isHost || saved.kind === "bot",
+        host: isHost,
+        connId: null,
+        peerId: isHost ? host.id : null,
+        voice: false,
+        rejoinToken: saved.rejoinToken || null,
+        rejoinName: saved.rejoinName || saved.name || "",
+        clientId: saved.clientId || null
+      };
+    });
+    if (!SEAT_PROFILES[0]) {
+      SEAT_PROFILES[0] = { seat: 0, name: handle, kind: "host", connected: true, host: true, connId: null, peerId: host.id, voice: false };
+    }
+    SEAT_PROFILES[0].name = handle;
+    MY_SEAT = 0;
+    await setRoomPin(generatePin(), { silent: true });
+    if (recovery.stats) stats = { ...stats, ...recovery.stats };
+    chatHistory = Array.isArray(recovery.chat) ? recovery.chat.slice(-30) : [];
+    if (recovery.started && recovery.state) {
+      state = hydrateRemoteState(recovery.state);
+      state.fast = false;
+      state.language = LANG;
+      ensureHiddenTags(state);
+      net.started = true;
+      closeLobby();
+      renderAll();
+      if (scene) {
+        scene.setViewSeat?.(MY_SEAT);
+        scene.sync(state);
+      }
+      resumeHostFlow();
+      toast(t("toast.hostResumed"), "jade");
+    } else {
+      state = state || makeState();
+      net.started = false;
+      lobbyState.view = "host";
+      showLobby("host");
+      renderAll();
+      renderLobby();
+    }
+    renderNetChrome();
+    syncVoicePeers();
+    acquireHostWakeLock();
+    queuePublish();
+    saveHostRecovery();
+    const url = new URL(location.href);
+    if (url.searchParams.get("hostresume")) {
+      url.searchParams.delete("hostresume");
+      history.replaceState(null, "", url.toString());
+    }
+  } catch (error) {
+    clearHostRecovery();
+    lastNetError = error?.type || error?.message || "host-resume";
+    setLobbyStatus(t("net.hostResumeFailed", { error: lastNetError }), "wine");
+    setTimeout(() => {
+      if (lobbyState) lobbyState.view = "menu";
+      showLobby("menu");
+    }, 1200);
   }
 }
 
@@ -5073,6 +5296,7 @@ function startHostedMatch() {
   toast(t("toast.netStarted", { code: formatRoomCode(net.code) }), "gold");
   sendLobbyToGuests();
   publishState();
+  saveHostRecovery();
 }
 
 function clientMessage({ message }) {
@@ -5093,6 +5317,7 @@ function clientMessage({ message }) {
         });
       }
       net.started = Boolean(message.started) || Boolean(message.rejoin && message.state);
+      resetHostRejoin();
       lobbyState = {
         view: "waiting",
         roomCode: message.roomCode,
@@ -5183,7 +5408,7 @@ function clientMessage({ message }) {
       break;
     }
     case "closed":
-      handleHostLost();
+      handleHostLost({ intentional: true });
       break;
     case "pong":
       remoteClock = Date.now() - Number(message.at || Date.now());
@@ -5193,9 +5418,12 @@ function clientMessage({ message }) {
   }
 }
 
-function handleHostLost() {
+function handleHostLost(options = {}) {
   if (!isClient()) return;
   lastNetError = "host-left";
+  const lostCode = net?.code || lobbyState?.roomCode || "";
+  const lostName = net?.name || lobbyState?.name || "";
+  const rejoin = lostCode ? loadRejoinSeat(lostCode) : null;
   if (voice) {
     voice.leave();
     voice.destroy();
@@ -5203,17 +5431,34 @@ function handleHostLost() {
   }
   voiceActive = false;
   clearSpeaking();
+  if (rejoin && !options.intentional) {
+    if (!hostRejoinTimer) {
+      lobbyState = {
+        view: "lost",
+        roomCode: lostCode,
+        status: t("net.hostRestarting"),
+        players: SEAT_PROFILES || [],
+        started: true,
+        restarting: true
+      };
+      showLobby("lost");
+      scheduleHostRejoin(lostCode, lostName, rejoin.token);
+    }
+    return;
+  }
   if (lobbyState) {
     lobbyState.view = "lost";
     lobbyState.status = t("net.hostLeft");
   } else {
-    lobbyState = { view: "lost", roomCode: net?.code || "", status: t("net.hostLeft"), players: SEAT_PROFILES || [], started: true };
+    lobbyState = { view: "lost", roomCode: lostCode, status: t("net.hostLeft"), players: SEAT_PROFILES || [], started: true };
   }
   showLobby("lost");
 }
 
-async function joinRoom(code, name, pin = "", rejoinToken = "") {
-  if (net) leaveRoom({ silent: true });
+async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
+  const auto = Boolean(options.auto);
+  if (!auto) resetHostRejoin();
+  if (net) leaveRoom({ silent: true, keepRejoin: auto });
   const normalized = normalizeRoomCode(code);
   if (!normalized) {
     setLobbyStatus(t("net.badCode"), "wine");
@@ -5249,7 +5494,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "") {
     client = new PeerClient({
       code: normalized,
       name: handle,
-      connectTimeoutMs: 11000,
+      connectTimeoutMs: auto ? 4500 : 11000,
       onMessage: clientMessage,
       onOpen: () => {
         client.send({ type: "hello", name: handle, pin: roomPin, protocol: PROTOCOL_VERSION, rejoinToken: storedRejoin });
@@ -5271,7 +5516,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "") {
   };
   const autoMic = prefs.autoAudio ? preloadAudio() : null;
   try {
-    for (let attempt = 1; attempt <= 2; attempt += 1) {
+    for (let attempt = 1; attempt <= (auto ? 1 : 2); attempt += 1) {
       if (token !== joinToken) return;
       makeClient();
       try {
@@ -5302,6 +5547,22 @@ async function joinRoom(code, name, pin = "", rejoinToken = "") {
         const type = error?.code || error?.type || error?.message || "unknown";
         lastNetError = type;
         lastNetStage = error?.stage || "";
+        if (auto && reconnecting && hostRejoinAttempts < 12) {
+          lobbyState = {
+            view: "lost",
+            roomCode: normalized,
+            status: t("net.hostRestarting"),
+            players: [],
+            hostName: "",
+            started: true,
+            restarting: true
+          };
+          showLobby("lost");
+          setLobbyStatus(t("net.hostRestarting"), "");
+          scheduleHostRejoin(normalized, handle, storedRejoin);
+          return;
+        }
+        if (auto) resetHostRejoin();
         if (reconnecting) {
           lobbyState = { ...(lobbyState || {}), view: "join", reconnecting: false, status: "" };
           showLobby("join");
@@ -5326,13 +5587,15 @@ async function joinRoom(code, name, pin = "", rejoinToken = "") {
   }
 }
 
-function leaveRoom({ silent = false, keepState = false } = {}) {
+function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {}) {
+  if (!keepRejoin) resetHostRejoin();
   releaseAutoAudio();
   lastHandLayoutSig = "";
   clearTimeout(publishTimer);
   actionToken += 1;
   joinToken += 1;
   const role = net?.role;
+  if (role === "host") clearHostRecovery();
   const host = net?.host;
   const client = net?.client;
   const roster = SEAT_PROFILES;
@@ -5358,7 +5621,7 @@ function leaveRoom({ silent = false, keepState = false } = {}) {
   renderChat();
   renderChatBadge();
   roomPinPlain = "";
-  clearRoomIntent();
+  if (!keepRejoin) clearRoomIntent();
   renderPinReveal();
   denyAllPending("host-left");
   pendingRequests = new Map();
@@ -8742,6 +9005,14 @@ function bindEvents() {
     if (isHost()) acquireHostWakeLock();
     checkForUpdate();
   });
+  window.addEventListener("pagehide", (event) => {
+    if (event.persisted) return;
+    if (isHost()) {
+      saveMatch();
+      saveHostRecovery();
+      try { net?.host?.close(); } catch { /* release the room id for a reload */ }
+    }
+  });
   window.addEventListener("pageshow", (event) => {
     if (!event.persisted) return;
     if (lobbyState && ["join", "waiting", "lost"].includes(lobbyState.view) && $("#lobbyModal")?.hidden) {
@@ -8782,7 +9053,12 @@ async function boot() {
   const useIntent = !autoHost && mode !== "solo" && params.get("selftest") !== "1" && params.get("demo") !== "1";
   const autoRoom = normalizeRoomCode(params.get("room") || (useIntent && savedIntent?.code ? savedIntent.code : ""));
   const restoreName = savedIntent && savedIntent.code === autoRoom ? savedIntent.name : "";
+  const hostRecovery = !autoRoom && mode !== "solo"
+    && params.get("selftest") !== "1" && params.get("demo") !== "1"
+    ? loadHostRecovery()
+    : null;
   const skipLaunch = autoRoom || autoHost || mode === "solo" || params.get("resume") === "1"
+    || Boolean(hostRecovery)
     || params.get("selftest") === "1" || params.get("demo") === "1";
   let willPrompt = !skipLaunch;
 
@@ -8808,8 +9084,10 @@ async function boot() {
     $("#bootError").hidden = false;
   }
 
-  if (!restored && !willPrompt) {
+  if (!restored && !willPrompt && !hostRecovery) {
     dealRound();
+  } else if (hostRecovery) {
+    setTimeout(() => resumeHostRoom(hostRecovery), 300);
   } else if (restored && (state.phase === "lead" || state.phase === "follow" || state.phase === "draft")) {
     if (isBotSeat(state.turn)) scheduleAI(900);
     else coachTick();
@@ -8850,7 +9128,9 @@ async function boot() {
 
   if (restored && params.get("resume") === "1") toast(t("toast.resumedAfterUpdate"), "jade");
   try { sessionStorage.removeItem("leabtui.bootReload.v1"); } catch { /* ignore */ }
-  if (willPrompt) {
+  if (hostRecovery) {
+    /* resumeHostRoom() was scheduled above; do not create a second room. */
+  } else if (willPrompt) {
     setTimeout(() => showLobby("menu"), 450);
     /* A page reached by forceReload carries ?v=; check once even inside the
        5-minute window so the new version is confirmed, not assumed. */

@@ -397,9 +397,11 @@ async function main() {
   if (rejoinInfo?.token && rejoinInfo?.code) pass("guest stored a rejoin token", `seat ${rejoinInfo.seat}`);
   else fail("guest stored a rejoin token", JSON.stringify(rejoinInfo));
   const beforeReload = JSON.parse(await guest.eval("JSON.stringify({seat:LeabTui.net.getState().mySeat,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase})"));
+  await guest.eval("window.__guestReloadMarker = 1; true");
   await guest.send("Page.reload");
+  await sleep(2500);
   const rejoinedRaw = await guest.waitFor(
-    "window.LeabTui?.net?.getState?.().role === 'client' && window.LeabTui?.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase}) : ''",
+    "window.LeabTui && !window.__guestReloadMarker && window.LeabTui.net?.getState?.()?.role === 'client' && window.LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase}) : ''",
     "guest auto-rejoin",
     30000
   );
@@ -410,6 +412,64 @@ async function main() {
   const seatAfterReload = rosterAfterReload[beforeReload.seat];
   if (seatAfterReload?.kind === "human" && seatAfterReload?.connected) pass("host reclaimed the seat for the guest", seatAfterReload.name);
   else fail("host reclaimed the seat for the guest", JSON.stringify(seatAfterReload));
+
+  // Host reload recovery: the host tab reloads, reopens the same room from
+  // sessionStorage, and the guest's automatic retry reclaims its seat.
+  const hostBefore = JSON.parse(await host.eval("JSON.stringify({code:LeabTui.net.getState().code,trick:LeabTui.getState().trick,seat:LeabTui.net.getState().mySeat})"));
+  await host.eval("window.__hostReloadMarker = 1; true");
+  await host.send("Page.reload");
+  await sleep(3000);
+  let hostResumedRaw = "";
+  try {
+    hostResumedRaw = await host.waitFor(
+      "window.LeabTui && !window.__hostReloadMarker && window.LeabTui.net?.getState?.()?.role === 'host' && window.LeabTui.net?.getState?.()?.started && window.LeabTui.getState?.() ? JSON.stringify({code:LeabTui.net.getState().code,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase}) : ''",
+      "host room resume",
+      30000
+    );
+  } catch (error) {
+    const diag = await host.eval(`JSON.stringify({
+      url: location.href,
+      ready: Boolean(window.LeabTui),
+      marker: window.__hostReloadMarker,
+      net: window.LeabTui?.net?.getState?.() || null,
+      phase: window.LeabTui?.getState?.()?.phase || null,
+      status: document.querySelector('#lobbyStatus')?.textContent || '',
+      lobbyHidden: document.querySelector('#lobbyModal')?.hidden,
+      recovery: sessionStorage.getItem('leabtui.host.v1')?.length || 0,
+      recovery: sessionStorage.getItem('leabtui.host.v1')?.length || 0
+    })`);
+    console.log("HOST DIAG", diag);
+    throw error;
+  }
+  const hostResumed = JSON.parse(hostResumedRaw);
+  if (hostResumed.code === hostBefore.code && hostResumed.trick >= hostBefore.trick) pass("host reload reopens the same room", `${hostResumed.code}, trick ${hostResumed.trick}`);
+  else fail("host reload reopens the same room", JSON.stringify({ hostBefore, hostResumed }));
+  let guestResumedRaw = "";
+  try {
+    guestResumedRaw = await guest.waitFor(
+      "window.LeabTui && window.LeabTui.net?.getState?.()?.role === 'client' && window.LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,phase:LeabTui.getState().phase,trick:LeabTui.getState().trick}) : ''",
+      "guest after host reload",
+      30000
+    );
+  } catch (error) {
+    const diag = await guest.eval(`JSON.stringify({
+      net: window.LeabTui?.net?.getState?.() || null,
+      phase: window.LeabTui?.getState?.()?.phase || null,
+      lobby: window.LeabTui?.net?.getState?.() ? 'table' : '',
+      token: (() => { try { return JSON.parse(sessionStorage.getItem('leabtui.rejoin.v1') || 'null')?.token ? 'yes' : 'no'; } catch { return 'err'; } })(),
+      intent: (() => { try { return JSON.parse(sessionStorage.getItem('leabtui.room.v1') || 'null')?.code || ''; } catch { return ''; } })(),
+      status: document.querySelector('#lobbyStatus')?.textContent || '',
+      view: [...document.querySelectorAll('#lobbyModal .lobby-view')].filter((n) => !n.hidden).map((n) => n.id)
+    })`);
+    console.log("GUEST DIAG", diag);
+    throw error;
+  }
+  const guestResumed = JSON.parse(guestResumedRaw);
+  if (guestResumed.seat === beforeReload.seat) pass("guest reconnected after the host reload", `seat ${guestResumed.seat}, trick ${guestResumed.trick}`);
+  else fail("guest reconnected after the host reload", JSON.stringify(guestResumed));
+  const hostRoster = JSON.parse(await host.eval("JSON.stringify(LeabTui.net.getState().players)"));
+  if (hostRoster[guestResumed.seat]?.kind === "human" && hostRoster[guestResumed.seat]?.connected) pass("host roster keeps the guest after reload", hostRoster[guestResumed.seat].name);
+  else fail("host roster keeps the guest after reload", JSON.stringify(hostRoster[guestResumed.seat]));
 
   // Disconnect handling: close the guest tab, host must replace the seat with a bot.
   await guest.closePage();

@@ -176,6 +176,7 @@ other hands           24 ghost ids, no real ids on the wire
 host in-game controls leave button visible, Start hidden, "Match in progress"
 actions               9–12 moves crossed the channel, a trick resolved
 guest reload          token reused, auto-rejoined seat 1 without PIN/approval
+host reload           same room code, trick preserved, guest retried and reconnected
 guest reconnect UI    "Reconnecting to your seat…" instead of the join form
 guest tab closed      seat 1 became Bot 3, score/hand preserved
 console               no exceptions on either page

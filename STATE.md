@@ -25,7 +25,7 @@
 
 ## Release 1.9.16 — install it full screen
 
-The app is now an installable web app: `manifest.webmanifest`, home-screen icons, Apple standalone meta tags, safe-area padding and a Display → **Full screen** action. On iPad/iPhone, Share → Add to Home Screen gives a browser-free game; Chrome iPad has no page-fullscreen API, so that route is the reliable one. Updates keep the table (solo resume, guest rejoin).
+The app is now an installable web app: `manifest.webmanifest`, home-screen icons, Apple standalone meta tags, safe-area padding and a Display → **Full screen** action. On iPad/iPhone, Share → Add to Home Screen gives a browser-free game; Chrome iPad has no page-fullscreen API, so that route is the reliable one. Updates keep the table: solo resumes, guests rejoin their seat, and a same-tab **host reload reopens the same room** from a sessionStorage recovery blob, restores the match, issues a fresh PIN and guests reconnect automatically.
 
 ## Release 1.9.15 — the update keeps your table
 

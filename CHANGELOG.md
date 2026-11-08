@@ -9,10 +9,12 @@ All notable changes to Leab-Tui 3D are documented here. The format follows [Keep
 - **Installable full-screen web app.** `manifest.webmanifest` with `display: fullscreen`, 192/512 PNG icons, a maskable icon, `apple-touch-icon`, Apple standalone meta tags and `viewport-fit=cover`. On iPad/iPhone, **Share → Add to Home Screen** opens the game without the browser tab/address bar. Chrome iPad has no page-fullscreen API for a normal page, so this is the reliable route; Safari’s fullscreen API is used where available.
 - **Display → Full screen.** A button enters/exits full screen where the browser supports it; on iPad Chrome it shows the Add-to-Home-Screen hint instead.
 - **Safe-area layout.** `.app` respects `safe-area-inset-top/bottom`; the hand dock and reset-board button lift above the home indicator.
+- **Host reload recovery (same tab).** The host saves a `sessionStorage` recovery blob — room code, serializable state, roster with rejoin tokens, stats, chat. On reload/update, the same tab reopens the **same PeerJS room**, restores the match and turn, issues a fresh PIN, and guests reconnect automatically. Guests show “The host is restarting — reconnecting…” and retry for up to ~30 s. An intentional Leave clears the blob.
 
 ### Notes
 
 - There is still **no service worker**: the game needs the network for Three.js/PeerJS, so it is not an offline app. The home-screen app is a shortcut to the live site, and the version guard/update changes still apply.
+- Host recovery is **same-tab only**: closing the tab clears sessionStorage, and another device cannot take over. Voice calls are dropped by the reload; guests must rejoin audio. The host's old PIN is replaced by a new one; guests with rejoin tokens bypass it.
 
 ## [1.9.15] — 2026-11-08
 

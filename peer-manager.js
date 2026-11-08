@@ -430,11 +430,12 @@ export class PeerClient {
  * Host code allocation: one attempt is not enough because two tables can pick
  * the same six characters. `attempts` bounds the retry loop.
  */
-export async function openHostWithRetry({ name, onOpen, onConnection, onMessage, onClose, onError, onStatus, attempts = 4, rand = Math.random, options = {} } = {}) {
+export async function openHostWithRetry({ code = "", name, onOpen, onConnection, onMessage, onClose, onError, onStatus, attempts = 4, rand = Math.random, options = {} } = {}) {
   let lastError = null;
+  const fixedCode = code ? normalizeRoomCode(code) : "";
   for (let attempt = 0; attempt < attempts; attempt += 1) {
-    const code = makeRoomCode(rand);
-    const host = new PeerHost({ code, name, onOpen, onConnection, onMessage, onClose, onError, onStatus, options });
+    const roomCode = fixedCode || makeRoomCode(rand);
+    const host = new PeerHost({ code: roomCode, name, onOpen, onConnection, onMessage, onClose, onError, onStatus, options });
     try {
       await host.open();
       return host;
@@ -442,9 +443,10 @@ export async function openHostWithRetry({ name, onOpen, onConnection, onMessage,
       lastError = error;
       host.close();
       if (peerErrorText(error) !== "unavailable-id") throw error;
+      if (fixedCode) await new Promise((resolve) => setTimeout(resolve, 450 + attempt * 250));
     }
   }
-  throw lastError || new Error("Could not allocate a room code");
+  throw lastError || new Error(fixedCode ? "Could not reopen the room code" : "Could not allocate a room code");
 }
 
 /**

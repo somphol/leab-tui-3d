@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (382 checks)",
+    "staticCheck": "scripts/check.mjs (385 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
     "multiplayer": "scripts/net-check.mjs — 23/23",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
@@ -325,7 +325,7 @@
       "summary": "Installable full-screen web app with icons and safe-area layout."
     }
   ],
-  "releaseNotes": "1.9.16 adds a full-screen installable web app (manifest, icons, Apple meta, safe area) and a Display → Full screen action.",
+  "releaseNotes": "1.9.16 adds an installable full-screen web app and same-tab host reload recovery; solo resumes, guests rejoin, and the host keeps the room through an update.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
