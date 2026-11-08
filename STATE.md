@@ -23,6 +23,10 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.9.18 — show a losing legal set, explain an illegal one
+
+The showdown dock now distinguishes “your set is legal but loses” from “your submitted tiles are not a legal set of the called type.” A legal losing set keeps **Show set** enabled; an illegal set explains that only Keep hidden is possible, and the follow dock warns before sending an illegal set.
+
 ## Release 1.9.17 — join late, or watch
 
 A started table now accepts join requests: the host approves (replaces a bot seat, keeping its hand/score), allows the guest as a **viewer**, denies, or pauses all joins for 30 minutes. Viewers get a fully hidden table (all hands ghosted), no dock/chat/voice and no actions. The host also gets **Copy room info** in Actions, and clicking the room chip as host copies the code, link and current PIN.

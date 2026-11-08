@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.17";
-import { VoiceChat } from "./voice-chat.js?v=1.9.17";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.17";
+} from "./peer-manager.js?v=1.9.18";
+import { VoiceChat } from "./voice-chat.js?v=1.9.18";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.18";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.17",
+  version: "1.9.18",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -307,6 +307,11 @@ const I18N = {
     "dock.showdownFirst": "Show your set first",
     "dock.showdownFirstHelp": "You called this shape. Reveal it to set the mark for the other seats.",
     "dock.showdownNoBeat": "You cannot beat the table",
+    "dock.showdownNoSet": "Your submitted tiles are not a {type}",
+    "dock.showdownNoSetHelp": "Only a legal {type} can be shown; with this set, Keep hidden is the only option.",
+    "dock.showdownWrongType": "Your {combo} is not a {type}",
+    "dock.showdownWrongTypeHelp": "The call was {type}. You can keep this set hidden, but it cannot be shown for this trick.",
+    "dock.followInvalid": "These tiles do not form a {type}. You can send them face-down, but only a legal set can be shown.",
     "showdown.hidden": "face-down",
     "actions.showFirst": "Show first",
     "result.title": "Trick result",
@@ -904,6 +909,11 @@ const I18N = {
     "dock.showdownFirst": "เปิดชุดของคุณก่อน",
     "dock.showdownFirstHelp": "คุณเป็นคนเรียก เปิดชุดนี้เพื่อตั้งมาตรฐานให้คนอื่น",
     "dock.showdownNoBeat": "คุณสู้โต๊ะไม่ได้",
+    "dock.showdownNoSet": "ไพ่ที่คุณส่งมาไม่เป็น {type}",
+    "dock.showdownNoSetHelp": "เปิดได้เฉพาะ {type} ที่ถูกกติกา ตานี้จึงต้องเลือกคว่ำเท่านั้น",
+    "dock.showdownWrongType": "{combo} ของคุณไม่ใช่ {type}",
+    "dock.showdownWrongTypeHelp": "ตานี้เรียก {type} จึงเปิด {combo} ไม่ได้ แต่ยังเก็บคว่ำไว้ได้",
+    "dock.followInvalid": "ไพ่ชุดนี้ไม่เป็น {type} ส่งคว่ำได้ แต่จะเปิดไม่ได้ในตอนตัดสิน",
     "showdown.hidden": "คว่ำ",
     "actions.showFirst": "เปิดก่อน",
     "result.title": "ผลของตา",
@@ -3772,24 +3782,35 @@ function renderSelection() {
 
   if (state.phase === "showdown") {
     const leaderTurn = humanTurn && !state.best;
-    const canShow = humanTurn && showdownCanShow(MY_SEAT);
-    const canBeat = humanTurn && showdownCanBeat(MY_SEAT);
     const entry = state.center.find((item) => item.seat === MY_SEAT);
+    const legal = Boolean(entry?.combo);
+    const typeOk = Boolean(legal && (!state.lead?.combo || entry.combo.type === state.lead.combo.type));
+    const canShow = humanTurn && legal && typeOk;
+    const canBeat = humanTurn && showdownCanBeat(MY_SEAT);
+    const calledType = state.lead?.combo ? comboName(state.lead.combo.type) : "";
+    const noSet = !legal
+      ? t("dock.showdownNoSet", { type: calledType })
+      : !typeOk
+        ? t("dock.showdownWrongType", { combo: comboSummary(entry.combo), type: calledType })
+        : "";
     kicker.textContent = t("dock.showdown");
     title.textContent = humanTurn
-      ? (leaderTurn ? t("dock.showdownFirst") : canShow ? t("dock.showdownTitle") : t("dock.showdownNoBeat"))
+      ? (leaderTurn ? t("dock.showdownFirst") : canShow ? t("dock.showdownTitle") : noSet || t("dock.showdownNoBeat"))
       : t("dock.waiting", { seat: seatName(state.turn) });
     detail.textContent = leaderTurn
       ? t("dock.showdownFirstHelp")
-      : !canShow
-        ? t("dock.showdownWait")
-        : canBeat && entry?.combo && state.best
-          ? `${t("dock.showdownCan", { combo: comboSummary(entry.combo), best: comboSummary(state.best.combo) })} ${t("dock.showdownDouble")}`
-          : `${t("dock.showdownLose", { combo: comboSummary(entry?.combo), best: comboSummary(state.best?.combo) })} ${t("dock.showdownDouble")}`;
+      : !legal
+        ? t("dock.showdownNoSetHelp", { type: calledType })
+        : !typeOk
+          ? t("dock.showdownWrongTypeHelp", { type: calledType, combo: comboSummary(entry.combo) })
+          : canBeat && entry?.combo && state.best
+            ? `${t("dock.showdownCan", { combo: comboSummary(entry.combo), best: comboSummary(state.best.combo) })} ${t("dock.showdownDouble")}`
+            : `${t("dock.showdownLose", { combo: comboSummary(entry?.combo), best: comboSummary(state.best?.combo) })} ${t("dock.showdownDouble")}`;
     pips.innerHTML = "";
     leadBtn.hidden = true;
     revealBtn.hidden = !humanTurn;
     revealBtn.disabled = !canShow;
+    revealBtn.title = canShow ? "" : (noSet || t("dock.showdownNoBeat"));
     revealBtn.textContent = leaderTurn ? t("actions.showFirst") : t("actions.showSet");
     facedownBtn.hidden = !humanTurn;
     facedownBtn.disabled = !humanTurn || leaderTurn;
@@ -3832,11 +3853,15 @@ function renderSelection() {
     const selected = selectedTiles();
     kicker.textContent = t("dock.select");
     title.textContent = t("dock.followTitle", { seat: seatName(state.lead.seat), combo: `${comboName(state.lead.combo.type)} ×${state.lead.combo.count}` });
+    const selectedCombo = selected.length === needed ? detectCombo(selected) : null;
+    const typeOk = Boolean(selectedCombo && state.lead.combo && selectedCombo.type === state.lead.combo.type);
     detail.textContent = canClaimChuan(MY_SEAT)
       ? t("dock.chuanReady")
       : selected.length !== needed
         ? t("dock.followHelp", { n: needed, type: comboName(state.lead.combo.type) })
-        : t("dock.followHidden", { n: needed });
+        : !typeOk
+          ? t("dock.followInvalid", { type: comboName(state.lead.combo.type) })
+          : t("dock.followHidden", { n: needed });
     leadBtn.hidden = true;
     revealBtn.hidden = true;
     facedownBtn.hidden = false;

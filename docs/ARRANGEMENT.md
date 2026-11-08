@@ -81,6 +81,10 @@ The turn order follows the source:
 - **Show set applies immediately.** The local cards flip and the turn passes to
   the next seat; there is no intermediate reveal popup. The coach and the dock
   already describe the set and whether it can beat the mark.
+- **Show is available for any legal set of the called type**, even if it
+  loses; only an illegal submission is limited to Keep hidden. The dock says
+  which case applies and why, and the follow dock warns before an illegal set
+  is sent.
 - **No winner is decided until the circle is complete.** Every seat must choose
   Show set or Keep hidden (a seat without a mark to beat cannot hide). Only
   after the last decision does `resolveTrick` compare the sets, sweep the

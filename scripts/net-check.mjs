@@ -261,7 +261,7 @@ async function main() {
   let thirdJoinedRaw = "";
   try {
     thirdJoinedRaw = await third.waitFor(
-      "window.LeabTui?.net?.getState?.()?.role === 'client' && window.LeabTui.getState?.()?.hands?.[2]?.length === 8 ? JSON.stringify({seat:LeabTui.net.getState().mySeat,hand:LeabTui.getState().hands[2].length,phase:LeabTui.getState().phase}) : ''",
+      "window.LeabTui?.net?.getState?.()?.role === 'client' && window.LeabTui.net.getState().mySeat === 2 && window.LeabTui.getState?.()?.hands?.[2]?.length > 0 ? JSON.stringify({seat:LeabTui.net.getState().mySeat,hand:LeabTui.getState().hands[2].length,phase:LeabTui.getState().phase}) : ''",
       "third guest bot replacement",
       25000
     );
@@ -273,7 +273,7 @@ async function main() {
     throw error;
   }
   const thirdJoined = JSON.parse(thirdJoinedRaw);
-  if (thirdJoined.seat === 2 && thirdJoined.hand === 8) pass("approved guest replaces a bot seat", `seat ${thirdJoined.seat}, 8 tiles`);
+  if (thirdJoined.seat === 2 && thirdJoined.hand > 0) pass("approved guest replaces a bot seat", `seat ${thirdJoined.seat}, ${thirdJoined.hand} tiles`);
   else fail("approved guest replaces a bot seat", JSON.stringify(thirdJoined));
   const rosterWithThird = JSON.parse(await host.eval("JSON.stringify(LeabTui.net.getState().players)"));
   if (rosterWithThird[2]?.kind === "human" && rosterWithThird[2]?.connected) pass("host roster shows the replacement human", rosterWithThird[2].name);

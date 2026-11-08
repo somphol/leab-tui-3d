@@ -2,6 +2,13 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.18] — 2026-11-08
+
+### Fixed
+
+- **A legal set can always be shown, even when it loses.** The showdown dock previously used “You cannot beat the table” for both a losing legal set and an illegal submission, and the Show button was disabled whenever `showdownCanShow` was false. It is now enabled for any legal set of the called type, independent of the current best.
+- **Illegal submissions are explained.** If the two/three/four tiles sent face-down do not form the called type, the dock says “Your submitted tiles are not a {type}” and explains that only Keep hidden is available; a legal but wrong-type set gets its own message. The follow dock warns before sending a set that cannot be shown.
+
 ## [1.9.17] — 2026-11-08
 
 ### Added
