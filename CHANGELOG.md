@@ -2,6 +2,22 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.14] — 2026-11-08
+
+### Changed
+
+- **2D is a fixed table, not an orbit.** Rotation is disabled in 2D. Left-drag on the table background (one-finger on touch) **pans**; wheel/pinch still **zooms**. 3D keeps left/one-finger orbit and two-finger dolly-pan. The pan target is clamped to radius 4.2 so the table cannot be lost; the reset-board button recenters it.
+- **Cinema is 3D-only.** Tapping the orbit button in 2D shows a short message instead of silently rotating the fixed table.
+
+### Added
+
+- **Draft toggle on the launch menu.** Before starting a solo or host match, the menu now exposes **Draft mode: pick 2 tiles ×4 (experimental)**, synced with the HUD chip and the Actions checkbox. A new match started from the menu uses the setting; this makes the option easier to find on iPad.
+
+### Fixed
+
+- **iOS autozoom.** The viewport now declares `maximum-scale=1, user-scalable=no`; `touch-action` prevents double-tap zoom on the table reset, buttons and chips, and coarse-pointer inputs use a 16 px minimum so Safari does not zoom the page when a control is focused. The game’s own pinch zoom on the canvas is unchanged.
+- **The table no longer fades to white when zoomed out.** The distance fog (`scene.fog`, near 15 / far 34) was blending the table into the light background at the iPad’s maximum zoom-out. Fog is disabled; the table keeps its colours at every distance.
+
 ## [1.9.13] — 2026-11-08
 
 ### Added

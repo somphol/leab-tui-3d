@@ -17,6 +17,8 @@
 | `i` button | About / credits |
 | Camera buttons (top-right) | Reset view · 2D view · cinematic orbit |
 | Reseat the table (touch/tablet) | Bottom-right **reset board** button: local seat, 2D, refit |
+| 2D view | Drag the table to pan, pinch/scroll to zoom; rotation is locked |
+| 3D view | Drag to orbit, scroll/pinch to zoom, right-drag/two-finger to pan |
 | **Aa** (stage toolbar) | Display settings: text size and theme |
 | **Ranks** (top-left HUD) | Show/hide the pictorial rank-order reference |
 | **Multiplayer** (Actions) | Open the lobby: solo / host / join; set your name here |

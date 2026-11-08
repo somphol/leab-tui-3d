@@ -23,6 +23,10 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.9.14 — 2D pans, 3D orbits
+
+The 2D view is now a fixed-orientation table: rotation is disabled, left-drag/one-finger drag pans, and wheel/pinch zooms. 3D keeps the orbit controls; cinema is 3D-only. The launch menu also has a Draft toggle for solo/host play, synced with the HUD chip and Actions — easier to find on an iPad. iOS page autozoom is disabled (viewport, touch-action and 16 px coarse-pointer controls) while the canvas keeps its own pinch zoom. The distance fog is removed, so zooming out no longer fades the table into the light background.
+
 ## Release 1.9.13 — readjust the board on a tablet
 
 A bottom-right **reset board** shortcut appears on touch and ≤1024 px layouts. It returns the world to the local seat, switches to 2D, re-fits the canvas and re-syncs the table. If the WebGL context was lost, it reloads instead; a guest then auto-rejoins the room. Context-loss and restore handlers keep the table recoverable on iPad Safari.

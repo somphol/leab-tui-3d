@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.13";
-import { VoiceChat } from "./voice-chat.js?v=1.9.13";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.13";
+} from "./peer-manager.js?v=1.9.14";
+import { VoiceChat } from "./voice-chat.js?v=1.9.14";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.14";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.13",
+  version: "1.9.14",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -844,6 +844,7 @@ const I18N = {
     "toast.boardLost": "The board lost its graphics context. Tap the reset button to recover.",
     "toast.boardReload": "The board was lost — reloading. A guest will rejoin the room.",
     "toast.boardUnavailable": "The 3D board is unavailable on this device. The rules and log still work.",
+    "toast.cinema3d": "Cinematic orbit is available in 3D.",
     "board.resetAria": "Reset the board view to 2D",
     "toast.netBot": "{name} left — a bot takes the seat.",
     "toast.netStarted": "Table {code} started.",
@@ -1418,6 +1419,7 @@ const I18N = {
     "toast.boardLost": "กระดานสูญเสีย context กราฟิก — กดปุ่มจัดกระดานเพื่อกู้คืน",
     "toast.boardReload": "กระดานหลุด — กำลังโหลดใหม่ ผู้เล่นจะกลับเข้าห้องอัตโนมัติ",
     "toast.boardUnavailable": "อุปกรณ์นี้แสดงกระดาน 3D ไม่ได้ แต่กฎและบันทึกยังใช้ได้",
+    "toast.cinema3d": "การหมุนอัตโนมัติใช้ในโหมด 3D",
     "board.resetAria": "จัดกระดานกลับเป็นมุมมอง 2D",
     "toast.netBot": "{name} ออก — บอทรับที่นั่งแทน",
     "toast.netStarted": "โต๊ะ {code} เริ่มแล้ว",
@@ -7134,7 +7136,7 @@ async function createScene() {
   const scenePalette = SCENE_THEMES[currentThemeId];
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(scenePalette.background);
-  scene.fog = new THREE.Fog(scenePalette.fog ?? scenePalette.background, 15, 34);
+  scene.fog = null;
 
   /* Table and tiles live in a rotatable world so every guest sees their own
      seat at the bottom of the screen. Lights, floor and dust stay fixed. */
@@ -8025,7 +8027,11 @@ async function createScene() {
   canvas.addEventListener("pointercancel", () => {
     if (handDrag) endHandDrag(handDrag.moved);
   });
-  controls.addEventListener("start", () => { dragging = true; cameraTween = null; });
+  controls.addEventListener("start", () => {
+    if (topView) return;
+    dragging = true;
+    cameraTween = null;
+  });
   controls.addEventListener("end", () => { setTimeout(() => { dragging = false; }, 0); });
 
   function tweenCamera(toPosition, toTarget, duration = 760) {
@@ -8046,9 +8052,25 @@ async function createScene() {
     if (three) three.setAttribute("aria-pressed", String(!topView));
   }
 
+  function applyViewMode() {
+    controls.enableRotate = !topView;
+    controls.enablePan = true;
+    controls.enableZoom = true;
+    controls.mouseButtons.LEFT = topView ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE;
+    controls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
+    controls.touches.ONE = topView ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE;
+    controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
+    if (topView && cinema) {
+      cinema = false;
+      controls.autoRotate = false;
+      $("#cinemaBtn")?.setAttribute("aria-pressed", "false");
+    }
+  }
+
   function setTopView(value) {
     topView = Boolean(value);
     updateViewToggle();
+    applyViewMode();
     if (topView) tweenCamera(topPosition, topTarget);
     else tweenCamera(homePosition, homeTarget);
   }
@@ -8073,6 +8095,10 @@ async function createScene() {
   }
 
   function toggleCinema() {
+    if (topView) {
+      toast(t("toast.cinema3d"), "wine");
+      return;
+    }
     cinema = !cinema;
     controls.autoRotate = cinema;
     const button = $("#cinemaBtn");
@@ -8133,7 +8159,11 @@ async function createScene() {
       if (t >= 1) cameraTween = null;
     }
 
-    if (controls.target.length() > 4.2) controls.target.setLength(4.2);
+    if (controls.target.length() > 4.2) {
+      const before = controls.target.clone();
+      controls.target.setLength(4.2);
+      camera.position.add(controls.target.clone().sub(before));
+    }
     controls.update();
     const desiredAngle = -SEATS[viewSeat].angle;
     let deltaAngle = desiredAngle - world.rotation.y;
@@ -8177,7 +8207,7 @@ async function createScene() {
     edgeMaterial.color.set(palette.tileEdge);
 
     scene.background.set(palette.background);
-    scene.fog.color.set(palette.fog ?? palette.background);
+    if (scene.fog) scene.fog.color.set(palette.fog ?? palette.background);
     key.color.set(palette.key);
     rim.color.set(palette.rimLight);
     warm.color.set(palette.warm);
@@ -8197,6 +8227,7 @@ async function createScene() {
   }
 
   updateViewToggle();
+  applyViewMode();
 
   const api = {
     deal,
@@ -8231,6 +8262,10 @@ async function createScene() {
         target: controls.target.toArray(),
         topView,
         cinema,
+        rotate: controls.enableRotate,
+        pan: controls.enablePan,
+        zoom: controls.enableZoom,
+        drag: topView ? "pan" : "orbit",
         theme: currentThemeId,
         viewSeat,
         background: scene.background?.getHexString?.(),
@@ -8657,6 +8692,7 @@ async function boot() {
   audio = new StudioAudio();
   applyLanguage(LANG);
   bindEvents();
+  renderDraft();
   renderVersion();
   renderRuleSelects();
   chatOpen = prefs.chatOpen !== false;
