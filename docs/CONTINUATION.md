@@ -6,7 +6,7 @@
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `596e42d` — *Release Leab-Tui 3D 1.9.19: shadow-free 2D and a fitted iPad table*
+- Last release commit: `65e4d46` — *Release Leab-Tui 3D 1.9.19: shadow-free 2D and a fitted iPad table*
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
