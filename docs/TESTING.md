@@ -183,6 +183,10 @@ console               no exceptions on either page
 
 The privacy check is the important one: it reads the guest's `LeabTui.getState()` and asserts that every id outside the guest's own seat starts with `ghost-`. That value comes from the actual data channel, not from a unit stub.
 
+### Install / full screen
+
+`manifest.webmanifest` parses, `display` is `fullscreen`/`standalone`, and every icon path exists (180, 192, 512, maskable). The page links the manifest, `apple-touch-icon`, `apple-mobile-web-app-capable` and `viewport-fit=cover`. `.app` uses `safe-area-inset-top/bottom`; the hand dock and reset button add `safe-area-inset-bottom`. Display → Full screen exists; on iPad Chrome it falls back to the Add-to-Home-Screen hint.
+
 ### Draft switch and PIN
 
 On a solo table the HUD has a **Draft: on/off** chip (hidden for guests):

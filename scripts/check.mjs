@@ -207,6 +207,13 @@ ok(script.includes("this.analyser"), "audio analyser tap exists");
 ok(script.includes("ctx.resume().then"), "first-gesture audio retry exists");
 ok(script.includes("scene.fog.color.set"), "scene fog follows the theme");
 ok(script.includes('theme: "daybreak"') && script.includes('fontSize: "md"'), "display preferences have defaults");
+let manifest = {};
+try { manifest = JSON.parse(read("manifest.webmanifest")); } catch { /* checked below */ }
+ok(manifest.name && ["fullscreen", "standalone"].includes(manifest.display), "web app manifest is installable and full screen");
+ok(Array.isArray(manifest.icons) && manifest.icons.length >= 2 && manifest.icons.every((icon) => exists(icon.src)), "manifest icons exist");
+ok(index.includes('rel="manifest"') && index.includes("apple-mobile-web-app-capable") && index.includes("apple-touch-icon"), "head links the manifest and Apple web-app tags");
+ok(exists("icons/icon-180.png") && exists("icons/icon-192.png") && exists("icons/icon-512.png"), "home-screen icons exist");
+ok(css.includes("safe-area-inset-bottom") && index.includes('id="fullscreenBtn"'), "safe-area layout and a full-screen control exist");
 ok(index.includes('id="displayModal"'), "display modal exists");
 ok(index.includes('data-font-size="xl"'), "font size control exists");
 ok(index.includes("maximum-scale=1") && index.includes("user-scalable=no"), "viewport disables iOS page zoom");

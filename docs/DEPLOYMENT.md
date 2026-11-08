@@ -27,6 +27,10 @@ The included workflow `.github/workflows/static-check.yml` runs `node --check sc
 
 If you prefer Actions-based Pages deployment, add `actions/configure-pages`, `actions/upload-pages-artifact` and `actions/deploy-pages`; the artifact path is the repository root. If you do, remove the branch deployment in Settings to avoid two publishers.
 
+## Install assets
+
+`manifest.webmanifest`, `icons/icon-180.png`, `icons/icon-192.png`, `icons/icon-512.png` and `icons/icon-maskable-512.png` are static runtime assets. Add to Home Screen links to the live page; there is no service worker. Keep the manifest and icons in the repository root/`icons/` so GitHub Pages serves them.
+
 ## Cache busting
 
 The source files are referenced without a query string:

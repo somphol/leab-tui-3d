@@ -23,6 +23,10 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.9.16 — install it full screen
+
+The app is now an installable web app: `manifest.webmanifest`, home-screen icons, Apple standalone meta tags, safe-area padding and a Display → **Full screen** action. On iPad/iPhone, Share → Add to Home Screen gives a browser-free game; Chrome iPad has no page-fullscreen API, so that route is the reliable one. Updates keep the table (solo resume, guest rejoin).
+
 ## Release 1.9.15 — the update keeps your table
 
 Clicking **Update/Reload** no longer drops a solo player at the launch menu: a `resume=1` boot restores the saved match and shows “Updated — your table is restored.” A guest with a rejoin token sees **“Reconnecting to your seat…”** instead of the join form; the token restores the same seat and the table. If the rejoin fails, the join form appears prefilled with the room code and name so the guest can enter the PIN. The Turn-history footer now stamps the running version, and a successful boot clears the one-shot update guard so an interrupted update retries. The host reload still ends the room.

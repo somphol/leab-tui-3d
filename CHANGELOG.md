@@ -2,6 +2,18 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.16] — 2026-11-08
+
+### Added
+
+- **Installable full-screen web app.** `manifest.webmanifest` with `display: fullscreen`, 192/512 PNG icons, a maskable icon, `apple-touch-icon`, Apple standalone meta tags and `viewport-fit=cover`. On iPad/iPhone, **Share → Add to Home Screen** opens the game without the browser tab/address bar. Chrome iPad has no page-fullscreen API for a normal page, so this is the reliable route; Safari’s fullscreen API is used where available.
+- **Display → Full screen.** A button enters/exits full screen where the browser supports it; on iPad Chrome it shows the Add-to-Home-Screen hint instead.
+- **Safe-area layout.** `.app` respects `safe-area-inset-top/bottom`; the hand dock and reset-board button lift above the home indicator.
+
+### Notes
+
+- There is still **no service worker**: the game needs the network for Three.js/PeerJS, so it is not an offline app. The home-screen app is a shortcut to the live site, and the version guard/update changes still apply.
+
 ## [1.9.15] — 2026-11-08
 
 ### Changed

@@ -2,9 +2,9 @@
 
 ## 1. What this is
 
-A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat, independent full-mesh voice chat (mic mute + deafen), and an off-by-default experimental draft deal. It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
+A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files plus a web-app manifest and icons, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat, independent full-mesh voice chat (mic mute + deafen), and an off-by-default experimental draft deal. It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.15**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.16**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -81,7 +81,7 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.15"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.16"
 prefs: theme daybreak (default)|mahogany|jade|midnight|parchment; fontSize sm|md|lg|xl; autoAudio on by default; CSS --fs-scale 0.9/1/1.12/1.24
 room: 482-173 (display; the peer id still carries a private leab prefix); peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
@@ -139,7 +139,8 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **Versioned assets.** `index.html` links `style.css?v=X.Y.Z` / `script.js?v=X.Y.Z`, and `script.js` imports the three modules with the same query. Bump all five strings with `APP.version` on every release or a force reload can still use cached modules. `check.mjs` enforces the match.
 - **Version checks.** `checkForUpdate()` reads `state.json` with `no-store`, throttled to once per 5 minutes by `leabtui.versionCheck.v1` in localStorage. It runs 1.4 s after boot when the launch menu is shown and on `visibilitychange`. The launch-menu only may auto-reload once per version (sessionStorage `leabtui.autoReload.v1`); rooms, matches and every other view get the banner and the big Reload button instead. Pages reached by `forceReload` carry `?v=` and force one confirmation check so a stale deploy cannot loop.
 - **Reload/update.** Footer and launch overlay show the version; Reload adds a `v=<timestamp>` page query, removes `pin`, and confirms when a room/match is active. `state.json` is fetched with `no-store` for the update banner.
-- **No build step.** Keep it six runtime files. Scripts may verify, screenshot, or publish, but must not generate the runtime source.
+- **Install / full screen.** `manifest.webmanifest` (`display: fullscreen`), `icons/icon-{180,192,512}.png`, a maskable icon, `apple-touch-icon`, `apple-mobile-web-app-capable` and `viewport-fit=cover` make the app installable; `.app` pads `safe-area-inset-top/bottom` and the dock/reset button lift above the home indicator. There is deliberately **no service worker**: Three.js and PeerJS need the network. Chrome iPad has no page-fullscreen API, so Add to Home Screen is the reliable full-screen route; the Display button uses the API where available and otherwise shows the hint. Do not add a manifest version/query string; the icons are static and cache-busted with the HTML.
+- **No build step.** Keep it six runtime files plus the manifest/icons. Scripts may verify, screenshot, or publish, but must not generate the runtime source.
 
 ## 5. Known issues
 

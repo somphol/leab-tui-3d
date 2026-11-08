@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.9.15-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.9.16-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -103,6 +103,15 @@ Useful launch URLs:
 
 See **[docs/CONTROLS.md](docs/CONTROLS.md)** for touch and keyboard details, and **[docs/ARRANGEMENT.md](docs/ARRANGEMENT.md)** for the table zones, drag-to-play, showdown and captured-pile mechanics.
 
+## Full screen on iPad and iPhone
+
+The app is an installable web app (`manifest.webmanifest`, home-screen icons, Apple standalone meta tags, safe-area layout).
+
+- **Chrome or Safari on iPad/iPhone:** **Share → Add to Home Screen**. The game opens without the tab/address bar.
+- **Display → Full screen** enters full screen where the browser exposes the Fullscreen API; on iPad Chrome that API is not available for normal pages, so the button shows the Add-to-Home-Screen hint.
+- **Guided Access** (Settings → Accessibility) locks the game to the screen for a kiosk.
+- There is **no service worker** and no offline mode: the home-screen app is a shortcut to the live site, and updates keep a solo table/guest seat (solo resume, guest rejoin).
+
 ## Three screens, one language toggle
 
 | English table with the inspector | ไทย |
@@ -195,7 +204,7 @@ The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](
 
 ## Credits
 
-Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.9.15**; the original table was 1.0.0.
+Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.9.16**; the original table was 1.0.0.
 
 Rules reference: Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016), linked in [docs/RULES.md](docs/RULES.md). Three.js and PeerJS are MIT-licensed; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

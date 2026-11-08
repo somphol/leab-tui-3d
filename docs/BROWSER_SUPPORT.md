@@ -35,6 +35,10 @@ These use the same standards (ES modules, import maps, WebGL 2, CanvasTexture, W
 - `file://` opening for the module; serve over HTTP.
 - Devices without WebGL 2 for the 3D view (the rest of the UI still works).
 
+## iPad / iPhone full screen
+
+Add to Home Screen (Chrome or Safari) uses `manifest.webmanifest` and the Apple standalone meta tags; the browser chrome is removed. Display → Full screen works where the Fullscreen API exists; Chrome iPad does not expose it for a normal page. Guided Access is the kiosk option. No service worker/offline mode.
+
 ## Known environment notes
 
 - **Headless Chrome on macOS** logs `CVDisplayLinkCreateWithCGDisplay failed`; this is a display-link warning from the headless backend, not an app error. The harness ignores it.

@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.15";
-import { VoiceChat } from "./voice-chat.js?v=1.9.15";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.15";
+} from "./peer-manager.js?v=1.9.16";
+import { VoiceChat } from "./voice-chat.js?v=1.9.16";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.16";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.15",
+  version: "1.9.16",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -356,6 +356,11 @@ const I18N = {
     "display.xlarge": "Extra large",
     "display.theme": "Theme",
     "display.note": "Text size scales the interface, not the 3D table. Theme changes the panels and the felt / wood palette.",
+    "display.fullscreen": "Full screen",
+    "display.fullscreenBtn": "Enter full screen",
+    "display.fullscreenExit": "Exit full screen",
+    "display.fullscreenNote": "On iPad or iPhone, use Share → Add to Home Screen for a browser-free full-screen game.",
+    "display.fullscreenHint": "This browser does not allow page full screen. On iPad/iPhone use Share → Add to Home Screen.",
     "display.reset": "Reset display",
     "display.testSound": "Test sound",
     "theme.mahogany": "Mahogany",
@@ -930,6 +935,11 @@ const I18N = {
     "display.xlarge": "ใหญ่พิเศษ",
     "display.theme": "ธีม",
     "display.note": "ขนาดตัวอักษรปรับเฉพาะหน้าจอ ไม่กระทบโต๊ะ 3 มิติ ส่วนธีมเปลี่ยนสีแผงและโทนโต๊ะ",
+    "display.fullscreen": "เต็มจอ",
+    "display.fullscreenBtn": "เข้าสู่โหมดเต็มจอ",
+    "display.fullscreenExit": "ออกจากโหมดเต็มจอ",
+    "display.fullscreenNote": "บน iPad/iPhone ใช้ Share → Add to Home Screen เพื่อเปิดเกมเต็มจอแบบไม่มีแถบเบราว์เซอร์",
+    "display.fullscreenHint": "เบราว์เซอร์นี้ไม่อนุญาตให้ขยายหน้าเว็บเต็มจอ บน iPad/iPhone ใช้ Share → Add to Home Screen",
     "display.reset": "รีเซ็ตการแสดงผล",
     "display.testSound": "ทดสอบเสียง",
     "theme.mahogany": "มาฮอกกานี",
@@ -5485,6 +5495,34 @@ function renderRuleSelects() {
   if (direction) direction.value = prefs.direction;
   const mode = $("#modeSelect");
   if (mode) mode.value = prefs.mode;
+}
+
+function syncFullscreenButton() {
+  const button = $("#fullscreenBtn");
+  if (!button) return;
+  const active = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+  button.textContent = t(active ? "display.fullscreenExit" : "display.fullscreenBtn");
+}
+
+function enterFullscreen() {
+  const target = document.documentElement;
+  const active = document.fullscreenElement || document.webkitFullscreenElement;
+  if (active) {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
+    if (exit) exit.call(document).catch?.(() => {});
+    return;
+  }
+  const request = target.requestFullscreen || target.webkitRequestFullscreen;
+  if (!request) {
+    toast(t("display.fullscreenHint"), "wine");
+    return;
+  }
+  try {
+    const result = request.call(target);
+    if (result?.catch) result.catch(() => toast(t("display.fullscreenHint"), "wine"));
+  } catch {
+    toast(t("display.fullscreenHint"), "wine");
+  }
 }
 
 function renderVersion() {
