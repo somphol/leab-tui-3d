@@ -171,7 +171,7 @@ scripts/check.mjs       dependency-free static release check
 scripts/verify.mjs      headless browser verification
 scripts/net-check.mjs   two-client WebRTC verification
 scripts/browser-check.mjs  reusable CDP harness
-docs/                   rules, architecture, multiplayer, protocol, tests, deployment
+docs/                   continuation, rules, architecture, multiplayer, protocol, tests, deployment
 screenshots/            release screenshots
 state.json              build record: time, tokens, model, harness
 ```

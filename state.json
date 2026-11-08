@@ -9,13 +9,13 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-08T10:30:00-08:00",
-    "durationSeconds": 100000,
-    "durationHuman": "27h 46m 40s",
+    "packagedAt": "2026-11-08T13:25:26-08:00",
+    "durationSeconds": 184793,
+    "durationHuman": "51h 19m 53s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.5.0 P2P, chat and voice work plus 1.6.0 hardening: host approval queue, strong generated PIN, SHA-256 digest only, Copy room info, connection/message/payload caps, voice allowlist, two-browser security checks, docs, screenshots and the skill mirror. plus 1.9.2–1.9.7: arrangement/showdown/piles, Chuan-aware results, Turn-Log reveal, winner badges and the experimental draft deal.",
-    "publishedAt": "2026-11-08T18:30:00Z"
+    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality.",
+    "publishedAt": "2026-11-08T21:25:26Z"
   },
   "tokens": {
     "input": 6615671,
@@ -26,7 +26,7 @@
     "total": 7758531,
     "totalWithCache": 712947458,
     "cost": 0.0,
-    "note": "Session total at 2026-11-07T11:26:50-08:00, covering 1.4.0–1.9.7."
+    "note": "Session total at 2026-11-08T13:25:26-08:00. Token counters were last measured at 1.9.1; later releases share this session."
   },
   "cost": {
     "usd": 0.0,
@@ -71,15 +71,21 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (388 checks)",
+    "staticCheck": "scripts/check.mjs (394 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
-    "multiplayer": "scripts/net-check.mjs — 23/23",
+    "multiplayer": "scripts/net-check.mjs — 37/37 (local and live)",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
     "consoleExceptions": "none on host or guest",
     "screenshots": "hero, Thai, rules, mobile, lobby, lobby-host, lobby-mobile, guest-play",
-    "pages": "published"
+    "pages": "published",
+    "lateJoin": "started guest queued and approved into a bot seat; live hand inherited",
+    "viewer": "seat -1, all hands ghosted, hand dock hidden, clean console",
+    "joinPause": "new guest rejected with suppressed; resume works",
+    "copyRoomInfo": "host Actions button + host chip title",
+    "hostReload": "same room code, trick preserved, guest reconnected",
+    "showdownLegality": "illegal pair explained; legal losing sets remain showable"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -355,10 +361,11 @@
     "privacy": "per-seat redaction; other hands and unrevealed plays replaced by ghost ids",
     "disconnect": "seat becomes a bot, hand/score preserved",
     "limits": [
-      "no host migration",
+      "same-tab host reload recovery; no cross-tab or cross-device host migration",
       "no TURN relay",
       "no authentication or anti-cheat",
-      "network rooms are not resumable"
+      "late join requires host approval; viewers have no seat/chat/voice",
+      "a guest rejoin token is a bearer credential for one seat"
     ]
   }
 }

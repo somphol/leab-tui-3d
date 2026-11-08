@@ -3,21 +3,23 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.9.7**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.9.18**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+>
+> **Continuation handoff:** [`docs/CONTINUATION.md`](docs/CONTINUATION.md) — current behaviour, invariants, open items and release routine.
 
 ## Status
 
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.9.7` |
+| App version | `1.9.18` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, self-test 38/38) |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.9.18, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
-| Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js` |
-| Source lines | 12,430 |
-| Source size | 521,151 bytes |
+| Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js`, `manifest.webmanifest`, `icons/` |
+| Source lines | 13,884 |
+| Source size | 584,155 bytes |
 | Runtime dependency | Three.js r160 and PeerJS 1.5.4 from jsDelivr (pinned) |
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
