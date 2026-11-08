@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.14",
-  "version": "1.9.14",
+  "projectVersion": "1.9.15",
+  "version": "1.9.15",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -313,9 +313,14 @@
       "version": "1.9.14",
       "date": "2026-11-08",
       "summary": "2D pan/zoom with fixed orientation; launch-menu Draft toggle."
+    },
+    {
+      "version": "1.9.15",
+      "date": "2026-11-08",
+      "summary": "Update preserves the table: solo resume and guest reconnecting view."
     }
   ],
-  "releaseNotes": "1.9.14 makes 2D a fixed pan/zoom view, adds a launch-menu Draft toggle, disables iOS page autozoom, and removes the fog that washed the table out at maximum zoom.",
+  "releaseNotes": "1.9.15 keeps solo tables through an update and replaces the guest join form with a reconnecting view when a rejoin token exists.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

@@ -2,6 +2,15 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.15] — 2026-11-08
+
+### Changed
+
+- **Update keeps a solo table.** `forceReload` adds `resume=1` when a local match is active; boot restores the saved match and skips the launch menu, showing “Updated — your table is restored.” If the save is missing, the menu returns instead of silently starting a new game.
+- **A reconnecting guest no longer sees the join form.** With a stored rejoin token, `joinRoom` opens a **“Reconnecting to your seat…”** view instead of the code/name/PIN form. The welcome restores the same seat and table. If the reconnect fails, the form appears prefilled with the code and name plus the error.
+- **Host updates still end the room.** The reload confirmation says so; there is no host migration. Both sides need 1.9.12+ for guest tokens.
+- **Version stamp in the history modal.** The Turn-history footer shows the running version, so an iPad can be checked against the web at a glance. A successful boot clears the one-shot `bootReload` guard, so an interrupted update retries on the next open instead of being skipped.
+
 ## [1.9.14] — 2026-11-08
 
 ### Changed

@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.14";
-import { VoiceChat } from "./voice-chat.js?v=1.9.14";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.14";
+} from "./peer-manager.js?v=1.9.15";
+import { VoiceChat } from "./voice-chat.js?v=1.9.15";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.15";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.14",
+  version: "1.9.15",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -741,6 +741,7 @@ const I18N = {
     "net.handshake": "Connected. Waiting for the host…",
     "net.connectedWaiting": "Connected. The host will start when ready.",
     "net.reconnected": "Reconnected — restoring your seat…",
+    "net.reconnecting": "Reconnecting to your seat…",
     "net.lobbyOpen": "Room open. Share the code or invite link.",
     "net.listening": "Listening for guests…",
     "net.hostKeepOpen": "Keep this host tab open and awake. If it closes or sleeps, guests cannot connect.",
@@ -844,6 +845,7 @@ const I18N = {
     "toast.boardLost": "The board lost its graphics context. Tap the reset button to recover.",
     "toast.boardReload": "The board was lost — reloading. A guest will rejoin the room.",
     "toast.boardUnavailable": "The 3D board is unavailable on this device. The rules and log still work.",
+    "toast.resumedAfterUpdate": "Updated — your table is restored.",
     "toast.cinema3d": "Cinematic orbit is available in 3D.",
     "board.resetAria": "Reset the board view to 2D",
     "toast.netBot": "{name} left — a bot takes the seat.",
@@ -1316,6 +1318,7 @@ const I18N = {
     "net.handshake": "เชื่อมต่อแล้ว กำลังรอเจ้าบ้าน…",
     "net.connectedWaiting": "เชื่อมต่อแล้ว เจ้าบ้านจะเริ่มเมื่อพร้อม",
     "net.reconnected": "กลับเข้าห้องแล้ว — กำลังคืนที่นั่ง…",
+    "net.reconnecting": "กำลังกลับเข้าที่นั่งเดิม…",
     "net.lobbyOpen": "ห้องเปิดอยู่ แชร์รหัสหรือลิงก์เชิญ",
     "net.listening": "กำลังรอแขก…",
     "net.hostKeepOpen": "เปิดแท็บเจ้าบ้านไว้และอย่าให้เครื่องหลับ ถ้าปิดหรือหลับ แขกจะเชื่อมต่อไม่ได้",
@@ -1419,6 +1422,7 @@ const I18N = {
     "toast.boardLost": "กระดานสูญเสีย context กราฟิก — กดปุ่มจัดกระดานเพื่อกู้คืน",
     "toast.boardReload": "กระดานหลุด — กำลังโหลดใหม่ ผู้เล่นจะกลับเข้าห้องอัตโนมัติ",
     "toast.boardUnavailable": "อุปกรณ์นี้แสดงกระดาน 3D ไม่ได้ แต่กฎและบันทึกยังใช้ได้",
+    "toast.resumedAfterUpdate": "อัปเดตแล้ว — กลับมาที่โต๊ะเดิมของคุณ",
     "toast.cinema3d": "การหมุนอัตโนมัติใช้ในโหมด 3D",
     "board.resetAria": "จัดกระดานกลับเป็นมุมมอง 2D",
     "toast.netBot": "{name} ออก — บอทรับที่นั่งแทน",
@@ -5208,12 +5212,23 @@ async function joinRoom(code, name, pin = "", rejoinToken = "") {
   const handle = cleanGuestName(name, t("net.guestDefault"));
   const roomPin = normalisePin(pin);
   const storedRejoin = rejoinToken || loadRejoinSeat(normalized)?.token || "";
+  const reconnecting = Boolean(storedRejoin);
   saveRoomIntent({ role: "guest", code: normalized, name: handle });
   const token = ++joinToken;
   MY_SEAT = 0;
   SEAT_PROFILES = null;
-  lobbyState = { view: "join", roomCode: normalized, status: t("net.connecting"), error: "", players: [], hostName: "", started: false, name: handle };
-  showLobby("join");
+  lobbyState = {
+    view: reconnecting ? "waiting" : "join",
+    roomCode: normalized,
+    status: t(reconnecting ? "net.reconnecting" : "net.connecting"),
+    error: "",
+    players: [],
+    hostName: "",
+    started: false,
+    name: handle,
+    reconnecting
+  };
+  showLobby(reconnecting ? "waiting" : "join");
   const connectButton = $("#lobbyConnectBtn");
   if (connectButton) {
     connectButton.disabled = true;
@@ -5277,6 +5292,14 @@ async function joinRoom(code, name, pin = "", rejoinToken = "") {
         const type = error?.code || error?.type || error?.message || "unknown";
         lastNetError = type;
         lastNetStage = error?.stage || "";
+        if (reconnecting) {
+          lobbyState = { ...(lobbyState || {}), view: "join", reconnecting: false, status: "" };
+          showLobby("join");
+          const codeField = $("#lobbyCodeInput");
+          if (codeField) codeField.value = formatRoomCode(normalized);
+          const nameField = $("#lobbyNameInput");
+          if (nameField && !nameField.value) nameField.value = handle;
+        }
         if (type === "peer-unavailable") setLobbyStatus(t("net.roomNotFound"), "wine");
         else if (type === "broker-timeout") setLobbyStatus(t("net.brokerTimeout"), "wine");
         else if (type === "host-timeout") setLobbyStatus(t("net.hostTimeout"), "wine");
@@ -5468,6 +5491,8 @@ function renderVersion() {
   const label = `v${APP.version}`;
   const chip = $("#versionChip");
   if (chip) chip.textContent = label;
+  const historyVersion = $("#lastTrickVersion");
+  if (historyVersion) historyVersion.textContent = label;
   const brandVersion = $("#brandVersion");
   if (brandVersion) brandVersion.textContent = `(${label})`;
   document.querySelector(".brand")?.setAttribute("data-version", label);
@@ -5537,6 +5562,9 @@ function forceReload() {
   try {
     const url = new URL(location.href);
     url.searchParams.set("v", String(Date.now()));
+    if (!isNetworked() && state && ["lead", "follow", "showdown", "draft", "bid", "resolving", "roundEnd", "matchEnd"].includes(state.phase)) {
+      url.searchParams.set("resume", "1");
+    }
     url.searchParams.delete("pin");
     location.replace(url.toString());
   } catch {
@@ -8716,11 +8744,12 @@ async function boot() {
   const useIntent = !autoHost && mode !== "solo" && params.get("selftest") !== "1" && params.get("demo") !== "1";
   const autoRoom = normalizeRoomCode(params.get("room") || (useIntent && savedIntent?.code ? savedIntent.code : ""));
   const restoreName = savedIntent && savedIntent.code === autoRoom ? savedIntent.name : "";
-  const skipLaunch = autoRoom || autoHost || mode === "solo"
+  const skipLaunch = autoRoom || autoHost || mode === "solo" || params.get("resume") === "1"
     || params.get("selftest") === "1" || params.get("demo") === "1";
-  const willPrompt = !skipLaunch;
+  let willPrompt = !skipLaunch;
 
   const restored = loadMatch();
+  if (params.get("resume") === "1" && !restored) willPrompt = true;
   resumeAvailable = restored;
   if (restored) {
     renderAll();
@@ -8781,6 +8810,8 @@ async function boot() {
     }, 2600);
   }
 
+  if (restored && params.get("resume") === "1") toast(t("toast.resumedAfterUpdate"), "jade");
+  try { sessionStorage.removeItem("leabtui.bootReload.v1"); } catch { /* ignore */ }
   if (willPrompt) {
     setTimeout(() => showLobby("menu"), 450);
     /* A page reached by forceReload carries ?v=; check once even inside the

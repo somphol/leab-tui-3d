@@ -23,6 +23,10 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
+## Release 1.9.15 — the update keeps your table
+
+Clicking **Update/Reload** no longer drops a solo player at the launch menu: a `resume=1` boot restores the saved match and shows “Updated — your table is restored.” A guest with a rejoin token sees **“Reconnecting to your seat…”** instead of the join form; the token restores the same seat and the table. If the rejoin fails, the join form appears prefilled with the room code and name so the guest can enter the PIN. The Turn-history footer now stamps the running version, and a successful boot clears the one-shot update guard so an interrupted update retries. The host reload still ends the room.
+
 ## Release 1.9.14 — 2D pans, 3D orbits
 
 The 2D view is now a fixed-orientation table: rotation is disabled, left-drag/one-finger drag pans, and wheel/pinch zooms. 3D keeps the orbit controls; cinema is 3D-only. The launch menu also has a Draft toggle for solo/host play, synced with the HUD chip and Actions — easier to find on an iPad. iOS page autozoom is disabled (viewport, touch-action and 16 px coarse-pointer controls) while the canvas keeps its own pinch zoom. The distance fog is removed, so zooming out no longer fades the table into the light background.

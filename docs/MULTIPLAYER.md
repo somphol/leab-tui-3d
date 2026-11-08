@@ -141,7 +141,10 @@ update** by presenting the token:
    URL, saved game or export.
 3. On boot with a stored room intent, the guest sends `hello` with
    `rejoinToken`; the host matches it to the seat **before** the PIN and
-   approval checks and reattaches the connection (`reattachGuest`).
+   approval checks and reattaches the connection (`reattachGuest`). While it
+   connects, the UI shows **“Reconnecting to your seat…”**, not the
+   code/name/PIN form; if the reconnect fails, the form appears prefilled with
+   the code and name plus the error.
 4. The welcome carries `rejoin: true`, `started` and a per-seat redacted
    `state`, so the table is restored immediately.
 5. If the seat had become a bot, the bot stops; the hand, captures and score are

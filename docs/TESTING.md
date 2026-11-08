@@ -176,6 +176,7 @@ other hands           24 ghost ids, no real ids on the wire
 host in-game controls leave button visible, Start hidden, "Match in progress"
 actions               9–12 moves crossed the channel, a trick resolved
 guest reload          token reused, auto-rejoined seat 1 without PIN/approval
+guest reconnect UI    "Reconnecting to your seat…" instead of the join form
 guest tab closed      seat 1 became Bot 3, score/hand preserved
 console               no exceptions on either page
 ```
@@ -194,6 +195,7 @@ draft with bots      4 human picks, 16 picks total, hands [8,8,8,8]
 live Turn log        16 draft entries, e.g. "East picked 2 tiles" with a D marker
 mid-draft change     current draft finishes; next deal is automatic
 seeded draft         ?seed=777 reloads to the same pool, bot draws and hands
+solo update resume   ?resume=1 restores phase/trick and hides the launch menu
 ```
 
 The create-room panel shows the room number and the 5-digit PIN at the same
