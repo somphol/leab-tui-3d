@@ -4,7 +4,7 @@
 
 A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files plus a web-app manifest and icons, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat, independent full-mesh voice chat (mic mute + deafen), and an off-by-default experimental draft deal. It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.16**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.17**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -81,7 +81,7 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.16"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.17"
 prefs: theme daybreak (default)|mahogany|jade|midnight|parchment; fontSize sm|md|lg|xl; autoAudio on by default; CSS --fs-scale 0.9/1/1.12/1.24
 room: 482-173 (display; the peer id still carries a private leab prefix); peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
@@ -109,6 +109,10 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **View rotation.** `scene.setViewSeat(MY_SEAT)` rotates the `world` group by `-SEATS[seat].angle`; lights, camera and floor stay fixed. Do not rotate the camera to fake a seat view.
 - **Disconnect.** A dropped guest keeps their seat, hand, captures and score; the profile becomes a bot and the host schedules AI if it is their turn. Do not delete or reseat mid-match.
 - **Host reload recovery.** `saveHostRecovery`/`loadHostRecovery`/`resumeHostRoom`/`resumeHostFlow` restore the same-tab room; `pagehide` saves and closes the host peer to release the code, then boot reopens it with `openHostWithRetry({ code })`. Do not store this blob in localStorage, the export, or the wire; do not promise cross-tab/device host migration. The host gets a new PIN; guests' tokens are the rejoin credential.
+- **Late join / bot replacement.** `requestGuest` queues a started-room guest after the PIN; `approvePending` chooses `approveBotSeat` (first bot, preserves hand/score, new token, sends the state) or `approveViewer`. Never assign seat 0 to a guest. A replaced bot's old rejoin token is discarded.
+- **Viewers.** `net.viewers` is separate from `SEAT_PROFILES`; `MY_SEAT = -1`; `sanitizeForSeat(state, -1)` must ghost every hand and unrevealed set; hide the hand dock/panel/chat/voice and block actions. Viewers have no rejoin token and must be re-approved after a reload. `publishState` loops viewers with seat -1.
+- **Join suppression.** `net.security.suppressUntil` pauses new requests (`rejected.suppressed`); rejoin tokens bypass it. The host can pause/resume from the host panel or a pending request; the 30-minute value is stored in the host recovery blob.
+- **Copy room info.** The in-room Actions button and the host's room-chip click copy code, link and current PIN; guest chip click copies only the invite link. Use the current PIN after host recovery.
 - **Guest auto-rejoin.** `acceptGuest` issues a 16-byte `rejoinToken` per seat and sends it in `welcome`; the guest stores `{code, seat, token, name}` in `sessionStorage`. `hello.rejoinToken` is checked in `requestGuest` **before** the PIN/approval gate and calls `reattachGuest`, which stops the bot, restores the human profile on the same seat, and sends `welcome` with `rejoin: true`, `started` and `sanitizeForSeat(state, seat)`. The guest UI shows a “Reconnecting to your seat…” view while this happens; on failure it falls back to the prefilled join form. A solo `forceReload` adds `resume=1`, and boot restores the saved match instead of showing the launch menu. For a host, `saveHostRecovery` writes `{code, state, profiles with rejoinTokens, stats, chat}` to `sessionStorage` (never localStorage/export); boot detects it, reopens the **same** PeerJS code, hydrates the state, resumes the phase/timers and issues a new PIN. Guests show “The host is restarting…” and retry. `leaveRoom` clears the blob; closing the tab clears sessionStorage. The token survives disconnect-to-bot and the start-of-match bot fill; an intentional Leave clears it. Invariants: never put the token in the roster, state, URL, export, logs or localStorage (sessionStorage only), and never let a rejoin mint a new seat. Host reload still ends the room — do not promise host migration.
 - **No host migration.** A closed host ends the room. Guests see "Table closed". Do not pretend the match resumes.
 - **Approval is the real gate.** A guest is not seated on `hello`; `requestGuest` checks the PIN, then queues. Only `approvePending` calls `acceptGuest` and sends `welcome`. Pending requests expire; denied/wrong-PIN connections close.

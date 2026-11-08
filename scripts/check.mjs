@@ -239,6 +239,9 @@ const aiDraftBody = script.slice(script.indexOf("function aiDraftPick"), script.
 ok(script.includes("let bootSeed") && /makeState\(options\.seed \?\? bootSeed/.test(script), "the URL seed reaches the match and the draft");
 ok(aiDraftBody.includes("randomDraftPair") && !aiDraftBody.includes(".sort("), "bot draft picks are uniformly random");
 ok(script.includes('kind: "draft"') && script.includes('"log.draftPick"'), "bot draft picks are recorded in the log");
+ok(script.includes("function approveBotSeat") && script.includes("function approveViewer"), "started joins can replace a bot or be a viewer");
+ok(script.includes("sanitizeForSeat(state, -1)") && script.includes("is-viewer"), "viewers receive a fully hidden table");
+ok(index.includes('id="copyRoomBtn"') && script.includes("function pauseJoinRequests"), "in-room room-info copy and join suppression exist");
 ok(script.includes("function saveHostRecovery") && script.includes("function resumeHostRoom"), "host reload recovery exists");
 ok(script.includes("sessionStorage.setItem(HOST_RECOVERY_KEY") && !/localStorage[^\n]*HOST_RECOVERY_KEY/.test(script), "host recovery is session-only, never localStorage");
 ok(script.includes("function scheduleHostRejoin") && script.includes("net.hostRestarting"), "guest retries while the host reloads");

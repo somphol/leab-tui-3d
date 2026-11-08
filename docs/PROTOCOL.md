@@ -37,7 +37,11 @@ Sent once after a valid `hello`.
 `rejoinToken` is issued once per seat and stored by the guest in
 `sessionStorage`. It is never in the roster, state, export or URL. On a rejoin
 the host sends `"rejoin": true`, `"started": true` and a per-seat redacted
-`state` in the same welcome; the guest applies it directly to the table.
+`state` in the same welcome; the guest applies it directly to the table. A
+guest approved into a started match receives `"joinedSeat": true`, `"started":
+true` and the state. A **viewer** receives `"seat": -1`, `"viewer": true`,
+`"started": true` and `sanitizeForSeat(state, -1)` (all hands and unrevealed
+sets hidden). Viewer state publications use the same `seat: -1` envelope.
 
 ### `lobby`
 
@@ -164,7 +168,7 @@ even while the match is running. Otherwise the host verifies the optional PIN
 against an in-memory SHA-256 digest, then either queues the request (`pending`)
 or rejects it. The host assigns the lowest free seat 1–3 only after approval. Names are trimmed to 18 characters; control characters and angle brackets are stripped. Empty names become `Guest n`.
 
-`bad-pin`, `denied`, `busy`, `timeout`, `full` and `in-progress` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s.
+`bad-pin`, `denied`, `busy`, `timeout`, `full`, `in-progress` and `suppressed` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s. A started room queues a valid PIN request instead of rejecting `in-progress`; the host decides bot seat, viewer, deny or a 30-minute pause.
 
 ### `action`
 

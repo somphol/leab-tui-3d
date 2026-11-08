@@ -2646,3 +2646,14 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
   0%, 100% { box-shadow: 0 0 0 2px rgba(216, 178, 107, 0.25), 0 0 12px rgba(216, 178, 107, 0.3); }
   50% { box-shadow: 0 0 0 4px rgba(216, 178, 107, 0.5), 0 0 24px rgba(216, 178, 107, 0.55); }
 }
+
+/* Viewer mode: no private hand, no dock, no chat/voice controls. */
+body.is-viewer .hand-dock,
+body.is-viewer #handPanel,
+body.is-viewer #chatPanel,
+body.is-viewer #chatToolBtn,
+body.is-viewer .panel-orb[data-panel="handPanel"],
+body.is-viewer .panel-orb[data-panel="chatPanel"],
+body.is-viewer #voiceCallBtn {
+  display: none !important;
+}

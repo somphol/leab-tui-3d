@@ -178,6 +178,10 @@ actions               9–12 moves crossed the channel, a trick resolved
 guest reload          token reused, auto-rejoined seat 1 without PIN/approval
 host reload           same room code, trick preserved, guest retried and reconnected
 guest reconnect UI    "Reconnecting to your seat…" instead of the join form
+late guest            started join queued, approved into a bot seat (8 tiles)
+viewer                seat -1, all hands ghosted, hand dock hidden
+join pause            new guest rejected with "not accepting"
+room-info copy        host Actions button and chip title
 guest tab closed      seat 1 became Bot 3, score/hand preserved
 console               no exceptions on either page
 ```

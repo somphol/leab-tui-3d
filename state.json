@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.16",
-  "version": "1.9.16",
+  "projectVersion": "1.9.17",
+  "version": "1.9.17",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (385 checks)",
+    "staticCheck": "scripts/check.mjs (388 checks)",
     "browserCheck": "scripts/verify.mjs — boot, scene, audio, display, full round, no exceptions",
     "multiplayer": "scripts/net-check.mjs — 23/23",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
@@ -323,9 +323,14 @@
       "version": "1.9.16",
       "date": "2026-11-08",
       "summary": "Installable full-screen web app with icons and safe-area layout."
+    },
+    {
+      "version": "1.9.17",
+      "date": "2026-11-08",
+      "summary": "Late join, bot replacement, viewers and 30-minute join pause."
     }
   ],
-  "releaseNotes": "1.9.16 adds an installable full-screen web app and same-tab host reload recovery; solo resumes, guests rejoin, and the host keeps the room through an update.",
+  "releaseNotes": "1.9.17 lets guests join a started table (replace a bot or watch as a viewer), pauses joins for 30 minutes, and adds in-room room-info copy.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

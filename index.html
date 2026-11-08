@@ -6,7 +6,7 @@
   <title>Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio</title>
   <meta name="description" content="A bilingual, offline-friendly 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with 32 Chinese chess tiles. Vanilla HTML, CSS and Three.js." />
   <meta name="theme-color" content="#e8f0f2" />
-  <meta name="app-version" content="1.9.16" />
+  <meta name="app-version" content="1.9.17" />
   <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta property="og:type" content="website" />
@@ -55,7 +55,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Leab-Tui 3D" />
-  <link rel="stylesheet" href="style.css?v=1.9.16" />
+  <link rel="stylesheet" href="style.css?v=1.9.17" />
   <script type="importmap">
     {
       "imports": {
@@ -76,7 +76,7 @@
         <span class="brand-copy">
           <span class="brand-line">
             <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
-            <span id="brandVersion" class="brand-version">(v1.9.16)</span>
+            <span id="brandVersion" class="brand-version">(v1.9.17)</span>
           </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
@@ -219,6 +219,7 @@
             <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo trick</button>
             <button id="exportBtn" class="btn btn-ghost" type="button" data-i18n="actions.export">Export JSON</button>
             <button id="lobbyBtn" class="btn btn-ghost" type="button" data-i18n="net.openLobby">Multiplayer</button>
+            <button id="copyRoomBtn" class="btn btn-ghost" type="button" hidden data-i18n="net.copyRoomInfo">Copy room info</button>
             <button id="leaveRoomBtn" class="btn btn-ghost btn-wine" type="button" hidden data-i18n="net.leave">Leave room</button>
           </div>
           <label id="draftToggleWrap" class="lobby-check action-toggle">
@@ -281,7 +282,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.9.16</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.9.17</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -455,6 +456,8 @@
             <div id="lobbyPending" class="lobby-pending"></div>
             <button id="lobbyApproveAll" class="btn btn-gold btn-small" type="button" hidden data-i18n="net.approveAll">Approve all</button>
           </section>
+          <button id="pauseJoinBtn" class="btn btn-ghost btn-small" type="button" data-i18n="net.pauseJoins">Pause joins 30 min</button>
+          <p id="joinPauseStatus" class="lobby-note" hidden></p>
           <h3 data-i18n="net.roster">Seats</h3>
           <div id="lobbyRoster" class="lobby-roster"></div>
           <p class="lobby-note" data-i18n="net.fourSeats">Leab-Tui is a four-seat game: the host plus up to three guests. Empty seats are filled with bots.</p>
@@ -522,7 +525,7 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.9.16</span>
+          <span class="version-chip version-label">v1.9.17</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
@@ -734,6 +737,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.9.16"></script>
+  <script type="module" src="script.js?v=1.9.17"></script>
 </body>
 </html>

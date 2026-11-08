@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.16";
-import { VoiceChat } from "./voice-chat.js?v=1.9.16";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.16";
+} from "./peer-manager.js?v=1.9.17";
+import { VoiceChat } from "./voice-chat.js?v=1.9.17";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.17";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.16",
+  version: "1.9.17",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -488,6 +488,7 @@ const I18N = {
     "seat.east": "East",
     "seat.north": "North",
     "seat.west": "West",
+    "coach.viewer": "Watching the table as a viewer. Hands stay face-down; revealed sets and captures are public.",
     "coach.welcome": "Welcome to the felt. The holder of the red General leads first.",
     "coach.dealing": "Shuffling 32 carved tiles. Eight to each seat.",
     "coach.yourLead": "Your lead. {n} tiles in hand. Choose a single, a pair, a straight or a Soldier set.",
@@ -727,6 +728,13 @@ const I18N = {
     "net.pendingTitle": "Join requests",
     "net.pendingEmpty": "No one is waiting.",
     "net.approve": "Approve",
+    "net.approveSeat": "Take bot seat",
+    "net.approveViewer": "Allow viewer",
+    "net.watchOnly": "Watch only",
+    "net.pauseJoins": "Pause joins 30 min",
+    "net.resumeJoins": "Resume joins",
+    "net.joinsPaused": "Joins paused until {time}",
+    "net.pauseShort": "Pause 30m",
     "net.deny": "Deny",
     "net.approveAll": "Approve all",
     "net.waitingApproval": "Waiting for the host to approve you…",
@@ -778,6 +786,7 @@ const I18N = {
     "net.modeSolo": "Solo",
     "net.modeHost": "Host",
     "net.modeClient": "Guest",
+    "net.modeViewer": "Viewer",
     "net.leave": "Leave room",
     "net.back": "Back",
     "net.resume": "Back to table",
@@ -786,6 +795,7 @@ const I18N = {
     "net.localOnly": "No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.",
     "net.rejected.in-progress": "The match already started.",
     "net.rejected.full": "The table is full (four seats).",
+    "net.rejected.suppressed": "The host is not accepting new players right now.",
     "net.rejected.illegal": "That play was not legal.",
     "net.openLobby": "Multiplayer",
     "net.resumeMatch": "Resume match",
@@ -845,9 +855,13 @@ const I18N = {
     "voice.peerCount": "{n} remote voice stream(s)",
     "voice.localOnly": "Voice is peer-to-peer and not recorded.",
     "toast.netGuest": "{name} joined the table.",
+    "toast.netJoinRequest": "{name} wants to join — open Multiplayer to approve.",
+    "toast.netBotReplaced": "{name} took {seat} from a bot.",
+    "toast.netViewer": "{name} is watching as a viewer.",
     "toast.netGuestLeft": "{name} left the lobby.",
     "toast.netGuestHeld": "{name} disconnected — the seat is held for rejoin.",
     "toast.netRejoin": "{name} reconnected to their seat.",
+    "toast.netJoinsPaused": "Join requests paused for 30 minutes.",
     "toast.yourTurn": "Your turn — the table is waiting.",
     "toast.boardReset": "Board view reset to 2D.",
     "toast.boardLost": "The board lost its graphics context. Tap the reset button to recover.",
@@ -1071,6 +1085,7 @@ const I18N = {
     "seat.east": "บูรพา",
     "seat.north": "อุดร",
     "seat.west": "ประจิม",
+    "coach.viewer": "กำลังดูโต๊ะในโหมดผู้ชม ไพ่ในมือจะคว่ำไว้ เห็นเฉพาะชุดที่เปิดและกองที่กินแล้ว",
     "coach.welcome": "ยินดีต้อนรับ คนที่ถือตี่แดงได้นำก่อน",
     "coach.dealing": "สับหมาก 32 ตัว แจกคนละแปดตัว",
     "coach.yourLead": "ตาคุณนำ เหลือ {n} ตัวในมือ เลือกเลี๊ยบ ตุ่ย ชุดเรียง หรือชุดจุก",
@@ -1313,6 +1328,13 @@ const I18N = {
     "net.pendingTitle": "คำขอเข้าร่วม",
     "net.pendingEmpty": "ยังไม่มีใครรอ",
     "net.approve": "อนุมัติ",
+    "net.approveSeat": "นั่งแทนบอท",
+    "net.approveViewer": "ให้ดูอย่างเดียว",
+    "net.watchOnly": "ดูอย่างเดียว",
+    "net.pauseJoins": "หยุดรับแขก 30 นาที",
+    "net.resumeJoins": "เปิดรับแขก",
+    "net.joinsPaused": "หยุดรับแขกถึง {time}",
+    "net.pauseShort": "หยุด 30 นาที",
     "net.deny": "ปฏิเสธ",
     "net.approveAll": "อนุมัติทั้งหมด",
     "net.waitingApproval": "กำลังรอเจ้าบ้านอนุมัติ…",
@@ -1364,6 +1386,7 @@ const I18N = {
     "net.modeSolo": "คนเดียว",
     "net.modeHost": "เจ้าบ้าน",
     "net.modeClient": "แขก",
+    "net.modeViewer": "ผู้ชม",
     "net.leave": "ออกจากห้อง",
     "net.back": "กลับ",
     "net.resume": "กลับโต๊ะ",
@@ -1372,6 +1395,7 @@ const I18N = {
     "net.localOnly": "ไม่ต้องมีบัญชี ช่องข้อมูล WebRTC เข้ารหัสระหว่างทาง (DTLS) แต่เจ้าบ้านเห็นไพ่ทุกมือ",
     "net.rejected.in-progress": "แมตช์เริ่มแล้ว",
     "net.rejected.full": "โต๊ะเต็ม (สี่ที่นั่ง)",
+    "net.rejected.suppressed": "เจ้าบ้านยังไม่รับผู้เล่นใหม่ตอนนี้",
     "net.rejected.illegal": "ชุดนั้นไม่ถูกกติกา",
     "net.openLobby": "ผู้เล่นหลายคน",
     "net.resumeMatch": "เล่นต่อ",
@@ -1431,9 +1455,13 @@ const I18N = {
     "voice.peerCount": "เสียงขาเข้า {n} สตรีม",
     "voice.localOnly": "เสียงส่งแบบเพียร์ทูเพียร์และไม่มีการบันทึก",
     "toast.netGuest": "{name} เข้าร่วมโต๊ะ",
+    "toast.netJoinRequest": "{name} ขอเข้าร่วม — เปิด Multiplayer เพื่ออนุมัติ",
+    "toast.netBotReplaced": "{name} เข้านั่ง {seat} แทนบอท",
+    "toast.netViewer": "{name} เข้ามาดูแบบผู้ชม",
     "toast.netGuestLeft": "{name} ออกจากห้องรับแขก",
     "toast.netGuestHeld": "{name} หลุด — เก็บที่นั่งไว้ให้กลับมา",
     "toast.netRejoin": "{name} กลับเข้าที่นั่งเดิมแล้ว",
+    "toast.netJoinsPaused": "หยุดรับคำขอเข้าร่วม 30 นาที",
     "toast.yourTurn": "ถึงตาคุณแล้ว — โต๊ะรออยู่",
     "toast.boardReset": "จัดกระดานกลับเป็น 2D แล้ว",
     "toast.boardLost": "กระดานสูญเสีย context กราฟิก — กดปุ่มจัดกระดานเพื่อกู้คืน",
@@ -2063,6 +2091,7 @@ function saveHostRecovery(game = null) {
       name: net.name,
       started: Boolean(net.started && state),
       seatSeq: net.seatSeq || 0,
+      suppressUntil: net.security?.suppressUntil || 0,
       stats: clone(stats),
       chat: chatHistory.slice(-30),
       state: game || (state ? serializableState() : null),
@@ -3088,6 +3117,7 @@ function selectedTiles() {
 }
 
 function toggleTile(id, options = {}) {
+  if (MY_SEAT < 0) return false;
   if (!state) return;
   if (isClient() && !["lead", "follow"].includes(state.phase)) return;
   if (!["lead", "follow"].includes(state.phase) || state.turn !== MY_SEAT) return;
@@ -3159,6 +3189,7 @@ function coachWhy(combo) {
 }
 
 function coachMessage() {
+  if (MY_SEAT < 0) return t("coach.viewer");
   if (!state) return t("coach.welcome");
   if (state.phase === "dealing") return t("coach.dealing");
   if (state.phase === "resolving") {
@@ -3390,6 +3421,7 @@ function startSummaryCountdown() {
 }
 
 function showRoundSummary(matchEnded) {
+  if (MY_SEAT < 0) return;
   const modal = $("#summaryModal");
   if (!modal || !state) return;
   const isMatch = Boolean(matchEnded || state.phase === "matchEnd");
@@ -3494,6 +3526,7 @@ function updateUndoButton() {
 
 function renderAll() {
   if (!state) return;
+  document.body.classList.toggle("is-viewer", MY_SEAT < 0);
   renderHUD();
   renderScoreboard();
   renderHandList();
@@ -3626,7 +3659,11 @@ function renderScoreboard() {
 function renderHandList() {
   const list = $("#tileList");
   if (!list) return;
-  const hand = state.hands[MY_SEAT];
+  if (MY_SEAT < 0) {
+    list.innerHTML = "";
+    return;
+  }
+  const hand = state.hands[MY_SEAT] || [];
   if (!hand.length) {
     list.innerHTML = `<span class="tile-list-empty">${escapeHTML(t("handList.empty"))}</span>`;
     return;
@@ -3645,6 +3682,10 @@ function renderHandList() {
 }
 
 function renderSelection() {
+  if (MY_SEAT < 0) {
+    $("#handDock")?.setAttribute("hidden", "");
+    return;
+  }
   const kicker = $("#selectionKicker");
   const title = $("#selectionTitle");
   const detail = $("#selectionDetail");
@@ -4395,7 +4436,7 @@ function onHandLayoutChange() {
 
 let lastHandLayoutSig = "";
 function maybePublishHandLayout() {
-  if (!isNetworked() || !net?.started || !state) return;
+  if (MY_SEAT < 0 || !isNetworked() || !net?.started || !state) return;
   const seat = Number.isInteger(state.mySeat) ? state.mySeat : MY_SEAT;
   const hand = state.hands?.[seat] || [];
   const sig = hand.map((tile) => tile.id).join(",");
@@ -4544,8 +4585,9 @@ function hydrateRemoteState(raw) {
 function applyRemoteState(raw) {
   if (!raw) return;
   const next = hydrateRemoteState(raw);
-  const previousSelected = state && next.hands[MY_SEAT] ? state.selected || [] : [];
-  const inHand = new Set(next.hands[MY_SEAT].map((tile) => tile.id));
+  const myHand = next.hands?.[MY_SEAT] || [];
+  const previousSelected = state && myHand.length ? state.selected || [] : [];
+  const inHand = new Set(myHand.map((tile) => tile.id));
   next.selected = ["lead", "follow"].includes(next.phase) && next.turn === MY_SEAT
     ? previousSelected.filter((id) => inHand.has(id))
     : [];
@@ -4563,7 +4605,7 @@ function applyRemoteState(raw) {
   if (next.phase === "resolving" && resultRecord) showTrickResult(resultRecord);
   if (next.phase === "roundEnd" || next.phase === "matchEnd") {
     closeModal("trickResultModal");
-    showRoundSummary(next.phase === "matchEnd");
+    if (MY_SEAT >= 0) showRoundSummary(next.phase === "matchEnd");
   }
   if (next.phase === "dealing") scene?.flipHumanHand?.(state);
   if (lobbyState?.view === "waiting") {
@@ -4608,6 +4650,19 @@ function publishState() {
       state: payload
     });
   }
+  for (const viewer of net.viewers?.values() || []) {
+    net.host.send(viewer.connId, {
+      type: "state",
+      roomCode: net.code,
+      seq: net.seq,
+      seat: -1,
+      viewer: true,
+      players: roster,
+      viewers: serialiseViewers(),
+      hostName: net.name,
+      state: sanitizeForSeat(state, -1)
+    });
+  }
   lastPublished = Date.now();
 }
 
@@ -4622,6 +4677,7 @@ function sendLobbyToGuests() {
       roomCode: net.code,
       hostName: net.name,
       players: roster,
+      viewers: serialiseViewers(),
       canStart: humans >= 2,
       started: Boolean(net.started)
     });
@@ -4802,12 +4858,12 @@ async function requestGuest(connId, message) {
     const seat = SEAT_PROFILES?.findIndex((profile) => profile && profile.rejoinToken === rejoinToken) ?? -1;
     if (seat > 0 && reattachGuest(connId, seat, rejoinToken)) return;
   }
-  if (net.started) {
-    rejectConnection(connId, "in-progress");
+  if (net.security?.suppressUntil > Date.now()) {
+    rejectConnection(connId, "suppressed");
     return;
   }
   const humans = SEAT_PROFILES.filter((profile) => profile && (profile.kind === "host" || profile.kind === "human") && profile.connected).length;
-  if (humans >= TABLE_SEATS) {
+  if (!net.started && humans >= TABLE_SEATS) {
     rejectConnection(connId, "full");
     return;
   }
@@ -4831,22 +4887,107 @@ async function requestGuest(connId, message) {
     net.security.pinFails = 0;
   }
   const name = cleanGuestName(message.name, `Guest ${net.seatSeq + 1}`);
-  if (net.security.approval) {
-    pendingRequests.set(connId, { connId, name, at: Date.now() });
+  if (net.security.approval || net.started) {
+    pendingRequests.set(connId, { connId, name, at: Date.now(), started: Boolean(net.started) });
     pendingTimers.set(connId, setTimeout(() => expirePending(connId), 120000));
     net.host.send(connId, { type: "pending", roomCode: net.code, hostName: net.name });
+    toast(t("toast.netJoinRequest", { name }), "gold");
     renderLobby();
+    renderNetChrome();
+    saveHostRecovery();
     return;
   }
   acceptGuest(connId, name);
 }
 
-function approvePending(connId) {
+function findBotSeat() {
+  return SEAT_PROFILES?.findIndex((profile, seat) => seat > 0 && profile?.kind === "bot") ?? -1;
+}
+
+function approveBotSeat(connId, request, seat) {
+  const clean = cleanGuestName(request.name, `Guest ${seat}`);
+  net.seatSeq += 1;
+  SEAT_PROFILES[seat] = {
+    seat,
+    name: clean,
+    kind: "human",
+    connected: true,
+    connId,
+    peerId: connId,
+    voice: false,
+    clientId: `guest-${net.seatSeq}`,
+    rejoinToken: makeRejoinToken(),
+    rejoinName: clean
+  };
+  net.host.send(connId, {
+    type: "welcome",
+    roomCode: net.code,
+    protocol: PROTOCOL_VERSION,
+    seat,
+    hostName: net.name,
+    players: serialiseRoster(),
+    chat: chatHistory.slice(-30),
+    canStart: true,
+    rejoinToken: SEAT_PROFILES[seat].rejoinToken,
+    started: true,
+    joinedSeat: true,
+    state: sanitizeForSeat(state, seat)
+  });
+  toast(t("toast.netBotReplaced", { name: clean, seat: seatName(seat) }), "jade");
+  renderAll();
+  renderLobby();
+  sendLobbyToGuests();
+  syncVoicePeers();
+  queuePublish();
+  saveHostRecovery();
+  audio?.play("win", 0);
+  return true;
+}
+
+function approvePending(connId, mode = "auto") {
   const request = pendingRequests.get(connId);
   if (!request) return false;
   clearPending(connId);
-  acceptGuest(connId, request.name);
+  if (!net?.started) {
+    acceptGuest(connId, request.name);
+    renderLobby();
+    return true;
+  }
+  const seat = findBotSeat();
+  if (mode === "viewer" || seat < 0) {
+    approveViewer(connId, request);
+    return true;
+  }
+  return approveBotSeat(connId, request, seat);
+}
+
+function serialiseViewers() {
+  return [...(net?.viewers?.values() || [])].map((viewer) => ({ name: viewer.name }));
+}
+
+function approveViewer(connId, request) {
+  if (!isHost() || !net?.host || !net.viewers) return false;
+  const name = cleanGuestName(request.name, "Viewer");
+  net.viewers.set(connId, { name, connId, at: Date.now() });
+  net.host.send(connId, {
+    type: "welcome",
+    roomCode: net.code,
+    protocol: PROTOCOL_VERSION,
+    seat: -1,
+    viewer: true,
+    hostName: net.name,
+    players: serialiseRoster(),
+    viewers: serialiseViewers(),
+    chat: chatHistory.slice(-30),
+    canStart: false,
+    started: Boolean(net.started && state),
+    state: net.started && state ? sanitizeForSeat(state, -1) : null
+  });
+  toast(t("toast.netViewer", { name }), "jade");
   renderLobby();
+  sendLobbyToGuests();
+  queuePublish();
+  saveHostRecovery();
   return true;
 }
 
@@ -4867,6 +5008,26 @@ function approveAllPending() {
     if (pendingRequests.size === 0) break;
     approvePending(request.connId);
   }
+}
+
+function pauseJoinRequests(ms = 30 * 60 * 1000) {
+  if (!isHost() || !net) return false;
+  net.security.suppressUntil = Date.now() + ms;
+  denyAllPending("suppressed");
+  renderLobby();
+  renderNetChrome();
+  toast(t("toast.netJoinsPaused"), "gold");
+  saveHostRecovery();
+  return true;
+}
+
+function resumeJoinRequests() {
+  if (!isHost() || !net) return false;
+  net.security.suppressUntil = 0;
+  renderLobby();
+  renderNetChrome();
+  saveHostRecovery();
+  return true;
 }
 
 function setRoomApproval(value) {
@@ -4990,6 +5151,13 @@ function hostMessage({ connId, message }) {
       net.host.send(connId, { type: "pong", at: Date.now() });
       break;
     case "leave": {
+      if (net?.viewers?.has(connId)) {
+        net.viewers.delete(connId);
+        renderLobby();
+        queuePublish();
+        saveHostRecovery();
+        break;
+      }
       if (pendingRequests.has(connId)) {
         clearPending(connId);
         renderLobby();
@@ -5015,6 +5183,13 @@ function hostMessage({ connId, message }) {
 
 function hostConnectionLost({ connId } = {}) {
   if (!connId) return;
+  if (net?.viewers?.has(connId)) {
+    net.viewers.delete(connId);
+    renderLobby();
+    queuePublish();
+    saveHostRecovery();
+    return;
+  }
   if (pendingRequests.has(connId)) {
     clearPending(connId);
     renderLobby();
@@ -5091,7 +5266,8 @@ async function createHostRoom(name) {
       seq: 0,
       started: false,
       seatSeq: 0,
-      security: { approval: true, pinHash: null, pinSet: false, pinFails: 0, lockUntil: 0 }
+      viewers: new Map(),
+      security: { approval: true, pinHash: null, pinSet: false, pinFails: 0, lockUntil: 0, suppressUntil: 0 }
     };
     SEAT_PROFILES = [{ seat: 0, name: handle, kind: "host", connected: true, host: true, peerId: host.id, voice: false }, null, null, null];
     MY_SEAT = 0;
@@ -5182,7 +5358,7 @@ async function resumeHostRoom(recovery) {
       seq: 0,
       started: Boolean(recovery.started),
       seatSeq: Number(recovery.seatSeq) || 0,
-      security: { approval: true, pinHash: null, pinSet: false, pinFails: 0, lockUntil: 0 }
+      security: { approval: true, pinHash: null, pinSet: false, pinFails: 0, lockUntil: 0, suppressUntil: 0 }
     };
     SEAT_PROFILES = [0, 1, 2, 3].map((seat) => {
       const saved = recovery.profiles?.[seat];
@@ -5303,8 +5479,10 @@ function clientMessage({ message }) {
   if (!isProtocolMessage(message)) return;
   switch (message.type) {
     case "welcome": {
-      MY_SEAT = Number(message.seat) || 1;
-      SEAT_PROFILES = message.players.map((player) => ({ ...player }));
+      const welcomeSeat = Number(message.seat);
+      MY_SEAT = Number.isInteger(welcomeSeat) && welcomeSeat >= -1 ? welcomeSeat : 1;
+      net.viewer = Boolean(message.viewer) || MY_SEAT < 0;
+      SEAT_PROFILES = (message.players || []).map((player) => ({ ...player }));
       net.seat = MY_SEAT;
       net.name = message.players?.[MY_SEAT]?.name || net.name;
       const rejoinToken = typeof message.rejoinToken === "string" ? message.rejoinToken : "";
@@ -5328,7 +5506,7 @@ function clientMessage({ message }) {
         pending: false
       };
       chatHistory = Array.isArray(message.chat) ? message.chat.slice(-30) : [];
-      if (message.rejoin && message.state) {
+      if (message.state) {
         applyRemoteState(message.state);
       } else {
         showLobby("waiting");
@@ -5998,17 +6176,21 @@ function renderPending() {
   const list = $("#lobbyPending");
   if (!list) return;
   const entries = pendingList();
+  const started = Boolean(net?.started);
+  const botSeat = findBotSeat();
   list.innerHTML = entries.length
     ? entries.map((request) => `
       <div class="pending-row" data-conn="${escapeHTML(request.connId)}">
         <span class="pending-name">${escapeHTML(request.name)}</span>
         <time>${escapeHTML(chatClock(request.at))}</time>
-        <button class="mini-btn approve" type="button" data-approve data-i18n="net.approve">${escapeHTML(t("net.approve"))}</button>
+        <button class="mini-btn approve" type="button" data-approve data-i18n="net.approve">${escapeHTML(started ? (botSeat >= 0 ? t("net.approveSeat") : t("net.approveViewer")) : t("net.approve"))}</button>
+        ${started && botSeat >= 0 ? `<button class="mini-btn" type="button" data-viewer data-i18n="net.watchOnly">${escapeHTML(t("net.watchOnly"))}</button>` : ""}
         <button class="mini-btn deny" type="button" data-deny data-i18n="net.deny">${escapeHTML(t("net.deny"))}</button>
+        <button class="mini-btn" type="button" data-pause data-i18n="net.pauseShort">${escapeHTML(t("net.pauseShort"))}</button>
       </div>`).join("")
     : `<span class="pending-empty">${escapeHTML(t("net.pendingEmpty"))}</span>`;
   const approveAll = $("#lobbyApproveAll");
-  if (approveAll) approveAll.hidden = entries.length === 0;
+  if (approveAll) approveAll.hidden = entries.length === 0 || started;
   const pendingBlock = $("#hostPendingBlock");
   if (pendingBlock) pendingBlock.hidden = entries.length === 0;
   const status = $("#hostSecurityStatus");
@@ -6017,6 +6199,19 @@ function renderPending() {
   }
   const approval = $("#hostApproval");
   if (approval && isHost() && net?.security) approval.checked = Boolean(net.security.approval);
+  const pauseBtn = $("#pauseJoinBtn");
+  const paused = Boolean(net?.security?.suppressUntil && net.security.suppressUntil > Date.now());
+  if (pauseBtn) {
+    pauseBtn.hidden = !isHost() || !net;
+    pauseBtn.textContent = t(paused ? "net.resumeJoins" : "net.pauseJoins");
+  }
+  const pauseStatus = $("#joinPauseStatus");
+  if (pauseStatus) {
+    pauseStatus.hidden = !paused;
+    if (paused) pauseStatus.textContent = t("net.joinsPaused", {
+      time: new Date(net.security.suppressUntil).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    });
+  }
 }
 
 function updateLobbyScrollState() {
@@ -6232,15 +6427,19 @@ function renderNetChrome() {
       const compact = window.matchMedia("(max-width: 520px)").matches;
       const code = compact ? `${net.code.slice(0, 3)}-${net.code.slice(3)}` : formatRoomCode(net.code);
       chip.textContent = `${isHost() ? "◉" : "◇"} ${code}`;
-      chip.title = t("net.chipHint");
+      chip.title = isHost() ? t("net.copyRoomInfo") : t("net.copyLink");
     } else {
       chip.hidden = true;
       chip.textContent = "";
     }
   }
+  const copyRoom = $("#copyRoomBtn");
+  if (copyRoom) copyRoom.hidden = !(isHost() && net?.code);
   const mode = $("#modeChip");
   if (mode) {
-    mode.textContent = isNetworked() ? (isHost() ? t("net.modeHost") : t("net.modeClient")) : t("net.modeSolo");
+    mode.textContent = isNetworked()
+      ? (isHost() ? t("net.modeHost") : MY_SEAT < 0 ? t("net.modeViewer") : t("net.modeClient"))
+      : t("net.modeSolo");
   }
   const undo = $("#undoBtn");
   if (undo && isClient()) undo.disabled = true;
@@ -6490,6 +6689,12 @@ function setDraftMode(enabled) {
 function renderDraft() {
   const modal = $("#draftModal");
   if (!modal) return;
+  if (MY_SEAT < 0) {
+    draftSelection = [];
+    draftSig = "";
+    modal.hidden = true;
+    return;
+  }
   const mode = state ? state.draftMode === true : prefs.draftMode === true;
   $$("[data-draft-toggle]").forEach((input) => { input.checked = mode; });
   const wrap = $("#draftToggleWrap");
@@ -8737,7 +8942,11 @@ function bindEvents() {
     }
     audio?.play("click", 0);
   });
-  $("#netChip")?.addEventListener("click", copyInvite);
+  $("#netChip")?.addEventListener("click", () => {
+    if (isHost()) copyRoomInfo();
+    else copyInvite();
+  });
+  $("#copyRoomBtn")?.addEventListener("click", copyRoomInfo);
   $("#lobbySolo")?.addEventListener("click", backToSolo);
   $("#lobbyResumeSaved")?.addEventListener("click", resumeSavedMatch);
   $("#lobbyHost")?.addEventListener("click", () => {
@@ -8856,15 +9065,23 @@ function bindEvents() {
   $("#hostPinCopy")?.addEventListener("click", copyPin);
   $("#hostPinInfo")?.addEventListener("click", () => setPinInfo($("#pinInfoPanel")?.hidden ?? true));
   $("#hostApproval")?.addEventListener("change", (event) => setRoomApproval(event.target.checked));
+  $("#pauseJoinBtn")?.addEventListener("click", () => {
+    if (net?.security?.suppressUntil && net.security.suppressUntil > Date.now()) resumeJoinRequests();
+    else pauseJoinRequests();
+  });
   $("#lobbyApproveAll")?.addEventListener("click", approveAllPending);
   $("#lobbyPending")?.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-approve], [data-deny]");
+    const button = event.target.closest("[data-approve], [data-viewer], [data-deny], [data-pause]");
     if (!button) return;
     const row = button.closest("[data-conn]");
     if (!row) return;
     const connId = row.dataset.conn;
     if (button.hasAttribute("data-approve")) approvePending(connId);
-    else denyPending(connId);
+    else if (button.hasAttribute("data-viewer")) approvePending(connId, "viewer");
+    else if (button.hasAttribute("data-pause")) {
+      pauseJoinRequests();
+      if (pendingRequests.has(connId)) denyPending(connId, "suppressed");
+    } else denyPending(connId);
   });
   $("#lobbyStartBtn")?.addEventListener("click", () => {
     startHostedMatch();
@@ -9220,7 +9437,9 @@ window.LeabTui = {
       code: formatRoomCode(net.code),
       mySeat: MY_SEAT,
       started: Boolean(net.started),
+      viewer: Boolean(net.viewer) || MY_SEAT < 0,
       players: serialiseRoster(),
+      viewers: isHost() ? serialiseViewers() : [],
       peerId: isHost() ? net.host?.id : net.client?.hostId,
       pending: isHost() ? pendingList() : [],
       approval: isHost() ? Boolean(net.security?.approval) : null,
@@ -9235,6 +9454,8 @@ window.LeabTui = {
     pending: () => pendingList().map((request) => ({ connId: request.connId, name: request.name, at: request.at })),
     approve: approvePending,
     deny: denyPending,
+    pauseJoins: () => pauseJoinRequests(),
+    resumeJoins: () => resumeJoinRequests(),
     setApproval: setRoomApproval,
     setPin: setRoomPin,
     leave: () => leaveRoom(),

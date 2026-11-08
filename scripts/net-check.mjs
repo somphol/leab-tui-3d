@@ -242,6 +242,93 @@ async function main() {
   else fail("other hands are ghosted on the wire", JSON.stringify(view.other));
   if (view.seats.filter((kind) => kind === "bot").length === 2) pass("two empty seats filled with bots");
   else fail("two empty seats filled with bots", JSON.stringify(view.seats));
+  const copyUi = JSON.parse(await host.eval("JSON.stringify({copy:!document.querySelector('#copyRoomBtn').hidden,title:document.querySelector('#netChip').title})"));
+  if (copyUi.copy && /room/i.test(copyUi.title)) pass("host can copy room info at the table", copyUi.title);
+  else fail("host can copy room info at the table", JSON.stringify(copyUi));
+
+  // A new guest joins a started table and replaces a bot seat.
+  const thirdWs = await newTarget(`${BASE}?room=${code}&name=Third&pin=${encodeURIComponent(roomPin)}`);
+  const third = await Session.connect(thirdWs);
+  await sleep(2500);
+  const thirdPending = JSON.parse(await host.waitFor(
+    "window.LeabTui?.net.pending?.().length >= 1 ? JSON.stringify(window.LeabTui.net.pending()) : ''",
+    "started join request",
+    20000
+  ));
+  if (thirdPending.length === 1 && thirdPending[0].name === "Third") pass("started table accepts a join request", thirdPending[0].name);
+  else fail("started table accepts a join request", JSON.stringify(thirdPending));
+  await host.eval(`LeabTui.net.approve(${JSON.stringify(thirdPending[0].connId)}); true`);
+  let thirdJoinedRaw = "";
+  try {
+    thirdJoinedRaw = await third.waitFor(
+      "window.LeabTui?.net?.getState?.()?.role === 'client' && window.LeabTui.getState?.()?.hands?.[2]?.length === 8 ? JSON.stringify({seat:LeabTui.net.getState().mySeat,hand:LeabTui.getState().hands[2].length,phase:LeabTui.getState().phase}) : ''",
+      "third guest bot replacement",
+      25000
+    );
+  } catch (error) {
+    const thirdDiag = await third.eval("JSON.stringify({net:LeabTui?.net?.getState?.()||null,phase:LeabTui?.getState?.()?.phase,status:document.querySelector('#lobbyStatus')?.textContent||'',view:[...document.querySelectorAll('#lobbyModal .lobby-view')].filter(n=>!n.hidden).map(n=>n.id),hands:LeabTui?.getState?.()?.hands?.map(h=>h.length)})");
+    const hostDiag = await host.eval("JSON.stringify({net:LeabTui.net.getState(),pending:LeabTui.net.pending(),phase:LeabTui.getState().phase})");
+    console.log("THIRD DIAG", thirdDiag);
+    console.log("HOST DIAG", hostDiag);
+    throw error;
+  }
+  const thirdJoined = JSON.parse(thirdJoinedRaw);
+  if (thirdJoined.seat === 2 && thirdJoined.hand === 8) pass("approved guest replaces a bot seat", `seat ${thirdJoined.seat}, 8 tiles`);
+  else fail("approved guest replaces a bot seat", JSON.stringify(thirdJoined));
+  const rosterWithThird = JSON.parse(await host.eval("JSON.stringify(LeabTui.net.getState().players)"));
+  if (rosterWithThird[2]?.kind === "human" && rosterWithThird[2]?.connected) pass("host roster shows the replacement human", rosterWithThird[2].name);
+  else fail("host roster shows the replacement human", JSON.stringify(rosterWithThird[2]));
+  await third.closePage();
+  await host.waitFor("window.LeabTui?.net.getState?.().players?.[2]?.kind === 'bot' ? 'ok' : ''", "seat 2 back to bot", 15000);
+
+  // Viewer approval when the host chooses Watch only.
+  const viewerWs = await newTarget(`${BASE}?room=${code}&name=Viewer&pin=${encodeURIComponent(roomPin)}`);
+  const viewer = await Session.connect(viewerWs);
+  await sleep(2500);
+  const viewerPending = JSON.parse(await host.waitFor(
+    "window.LeabTui?.net.pending?.().length >= 1 ? JSON.stringify(window.LeabTui.net.pending()) : ''",
+    "viewer join request",
+    20000
+  ));
+  await host.eval(`LeabTui.net.approve(${JSON.stringify(viewerPending[0].connId)}, "viewer"); true`);
+  const viewerJoined = JSON.parse(await viewer.waitFor(
+    "window.LeabTui?.net?.getState?.()?.mySeat === -1 && window.LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,viewer:LeabTui.net.getState().viewer,ghost:LeabTui.getState().hands.flat().every((id) => typeof id === 'string' && id.startsWith('ghost-')),dock:getComputedStyle(document.querySelector('#handDock')).display,body:document.body.classList.contains('is-viewer')}) : ''",
+    "viewer receives the table",
+    25000
+  ));
+  if (viewerJoined.seat === -1 && viewerJoined.viewer && viewerJoined.ghost && viewerJoined.dock === "none" && viewerJoined.body) pass("viewer joins with a fully hidden table");
+  else fail("viewer joins with a fully hidden table", JSON.stringify(viewerJoined));
+  if (viewer.events.length === 0) pass("viewer console clean");
+  else fail("viewer console clean", viewer.events.join(" | "));
+  await viewer.closePage();
+  const viewersCleared = await host.waitFor("window.LeabTui?.net.getState?.().viewers?.length === 0 ? 'ok' : ''", "viewer removed", 15000);
+  if (viewersCleared === "ok") pass("viewer disconnects cleanly");
+  else fail("viewer disconnects cleanly");
+
+  // Suppression pauses new join requests.
+  await host.eval("LeabTui.net.pauseJoins(); true");
+  const blockedWs = await newTarget(`${BASE}?room=${code}&name=Blocked&pin=${encodeURIComponent(roomPin)}`);
+  const blocked = await Session.connect(blockedWs);
+  let blockedStatus = "";
+  try {
+    blockedStatus = await blocked.waitFor(
+      "document.querySelector('#lobbyStatus')?.textContent?.includes('not accepting') ? document.querySelector('#lobbyStatus').textContent : ''",
+      "suppressed join",
+      20000
+    );
+  } catch (error) {
+    const blockedDiag = await blocked.eval("JSON.stringify({status:document.querySelector('#lobbyStatus')?.textContent||'',wait:document.querySelector('#lobbyWaitStatus')?.textContent||'',view:[...document.querySelectorAll('#lobbyModal .lobby-view')].filter(n=>!n.hidden).map(n=>n.id),net:LeabTui?.net?.getState?.()||null})");
+    const hostDiag = await host.eval("JSON.stringify({suppress:LeabTui.net.getState(),pending:LeabTui.net.pending()})");
+    console.log("BLOCKED DIAG", blockedDiag);
+    console.log("SUPPRESS DIAG", hostDiag);
+    throw error;
+  }
+  if (blockedStatus) pass("host can pause join requests", blockedStatus);
+  else fail("host can pause join requests", "no status");
+  await blocked.closePage();
+  await host.eval("LeabTui.net.resumeJoins(); true");
+
+
 
   if (process.env.GUEST_SHOT) {
     await sleep(1200);

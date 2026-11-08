@@ -123,6 +123,25 @@ Voice requires HTTPS or localhost. Symmetric NAT can block media just as it bloc
 
 The host may keep waiting for more humans; the button is disabled until the second human arrives. There is no separate "add bot" button — bots are the default for empty seats.
 
+## Joining a table in progress
+
+A started match no longer rejects every new guest. After the PIN, the host gets
+a pending request and can:
+
+- **Take a bot seat** — the bot's hand, captures and score are kept; the profile
+  becomes human and the guest receives a fresh rejoin token plus the current
+  state. The next guest replaces the next bot.
+- **Watch only** — approved as a viewer even if a bot remains.
+- **Deny** or **Pause 30 min** — a pause rejects new requests with
+  `suppressed`; existing rejoin tokens still bypass it. Resume from the host
+  panel. If no bot remains, the only approval is viewer.
+
+Viewers are not seats: they receive `seat: -1` and a state where every hand is
+ghosted, unrevealed centre plays are hidden, and the archive hides unrevealed
+sets. The viewer UI removes the hand dock, hand panel, chat and voice controls;
+viewers can watch the public table, captures, history and summaries but cannot
+act. There is no viewer rejoin token; a reload requires approval again.
+
 ## Disconnection
 
 When a guest connection closes, the host holds the seat:

@@ -2,6 +2,20 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.17] — 2026-11-08
+
+### Added
+
+- **Join a started table.** A guest who asks mid-match is queued after the PIN and must be approved. The host approves them into a **bot seat** (the bot’s hand, captures and score are inherited) or allows them as a **viewer** when they choose Watch only. If no bot remains, the only option is viewer.
+- **Viewer mode.** `MY_SEAT = -1`; `sanitizeForSeat(state, -1)` ghosts every hand, the viewer has no dock/chat/voice controls and cannot act, but sees the public table, captures, history and result summaries.
+- **Pause joins for 30 minutes.** Host can pause from the host panel or from a pending request. New guests get `rejected.suppressed`; existing rejoin tokens still work. Resume from the same button.
+- **Copy room info at the table.** Actions has **Copy room info**; clicking the room chip as host copies the code, invite link and current PIN. Guests still copy only the invite link.
+
+### Changed
+
+- `requestGuest` no longer rejects a started room outright; approval is required and the host gets a “wants to join” toast/badge.
+- The host roster replaces the bot profile, clears the old bot rejoin token, issues a new guest token and publishes the current state to the guest.
+
 ## [1.9.16] — 2026-11-08
 
 ### Added
