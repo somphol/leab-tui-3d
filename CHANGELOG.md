@@ -2,6 +2,17 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.13] — 2026-11-08
+
+### Added
+
+- **Reset-board shortcut, bottom-right on tablets.** On touch devices and layouts ≤1024 px, a round button appears above the hand pill. It re-seats the world to the local player, returns to **2D**, re-fits the canvas and re-syncs the table. The desktop reset-camera tool stays where it was.
+- **WebGL context recovery.** `webglcontextlost` shows a warning; `webglcontextrestored` re-fits and re-syncs. If the reset button finds a lost context it reloads the page, and a guest auto-rejoins the room (1.9.12).
+
+### Notes
+
+- The button is intentionally hidden on wide desktop layouts, where the top-right reset-camera control is already visible.
+
 ## [1.9.12] — 2026-11-08
 
 ### Changed

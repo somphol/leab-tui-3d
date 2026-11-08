@@ -16,6 +16,7 @@
 | `?` button | Rules |
 | `i` button | About / credits |
 | Camera buttons (top-right) | Reset view · 2D view · cinematic orbit |
+| Reseat the table (touch/tablet) | Bottom-right **reset board** button: local seat, 2D, refit |
 | **Aa** (stage toolbar) | Display settings: text size and theme |
 | **Ranks** (top-left HUD) | Show/hide the pictorial rank-order reference |
 | **Multiplayer** (Actions) | Open the lobby: solo / host / join; set your name here |

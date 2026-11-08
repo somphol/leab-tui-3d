@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.12",
-  "version": "1.9.12",
+  "projectVersion": "1.9.13",
+  "version": "1.9.13",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -303,9 +303,14 @@
       "version": "1.9.12",
       "date": "2026-11-08",
       "summary": "Full-circle trick result for everyone; guest auto-rejoin."
+    },
+    {
+      "version": "1.9.13",
+      "date": "2026-11-08",
+      "summary": "Tablet reset-board shortcut and WebGL recovery."
     }
   ],
-  "releaseNotes": "1.9.12 waits for every showdown decision, shows the result to every player, auto-rejoins guests, spaces the captured piles and centre plays, keeps the history live, and labels the view toggle 2D / 3D.",
+  "releaseNotes": "1.9.13 adds a bottom-right reset-board shortcut on tablets and WebGL context-loss recovery.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

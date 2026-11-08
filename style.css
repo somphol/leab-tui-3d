@@ -667,6 +667,29 @@ a:hover { text-decoration: underline; }
 .hud-turn strong { color: var(--gold-bright); }
 
 /* Camera tools */
+.board-reset {
+  position: absolute;
+  z-index: 7;
+  right: 14px;
+  bottom: 76px;
+  display: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(216, 178, 107, 0.55);
+  border-radius: 50%;
+  background: var(--chip-bg);
+  color: var(--gold-bright);
+  font-size: calc(20px * var(--fs-scale));
+  line-height: 1;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+.board-reset:hover { border-color: var(--gold); }
+@media (hover: none), (max-width: 1024px) {
+  .board-reset { display: grid; }
+}
 .stage-tools {
   position: absolute;
   z-index: 4;

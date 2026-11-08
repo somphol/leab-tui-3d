@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.12";
-import { VoiceChat } from "./voice-chat.js?v=1.9.12";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.12";
+} from "./peer-manager.js?v=1.9.13";
+import { VoiceChat } from "./voice-chat.js?v=1.9.13";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.13";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.12",
+  version: "1.9.13",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -840,6 +840,11 @@ const I18N = {
     "toast.netGuestHeld": "{name} disconnected — the seat is held for rejoin.",
     "toast.netRejoin": "{name} reconnected to their seat.",
     "toast.yourTurn": "Your turn — the table is waiting.",
+    "toast.boardReset": "Board view reset to 2D.",
+    "toast.boardLost": "The board lost its graphics context. Tap the reset button to recover.",
+    "toast.boardReload": "The board was lost — reloading. A guest will rejoin the room.",
+    "toast.boardUnavailable": "The 3D board is unavailable on this device. The rules and log still work.",
+    "board.resetAria": "Reset the board view to 2D",
     "toast.netBot": "{name} left — a bot takes the seat.",
     "toast.netStarted": "Table {code} started.",
     "toast.netLeft": "Left the table.",
@@ -1409,6 +1414,11 @@ const I18N = {
     "toast.netGuestHeld": "{name} หลุด — เก็บที่นั่งไว้ให้กลับมา",
     "toast.netRejoin": "{name} กลับเข้าที่นั่งเดิมแล้ว",
     "toast.yourTurn": "ถึงตาคุณแล้ว — โต๊ะรออยู่",
+    "toast.boardReset": "จัดกระดานกลับเป็น 2D แล้ว",
+    "toast.boardLost": "กระดานสูญเสีย context กราฟิก — กดปุ่มจัดกระดานเพื่อกู้คืน",
+    "toast.boardReload": "กระดานหลุด — กำลังโหลดใหม่ ผู้เล่นจะกลับเข้าห้องอัตโนมัติ",
+    "toast.boardUnavailable": "อุปกรณ์นี้แสดงกระดาน 3D ไม่ได้ แต่กฎและบันทึกยังใช้ได้",
+    "board.resetAria": "จัดกระดานกลับเป็นมุมมอง 2D",
     "toast.netBot": "{name} ออก — บอทรับที่นั่งแทน",
     "toast.netStarted": "โต๊ะ {code} เริ่มแล้ว",
     "toast.netLeft": "ออกจากโต๊ะแล้ว",
@@ -3185,6 +3195,15 @@ function startParty() {
   stopParty();
   const THREE = threeLib;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  canvas.addEventListener("webglcontextlost", (event) => {
+    event.preventDefault();
+    toast(t("toast.boardLost"), "wine");
+  });
+  canvas.addEventListener("webglcontextrestored", () => {
+    resize();
+    if (currentState) sync(currentState);
+  });
+
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   const width = canvas.clientWidth || 560;
   const height = canvas.clientHeight || 150;
@@ -3422,6 +3441,26 @@ function refreshHistoryModal() {
 }
 
 let lastFocusKey = "";
+
+function resetBoardView() {
+  const canvas = $("#scene");
+  const gl = canvas?.getContext?.("webgl2");
+  if (!scene) {
+    toast(t("toast.boardUnavailable"), "wine");
+    return;
+  }
+  if (gl?.isContextLost?.()) {
+    toast(t("toast.boardReload"), "wine");
+    setTimeout(() => location.reload(), 700);
+    return;
+  }
+  scene.resetBoard?.();
+  if (state) {
+    renderAll();
+    scene?.sync(state);
+  }
+  toast(t("toast.boardReset"), "jade");
+}
 
 function focusTurnIfNeeded() {
   if (!state) return;
@@ -8018,6 +8057,17 @@ async function createScene() {
     setTopView(true);
   }
 
+  function resetBoard() {
+    setViewSeat(MY_SEAT);
+    setTopView(true);
+    cameraTween = null;
+    camera.position.copy(topPosition);
+    controls.target.copy(topTarget);
+    controls.update();
+    resize();
+    if (currentState) sync(currentState);
+  }
+
   function toggleTopView() {
     setTopView(!topView);
   }
@@ -8165,6 +8215,7 @@ async function createScene() {
       updateLabels(gameState);
     },
     resetView,
+    resetBoard,
     toggleTopView,
     setTopView,
     toggleCinema,
@@ -8205,6 +8256,7 @@ function bindEvents() {
   $("#aboutBtn")?.addEventListener("click", () => { renderAbout(); openModal("aboutModal"); audio?.play("click", 0); });
   $("#aboutBtnSide")?.addEventListener("click", () => { renderAbout(); openModal("aboutModal"); audio?.play("click", 0); });
   $("#resetViewBtn")?.addEventListener("click", () => scene?.resetView());
+  $("#boardResetBtn")?.addEventListener("click", resetBoardView);
   $$("[data-view]").forEach((button) => button.addEventListener("click", () => {
     scene?.setTopView?.(button.dataset.view === "top");
   }));
@@ -8773,6 +8825,7 @@ window.LeabTui = {
   inspect: (id) => inspectTile(id),
   inspectHidden,
   resetView: () => scene?.resetView(),
+  resetBoard: () => resetBoardView(),
   topView: () => scene?.toggleTopView(),
   setTopView: (value) => scene?.setTopView?.(Boolean(value)),
   setFast: (value) => { if (state) state.fast = Boolean(value); },

@@ -13,7 +13,7 @@ There are two JSON files with different jobs:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.9.12",
+  "version": "1.9.13",
   "savedAt": "2026-11-06T10:00:00.000Z",
   "network": false,
   "game": { "...": "see Game" }
@@ -47,11 +47,11 @@ The autosave is written after every action, on `visibilitychange` when hidden, a
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.9.12",
+  "version": "1.9.13",
   "exportedAt": "2026-11-04T01:10:00.000Z",
   "app": {
     "name": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-    "version": "1.9.12",
+    "version": "1.9.13",
     "repository": "https://github.com/somphol/leab-tui-3d",
     "live": "https://somphol.github.io/leab-tui-3d/",
     "license": "MIT"
@@ -199,4 +199,4 @@ the wire. See [DRAFT.md](DRAFT.md).
 
 ## Versioning
 
-`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code as of 1.9.12; the loader is strict and falls back to a new match. New preference fields are additive and validated on load.
+`APP.version` is written into every save and export. A breaking format change should bump `APP.version` and add a migration or reject older payloads. There is no migration code as of 1.9.13; the loader is strict and falls back to a new match. New preference fields are additive and validated on load.
