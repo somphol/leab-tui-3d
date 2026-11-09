@@ -7,6 +7,7 @@
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
 - Last release commit: `4d4b28b` — *Release Leab-Tui 3D 1.9.22: play history from the turn-log sheet*
+- Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -114,7 +115,7 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 cd ~/Projects/leab-tui-3d
 node --check script.js && node --check peer-manager.js
 node --check voice-chat.js && node --check security.js
-node scripts/check.mjs                 # 413/413
+node scripts/check.mjs                 # 420/420
 python3 -m http.server 8123 &          # if not running
 node scripts/verify.mjs                # ALL BROWSER CHECKS PASSED (includes iPad portrait/landscape)
 AUDIO_TEST=1 node scripts/verify.mjs   # includes a real audio peak
@@ -159,6 +160,7 @@ and the 2D/3D shadow switch**, and no console exceptions.
 
 | Concern | Where |
 | --- | --- |
+| Branch / release flow | `docs/BRANCHING.md`, `CONTRIBUTING.md`, `docs/RELEASE_CHECKLIST.md` |
 | Rules / combos / scoring | `script.js` — `detectCombo`, `compareScores`, `beats`, `scorePiles` |
 | Showdown / result / history | `showdown`, `applyShowdown`, `resolveTrick`, `showTrickResult`, `trickCompareMarkup`, `renderLogRecord` |
 | Draft | `startDraft`, `draftPick`, `finishDraft`, `randomDraftPair`, `renderDraft` |
@@ -173,11 +175,16 @@ and the 2D/3D shadow switch**, and no console exceptions.
 
 ## 7. Release/handoff routine
 
-1. Make the change; run `check.mjs`, `verify.mjs` (with `AUDIO_TEST=1`), and
+1. Start from `develop`, not `main`: `git switch develop && git pull --ff-only`,
+   then `git switch -c feature/<slug>` or cut `release/<x.y.z>` from `develop`.
+2. Make the change; run `check.mjs`, `verify.mjs` (with `AUDIO_TEST=1`), and
    `net-check.mjs` (local, then `BASE_URL` live after deploy).
-2. Bump all version strings and add a CHANGELOG entry + STATE section.
-3. Update `state.json` (`version`, `verification`, `releaseHistory`), this file,
+3. On the release branch, bump all version strings together and add a CHANGELOG
+   entry + STATE section. Do not bump versions on a feature branch.
+4. Update `state.json` (`version`, `verification`, `releaseHistory`), this file,
    `AGENTS.md` if an invariant/command changed, and `docs/TESTING.md` if a test
    count changed.
-4. Commit and push to `main`; wait for Pages; confirm `script.js` version and
-   `?selftest=1` live; run the live two-browser suite for network changes.
+5. Merge the release branch to `main` with `--no-ff`, tag `vX.Y.Z`, push, wait
+   for Pages, confirm `script.js` version and `?selftest=1` live, then run the
+   live two-browser suite for network changes. Back-merge `main` into `develop`
+   and delete the release branch.

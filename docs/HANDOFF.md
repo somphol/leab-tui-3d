@@ -12,9 +12,11 @@ Release **1.9.22** is built, verified and published. It follows the 1.9.19–1.9
 - **The C/M/A/i/H/L rail is back on iPad landscape.** `isPanelRailMode()` now matches the coarse-pointer sidebar rule instead of width alone.
 - **The L sheet links to play history.** The panel-sheet header shows **View trick log / ดูประวัติการเล่น**, closes the sheet and opens the same `#lastTrickModal` as the round summary. It is disabled with “No completed turns yet.” until a trick resolves.
 - Release **1.9.19** removed 2D cast shadows and fitted the whole table to iPad portrait and landscape, with `--device ipad` emulation and `getFraming()` checks.
+- **Branch workflow documented.** `main` is production; `develop` is the feature train. Features, fixes and docs start from `develop`; releases merge through `release/x.y.z` and are back-merged. See **[BRANCHING.md](BRANCHING.md)**.
 - Live: [https://somphol.github.io/leab-tui-3d/](https://somphol.github.io/leab-tui-3d/)
 - Repository: [https://github.com/somphol/leab-tui-3d](https://github.com/somphol/leab-tui-3d)
 - Local master: `~/Projects/leab-tui-3d`
+- Permanent branches: `main` (production) and `develop` (feature train)
 - Current continuation: **[CONTINUATION.md](CONTINUATION.md)**
 - Durable rules: **[../AGENTS.md](../AGENTS.md)**
 
@@ -35,14 +37,14 @@ Release **1.9.22** is built, verified and published. It follows the 1.9.19–1.9
 | Chat / voice | Host-routed chat; full-mesh voice with mute/deafen; viewers have neither |
 | Full screen | `manifest.webmanifest`, icons, Apple meta, Display → Full screen |
 | Persistence | Autosave, solo resume, stats, JSON export; network saves non-resumable; sessionStorage rejoin/host recovery |
-| Verification | 38/38 self-test, 413 static checks, 44 browser checks (incl. iPad portrait/landscape), 37-check two-browser WebRTC suite (local and live) |
+| Verification | 38/38 self-test, 420 static checks, 44 browser checks (incl. iPad portrait/landscape), 37-check two-browser WebRTC suite (local and live) |
 | Docs | README, AGENTS, STATE, CONTINUATION, rules, architecture, multiplayer, protocol, tests, deployment, data, controls, accessibility, performance, design, browsers, FAQ, roadmap, checklist, gallery, glossary |
 
 ## Evidence
 
 ```
 node --check script.js / peer-manager.js / voice-chat.js / security.js   PASS
-node scripts/check.mjs                                                  PASS (413 checks)
+node scripts/check.mjs                                                  PASS (420 checks)
 ?selftest=1                                                             SELFTEST PASS 38/38
 node scripts/verify.mjs                                                 ALL 44 BROWSER CHECKS PASSED
 AUDIO_TEST=1 node scripts/verify.mjs                                    audio peak measured
@@ -83,6 +85,7 @@ See **[CONTINUATION.md](CONTINUATION.md) §3** and **[../AGENTS.md](../AGENTS.md
 ## Continuity
 
 - Deployed from `main` (repository root) by GitHub Pages.
-- Local master: `~/Projects/leab-tui-3d`.
+- Local master: `~/Projects/leab-tui-3d`
+- Permanent branches: `main` (production) and `develop` (feature train).
 - Build record: `STATE.md` and `state.json`.
 - Verification: `docs/TESTING.md`; release routine: `CONTINUATION.md` §7.

@@ -4,6 +4,7 @@ Start here depending on what you need:
 
 | Document | Purpose |
 | --- | --- |
+| [BRANCHING.md](BRANCHING.md) | `main`/`develop` feature train, release and hotfix flow, verification gates, branch protection |
 | [CONTINUATION.md](CONTINUATION.md) | Current release, invariants, open items and the handoff routine |
 | [RULES.md](RULES.md) | The rule contract: equipment, hierarchy, calls, comparisons, flow, scoring, interpretation choices |
 | [DRAFT.md](DRAFT.md) | Experimental draft deal: pick 2 ×4, host toggle, bot choices, multiplayer relay |

@@ -16,9 +16,10 @@ WebRTC data channels work on `http://127.0.0.1` and on any HTTPS origin. Pages i
 
 ## GitHub Pages
 
-The repository is published from **`main` / repository root**.
+The repository is published from **`main` / repository root**. `develop`, `feature/*`, `release/*` and
+`hotfix/*` are never deployed directly; production changes reach Pages only through the release merge.
 
-1. Push `main`.
+1. Merge the verified `release/x.y.z` branch (or a hotfix) into `main` and push `main`.
 2. Repository → **Settings → Pages** → Source: **Deploy from a branch** → Branch: `main` → Folder: `/ (root)`.
 3. Wait for the Pages build; the site is at `https://somphol.github.io/leab-tui-3d/`.
 4. `.nojekyll` is present so files beginning with `_` are served verbatim and Jekyll does not process the site.
@@ -33,14 +34,17 @@ If you prefer Actions-based Pages deployment, add `actions/configure-pages`, `ac
 
 ## Cache busting
 
-The source files are referenced without a query string:
+The runtime files are versioned in `index.html` and in the module imports:
 
 ```html
-<link rel="stylesheet" href="style.css" />
-<script type="module" src="script.js"></script>
+<link rel="stylesheet" href="style.css?v=1.9.22" />
+<script type="module" src="script.js?v=1.9.22"></script>
 ```
 
-GitHub Pages serves them with a short cache. After a release, a hard reload (`Cmd/Ctrl + Shift + R`) may be needed. If you need deterministic cache busting, append `?v=1.0.0` to both references and update them with every version. The current release keeps clean URLs and relies on the Pages cache headers; the README and `state.json` carry the version.
+`script.js` imports `peer-manager.js`, `voice-chat.js` and `security.js` with the same query. Bump all of them,
+`APP.version` and `<meta name="app-version">` together on the release branch; `scripts/check.mjs` enforces the
+match. The launch-page version guard also fetches `state.json` with `no-store` and reloads once if the cached
+HTML and the deployed version disagree.
 
 ## CSP
 

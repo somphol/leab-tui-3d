@@ -1,5 +1,16 @@
 # Release checklist
 
+## Start the release branch
+
+```bash
+git switch develop
+git pull --ff-only
+git switch -c release/1.9.22
+```
+
+- [ ] The branch is cut from `develop`, not `main`.
+- [ ] No new feature is added here; only fixes, copy, docs and version strings.
+
 ## Before the release commit
 
 - [ ] `APP.version` bumped in `script.js`.
@@ -28,13 +39,18 @@
 - [ ] `docs/RULES.md` matches `detectCombo` and the self-test.
 - [ ] Licence and third-party notices current.
 
-## Commit
+## Commit and merge
 
 ```bash
 git status
 git diff --stat
 git add -A
 git commit -m "Release Leab-Tui 3D 1.9.22"
+git push origin release/1.9.22
+# open the release PR against main, then:
+git switch main
+git pull --ff-only
+git merge --no-ff release/1.9.22 -m "Release Leab-Tui 3D 1.9.22"
 git push origin main
 ```
 
@@ -48,6 +64,8 @@ Use one release commit if possible. Do not commit `node_modules`, local saves, s
 - [ ] Check the live page over HTTPS and confirm there is no mixed content.
 - [ ] Confirm the repository is public and contains no secrets.
 - [ ] Tag the release: `git tag -a v1.9.22 -m "Leab-Tui 3D 1.9.22" && git push origin v1.9.22`.
+- [ ] Back-merge production into the train: `git switch develop && git merge --no-ff main && git push origin develop`.
+- [ ] Delete the merged `release/1.9.22` branch.
 - [ ] Create a GitHub release with the changelog and the hero screenshot.
 - [ ] Verify the Open Graph image path resolves on Pages.
 - [ ] Update the README “Live demo” link if the Pages URL changed.
@@ -55,11 +73,12 @@ Use one release commit if possible. Do not commit `node_modules`, local saves, s
 
 ## Rollback
 
-1. Revert the release commit on `main`.
-2. Push.
-3. Wait for Pages to rebuild.
-4. Verify the live URL and the selftest.
-5. If the failure is in the CDN pin, restore the previous `three@` version in the import map and re-run the browser check.
+1. Revert the release merge on `main` (or `git revert -m 1 <merge>`).
+2. Push `main`.
+3. Back-merge `main` into `develop` so the train does not reintroduce the fault.
+4. Wait for Pages to rebuild.
+5. Verify the live URL and the selftest.
+6. If the failure is in the CDN pin, restore the previous `three@` version in the import map and re-run the browser check.
 
 ## Release evidence to keep
 
