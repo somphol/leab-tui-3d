@@ -18,6 +18,7 @@ A bilingual, interactive 3D studio for **เลี๊ยบตุ่ย (Leab-Tu
 
 - **A real trick-taking engine, not a toy.** Leab (single), Tui (pair), Sa Hoo, See Hoo, Ngoh Hoo, Lak Hoo, and the Soldier sets; red-beats-black tie-breaking; face-down submissions; revealed-only comparison; the eight-pile Chuan bonus.
 - **Experimental draft deal.** A host-only, off-by-default variant replaces the automatic deal: each seat picks 2 tiles from a public pool, four times, to build an 8-tile hand. Bots pick automatically; a human always picks their own. It applies to the next deal, is switchable from the table HUD or Actions, works in solo and P2P, logs every bot pick, and resumes mid-draft. See **[docs/DRAFT.md](docs/DRAFT.md)**.
+- **Invite from a solo game.** A gold **Invite** button in the top bar and Actions turns the current solo table into a hosted room without redealing: room number, PIN, copy/share and host approval. A friend approved mid-trick is queued, told to wait for the trick, and takes the reserved bot seat at the next trick.
 - **Late joiners and viewers.** A guest can request a started table; the host replaces a bot (keeping its hand and score), allows a viewer, denies, or pauses joins for 30 minutes. Copy room info from Actions or the room chip.
 - **Serverless P2P multiplayer.** Host a room, share a six-digit code or invite link, and play with up to three guests over a WebRTC data channel. The host browser is authoritative; each guest receives only their own hand. Two humans are enough to start — empty seats become bots, and a guest who leaves mid-game is replaced by a bot without stopping the table. A guest who reloads or updates rejoins the same seat automatically while the host stays open. See **[docs/MULTIPLAYER.md](docs/MULTIPLAYER.md)**.
 - **Host approval and an optional strong PIN.** Guests request a seat; the host approves or denies each one. A 5-digit PIN is generated automatically; **New PIN** rotates it is checked against an in-memory SHA-256 digest and never appears in the invite link or saved game. One-click **Copy room info** includes the code, link and PIN; **Copy invite link** never includes the PIN.
@@ -151,6 +152,7 @@ node scripts/verify.mjs
 
 # two-client WebRTC test (needs Chrome + outbound access to 0.peerjs.com)
 node scripts/net-check.mjs
+node scripts/invite-check.mjs   # solo → Invite → queued guest
 
 # interactive CDP harness
 node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?selftest=1"

@@ -8,6 +8,7 @@
 - Primary branch: `main` (GitHub Pages serves the repository root)
 - Last release commit: `4d4b28b` — *Release Leab-Tui 3D 1.9.22: play history from the turn-log sheet*
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
+- Feature train: `feature/invite-friends` — Invite from a solo table with queued mid-trick joins; preview at `/preview/invite-friends/`
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in

@@ -21,8 +21,9 @@ git switch -c release/1.9.22
 - [ ] `node --check script.js` and `node --check peer-manager.js` pass.
 - [ ] `node scripts/check.mjs` passes.
 - [ ] `?selftest=1` shows `SELFTEST PASS 38/38`.
-- [ ] `node scripts/verify.mjs` passes (boot, scene, full round, no exceptions).
+- [ ] `node scripts/verify.mjs` passes (boot, scene, full round, iPad Invite controls, no exceptions).
 - [ ] `node scripts/net-check.mjs` passes on a real network (PIN, approval, wrong PIN, host, join, redaction, chat, voice, mic mute, deafen, disconnect-to-bot).
+- [ ] `node scripts/invite-check.mjs` passes (solo → Invite → queued guest → promotion).
 - [ ] A full round, undo, next round and reload were exercised manually.
 - [ ] EN and TH screenshots regenerated if UI or copy changed.
 - [ ] Lobby screenshot regenerated if the multiplayer UI changed.

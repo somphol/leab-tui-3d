@@ -21,6 +21,7 @@
 | 3D view | Drag to orbit, scroll/pinch to zoom, right-drag/two-finger to pan |
 | **Aa** (stage toolbar) | Display settings: text size and theme |
 | **Ranks** (top-left HUD) | Show/hide the pictorial rank-order reference |
+| **Invite** (top bar and Actions) | Solo only: turn the current table into a hosted room, show the code/PIN, copy or share the invite |
 | **Panel rail** (touch/tablet, right edge) | **C** coach · **M** match · **A** actions · **💬** chat · **i** tile inspector · **H** your hand · **L** trick log |
 | **H** (collapsed hand dock) | Reopen the hand dock. The keyboard shortcut `H` is Hint. |
 | **Multiplayer** (Actions) | Open the lobby: solo / host / join; set your name here |

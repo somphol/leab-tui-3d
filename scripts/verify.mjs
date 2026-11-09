@@ -294,6 +294,10 @@ async function main() {
       ? [...rail.querySelectorAll('.panel-orb')].filter((node) => !node.hidden && getComputedStyle(node).display !== 'none').map((node) => node.textContent.trim())
       : [];
     const railState = { hidden: Boolean(rail?.hidden), display: rail ? getComputedStyle(rail).display : 'missing', orbs: railOrbs };
+    const inviteState = {
+      top: Boolean(document.querySelector('#inviteTopBtn') && !document.querySelector('#inviteTopBtn').hidden),
+      action: Boolean(document.querySelector('#inviteBtn') && !document.querySelector('#inviteBtn').hidden)
+    };
     document.querySelector('.panel-orb[data-panel="logPanel"]')?.click();
     await sleep(350);
     const logAction = document.querySelector('#panelSheetAction');
@@ -321,6 +325,7 @@ async function main() {
       toasts,
       toastClear,
       rail: railState,
+      invite: inviteState,
       logAction: logActionState,
       three: { topView: three?.topView, shadows: three?.shadows },
       two: { topView: two.cam?.topView, shadows: two.cam?.shadows, frame: two.frame },
@@ -350,6 +355,8 @@ async function main() {
     else fail(`iPad ${orientation} keeps the C/M/A/i/H/L panel rail visible`, JSON.stringify(value.rail));
     if (value.logAction?.hidden === false && value.logAction?.text === "View trick log" && value.logAction?.title === "Turn log") pass(`iPad ${orientation} turn-log sheet exposes the play-history link`);
     else fail(`iPad ${orientation} turn-log sheet exposes the play-history link`, JSON.stringify(value.logAction));
+    if (value.invite?.top && value.invite?.action) pass(`iPad ${orientation} shows Invite in the top bar and Actions`);
+    else fail(`iPad ${orientation} shows Invite in the top bar and Actions`, JSON.stringify(value.invite));
     if (value.three?.topView === false && value.three?.shadows === true) pass(`iPad ${orientation} 3D enables shadows`);
     else fail(`iPad ${orientation} 3D enables shadows`, JSON.stringify(value.three));
     if (value.two?.topView === true && value.two?.shadows === false && value.two?.frame?.fits && value.two?.frame?.clearOfDock) pass(`iPad ${orientation} returns to a fitted, shadow-free 2D view`);

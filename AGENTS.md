@@ -33,6 +33,7 @@ node scripts/verify.mjs
 
 # two-client WebRTC verification (needs outbound 0.peerjs.com)
 node scripts/net-check.mjs
+node scripts/invite-check.mjs   # solo → Invite → queued guest
 
 # one-off CDP inspection or screenshot
 node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?selftest=1"
@@ -139,6 +140,8 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **Seat generalisation.** `MY_SEAT` replaces hard-coded seat 0 in UI, coach, hand list, pointer and public API. In solo `MY_SEAT = 0` and `SEAT_PROFILES = null`, so the historical solo behaviour is unchanged. `isBotSeat` is the only scheduler predicate.
 - **View rotation.** `scene.setViewSeat(MY_SEAT)` rotates the `world` group by `-SEATS[seat].angle`; lights, camera and floor stay fixed. Do not rotate the camera to fake a seat view.
 - **Disconnect.** A dropped guest keeps their seat, hand, captures and score; the profile becomes a bot and the host schedules AI if it is their turn. Do not delete or reseat mid-match.
+- **Invite from solo.** The top bar and Actions show **Invite** only while a local solo match is running (`canInviteFriends`). `hostCurrentMatch()` opens a host room around the existing `state`: it must not call `beginMatch()` or `leaveRoom()`, and a failure must leave the solo game intact. It sets `net.started`, seat 0 as host, seats 1–3 as bots, generates a PIN, saves the host recovery blob and publishes. The full lobby remains for Join/Host fresh games; `#lobbyBtn` routes to the invite sheet when already hosting.
+- **Queued late joins.** A started-room bot seat approved mid-trick is reserved in `queuedGuests`, the bot finishes the trick, and `promoteQueuedGuests()` swaps the human at the next `beginTrick` (or next deal). The guest must see “Approved — waiting for the trick”; host UI shows the queue. `joinBoundary()` returns `now` only at the start of a trick (phase `lead`, empty centre). Queued guests get a rejoin token and are restored in the host recovery blob; a disconnect releases the seat back to the bot.
 - **Host reload recovery.** `saveHostRecovery`/`loadHostRecovery`/`resumeHostRoom`/`resumeHostFlow` restore the same-tab room; `pagehide` saves and closes the host peer to release the code, then boot reopens it with `openHostWithRetry({ code })`. Do not store this blob in localStorage, the export, or the wire; do not promise cross-tab/device host migration. The host gets a new PIN; guests' tokens are the rejoin credential.
 - **Late join / bot replacement.** `requestGuest` queues a started-room guest after the PIN; `approvePending` chooses `approveBotSeat` (first bot, preserves hand/score, new token, sends the state) or `approveViewer`. Never assign seat 0 to a guest. A replaced bot's old rejoin token is discarded.
 - **Viewers.** `net.viewers` is separate from `SEAT_PROFILES`; `MY_SEAT = -1`; `sanitizeForSeat(state, -1)` must ghost every hand and unrevealed set; hide the hand dock/panel/chat/voice and block actions. Viewers have no rejoin token and must be re-approved after a reload. `publishState` loops viewers with seat -1.
@@ -209,4 +212,4 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **Rule source:** <http://naveea.blogspot.com/2016/03/blog-post.html>.
 - **Continuation:** `docs/CONTINUATION.md` is the short “where we are / what next” handoff; keep it current with the release.
 - **Verification:** `docs/TESTING.md`; the self-test is the fastest regression check. Run `node scripts/check.mjs` before every push and `node scripts/net-check.mjs` before a multiplayer release.
-- **Network verification:** `scripts/net-check.mjs` requires outbound access to `0.peerjs.com`; it is intentionally not part of `verify.mjs`.
+- **Network verification:** `scripts/net-check.mjs` and `scripts/invite-check.mjs` require outbound access to `0.peerjs.com`; they are intentionally not part of `verify.mjs`.

@@ -16,17 +16,26 @@ WebRTC data channels work on `http://127.0.0.1` and on any HTTPS origin. Pages i
 
 ## GitHub Pages
 
-The repository is published from **`main` / repository root**. `develop`, `feature/*`, `release/*` and
-`hotfix/*` are never deployed directly; production changes reach Pages only through the release merge.
+The repository is published by **`.github/workflows/pages.yml`** from **`main` / repository root**. `develop`,
+`feature/*`, `release/*` and `hotfix/*` are never deployed directly; production changes reach Pages only through
+the release merge.
 
-1. Merge the verified `release/x.y.z` branch (or a hotfix) into `main` and push `main`.
-2. Repository → **Settings → Pages** → Source: **Deploy from a branch** → Branch: `main` → Folder: `/ (root)`.
-3. Wait for the Pages build; the site is at `https://somphol.github.io/leab-tui-3d/`.
-4. `.nojekyll` is present so files beginning with `_` are served verbatim and Jekyll does not process the site.
+1. Repository → **Settings → Pages** → Source: **GitHub Actions**.
+2. Settings → Environments → `github-pages` → allow `main` and the preview branch (`feature/invite-friends`).
+3. Merge the verified `release/x.y.z` branch (or a hotfix) into `main` and push `main`.
+4. The workflow checks out `main` into `site/`, uploads the artifact and deploys it; the site is at
+   `https://somphol.github.io/leab-tui-3d/`.
+5. `.nojekyll` is present so files beginning with `_` are served verbatim and Jekyll does not process the site.
 
-The included workflow `.github/workflows/static-check.yml` runs `node --check script.js`, `node --check peer-manager.js` and `node scripts/check.mjs` on pushes and pull requests. It does not run `net-check.mjs` because the public broker is an external dependency; run it before a multiplayer release. It does not deploy; Pages deploys from the branch, which keeps the release simple and avoids a second source of truth.
+On a push to `feature/invite-friends`, the same workflow adds that branch under `site/preview/invite-friends/`
+and publishes `https://somphol.github.io/leab-tui-3d/preview/invite-friends/`. It marks the preview `noindex` and
+leaves production untouched. A later `main` build contains only the root, so the preview disappears after
+promotion. See [BRANCHING.md](BRANCHING.md).
 
-If you prefer Actions-based Pages deployment, add `actions/configure-pages`, `actions/upload-pages-artifact` and `actions/deploy-pages`; the artifact path is the repository root. If you do, remove the branch deployment in Settings to avoid two publishers.
+The included workflow `.github/workflows/static-check.yml` runs `node --check script.js`, `node --check
+peer-manager.js` and `node scripts/check.mjs` on pushes and pull requests. It does not run `net-check.mjs`
+because the public broker is an external dependency; run it before a multiplayer release. The Pages workflow is
+the only publisher, so Settings must not also point at a branch.
 
 ## Install assets
 

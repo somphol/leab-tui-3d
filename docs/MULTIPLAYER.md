@@ -123,18 +123,39 @@ Voice requires HTTPS or localhost. Symmetric NAT can block media just as it bloc
 
 The host may keep waiting for more humans; the button is disabled until the second human arrives. There is no separate "add bot" button — bots are the default for empty seats.
 
+## Invite from a solo table
+
+The top bar and Actions show **Invite** while a local solo match is running. It calls `hostCurrentMatch()`,
+which keeps the live `state` and opens a host room around it — no redeal, no score reset. The invite sheet shows
+the room number, the generated PIN, **Copy room info**, **Copy link**, **Share**, the seat roster and the
+approval queue. The solo game keeps playing normally while the room opens.
+
+- `net.started` becomes true, seat 0 stays the host and seats 1–3 become bots.
+- The match is now a network save: closing the tab ends the room, but a same-tab reload recovers it from the
+  host recovery blob.
+- Host approval and the PIN still gate every guest. Copy room info includes the PIN; Copy link never does.
+- Host **Leave room** ends the room and the match, as before.
+
 ## Joining a table in progress
 
 A started match no longer rejects every new guest. After the PIN, the host gets
 a pending request and can:
 
-- **Take a bot seat** — the bot's hand, captures and score are kept; the profile
-  becomes human and the guest receives a fresh rejoin token plus the current
-  state. The next guest replaces the next bot.
+- **Take a bot seat** — between tricks the bot's hand, captures and score are
+  kept; the profile becomes human and the guest receives a fresh rejoin token
+  plus the current state. Mid-trick, the host **queues** the guest: the bot
+  plays out the current trick, the seat is reserved, and the guest is promoted
+  at the next `beginTrick`. The guest sees **“Approved — waiting for the
+  trick”**; the host sheet shows **“joins after this trick”**.
 - **Watch only** — approved as a viewer even if a bot remains.
 - **Deny** or **Pause 30 min** — a pause rejects new requests with
   `suppressed`; existing rejoin tokens still bypass it. Resume from the host
   panel. If no bot remains, the only approval is viewer.
+
+Queued guests have a rejoin token and can reconnect while waiting. If they
+disconnect, the reserved seat returns to the bot. A queued guest who is still
+waiting when the host reloads is restored from the host recovery blob and can
+reconnect with the same token.
 
 Viewers are not seats: they receive `seat: -1` and a state where every hand is
 ghosted, unrevealed centre plays are hidden, and the archive hides unrevealed

@@ -4,6 +4,12 @@ All notable changes to Leab-Tui 3D are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Added
+
+- **Invite friends from a solo game.** A gold **Invite** control in the top bar and Actions promotes the running solo table into a host room without redealing: room number, generated PIN, Copy room info, Copy link, Share, seat roster and approval queue. Host approval and the PIN still gate every guest.
+- **Queued mid-trick joins.** A guest approved during a trick reserves a bot seat, sees “Approved — waiting for the trick”, and is seated at the next trick with the bot’s hand, captures and score. Disconnecting releases the reservation; queued guests get a rejoin token and are restored by host recovery.
+- **Feature previews.** `.github/workflows/pages.yml` publishes `main` at the root and `feature/invite-friends` under `/preview/invite-friends/`, so the feature can be tested without replacing production.
+
 ### Changed
 
 - **Feature-train branch workflow.** `main` remains production and the only Pages source; `develop` is the integration/feature train. Features, fixes and docs branch from `develop`, releases are cut from `develop` and merged to `main`, then back-merged. Added `docs/BRANCHING.md` and updated `CONTRIBUTING.md`, `AGENTS.md`, the PR template, deployment and release checklist.

@@ -93,6 +93,10 @@
         <button id="soundToggle" class="icon-btn" type="button" aria-pressed="true" aria-label="Sound on" title="Sound">
           <span id="soundIcon" aria-hidden="true">♪</span>
         </button>
+        <button id="inviteTopBtn" class="pill invite-top" type="button" hidden aria-label="Invite friends" title="Invite friends">
+          <span class="invite-icon" aria-hidden="true">＋</span>
+          <span class="invite-label" data-i18n="invite.top">Invite</span>
+        </button>
         <button id="voiceCallBtn" class="pill voice-call" type="button" hidden aria-label="Join audio chat">
           <span class="voice-call-icon" aria-hidden="true">🎙</span>
           <span class="voice-call-label" data-i18n="voice.joinAudio">Join audio</span>
@@ -214,6 +218,7 @@
         <section class="panel" id="actionsPanel">
           <div class="panel-head"><h2 data-i18n="actions.title">Actions</h2></div>
           <div class="action-grid">
+            <button id="inviteBtn" class="btn btn-gold invite-action" type="button" hidden data-i18n="invite.action">Invite friends</button>
             <button id="newMatchBtn" class="btn btn-ghost" type="button" data-i18n="actions.newMatch">New match</button>
             <button id="nextRoundBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.nextRound">Next round</button>
             <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo trick</button>
@@ -532,6 +537,43 @@
             <span data-version-label>Reload version</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <div id="inviteModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="inviteTitle">
+      <div class="modal-card invite-card">
+        <button class="modal-close" type="button" data-close="inviteModal" aria-label="Close">×</button>
+        <h2 id="inviteTitle" data-i18n="invite.title">Invite friends</h2>
+        <p class="invite-lead" data-i18n="invite.lead">Turn this solo table into a hosted room. Friends join with the room number and PIN, then you approve them.</p>
+        <div id="inviteStarting" class="invite-starting" hidden>
+          <span class="invite-spinner" aria-hidden="true"></span>
+          <span id="inviteStartingText" data-i18n="invite.starting">Opening a room…</span>
+        </div>
+        <div id="inviteError" class="invite-error" role="status" aria-live="polite" hidden></div>
+        <button id="inviteRetry" class="btn btn-ghost invite-retry" type="button" hidden data-i18n="invite.retry">Try again</button>
+        <div id="inviteReady" hidden>
+          <div class="invite-code-row">
+            <div class="invite-code-cell">
+              <span data-i18n="invite.code">Room number</span>
+              <strong id="inviteCode">—</strong>
+            </div>
+            <div class="invite-code-cell">
+              <span data-i18n="invite.pin">PIN</span>
+              <strong id="invitePin">—</strong>
+            </div>
+          </div>
+          <div class="invite-actions">
+            <button id="inviteCopyInfo" class="btn btn-gold" type="button" data-i18n="invite.copyInfo">Copy room info</button>
+            <button id="inviteCopyLink" class="btn btn-ghost" type="button" data-i18n="invite.copyLink">Copy link</button>
+            <button id="inviteShare" class="btn btn-ghost" type="button" data-i18n="invite.share">Share</button>
+          </div>
+          <p class="invite-note" data-i18n="invite.keepOpen">Keep this tab open. Closing it ends the room; a reload in this tab recovers it.</p>
+          <h3 data-i18n="invite.pendingTitle">Join requests</h3>
+          <div id="invitePending" class="lobby-pending"></div>
+          <h3 data-i18n="invite.seats">Seats</h3>
+          <div id="inviteSeats" class="lobby-roster"></div>
+        </div>
+        <p class="invite-version"><span class="version-label">v1.9.22</span></p>
       </div>
     </div>
 

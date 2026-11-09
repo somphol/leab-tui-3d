@@ -73,6 +73,30 @@ Sent immediately before the first `state` of a match.
 }
 ```
 
+### `pending`
+
+Sent when a request needs approval, and again with `"queued": true` when an approved guest is waiting for the
+current trick to end. Older clients ignore the extra fields and keep waiting; the later `welcome` still promotes
+them.
+
+```json
+{
+  "type": "pending",
+  "roomCode": "482173",
+  "hostName": "Ana",
+  "queued": true,
+  "seat": 2,
+  "joinAfter": "trick",
+  "rejoinToken": "…",
+  "players": [ ... ]
+}
+```
+
+`joinAfter` is `trick`, `round` or `match`. The host reserves the seat, keeps the bot active, and promotes the
+guest at the next `beginTrick` (or the next deal for `round`/`match`) by sending `welcome` with
+`"joinedSeat": true` and `sanitizeForSeat(state, seat)`. A queued guest reconnects with the same `rejoinToken`;
+the host matches it before the PIN/approval gate. Protocol version stays 1 because the message shape is additive.
+
 ### `state`
 
 The authoritative game snapshot, redacted for the recipient. `seq` increases monotonically for the lifetime of the room.
@@ -168,7 +192,7 @@ even while the match is running. Otherwise the host verifies the optional PIN
 against an in-memory SHA-256 digest, then either queues the request (`pending`)
 or rejects it. The host assigns the lowest free seat 1–3 only after approval. Names are trimmed to 18 characters; control characters and angle brackets are stripped. Empty names become `Guest n`.
 
-`bad-pin`, `denied`, `busy`, `timeout`, `full`, `in-progress` and `suppressed` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s. A started room queues a valid PIN request instead of rejecting `in-progress`; the host decides bot seat, viewer, deny or a 30-minute pause.
+`bad-pin`, `denied`, `busy`, `timeout`, `full`, `in-progress` and `suppressed` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s. A started room queues a valid PIN request instead of rejecting `in-progress`; the host decides bot seat, viewer, deny or a 30-minute pause. An approved bot-seat request is still queued when the trick has started; see `pending`.
 
 ### `action`
 

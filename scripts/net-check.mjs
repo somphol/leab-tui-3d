@@ -565,6 +565,109 @@ async function main() {
   if (afterClose[1]?.kind === "bot" && /^Bot/.test(afterClose[1]?.name || "")) pass("disconnected guest converted to a bot", afterClose[1].name);
   else fail("disconnected guest converted to a bot", takeover);
 
+
+  // Solo → Invite: a running local table becomes a host room without redealing.
+  const inviteHostWs = await newTarget(`${BASE}?mode=solo&seed=4242`);
+  const inviteHost = await Session.connect(inviteHostWs);
+  await inviteHost.waitFor("window.LeabTui && window.LeabTui.getState?.() ? 'ready' : ''", "invite solo table", 30000);
+  await inviteHost.eval("LeabTui.newMatch({seed:4242}); true");
+  await inviteHost.waitFor(
+    "window.LeabTui.getState().phase !== 'dealing' ? 'ready' : ''",
+    "invite solo deal",
+    20000
+  );
+  await inviteHost.eval(`(async () => {
+    const st = LeabTui.getState();
+    if (st.turn === 0 && st.phase === 'lead') {
+      LeabTui.hint();
+      LeabTui.lead(LeabTui.getState().selected);
+    }
+    return true;
+  })()`);
+  const inviteBefore = JSON.parse(await inviteHost.waitFor(
+    "window.LeabTui.getState().center.length > 0 ? JSON.stringify({round:LeabTui.getState().round,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase,center:LeabTui.getState().center.length}) : ''",
+    "invite mid-trick",
+    20000
+  ));
+  const inviteOpen = await inviteHost.eval("LeabTui.net.openInvite(); true");
+  const inviteNetRaw = await inviteHost.waitFor(
+    "window.LeabTui?.net.getState?.()?.role === 'host' && LeabTui.net.getState().code ? JSON.stringify(LeabTui.net.getState()) : ''",
+    "invite host room",
+    30000
+  );
+  const inviteNet = JSON.parse(inviteNetRaw);
+  await inviteHost.eval("LeabTui.net.setPin('48213'); true");
+  const inviteCode = inviteNet.code.replace("-", "");
+  const lateGuestWs = await newTarget(`${BASE}?room=${inviteCode}&name=Late&pin=48213`);
+  const lateGuest = await Session.connect(lateGuestWs);
+  const invitePending = JSON.parse(await inviteHost.waitFor(
+    "window.LeabTui?.net.pending?.().length >= 1 ? JSON.stringify(window.LeabTui.net.pending()) : ''",
+    "invite pending guest",
+    20000
+  ));
+  if (inviteNet.started && inviteNet.players?.[0]?.kind === "host" && inviteNet.players?.[1]?.kind === "bot") pass("solo table became a hosted room without redealing", inviteNet.code);
+  else fail("solo table became a hosted room without redealing", inviteNetRaw);
+  if (inviteBefore.trick >= 1) pass("invite conversion kept the live round and trick", `round ${inviteBefore.round}, trick ${inviteBefore.trick}`);
+  else fail("invite conversion kept the live round and trick", JSON.stringify(inviteBefore));
+  await inviteHost.eval(`LeabTui.net.approve(${JSON.stringify(invitePending[0].connId)}); true`);
+  const queuedRaw = await inviteHost.waitFor(
+    "window.LeabTui?.net.getState?.().queued?.length >= 1 ? JSON.stringify(LeabTui.net.getState().queued) : ''",
+    "guest queued until trick end",
+    10000
+  );
+  const queued = JSON.parse(queuedRaw);
+  if (queued[0]?.seat > 0 && queued[0]?.joinAfter === "trick") pass("approved guest is queued until the trick ends", `seat ${queued[0].seat}`);
+  else fail("approved guest is queued until the trick ends", queuedRaw);
+  let queuedGuest = {};
+  try {
+    queuedGuest = JSON.parse(await lateGuest.waitFor(
+      "/approved|อนุมัติ/i.test(document.querySelector('#lobbyWaitTitle')?.textContent||'') ? JSON.stringify({title:document.querySelector('#lobbyWaitTitle').textContent,status:document.querySelector('#lobbyWaitStatus')?.textContent||'',view:[...document.querySelectorAll('#lobbyModal .lobby-view')].filter((n)=>!n.hidden).map((n)=>n.id),lobbyHidden:document.querySelector('#lobbyModal')?.hidden,statusText:document.querySelector('#lobbyStatus')?.textContent||''}) : ''",
+      "guest queued status",
+      20000
+    ));
+  } catch (error) {
+    console.log("QUEUE GUEST DIAG", await lateGuest.eval("JSON.stringify({net:LeabTui.net?.getState?.()||null,title:document.querySelector('#lobbyWaitTitle')?.textContent,status:document.querySelector('#lobbyWaitStatus')?.textContent,lobbyHidden:document.querySelector('#lobbyModal')?.hidden,view:[...document.querySelectorAll('#lobbyModal .lobby-view')].filter((n)=>!n.hidden).map((n)=>n.id),lobbyStatus:document.querySelector('#lobbyStatus')?.textContent})"));
+    throw error;
+  }
+  if (/approved|อนุมัติ/i.test(`${queuedGuest.title} ${queuedGuest.status}`)) pass("guest is told to wait for the trick", queuedGuest.title);
+  else fail("guest is told to wait for the trick", JSON.stringify(queuedGuest));
+  const finishTrick = await inviteHost.eval(`(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    for (let i = 0; i < 320; i += 1) {
+      const st = LeabTui.getState();
+      if (st.trick > ${inviteBefore.trick}) return JSON.stringify({ok:true,trick:st.trick,round:st.round});
+      if (!document.querySelector('#trickResultModal').hidden) document.querySelector('#trickResultContinue').click();
+      if (st.turn === 0 && st.phase === 'lead') { LeabTui.hint(); LeabTui.lead(LeabTui.getState().selected); }
+      else if (st.turn === 0 && st.phase === 'follow') { LeabTui.hint(); LeabTui.follow(LeabTui.getState().selected, false); }
+      else if (st.turn === 0 && st.phase === 'showdown') {
+        LeabTui.showdown(true);
+        await wait(40);
+        const next = LeabTui.getState();
+        if (next.phase === 'showdown' && next.turn === 0) LeabTui.showdown(false);
+      }
+      await wait(60);
+    }
+    return JSON.stringify({ok:false,phase:LeabTui.getState().phase,trick:LeabTui.getState().trick,turn:LeabTui.getState().turn});
+  })()`);
+  const finished = JSON.parse(finishTrick);
+  if (finished.ok) pass("host finished the trick after the guest was queued", `trick ${finished.trick}`);
+  else fail("host finished the trick after the guest was queued", finishTrick);
+  const promotedRaw = await lateGuest.waitFor(
+    "window.LeabTui?.net?.getState?.()?.role === 'client' && LeabTui.net.getState().mySeat > 0 && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,hand:LeabTui.getState().hands[LeabTui.net.getState().mySeat].length,round:LeabTui.getState().round,trick:LeabTui.getState().trick}) : ''",
+    "queued guest promoted",
+    20000
+  );
+  const promoted = JSON.parse(promotedRaw);
+  if (promoted.seat > 0 && promoted.hand > 0) pass("queued guest joined the reserved seat with a hand", `seat ${promoted.seat}, ${promoted.hand} tiles`);
+  else fail("queued guest joined the reserved seat with a hand", promotedRaw);
+  if (promoted.round === inviteBefore.round && promoted.trick >= inviteBefore.trick) pass("queued guest kept the live round and trick", `round ${promoted.round}, trick ${promoted.trick}`);
+  else fail("queued guest kept the live round and trick", JSON.stringify({inviteBefore,promoted}));
+  const inviteRoster = JSON.parse(await inviteHost.eval("JSON.stringify(LeabTui.net.getState())"));
+  if (!inviteRoster.queued?.length && inviteRoster.players?.[promoted.seat]?.kind === "human") pass("queued list clears when the guest is seated");
+  else fail("queued list clears when the guest is seated", JSON.stringify({queued:inviteRoster.queued,seat:inviteRoster.players?.[promoted.seat]}));
+  await lateGuest.closePage();
+  await inviteHost.closePage();
+
   if (host.events.length) fail("host console clean", host.events.join(" | ").slice(0, 500));
   else pass("host console clean");
   if (guest.events.length) fail("guest console clean", guest.events.join(" | ").slice(0, 500));

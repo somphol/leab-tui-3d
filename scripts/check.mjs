@@ -68,6 +68,8 @@ const required = [
   "scripts/check.mjs",
   "scripts/verify.mjs",
   "scripts/net-check.mjs",
+  "scripts/invite-check.mjs",
+  ".github/workflows/pages.yml",
   "scripts/browser-check.mjs",
   "docs/README.md",
   "docs/BRANCHING.md",
@@ -306,6 +308,12 @@ ok(index.includes('id="panelSheetAction"') && script.includes('t("summary.viewLo
 ok(script.includes('activePanelId !== "logPanel"') && script.includes("openLastTrickModal();"), "the sheet action opens the shared turn history");
 ok(script.includes("function positionToastLayer") && script.includes('layer.style.top'), "toasts position below the HUD strip");
 ok(script.includes("inspector.emptyTouch") && script.includes("const fallback = state?.selected?.length"), "inspector falls back to the selected tile");
+ok(index.includes('id="inviteTopBtn"') && index.includes('id="inviteBtn"') && index.includes('id="inviteModal"'), "Invite controls and modal exist");
+ok(script.includes("function hostCurrentMatch") && script.includes("function queueBotSeat") && script.includes("function promoteQueuedGuests"), "solo-to-host invite engine exists");
+const inviteBody = script.slice(script.indexOf("async function hostCurrentMatch"), script.indexOf("function openInviteSheet"));
+ok(inviteBody && !inviteBody.includes("beginMatch(") && !inviteBody.includes("leaveRoom("), "invite conversion does not redeal or drop the solo game");
+ok(script.includes("hostCurrentMatch: () => hostCurrentMatch") && script.includes("queued: () => queuedList()"), "invite conversion and queue are exposed for tests");
+ok(read(".github/workflows/pages.yml").includes("preview/invite-friends"), "Pages workflow builds the invite preview subpath");
 const harness = read("scripts/browser-check.mjs");
 ok(harness.includes("const DEVICES") && harness.includes("setDeviceMetricsOverride") && harness.includes("setTouchEmulationEnabled"), "browser harness has iPad device emulation");
 ok(css.includes("prefers-reduced-motion"), "reduced-motion support exists");

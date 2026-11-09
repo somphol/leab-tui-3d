@@ -747,6 +747,36 @@ const I18N = {
     "net.pauseShort": "Pause 30m",
     "net.deny": "Deny",
     "net.approveAll": "Approve all",
+    "invite.top": "Invite",
+    "invite.action": "Invite friends",
+    "invite.title": "Invite friends",
+    "invite.lead": "Turn this solo table into a hosted room. Friends join with the room number and PIN, then you approve them.",
+    "invite.starting": "Opening a room…",
+    "invite.failed": "Could not open the room: {error}. Your solo game is still running.",
+    "invite.retry": "Try again",
+    "invite.ready": "Room open. Keep this tab awake.",
+    "invite.code": "Room number",
+    "invite.pin": "PIN",
+    "invite.pinHidden": "No PIN",
+    "invite.copyInfo": "Copy room info",
+    "invite.copyLink": "Copy link",
+    "invite.share": "Share",
+    "invite.keepOpen": "Keep this tab open. Closing it ends the room; a reload in this tab recovers it.",
+    "invite.pendingTitle": "Join requests",
+    "invite.queuedTitle": "Waiting for the trick to end",
+    "invite.queuedBadge": "Approved · joins after this trick",
+    "invite.queuedRound": "Approved · joins next round",
+    "invite.queuedMatch": "Approved · joins next match",
+    "invite.cancelQueue": "Cancel",
+    "invite.approved": "{name} approved — joins after this trick.",
+    "invite.seats": "Seats",
+    "invite.noPending": "No one is waiting.",
+    "invite.joined": "{name} joined seat {seat}.",
+    "net.joinQueuedTitle": "Approved — waiting for the trick",
+    "net.joinQueuedStatus": "The host approved you. You will join automatically after this trick ends.",
+    "net.joinQueuedRound": "The host approved you. You will join at the next round.",
+    "net.joinQueuedMatch": "The host approved you. You will join at the next match.",
+    "toast.netQueued": "{name} approved — joins after this trick.",
     "net.waitingApproval": "Waiting for the host to approve you…",
     "net.rejected.denied": "The host declined your request.",
     "net.rejected.bad-pin": "Wrong room PIN.",
@@ -1357,6 +1387,36 @@ const I18N = {
     "net.pauseShort": "หยุด 30 นาที",
     "net.deny": "ปฏิเสธ",
     "net.approveAll": "อนุมัติทั้งหมด",
+    "invite.top": "ชวน",
+    "invite.action": "ชวนเพื่อน",
+    "invite.title": "ชวนเพื่อน",
+    "invite.lead": "เปลี่ยนโต๊ะเล่นคนเดียวนี้เป็นห้อง host เพื่อนเข้าด้วยเลขห้องและ PIN แล้วคุณอนุมัติ",
+    "invite.starting": "กำลังเปิดห้อง…",
+    "invite.failed": "เปิดห้องไม่สำเร็จ: {error} เกม solo ยังเล่นต่อได้",
+    "invite.retry": "ลองอีกครั้ง",
+    "invite.ready": "ห้องเปิดแล้ว เปิดแท็บนี้ค้างไว้",
+    "invite.code": "เลขห้อง",
+    "invite.pin": "PIN",
+    "invite.pinHidden": "ไม่มี PIN",
+    "invite.copyInfo": "คัดลอกข้อมูลห้อง",
+    "invite.copyLink": "คัดลอกลิงก์",
+    "invite.share": "แชร์",
+    "invite.keepOpen": "เปิดแท็บนี้ค้างไว้ ปิดแท็บ = จบห้อง; รีโหลดในแท็บเดิมกู้คืนได้",
+    "invite.pendingTitle": "คำขอเข้าร่วม",
+    "invite.queuedTitle": "รอจบตา",
+    "invite.queuedBadge": "อนุมัติแล้ว · จะเข้าหลังจบตา",
+    "invite.queuedRound": "อนุมัติแล้ว · จะเข้ารอบถัดไป",
+    "invite.queuedMatch": "อนุมัติแล้ว · จะเข้าแมตช์ถัดไป",
+    "invite.cancelQueue": "ยกเลิก",
+    "invite.approved": "อนุมัติ {name} แล้ว — จะเข้าถึงหลังจบตา",
+    "invite.seats": "ที่นั่ง",
+    "invite.noPending": "ยังไม่มีใครรอ",
+    "invite.joined": "{name} เข้านั่ง seat {seat} แล้ว",
+    "net.joinQueuedTitle": "อนุมัติแล้ว — รอจบตา",
+    "net.joinQueuedStatus": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้าหลังจบตานี้",
+    "net.joinQueuedRound": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้ารอบถัดไป",
+    "net.joinQueuedMatch": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้าแมตช์ถัดไป",
+    "toast.netQueued": "อนุมัติ {name} แล้ว — จะเข้าหลังจบตา",
     "net.waitingApproval": "กำลังรอเจ้าบ้านอนุมัติ…",
     "net.rejected.denied": "เจ้าบ้านปฏิเสธคำขอของคุณ",
     "net.rejected.bad-pin": "PIN ห้องไม่ถูกต้อง",
@@ -1879,6 +1939,9 @@ let chatOpen = true;
 let chatUnread = 0;
 let pendingRequests = new Map();
 const pendingTimers = new Map();
+let queuedGuests = new Map();
+let inviteStarting = false;
+let inviteError = "";
 let roomPinPlain = "";
 let joinToken = 0;
 let hostRejoinTimer = null;
@@ -2114,6 +2177,7 @@ function saveHostRecovery(game = null) {
       suppressUntil: net.security?.suppressUntil || 0,
       stats: clone(stats),
       chat: chatHistory.slice(-30),
+      queued: queuedList().map(({ name, seat, token, joinAfter, at }) => ({ name, seat, token, joinAfter, at })),
       state: game || (state ? serializableState() : null),
       profiles: SEAT_PROFILES.map((profile) => (profile ? {
         seat: profile.seat,
@@ -2488,6 +2552,7 @@ function beginTrick() {
   state.turn = state.leader;
   state.phase = "lead";
   state.handCounts = handCounts();
+  if (queuedGuests.size) promoteQueuedGuests("trick");
   updateUndoButton();
   renderAll();
   saveMatch();
@@ -4909,6 +4974,8 @@ async function requestGuest(connId, message) {
   if (!isHost() || !net?.host) return;
   const rejoinToken = typeof message.rejoinToken === "string" ? message.rejoinToken.trim() : "";
   if (rejoinToken) {
+    const queued = queuedList().find((entry) => entry.token === rejoinToken);
+    if (queued && reattachQueuedGuest(connId, queued)) return;
     const seat = SEAT_PROFILES?.findIndex((profile) => profile && profile.rejoinToken === rejoinToken) ?? -1;
     if (seat > 0 && reattachGuest(connId, seat, rejoinToken)) return;
   }
@@ -4955,11 +5022,182 @@ async function requestGuest(connId, message) {
 }
 
 function findBotSeat() {
-  return SEAT_PROFILES?.findIndex((profile, seat) => seat > 0 && profile?.kind === "bot") ?? -1;
+  return SEAT_PROFILES?.findIndex((profile, seat) => seat > 0 && profile?.kind === "bot" && !profile.queuedFor) ?? -1;
+}
+
+function joinBoundary() {
+  if (!state) return "now";
+  if (state.phase === "matchEnd") return "match";
+  if (state.phase === "roundEnd") return "round";
+  if (state.phase === "lead" && (state.center?.length || 0) === 0) return "now";
+  return "trick";
+}
+
+function queuedBadge(entry) {
+  if (entry?.joinAfter === "match") return t("invite.queuedMatch");
+  if (entry?.joinAfter === "round") return t("invite.queuedRound");
+  return t("invite.queuedBadge");
+}
+
+function queuedList() {
+  return [...queuedGuests.values()];
+}
+
+function scheduleQueueExpiry(entry, key) {
+  clearTimeout(entry.expiryTimer);
+  entry.expiryTimer = setTimeout(() => {
+    if (!queuedGuests.has(key) || entry.connId) return;
+    queuedGuests.delete(key);
+    const profile = SEAT_PROFILES?.[entry.seat];
+    if (profile?.kind === "bot") delete profile.queuedFor;
+    renderPending();
+    renderInviteSheet();
+    saveHostRecovery();
+  }, 5 * 60 * 1000);
+}
+
+function clearQueued(connId, reason = "denied") {
+  let key = connId;
+  let entry = queuedGuests.get(key);
+  if (!entry) {
+    const found = queuedList().find((item) => item.token === connId);
+    if (found) {
+      entry = found;
+      key = [...queuedGuests.entries()].find(([, item]) => item === found)?.[0];
+    }
+  }
+  if (!entry || !key) return false;
+  clearTimeout(entry.expiryTimer);
+  queuedGuests.delete(key);
+  const profile = SEAT_PROFILES?.[entry.seat];
+  if (profile?.kind === "bot") delete profile.queuedFor;
+  if (reason && entry.connId) rejectConnection(entry.connId, reason);
+  renderPending();
+  renderInviteSheet();
+  saveHostRecovery();
+  return true;
+}
+
+function sendQueuedStatus(connId, entry) {
+  net.host.send(connId, {
+    type: "pending",
+    queued: true,
+    roomCode: net.code,
+    hostName: net.name,
+    seat: entry.seat,
+    joinAfter: entry.joinAfter,
+    rejoinToken: entry.token,
+    players: serialiseRoster()
+  });
+}
+
+function queueBotSeat(connId, request, seat) {
+  if (!isHost() || !net?.host || !state || seat < 0) return false;
+  const name = cleanGuestName(request.name, `Guest ${seat}`);
+  const entry = {
+    connId,
+    name,
+    seat,
+    token: makeRejoinToken(),
+    at: Date.now(),
+    joinAfter: joinBoundary()
+  };
+  net.seatSeq += 1;
+  queuedGuests.set(connId, entry);
+  if (SEAT_PROFILES[seat]) SEAT_PROFILES[seat].queuedFor = connId;
+  sendQueuedStatus(connId, entry);
+  toast(t("invite.approved", { name }), "jade");
+  renderPending();
+  renderInviteSheet();
+  renderNetChrome();
+  saveHostRecovery();
+  return true;
+}
+
+function reattachQueuedGuest(connId, entry) {
+  if (!isHost() || !net?.host || !entry) return false;
+  const oldKey = [...queuedGuests.entries()].find(([, item]) => item === entry)?.[0];
+  if (oldKey) queuedGuests.delete(oldKey);
+  entry.connId = connId;
+  entry.at = Date.now();
+  queuedGuests.set(connId, entry);
+  clearTimeout(entry.expiryTimer);
+  sendQueuedStatus(connId, entry);
+  renderPending();
+  renderInviteSheet();
+  saveHostRecovery();
+  return true;
+}
+
+function promoteQueuedGuests(reason = "trick") {
+  if (!isHost() || !net?.started || !state || !queuedGuests.size) return false;
+  let changed = false;
+  for (const entry of queuedList()) {
+    const { connId, seat } = entry;
+    if (!connId) continue;
+    if (!net.host?.connections?.has(connId)) {
+      queuedGuests.delete(connId);
+      const stale = SEAT_PROFILES?.[seat];
+      if (stale?.queuedFor === connId) delete stale.queuedFor;
+      changed = true;
+      continue;
+    }
+    const profile = SEAT_PROFILES?.[seat];
+    if (!profile || profile.kind !== "bot") {
+      queuedGuests.delete(connId);
+      changed = true;
+      continue;
+    }
+    const name = entry.name || `Guest ${seat}`;
+    SEAT_PROFILES[seat] = {
+      seat,
+      name,
+      kind: "human",
+      connected: true,
+      connId,
+      peerId: connId,
+      voice: false,
+      clientId: `guest-${net.seatSeq + 1}`,
+      rejoinToken: entry.token || makeRejoinToken(),
+      rejoinName: name
+    };
+    net.seatSeq += 1;
+    clearTimeout(entry.expiryTimer);
+    queuedGuests.delete(connId);
+    net.host.send(connId, {
+      type: "welcome",
+      roomCode: net.code,
+      protocol: PROTOCOL_VERSION,
+      seat,
+      hostName: net.name,
+      players: serialiseRoster(),
+      chat: chatHistory.slice(-30),
+      canStart: true,
+      rejoinToken: SEAT_PROFILES[seat].rejoinToken,
+      started: true,
+      joinedSeat: true,
+      state: sanitizeForSeat(state, seat)
+    });
+    toast(t("invite.joined", { name, seat: seatName(seat) }), "jade");
+    changed = true;
+  }
+  if (!changed) return false;
+  renderAll();
+  renderPending();
+  renderInviteSheet();
+  sendLobbyToGuests();
+  syncVoicePeers();
+  queuePublish();
+  saveHostRecovery();
+  if (reason === "match") audio?.play("win", 0);
+  return true;
 }
 
 function approveBotSeat(connId, request, seat) {
   const clean = cleanGuestName(request.name, `Guest ${seat}`);
+  const queued = queuedGuests.get(connId);
+  if (queued) queuedGuests.delete(connId);
+  if (SEAT_PROFILES[seat]?.queuedFor === connId) delete SEAT_PROFILES[seat].queuedFor;
   net.seatSeq += 1;
   SEAT_PROFILES[seat] = {
     seat,
@@ -5009,6 +5247,11 @@ function approvePending(connId, mode = "auto") {
   }
   const seat = findBotSeat();
   if (mode === "viewer" || seat < 0) {
+    approveViewer(connId, request);
+    return true;
+  }
+  if (joinBoundary() !== "now") {
+    if (queueBotSeat(connId, request, seat)) return true;
     approveViewer(connId, request);
     return true;
   }
@@ -5205,6 +5448,10 @@ function hostMessage({ connId, message }) {
       net.host.send(connId, { type: "pong", at: Date.now() });
       break;
     case "leave": {
+      if (queuedGuests.has(connId)) {
+        clearQueued(connId, "");
+        return;
+      }
       if (net?.viewers?.has(connId)) {
         net.viewers.delete(connId);
         renderLobby();
@@ -5237,6 +5484,21 @@ function hostMessage({ connId, message }) {
 
 function hostConnectionLost({ connId } = {}) {
   if (!connId) return;
+  if (queuedGuests.has(connId)) {
+    const entry = queuedGuests.get(connId);
+    if (entry) {
+      const key = `queued-${entry.seat}-${entry.token.slice(0, 8)}`;
+      queuedGuests.delete(connId);
+      entry.connId = null;
+      entry.at = Date.now();
+      queuedGuests.set(key, entry);
+      scheduleQueueExpiry(entry, key);
+    }
+    renderPending();
+    renderInviteSheet();
+    saveHostRecovery();
+    return;
+  }
   if (net?.viewers?.has(connId)) {
     net.viewers.delete(connId);
     renderLobby();
@@ -5436,6 +5698,19 @@ async function resumeHostRoom(recovery) {
       SEAT_PROFILES[0] = { seat: 0, name: handle, kind: "host", connected: true, host: true, connId: null, peerId: host.id, voice: false };
     }
     SEAT_PROFILES[0].name = handle;
+    queuedGuests = new Map();
+    (Array.isArray(recovery.queued) ? recovery.queued : []).forEach((entry, index) => {
+      if (!entry || !Number.isInteger(entry.seat) || entry.seat < 1 || entry.seat >= TABLE_SEATS) return;
+      queuedGuests.set(`recovered-${entry.seat}-${index}`, {
+        connId: null,
+        name: entry.name || `Guest ${entry.seat}`,
+        seat: entry.seat,
+        token: entry.token || makeRejoinToken(),
+        at: Number(entry.at) || Date.now(),
+        joinAfter: ["trick", "round", "match"].includes(entry.joinAfter) ? entry.joinAfter : "trick"
+      });
+      if (SEAT_PROFILES[entry.seat]?.kind === "bot") SEAT_PROFILES[entry.seat].queuedFor = "recovered";
+    });
     MY_SEAT = 0;
     await setRoomPin(generatePin(), { silent: true });
     if (recovery.stats) stats = { ...stats, ...recovery.stats };
@@ -5606,18 +5881,35 @@ function clientMessage({ message }) {
     case "chat":
       if (message.entry) appendChat(message.entry);
       break;
-    case "pending":
+    case "pending": {
+      const queued = Boolean(message.queued);
+      if (queued && message.rejoinToken) {
+        saveRejoinSeat({
+          code: message.roomCode,
+          seat: Number(message.seat),
+          token: message.rejoinToken,
+          name: lobbyState?.name || ""
+        });
+      }
+      const joinAfter = message.joinAfter === "round" ? "round" : message.joinAfter === "match" ? "match" : "trick";
       lobbyState = {
         view: "waiting",
         roomCode: message.roomCode,
         hostName: message.hostName,
-        players: [],
-        status: t("net.waitingApproval"),
+        players: message.players || [],
+        status: queued
+          ? t(joinAfter === "round" ? "net.joinQueuedRound" : joinAfter === "match" ? "net.joinQueuedMatch" : "net.joinQueuedStatus")
+          : t("net.waitingApproval"),
         started: false,
-        pending: true
+        pending: !queued,
+        queued,
+        joinAfter,
+        seat: queued ? Number(message.seat) : null
       };
       showLobby("waiting");
+      renderLobby();
       break;
+    }
     case "rejected": {
       if (net) net.rejected = true;
       lastNetError = message.reason || "rejected";
@@ -5838,6 +6130,9 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
         host.send(profile.connId, { type: "closed", reason: "host-left" });
       }
     }
+    for (const entry of queuedList()) {
+      if (entry.connId) host.send(entry.connId, { type: "closed", reason: "host-left" });
+    }
     host.close();
   }
   if (client) client.close();
@@ -5861,6 +6156,9 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
   pendingTimers.clear();
   net = null;
   SEAT_PROFILES = null;
+  queuedGuests = new Map();
+  inviteStarting = false;
+  inviteError = "";
   MY_SEAT = 0;
   lobbyState = null;
   resumeAvailable = false;
@@ -6226,14 +6524,13 @@ function lobbyRosterHTML(players, options = {}) {
   }).join("");
 }
 
-function renderPending() {
-  const list = $("#lobbyPending");
-  if (!list) return;
+function pendingRowsMarkup() {
   const entries = pendingList();
+  const queued = queuedList();
   const started = Boolean(net?.started);
   const botSeat = findBotSeat();
-  list.innerHTML = entries.length
-    ? entries.map((request) => `
+  const rows = [
+    ...entries.map((request) => `
       <div class="pending-row" data-conn="${escapeHTML(request.connId)}">
         <span class="pending-name">${escapeHTML(request.name)}</span>
         <time>${escapeHTML(chatClock(request.at))}</time>
@@ -6241,12 +6538,27 @@ function renderPending() {
         ${started && botSeat >= 0 ? `<button class="mini-btn" type="button" data-viewer data-i18n="net.watchOnly">${escapeHTML(t("net.watchOnly"))}</button>` : ""}
         <button class="mini-btn deny" type="button" data-deny data-i18n="net.deny">${escapeHTML(t("net.deny"))}</button>
         <button class="mini-btn" type="button" data-pause data-i18n="net.pauseShort">${escapeHTML(t("net.pauseShort"))}</button>
-      </div>`).join("")
-    : `<span class="pending-empty">${escapeHTML(t("net.pendingEmpty"))}</span>`;
+      </div>`),
+    ...queued.map((entry) => `
+      <div class="pending-row queued" data-queue="${escapeHTML(entry.connId || entry.token || "")}">
+        <span class="pending-name">${escapeHTML(entry.name)}</span>
+        <span class="pending-queued">${escapeHTML(queuedBadge(entry))}</span>
+        <button class="mini-btn deny" type="button" data-unqueue data-i18n="invite.cancelQueue">${escapeHTML(t("invite.cancelQueue"))}</button>
+      </div>`)
+  ];
+  return rows.length ? rows.join("") : `<span class="pending-empty">${escapeHTML(t("net.pendingEmpty"))}</span>`;
+}
+
+function renderPending() {
+  const list = $("#lobbyPending");
+  if (!list) return;
+  const entries = pendingList();
+  const queued = queuedList();
+  list.innerHTML = pendingRowsMarkup();
   const approveAll = $("#lobbyApproveAll");
-  if (approveAll) approveAll.hidden = entries.length === 0 || started;
+  if (approveAll) approveAll.hidden = entries.length === 0 || Boolean(net?.started);
   const pendingBlock = $("#hostPendingBlock");
-  if (pendingBlock) pendingBlock.hidden = entries.length === 0;
+  if (pendingBlock) pendingBlock.hidden = entries.length === 0 && queued.length === 0;
   const status = $("#hostSecurityStatus");
   if (status && isHost() && net?.security) {
     status.textContent = net.security.pinSet ? t("net.pinAuto") : t("net.pinApprovalOnly");
@@ -6329,6 +6641,7 @@ function renderLobby() {
   if ($("#lobbyWaitRoster")) $("#lobbyWaitRoster").innerHTML = lobbyRosterHTML(SEAT_PROFILES || players);
   if ($("#lobbyWaitTitle")) {
     $("#lobbyWaitTitle").textContent = view === "lost" ? t("net.lostTitle")
+      : view === "waiting" && lobbyState?.queued ? t("net.joinQueuedTitle")
       : view === "waiting" && lobbyState?.pending ? t("net.waitingApproval")
       : view === "waiting" ? t("net.waitingHost")
       : t("net.joinTitle");
@@ -6350,7 +6663,7 @@ function renderLobby() {
   const hostListening = $("#hostListening");
   if (hostListening) {
     if (started) hostListening.textContent = t("net.matchInProgress");
-    else if (pendingRequests.size) hostListening.textContent = t("net.pendingCount", { n: pendingRequests.size });
+    else if (pendingRequests.size + queuedGuests.size) hostListening.textContent = t("net.pendingCount", { n: pendingRequests.size + queuedGuests.size });
     else if (humans >= 2) hostListening.textContent = t("net.readyToStart", { n: humans });
     else if (net?.host?.connectionCount?.() > 0) hostListening.textContent = t("net.guestConnecting");
     else hostListening.textContent = t("net.listening");
@@ -6377,6 +6690,7 @@ function renderLobby() {
   if (share) share.hidden = !(code && roomPinPlain && typeof navigator.share === "function");
   renderPending();
   renderPinReveal();
+  renderInviteSheet();
 }
 
 function showLobby(view = "menu") {
@@ -6392,11 +6706,131 @@ function showLobby(view = "menu") {
     if (field && !field.value) field.value = storedName;
   }
   renderLobby();
+  renderNetChrome();
 }
 
 function closeLobby() {
   const modal = $("#lobbyModal");
   if (modal) modal.hidden = true;
+  renderNetChrome();
+}
+
+function canInviteFriends() {
+  return Boolean(state && !isNetworked() && $("#lobbyModal")?.hidden !== false);
+}
+
+function renderInviteSheet() {
+  const modal = $("#inviteModal");
+  if (!modal) return;
+  const starting = Boolean(inviteStarting);
+  const ready = Boolean(isHost() && net?.code && !starting);
+  const startingBlock = $("#inviteStarting");
+  if (startingBlock) startingBlock.hidden = !starting;
+  const errorBlock = $("#inviteError");
+  if (errorBlock) {
+    errorBlock.hidden = !inviteError;
+    errorBlock.textContent = inviteError;
+  }
+  const retry = $("#inviteRetry");
+  if (retry) retry.hidden = !inviteError || starting;
+  const readyBlock = $("#inviteReady");
+  if (readyBlock) readyBlock.hidden = !ready;
+  if (!ready) return;
+  const code = formatRoomCode(net.code);
+  if ($("#inviteCode")) $("#inviteCode").textContent = code;
+  if ($("#invitePin")) $("#invitePin").textContent = roomPinPlain || t("invite.pinHidden");
+  const copyInfo = $("#inviteCopyInfo");
+  if (copyInfo) copyInfo.textContent = t("invite.copyInfo");
+  const pending = $("#invitePending");
+  if (pending) {
+    pending.innerHTML = pendingList().length || queuedList().length
+      ? pendingRowsMarkup()
+      : `<span class="pending-empty">${escapeHTML(t("invite.noPending"))}</span>`;
+  }
+  const seats = $("#inviteSeats");
+  if (seats) seats.innerHTML = lobbyRosterHTML(SEAT_PROFILES || []);
+  const pinCell = $("#invitePin");
+  if (pinCell) pinCell.dataset.pinSet = roomPinPlain ? "true" : "false";
+}
+
+async function hostCurrentMatch() {
+  if (!state || isNetworked() || isClient()) return false;
+  if (inviteStarting) return false;
+  inviteStarting = true;
+  inviteError = "";
+  renderInviteSheet();
+  const handle = preferredPlayerName() || loadPlayerName() || t("net.hostDefault");
+  let host = null;
+  try {
+    host = await openHostWithRetry({ name: handle, attempts: 4, ...hostPeerHandlers() });
+    net = {
+      role: "host",
+      host,
+      code: host.code,
+      name: handle,
+      seq: 0,
+      started: true,
+      seatSeq: 0,
+      viewers: new Map(),
+      security: { approval: true, pinHash: null, pinSet: false, pinFails: 0, lockUntil: 0, suppressUntil: 0 }
+    };
+    MY_SEAT = 0;
+    queuedGuests = new Map();
+    let botIndex = 1;
+    SEAT_PROFILES = [0, 1, 2, 3].map((seat) => seat === 0
+      ? { seat, name: handle, kind: "host", connected: true, host: true, peerId: host.id, voice: false }
+      : { seat, name: `Bot ${botIndex++}`, kind: "bot", connected: true });
+    lobbyState = {
+      view: "host",
+      roomCode: host.code,
+      status: t("invite.ready"),
+      error: "",
+      players: SEAT_PROFILES,
+      hostName: handle,
+      started: true
+    };
+    await setRoomPin(generatePin(), { silent: true });
+    savePlayerName(handle);
+    saveMatch();
+    saveHostRecovery();
+    renderNetChrome();
+    renderAll();
+    renderInviteSheet();
+    publishState();
+    acquireHostWakeLock();
+    audio?.play("win", 0);
+    return true;
+  } catch (error) {
+    try { host?.close(); } catch { /* ignore */ }
+    if (net) {
+      net = null;
+      SEAT_PROFILES = null;
+      MY_SEAT = 0;
+      lobbyState = null;
+    }
+    inviteError = t("invite.failed", { error: error?.type || error?.message || "host-timeout" });
+    audio?.play("click", 0);
+    return false;
+  } finally {
+    inviteStarting = false;
+    renderInviteSheet();
+    renderNetChrome();
+  }
+}
+
+function openInviteSheet() {
+  if (!state) {
+    showLobby("menu");
+    return;
+  }
+  hideAllModals();
+  const modal = $("#inviteModal");
+  if (!modal) return;
+  modal.hidden = false;
+  inviteError = "";
+  renderInviteSheet();
+  audio?.play("click", 0);
+  if (!isHost()) hostCurrentMatch();
 }
 
 function isPanelRailMode() {
@@ -6532,6 +6966,10 @@ function renderNetChrome() {
   if (chatTool) chatTool.hidden = !isNetworked();
   const voiceCall = $("#voiceCallBtn");
   if (voiceCall) voiceCall.hidden = !isNetworked();
+  const inviteTop = $("#inviteTopBtn");
+  if (inviteTop) inviteTop.hidden = !canInviteFriends();
+  const inviteAction = $("#inviteBtn");
+  if (inviteAction) inviteAction.hidden = !canInviteFriends();
   renderChatBadge();
   renderPanelRail();
 }
@@ -9143,6 +9581,11 @@ function bindEvents() {
   $("#clearBtn")?.addEventListener("click", clearSelection);
 
   $("#lobbyBtn")?.addEventListener("click", () => {
+    if (isHost() && net?.started) {
+      openInviteSheet();
+      audio?.play("click", 0);
+      return;
+    }
     if (isNetworked()) {
       if (lobbyState) showLobby(lobbyState.view === "table" ? "waiting" : lobbyState.view);
       else showLobby(isHost() ? "host" : "waiting");
@@ -9155,6 +9598,12 @@ function bindEvents() {
     if (isHost()) copyRoomInfo();
     else copyInvite();
   });
+  $("#inviteTopBtn")?.addEventListener("click", openInviteSheet);
+  $("#inviteBtn")?.addEventListener("click", openInviteSheet);
+  $("#inviteCopyInfo")?.addEventListener("click", copyRoomInfo);
+  $("#inviteCopyLink")?.addEventListener("click", copyInvite);
+  $("#inviteShare")?.addEventListener("click", shareRoomInfo);
+  $("#inviteRetry")?.addEventListener("click", () => hostCurrentMatch());
   $("#copyRoomBtn")?.addEventListener("click", copyRoomInfo);
   $("#lobbySolo")?.addEventListener("click", backToSolo);
   $("#lobbyResumeSaved")?.addEventListener("click", resumeSavedMatch);
@@ -9286,17 +9735,33 @@ function bindEvents() {
   });
   $("#lobbyApproveAll")?.addEventListener("click", approveAllPending);
   $("#lobbyPending")?.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-approve], [data-viewer], [data-deny], [data-pause]");
+    const button = event.target.closest("[data-approve], [data-viewer], [data-deny], [data-pause], [data-unqueue]");
     if (!button) return;
-    const row = button.closest("[data-conn]");
+    const row = button.closest("[data-conn], [data-queue]");
     if (!row) return;
-    const connId = row.dataset.conn;
+    const connId = row.dataset.conn || row.dataset.queue;
     if (button.hasAttribute("data-approve")) approvePending(connId);
     else if (button.hasAttribute("data-viewer")) approvePending(connId, "viewer");
     else if (button.hasAttribute("data-pause")) {
       pauseJoinRequests();
       if (pendingRequests.has(connId)) denyPending(connId, "suppressed");
-    } else denyPending(connId);
+    } else if (button.hasAttribute("data-unqueue")) clearQueued(connId, "denied");
+    else denyPending(connId);
+  });
+  $("#invitePending")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-approve], [data-viewer], [data-deny], [data-pause], [data-unqueue]");
+    if (!button) return;
+    const row = button.closest("[data-conn], [data-queue]");
+    if (!row) return;
+    const connId = row.dataset.conn || row.dataset.queue;
+    if (!connId) return;
+    if (button.hasAttribute("data-approve")) approvePending(connId);
+    else if (button.hasAttribute("data-viewer")) approvePending(connId, "viewer");
+    else if (button.hasAttribute("data-pause")) {
+      pauseJoinRequests();
+      if (pendingRequests.has(connId)) denyPending(connId, "suppressed");
+    } else if (button.hasAttribute("data-unqueue")) clearQueued(connId, "denied");
+    else denyPending(connId);
   });
   $("#lobbyStartBtn")?.addEventListener("click", () => {
     startHostedMatch();
@@ -9658,6 +10123,7 @@ window.LeabTui = {
       viewers: isHost() ? serialiseViewers() : [],
       peerId: isHost() ? net.host?.id : net.client?.hostId,
       pending: isHost() ? pendingList() : [],
+      queued: isHost() ? queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })) : [],
       approval: isHost() ? Boolean(net.security?.approval) : null,
       pinSet: isHost() ? Boolean(net.security?.pinSet) : null,
       lastPublished
@@ -9665,9 +10131,12 @@ window.LeabTui = {
     openLobby: () => showLobby(isNetworked() ? (isHost() ? "host" : "waiting") : "menu"),
     closeLobby,
     host: (name) => createHostRoom(name),
+    hostCurrentMatch: () => hostCurrentMatch(),
+    openInvite: openInviteSheet,
     join: (code, name, pin = "") => joinRoom(code, name, pin),
     start: () => startHostedMatch(),
     pending: () => pendingList().map((request) => ({ connId: request.connId, name: request.name, at: request.at })),
+    queued: () => queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })),
     approve: approvePending,
     deny: denyPending,
     pauseJoins: () => pauseJoinRequests(),
