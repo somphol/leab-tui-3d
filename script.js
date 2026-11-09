@@ -777,6 +777,11 @@ const I18N = {
     "queued.banner": "Approved — watching until this trick ends. You will take {seat}.",
     "queued.bannerRound": "Approved — watching until the next round. You will take {seat}.",
     "queued.bannerMatch": "Approved — watching until the next match. You will take {seat}.",
+    "watch.title": "Watching",
+    "watch.count": "{n} watching",
+    "watch.you": "{name} (you)",
+    "watch.empty": "No one is watching.",
+    "watch.queued": "waiting for seat",
     "net.joinQueuedTitle": "Approved — waiting for the trick",
     "net.joinQueuedStatus": "The host approved you. You will join automatically after this trick ends.",
     "net.joinQueuedRound": "The host approved you. You will join at the next round.",
@@ -1443,6 +1448,11 @@ const I18N = {
     "queued.banner": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบตา จะได้นั่ง {seat}",
     "queued.bannerRound": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบรอบ จะได้นั่ง {seat}",
     "queued.bannerMatch": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบแมตช์ จะได้นั่ง {seat}",
+    "watch.title": "ผู้ชม",
+    "watch.count": "ผู้ชม {n} คน",
+    "watch.you": "{name} (คุณ)",
+    "watch.empty": "ยังไม่มีผู้ชม",
+    "watch.queued": "รอที่นั่ง",
     "net.joinQueuedTitle": "อนุมัติแล้ว — รอจบตา",
     "net.joinQueuedStatus": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้าหลังจบตานี้",
     "net.joinQueuedRound": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้ารอบถัดไป",
@@ -4961,6 +4971,7 @@ function publishState() {
       seq: net.seq,
       seat: profile.seat,
       players: roster,
+      viewers: serialiseViewers(),
       hostName: net.name,
       state: payload
     });
@@ -5079,6 +5090,7 @@ function acceptGuest(connId, name) {
     seat,
     hostName: net.name,
     players: serialiseRoster(),
+    viewers: serialiseViewers(),
     chat: chatHistory.slice(-30),
     canStart: SEAT_PROFILES.filter((profile) => profile && profile.connected).length >= 2,
     rejoinToken: SEAT_PROFILES[seat].rejoinToken,
@@ -5161,6 +5173,7 @@ function reattachGuest(connId, seat, token) {
     seat,
     hostName: net.name,
     players: serialiseRoster(),
+    viewers: serialiseViewers(),
     chat: chatHistory.slice(-30),
     canStart: SEAT_PROFILES.filter((profile) => profile && profile.connected).length >= 2,
     rejoinToken: token,
@@ -5286,6 +5299,7 @@ function clearQueued(connId, reason = "denied") {
   if (reason && entry.connId) rejectConnection(entry.connId, reason);
   renderPending();
   renderInviteSheet();
+  queuePublish();
   saveHostRecovery();
   return true;
 }
@@ -5331,6 +5345,7 @@ function queueBotSeat(connId, request, seat) {
   renderPending();
   renderInviteSheet();
   renderNetChrome();
+  queuePublish();
   saveHostRecovery();
   return true;
 }
@@ -5346,6 +5361,7 @@ function reattachQueuedGuest(connId, entry) {
   sendQueuedStatus(connId, entry);
   renderPending();
   renderInviteSheet();
+  queuePublish();
   saveHostRecovery();
   return true;
 }
@@ -5394,6 +5410,7 @@ function promoteQueuedGuests(reason = "trick") {
       seat,
       hostName: net.name,
       players: serialiseRoster(),
+      viewers: serialiseViewers(),
       chat: chatHistory.slice(-30),
       canStart: true,
       rejoinToken: SEAT_PROFILES[seat].rejoinToken,
@@ -5444,6 +5461,7 @@ function approveBotSeat(connId, request, seat) {
     seat,
     hostName: net.name,
     players: serialiseRoster(),
+    viewers: serialiseViewers(),
     chat: chatHistory.slice(-30),
     canStart: true,
     rejoinToken: SEAT_PROFILES[seat].rejoinToken,
@@ -5485,7 +5503,12 @@ function approvePending(connId, mode = "auto") {
 }
 
 function serialiseViewers() {
-  return [...(net?.viewers?.values() || [])].map((viewer) => ({ name: viewer.name }));
+  return [...(net?.viewers?.values() || [])].map((viewer) => ({ name: viewer.name, queued: Boolean(viewer.queued) }));
+}
+
+function currentViewers() {
+  if (isHost()) return serialiseViewers();
+  return Array.isArray(net?.viewers) ? net.viewers : [];
 }
 
 function approveViewer(connId, request) {
@@ -5751,6 +5774,7 @@ function hostConnectionLost({ connId } = {}) {
     }
     renderPending();
     renderInviteSheet();
+    queuePublish();
     saveHostRecovery();
     return;
   }
@@ -6050,6 +6074,7 @@ function startHostedMatch() {
       roomCode: net.code,
       seat: profile.seat,
       players: roster,
+      viewers: serialiseViewers(),
       hostName: net.name
     });
   }
@@ -6078,6 +6103,7 @@ function clientMessage({ message }) {
       net.queued = Boolean(message.queued);
       net.queuedSeat = Number.isInteger(message.queuedSeat) ? message.queuedSeat : null;
       net.joinAfter = message.joinAfter || null;
+      net.viewers = Array.isArray(message.viewers) ? message.viewers : [];
       SEAT_PROFILES = (message.players || []).map((player) => ({ ...player }));
       net.seat = MY_SEAT;
       net.name = message.players?.[MY_SEAT]?.name || net.name;
@@ -6130,12 +6156,15 @@ function clientMessage({ message }) {
     }
     case "lobby":
       if (SEAT_PROFILES && message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
+      if (net && Array.isArray(message.viewers)) net.viewers = message.viewers;
       if (lobbyState) {
         lobbyState.players = message.players || lobbyState.players;
+        lobbyState.viewers = Array.isArray(message.viewers) ? message.viewers : lobbyState.viewers;
         lobbyState.started = Boolean(message.started);
         lobbyState.canStart = Boolean(message.canStart);
       }
       if (lobbyState?.view !== "table") renderLobby();
+      renderNetChrome();
       syncVoicePeers();
       break;
     case "start":
@@ -6156,6 +6185,7 @@ function clientMessage({ message }) {
       }
       finishResync();
       if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
+      if (Array.isArray(message.viewers)) net.viewers = message.viewers;
       applyRemoteState(message.state);
       syncVoicePeers();
       maybeJoinAutoAudio();
@@ -7092,6 +7122,31 @@ function canInviteFriends() {
   return Boolean(state && !isNetworked() && $("#lobbyModal")?.hidden !== false);
 }
 
+function renderWatcherChip() {
+  const chip = $("#watcherChip");
+  if (!chip) return;
+  const list = currentViewers();
+  chip.hidden = !isNetworked() || list.length === 0;
+  const pop = $("#watcherPop");
+  if (chip.hidden) {
+    if (pop) pop.hidden = true;
+    return;
+  }
+  if ($("#watcherCount")) $("#watcherCount").textContent = String(list.length);
+  chip.title = t("watch.count", { n: list.length });
+  chip.setAttribute("aria-label", t("watch.title"));
+  const node = $("#watcherList");
+  if (node) {
+    node.innerHTML = list.length
+      ? list.map((viewer) => {
+        const self = Boolean(net?.viewer) && viewer.name === net?.name;
+        const label = viewer.queued ? `${viewer.name} · ${t("watch.queued")}` : viewer.name;
+        return `<li class="${self ? "self" : ""}">${escapeHTML(self ? t("watch.you", { name: label }) : label)}</li>`;
+      }).join("")
+      : `<li class="watcher-empty">${escapeHTML(t("watch.empty"))}</li>`;
+  }
+}
+
 function renderQueuedBanner() {
   const banner = $("#queuedBanner");
   if (!banner) return;
@@ -7426,6 +7481,7 @@ function renderNetChrome() {
   renderChatBadge();
   renderPanelRail();
   renderQueuedBanner();
+  renderWatcherChip();
   renderJoinRequestPopup();
 }
 
@@ -9956,6 +10012,9 @@ function bindEvents() {
     const panel = $("#rankReference");
     const button = $("#rankReferenceBtn");
     if (panel && !panel.hidden && !panel.contains(event.target) && !button?.contains(event.target)) setRankReference(false);
+    const watcherPop = $("#watcherPop");
+    const watcherChip = $("#watcherChip");
+    if (watcherPop && !watcherPop.hidden && !watcherPop.contains(event.target) && !watcherChip?.contains(event.target)) watcherPop.hidden = true;
     const pinPanel = $("#pinInfoPanel");
     const pinButton = $("#hostPinInfo");
     if (pinPanel && !pinPanel.hidden && !pinPanel.contains(event.target) && !pinButton?.contains(event.target)) setPinInfo(false);
@@ -10072,6 +10131,10 @@ function bindEvents() {
     else copyInvite();
   });
   $("#joinAlertBtn")?.addEventListener("click", openInviteSheet);
+  $("#watcherChip")?.addEventListener("click", () => {
+    const pop = $("#watcherPop");
+    if (pop) pop.hidden = !pop.hidden;
+  });
   $("#joinRequestApprove")?.addEventListener("click", () => {
     const connId = joinPopupConnId;
     hideJoinRequestPopup();
@@ -10621,7 +10684,7 @@ window.LeabTui = {
       viewer: Boolean(net.viewer) || MY_SEAT < 0,
       queuedSeat: net.queuedSeat ?? null,
       players: serialiseRoster(),
-      viewers: isHost() ? serialiseViewers() : [],
+      viewers: isHost() ? serialiseViewers() : (Array.isArray(net.viewers) ? net.viewers : []),
       peerId: isHost() ? net.host?.id : net.client?.hostId,
       pending: isHost() ? pendingList() : [],
       queued: isHost() ? queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })) : Boolean(net.queued),

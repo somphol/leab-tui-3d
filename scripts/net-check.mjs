@@ -313,12 +313,29 @@ async function main() {
   ));
   if (viewerJoined.seat === -1 && viewerJoined.viewer && viewerJoined.ghost && viewerJoined.dock === "none" && viewerJoined.body) pass("viewer joins with a fully hidden table");
   else fail("viewer joins with a fully hidden table", JSON.stringify(viewerJoined));
+  const watcherUi = JSON.parse(await host.waitFor(
+    "JSON.stringify({hidden:document.querySelector('#watcherChip')?.hidden,count:document.querySelector('#watcherCount')?.textContent,list:document.querySelector('#watcherList')?.textContent})",
+    "host watcher chip",
+    10000
+  ));
+  if (watcherUi.hidden === false && watcherUi.count === "1" && /Viewer/.test(watcherUi.list)) pass("host sees the watcher chip and name", watcherUi.list);
+  else fail("host sees the watcher chip and name", JSON.stringify(watcherUi));
+  const guestWatcherUi = JSON.parse(await guest.waitFor(
+    "document.querySelector('#watcherChip') && !document.querySelector('#watcherChip').hidden && document.querySelector('#watcherCount')?.textContent === '1' ? JSON.stringify({list:document.querySelector('#watcherList')?.textContent}) : ''",
+    "guest watcher chip",
+    10000
+  ));
+  if (/Viewer/.test(guestWatcherUi.list)) pass("other guests see who is watching", guestWatcherUi.list);
+  else fail("other guests see who is watching", JSON.stringify(guestWatcherUi));
   if (viewer.events.length === 0) pass("viewer console clean");
   else fail("viewer console clean", viewer.events.join(" | "));
   await viewer.closePage();
   const viewersCleared = await host.waitFor("window.LeabTui?.net.getState?.().viewers?.length === 0 ? 'ok' : ''", "viewer removed", 15000);
   if (viewersCleared === "ok") pass("viewer disconnects cleanly");
   else fail("viewer disconnects cleanly");
+  const watcherCleared = await host.waitFor("document.querySelector('#watcherChip')?.hidden ? 'ok' : ''", "watcher chip cleared", 10000);
+  if (watcherCleared === "ok") pass("watcher chip clears when the viewer leaves");
+  else fail("watcher chip clears when the viewer leaves");
 
   // Suppression pauses new join requests.
   await host.eval("LeabTui.net.pauseJoins(); true");

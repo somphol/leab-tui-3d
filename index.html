@@ -109,6 +109,9 @@
           <span class="join-alert-icon" aria-hidden="true">＋</span>
           <span id="joinAlertText">1 waiting</span>
         </button>
+        <button id="watcherChip" class="pill watcher-chip" type="button" hidden aria-label="Watchers" data-i18n-aria="watch.title" title="Watchers">
+          <span class="watcher-eye" aria-hidden="true">👁</span><span id="watcherCount">0</span>
+        </button>
         <button id="rulesBtn" class="icon-btn" type="button" aria-label="Rules" title="Rules">
           <span aria-hidden="true">?</span>
         </button>
@@ -581,6 +584,11 @@
         </div>
         <p class="invite-version"><span class="version-label">v1.9.22</span></p>
       </div>
+    </div>
+
+    <div id="watcherPop" class="watcher-pop" hidden>
+      <h3 data-i18n="watch.title">Watching</h3>
+      <ul id="watcherList"></ul>
     </div>
 
     <div id="queuedBanner" class="queued-banner" hidden role="status" aria-live="polite">

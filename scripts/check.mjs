@@ -312,6 +312,7 @@ ok(script.includes("inspector.emptyTouch") && script.includes("const fallback = 
 ok(index.includes('id="inviteTopBtn"') && index.includes('id="inviteBtn"') && index.includes('id="inviteModal"'), "Invite controls and modal exist");
 ok(index.includes('id="joinRequestPop"') && index.includes('id="joinRequestApprove"') && index.includes('id="joinRequestLater"'), "host join-request popup exists");
 ok(index.includes('id="queuedBanner"') && script.includes("queuedSeat"), "queued guests have an audience banner");
+ok(index.includes('id="watcherChip"') && index.includes('id="watcherList"') && script.includes("function renderWatcherChip"), "watchers are visible to every participant");
 ok(script.includes("function hostCurrentMatch") && script.includes("function queueBotSeat") && script.includes("function promoteQueuedGuests"), "solo-to-host invite engine exists");
 const inviteBody = script.slice(script.indexOf("async function hostCurrentMatch"), script.indexOf("function openInviteSheet"));
 ok(inviteBody && !inviteBody.includes("beginMatch(") && !inviteBody.includes("leaveRoom("), "invite conversion does not redeal or drop the solo game");

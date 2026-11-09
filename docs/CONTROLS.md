@@ -24,6 +24,7 @@
 | **Invite** (top bar and Actions) | Solo only: turn the current table into a hosted room, show the code/PIN, copy or share the invite |
 | **Room chip** (top bar, host) | Open the room-info sheet to read the room number and PIN aloud; copy/share are buttons inside |
 | **Join-request popup** | On the host table: Allow, Watch only, Deny, or Later. Later leaves the **n waiting** pill visible |
+| **Watcher chip** (`👁 n`) | Visible to everyone when someone is watching; tap to list names, including queued audience members |
 | **Refresh table** (Actions, guest) | Request the host's current snapshot; also happens automatically on an illegal play or a sequence gap |
 | **Panel rail** (touch/tablet, right edge) | **C** coach · **M** match · **A** actions · **💬** chat · **i** tile inspector · **H** your hand · **L** trick log |
 | **H** (collapsed hand dock) | Reopen the hand dock. The keyboard shortcut `H` is Hint. |

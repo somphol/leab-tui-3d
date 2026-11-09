@@ -169,6 +169,11 @@ sets. The viewer UI removes the hand dock, hand panel, chat and voice controls;
 viewers can watch the public table, captures, history and summaries but cannot
 act. There is no viewer rejoin token; a reload requires approval again.
 
+Every human sees a **watcher chip** (`👁 n`) in the top bar whenever anyone is
+watching. Tapping it lists the names; a queued audience member is marked
+`waiting for seat`. The same list is carried in `state.viewers` to every seat,
+so one guest lagging does not hide the audience from the others.
+
 ## Disconnection
 
 When a guest connection closes, the host holds the seat:
