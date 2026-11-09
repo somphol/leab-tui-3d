@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- **Feature-train branch workflow.** `main` remains production and the only Pages source; `develop` is the integration/feature train. Features, fixes and docs branch from `develop`, releases are cut from `develop` and merged to `main`, then back-merged. Added `docs/BRANCHING.md` and updated `CONTRIBUTING.md`, `AGENTS.md`, the PR template, deployment and release checklist.
+
 ## [1.9.22] — 2026-11-08
 
 ### Added

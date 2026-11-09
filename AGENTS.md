@@ -48,6 +48,31 @@ node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?mode=solo" \
 git push origin main
 ```
 
+### Branching
+
+`main` is production; `develop` is the feature train. **Never start a feature from `main`.**
+
+```bash
+git fetch origin
+git switch develop
+git pull --ff-only
+git switch -c feature/<slug>
+# ...work, commit...
+git fetch origin && git rebase origin/develop
+# PR against develop
+
+# release train
+git switch develop && git pull --ff-only
+git switch -c release/1.9.23
+# bump all version strings, CHANGELOG, STATE/state.json, docs; run the full gate
+git switch main && git merge --no-ff release/1.9.23
+git tag -a v1.9.23 -m "Leab-Tui 3D 1.9.23"
+git push origin main v1.9.23
+git switch develop && git merge --no-ff main   # back-merge
+```
+
+Hotfixes branch from `main`, merge to `main` and back to `develop`. Details: [`docs/BRANCHING.md`](docs/BRANCHING.md).
+
 `?selftest=1` runs 38 pure-rule, serialization, redaction, chat and PIN checks and sets the document title to `SELFTEST PASS 38/38`. `?demo=1` auto-leads one human combination after dealing so a screenshot shows a real trick. `?seed=123` makes the shuffle reproducible.
 
 Launch modes: no parameter or `?lobby=1` shows the lobby on every normal load, including a saved solo game (Resume match); `?mode=solo` skips it; `?mode=host&name=Ana` opens a room; `?room=482173` opens the join panel with the code prefilled (guests confirm their name); `&name=Bea` joins immediately. Network rooms are not resumable. The host/guest exit is **Leave room** in Actions, with confirmation.
@@ -97,6 +122,7 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 
 ## 4. Decisions and constraints
 
+- **Branching and the feature train.** `main` is production and GitHub Pages deploys it; `develop` is the integration/feature-train branch. Never commit a feature directly to `main` or start one from it. Features, fixes and docs branch from `develop`; releases are an `release/x.y.z` branch cut from `develop`, merged to `main` with `--no-ff`, tagged `vX.Y.Z`, and back-merged to `develop`. Hotfixes branch from `main`, merge to `main`, and are back-merged. Version strings move only on a release/hotfix branch. Full model and gates: `docs/BRANCHING.md`.
 - **Rules contract.** The source is Navee Angsuputiphant's 2016 Thai description (see `docs/RULES.md`). It is ambiguous about Ngoh Hoo and about mixed-colour six-tile sets. This studio's interpretation: a straight is one colour; See Hoo duplicates one core rank; Ngoh Hoo duplicates two; Lak Hoo is the small Chariot–Horse–Cannon core with all three ranks doubled; same-rank sets are Soldiers only. Do not silently change these; update `docs/RULES.md`, `detectCombo`, the self-test and the rules modal together.
 - **Comparison order.** For single/pair/Soldier sets: rank then colour. Sa Hoo: big vs small, then colour. See Hoo: duplicated pair rank then colour. Ngoh Hoo: highest duplicated rank, second duplicated rank, then colour. Lak Hoo: colour only. Equal rank + colour never overtakes; the earlier play stays best. `beats` is strict (`> 0`).
 - **Face-down play.** The leader and every follower send exactly the called count **face-down**. When all four have sent, the leader reveals automatically; each follower then decides to show or stay hidden, in turn. A set must be revealed to compete. Do not auto-reveal a follower or let an unrevealed set win.
@@ -176,6 +202,7 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 ## 6. Continuity
 
 - **Deployed copy:** GitHub Pages from `main`, repository root; live URL above.
+- **Branches:** `main` production, `develop` feature train. Work branches are short-lived; see `docs/BRANCHING.md`.
 - **Local master:** `~/Projects/leab-tui-3d`.
 - **Build record:** `STATE.md` and `state.json` record the session start/end, wall-clock duration, token counts, harness and model. Update both if you make a new measured release.
 - **Skill:** `leab-tui-studio` in `~/.config/opencode/skills/` and the public mirror `~/Projects/opencode-skills/leab-tui-studio/`.
