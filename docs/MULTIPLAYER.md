@@ -135,6 +135,8 @@ approval queue. The solo game keeps playing normally while the room opens.
   host recovery blob.
 - Host approval and the PIN still gate every guest. Copy room info includes the PIN; Copy link never does.
 - Host **Leave room** ends the room and the match, as before.
+- The host joins the voice mesh automatically when the room opens (subject to microphone permission and the Auto audio preference). The guest joins after being seated; a queued guest waits.
+- A request that arrives while the host is on the table raises a persistent popup with **Allow / Watch only / Deny / Later**. Allow uses the same queue rules as the invite sheet; Later hides the popup but leaves the **n waiting** pill in the top bar. Clicking the room chip opens the same room-info sheet, so the host can read the number and PIN aloud instead of copying them.
 
 ## Joining a table in progress
 
@@ -191,10 +193,16 @@ update** by presenting the token:
    exactly where the bot left them.
 
 The token is a **bearer credential for that seat**, not a room password. Anyone
-who obtains it can claim the seat; it is kept in sessionStorage and in the
-host's memory only. An intentional **Leave room** clears the token, so a later
-connection cannot reclaim the seat. If the token is missing or stale, the guest
-falls back to the normal PIN + approval flow.
+who obtains it can claim the seat. The guest keeps it in `sessionStorage` and in
+a seven-day `leabtui.seat.v1` card in `localStorage`, so closing the tab and
+reopening the link on the same device still reclaims the seat without approval.
+The card is only used when the invite name matches (or no name is supplied);
+opening the link under a different name falls back to PIN + approval.
+An intentional **Leave room** or a denied/bad-PIN rejection clears both copies;
+the card expires after seven days. If the token is missing or stale, the guest
+falls back to the normal PIN + approval flow, and the host sees the request in
+the on-table popup. The waiting panel also has **Reconnect**, and a lost welcome
+resends `hello` up to three times.
 
 While the match has not started, a disconnected guest's seat is held with
 `connected: false`; starting the match turns it into a bot that keeps the token,
@@ -205,6 +213,31 @@ Guests see a "Table closed" panel with **Play solo** and **Leave room**. There
 is still **no host migration**: the host's tokens and state are memory-only.
 Reload the page as the host and the room is gone; a guest update only survives
 because the host stayed open.
+
+## State, action and reconnect reliability
+
+The host is the only writer. Guests send intents; they never apply their own
+play locally. That makes a lost guest message harmless to the global game: the
+host either processed it or it never happened. The repair problem is therefore
+a stale **view**, not a divergent rule state.
+
+- Every host state carries a monotonic `seq`. The host sends `pulse {seq}` to
+  seated humans every 3 s. A guest whose `lastSeq` is behind requests `resync`;
+  the host rate-limits and returns a full redacted snapshot with
+  `"resync": true`.
+- An action carries an `actionId`. The host stores the last id per seat and
+  replies `action-ack {actionId, ok, reason, seq}`. A retry with the same id
+  gets the stored ack and is not executed twice. A guest with no ack after
+  about 3.5 s treats the action as unconfirmed and refreshes rather than
+  blindly playing a second time.
+- An illegal action clears the pending intent and triggers one silent resync.
+  The Actions **Refresh table** button and returning to the tab do the same.
+- The DataChannel is ordered and reliable (`reliable: true`, JSON serialization).
+  The real failure is a channel that stalls or closes before the final snapshot,
+  not packet loss inside a healthy channel. Full snapshots make catch-up
+  idempotent: the latest `seq` wins.
+
+See [PROTOCOL.md](PROTOCOL.md) for the envelopes.
 
 ## Privacy model
 

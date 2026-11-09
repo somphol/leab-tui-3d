@@ -199,11 +199,37 @@ or rejects it. The host assigns the lowest free seat 1–3 only after approval. 
 The guest's intent. The host validates it with the same engine that validates local play.
 
 ```json
-{ "type": "action", "kind": "lead", "tiles": ["r-advisor-0"], "reveal": false }
-{ "type": "action", "kind": "follow", "tiles": ["b-soldier-2"], "reveal": true }
+{ "type": "action", "actionId": "1-lx3k-7", "kind": "lead", "tiles": ["r-advisor-0"], "reveal": false }
+{ "type": "action", "actionId": "1-lx3k-8", "kind": "follow", "tiles": ["b-soldier-2"], "reveal": true }
 ```
 
 `tiles` must be ids that exist in **that seat's** hand. `reveal` is only consulted for `follow`. The host never trusts the guest's combo or score.
+
+`actionId` is a guest-generated token for exactly one intent. The host stores the last id per seat; a retry with the same id gets the stored ack and is **not executed twice**. The host replies:
+
+```json
+{ "type": "action-ack", "actionId": "1-lx3k-7", "ok": true, "reason": null, "seq": 12 }
+```
+
+A false ack means the action was rejected as illegal; the guest shows the reason, clears the pending intent and asks for a resync. A guest with no ack after ~3.5 s assumes the action was unconfirmed, refreshes the table, and does not blindly replay a new intent.
+
+### `pulse` / `resync`
+
+The host sends a sequence heartbeat to seated humans every 3 s:
+
+```json
+{ "type": "pulse", "seq": 12 }
+```
+
+A guest whose `lastSeq` is behind sends:
+
+```json
+{ "type": "resync" }
+```
+
+The host rate-limits resync (800 ms per seat) and replies with a normal `state` carrying `"resync": true`, the current `seq` and the seat's redacted snapshot. An illegal action ack, returning to the tab, or the Actions **Refresh table** button also requests a resync. The guest clears any pending action when the resync state arrives.
+
+PeerJS is configured with `reliable: true` and `serialization: "json"`, so an open data channel is ordered and reliable. The failure mode is not packet loss inside a healthy channel; it is a channel that stalls or closes without delivering the final state. Full snapshots make the repair idempotent: the latest `seq` wins, and a stale guest recovers by requesting a new snapshot rather than replaying events.
 
 ### `ping`
 

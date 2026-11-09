@@ -310,10 +310,16 @@ ok(script.includes('activePanelId !== "logPanel"') && script.includes("openLastT
 ok(script.includes("function positionToastLayer") && script.includes('layer.style.top'), "toasts position below the HUD strip");
 ok(script.includes("inspector.emptyTouch") && script.includes("const fallback = state?.selected?.length"), "inspector falls back to the selected tile");
 ok(index.includes('id="inviteTopBtn"') && index.includes('id="inviteBtn"') && index.includes('id="inviteModal"'), "Invite controls and modal exist");
+ok(index.includes('id="joinRequestPop"') && index.includes('id="joinRequestApprove"') && index.includes('id="joinRequestLater"'), "host join-request popup exists");
 ok(script.includes("function hostCurrentMatch") && script.includes("function queueBotSeat") && script.includes("function promoteQueuedGuests"), "solo-to-host invite engine exists");
 const inviteBody = script.slice(script.indexOf("async function hostCurrentMatch"), script.indexOf("function openInviteSheet"));
 ok(inviteBody && !inviteBody.includes("beginMatch(") && !inviteBody.includes("leaveRoom("), "invite conversion does not redeal or drop the solo game");
 ok(script.includes("hostCurrentMatch: () => hostCurrentMatch") && script.includes("queued: () => queuedList()"), "invite conversion and queue are exposed for tests");
+ok(script.includes("function renderJoinRequestPopup") && script.includes("function queueBotSeat"), "host request popup and queue renderer exist");
+ok(script.includes("action-ack") && script.includes("lastActionId") && script.includes("pendingAction"), "actions are acknowledged and deduplicated");
+ok(script.includes("function startStatePulse") && script.includes("function requestResync") && script.includes("lastSeq"), "sequence pulse and resync exist");
+ok(script.includes("REJOIN_CARD_KEY") && script.includes("REJOIN_CARD_TTL_MS"), "guest seat card has a local TTL");
+ok(script.includes('if (isHost() && net?.started) openInviteSheet();') && script.includes('t("invite.roomInfo")'), "host room chip opens room info instead of only copying");
 ok(read(".github/workflows/pages.yml").includes("preview/invite-friends"), "Pages workflow builds the invite preview subpath");
 const harness = read("scripts/browser-check.mjs");
 ok(harness.includes("const DEVICES") && harness.includes("setDeviceMetricsOverride") && harness.includes("setTouchEmulationEnabled"), "browser harness has iPad device emulation");

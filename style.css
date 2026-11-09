@@ -1520,6 +1520,48 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
   .undo-body .undo-vs { text-align: center; }
 }
 
+/* Host join-request popup: persistent on the table, above the HUD but below modals. */
+.join-request-pop {
+  position: fixed;
+  z-index: 39;
+  top: calc(var(--topbar-h) + 14px + var(--safe-top));
+  left: 50%;
+  width: min(560px, calc(100vw - 20px));
+  transform: translateX(-50%);
+  animation: joinRequestIn 260ms ease both;
+}
+.join-request-pop[hidden] { display: none; }
+.join-request-card {
+  padding: 14px 16px;
+  border: 1px solid rgba(240, 212, 154, 0.65);
+  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(58, 24, 30, 0.98), rgba(22, 10, 13, 0.97));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 3px rgba(216, 178, 107, 0.12);
+  color: var(--ink);
+}
+.join-request-head { display: flex; align-items: flex-start; gap: 12px; }
+.join-request-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border: 1px solid rgba(240, 212, 154, 0.55);
+  border-radius: 50%;
+  background: rgba(216, 178, 107, 0.16);
+  color: var(--gold-bright);
+  font-size: 20px;
+}
+.join-request-head h2 { margin: 0; color: var(--gold-bright); font-family: var(--serif); font-size: calc(18px * var(--fs-scale)); font-weight: 500; }
+.join-request-head p { margin: 4px 0 0; color: var(--ink-faint); font-size: calc(11.5px * var(--fs-scale)); line-height: 1.45; }
+.join-request-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.join-request-actions .btn { min-height: 32px; flex: 0 0 auto; }
+@keyframes joinRequestIn { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (max-width: 640px) {
+  .join-request-card { padding: 12px; }
+  .join-request-actions .btn { flex: 1 1 auto; }
+}
+
 /* Invite sheet: promote a solo game to a hosted room without changing the deal. */
 .invite-card { width: min(600px, 100%); max-height: min(88dvh, 820px); overflow-y: auto; }
 .invite-lead { margin: 6px 0 14px; color: var(--ink-faint); font-size: calc(12.5px * var(--fs-scale)); line-height: 1.5; }
@@ -1576,6 +1618,23 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
 }
 .net-chip[data-mode="host"] { color: var(--gold-bright); }
 .net-chip[data-mode="client"] { color: var(--ok-ink); }
+.join-alert {
+  border-color: rgba(240, 212, 154, 0.75);
+  background: linear-gradient(180deg, rgba(216, 178, 107, 0.32), rgba(216, 178, 107, 0.12));
+  color: var(--gold-bright);
+  font-weight: 700;
+  animation: joinAlertPulse 1.9s ease-in-out infinite;
+}
+.join-alert[hidden] { display: none; }
+.join-alert .join-alert-icon { font-size: calc(15px * var(--fs-scale)); line-height: 1; }
+@keyframes joinAlertPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(216, 178, 107, 0.28); }
+  50% { box-shadow: 0 0 0 4px rgba(216, 178, 107, 0.16); }
+}
+@media (max-width: 640px) {
+  .join-alert { padding: 0 10px; font-size: calc(10px * var(--fs-scale)); }
+  .join-alert .join-alert-icon { display: none; }
+}
 
 .lobby-modal .lobby-card {
   display: flex;

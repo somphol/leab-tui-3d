@@ -192,6 +192,13 @@ async function main() {
   await host.eval("LeabTui.net.setPin('48213'); true");
   if (hostNet.started && hostNet.players?.[0]?.kind === "host" && hostNet.players?.[1]?.kind === "bot") pass("solo converted to a host room", hostNet.code);
   else fail("solo converted to a host room", JSON.stringify(hostNet));
+  const hostVoice = await host.waitFor(
+    "window.LeabTui?.voice?.state?.()?.joined ? JSON.stringify(LeabTui.voice.state()) : ''",
+    "host auto audio",
+    20000
+  );
+  if (JSON.parse(hostVoice).joined) pass("host joins audio automatically after Invite");
+  else fail("host joins audio automatically after Invite", hostVoice);
   if (LeabTuiVersion(before)) pass("conversion kept the live round", `round ${before.round}, trick ${before.trick}`);
   const code = hostNet.code.replace("-", "");
   const guestWs = await newTarget(`${BASE}?room=${code}&name=Late&pin=48213`);
@@ -201,7 +208,22 @@ async function main() {
     "join request",
     20000
   ));
-  await host.eval(`LeabTui.net.approve(${JSON.stringify(pending[0].connId)}); true`);
+  await host.eval("document.querySelector('#inviteModal [data-close]')?.click(); true");
+  await sleep(300);
+  let popup = {};
+  try {
+    popup = JSON.parse(await host.waitFor(
+      "document.querySelector('#joinRequestPop') && !document.querySelector('#joinRequestPop').hidden ? JSON.stringify({title:document.querySelector('#joinRequestTitle').textContent,body:document.querySelector('#joinRequestBody').textContent}) : ''",
+      "host join popup",
+      10000
+    ));
+  } catch (error) {
+    console.log("POPUP DIAG", await host.eval("JSON.stringify({pending:LeabTui.net.pending(),popHidden:document.querySelector('#joinRequestPop')?.hidden,lobbyHidden:document.querySelector('#lobbyModal')?.hidden,inviteHidden:document.querySelector('#inviteModal')?.hidden,started:LeabTui.net.getState()?.started,alertHidden:document.querySelector('#joinAlertBtn')?.hidden,alertText:document.querySelector('#joinAlertText')?.textContent})"));
+    throw error;
+  }
+  if (/Late/.test(popup.title) && /Allow|อนุญาต|trick|ตา/i.test(`${popup.title} ${popup.body}`)) pass("host sees the join-request popup on the table", popup.title);
+  else fail("host sees the join-request popup on the table", JSON.stringify(popup));
+  await host.eval("document.querySelector('#joinRequestApprove').click(); true");
   const queued = JSON.parse(await host.waitFor(
     "window.LeabTui?.net.getState?.().queued?.length >= 1 ? JSON.stringify(LeabTui.net.getState().queued) : ''",
     "queued guest",
@@ -259,9 +281,39 @@ async function main() {
   ));
   if (promoted.seat > 0 && promoted.hand > 0) pass("guest seated with a hand", `seat ${promoted.seat}, ${promoted.hand} tiles`);
   else fail("guest seated with a hand", JSON.stringify(promoted));
+  await guest.eval("LeabTui.net.resync(); true");
+  await sleep(700);
+  const resyncToast = await guest.eval("[...document.querySelectorAll('.toast')].map((n) => n.textContent).join(' | ')");
+  if (/refreshed|ซิงก์/i.test(resyncToast)) pass("guest can resync the table from the host", resyncToast);
+  else fail("guest can resync the table from the host", resyncToast);
   const after = JSON.parse(await host.eval("JSON.stringify(LeabTui.net.getState())"));
   if (!after.queued?.length && after.players?.[promoted.seat]?.kind === "human") pass("queue clears after seating");
   else fail("queue clears after seating", JSON.stringify({ queued: after.queued, seat: after.players?.[promoted.seat] }));
+  await guest.closePage();
+  const replaced = await host.waitFor(
+    `LeabTui.net.getState().players?.[${promoted.seat}]?.kind === 'bot' ? JSON.stringify(LeabTui.net.getState().players[${promoted.seat}]) : ''`,
+    "seat reverts to a bot",
+    20000
+  );
+  if (JSON.parse(replaced).kind === "bot") pass("closed guest seat reverts to a bot with its rejoin token");
+  else fail("closed guest seat reverts to a bot with its rejoin token", replaced);
+  const rejoinWs = await newTarget(`${BASE}?room=${code}&name=Late&pin=48213`);
+  const rejoinPage = await Session.connect(rejoinWs);
+  let rejoined = {};
+  try {
+    rejoined = JSON.parse(await rejoinPage.waitFor(
+      `LeabTui.net?.getState?.()?.mySeat === ${promoted.seat} && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,hand:LeabTui.getState().hands[LeabTui.net.getState().mySeat].length}) : ''`,
+      "local seat card reconnects the guest",
+      25000
+    ));
+  } catch (error) {
+    console.log("REJOIN CARD DIAG", await rejoinPage.eval("JSON.stringify({session:sessionStorage.getItem('leabtui.rejoin.v1'),local:localStorage.getItem('leabtui.seat.v1'),net:LeabTui?.net?.getState?.()||null,status:document.querySelector('#lobbyStatus')?.textContent,view:[...document.querySelectorAll('#lobbyModal .lobby-view')].filter((n)=>!n.hidden).map((n)=>n.id)})"));
+    console.log("REJOIN HOST DIAG", await host.eval("JSON.stringify({players:LeabTui.net.getState().players,pending:LeabTui.net.pending()})"));
+    throw error;
+  }
+  if (rejoined.seat === promoted.seat && rejoined.hand > 0) pass("local seat card reconnects the guest with no approval", `seat ${rejoined.seat}, ${rejoined.hand} tiles`);
+  else fail("local seat card reconnects the guest with no approval", JSON.stringify(rejoined));
+  await rejoinPage.closePage();
   if (host.events.length) fail("host console clean", host.events.join(" | ").slice(0, 500));
   else pass("host console clean");
   if (guest.events.length) fail("guest console clean", guest.events.join(" | ").slice(0, 500));

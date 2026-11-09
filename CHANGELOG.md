@@ -8,6 +8,10 @@ All notable changes to Leab-Tui 3D are documented here. The format follows [Keep
 
 - **Invite friends from a solo game.** A gold **Invite** control in the top bar and Actions promotes the running solo table into a host room without redealing: room number, generated PIN, Copy room info, Copy link, Share, seat roster and approval queue. Host approval and the PIN still gate every guest.
 - **Queued mid-trick joins.** A guest approved during a trick reserves a bot seat, sees “Approved — waiting for the trick”, and is seated at the next trick with the bot’s hand, captures and score. Disconnecting releases the reservation; queued guests get a rejoin token and are restored by host recovery.
+- **Host-request popup and room info.** A join request while the host is on the table shows a persistent Allow / Watch only / Deny / Later popup; Later leaves an **n waiting** pill in the top bar. The top-bar room chip now opens the room-info sheet instead of only copying, so the host can read the number and PIN aloud.
+- **Automatic host audio.** Opening the invite room auto-joins the host voice mesh (subject to microphone permission and the Auto audio preference). A queued guest waits for the seating `welcome` before joining audio.
+- **Action acknowledgement and state catch-up.** Guest actions carry an `actionId`; the host acknowledges and deduplicates retries. Host snapshots carry `seq` plus a 3-second `pulse`; a lagging guest requests a full `resync`, and an illegal play or returning to the tab does the same. Actions has **Refresh table**.
+- **Easy reconnect after a bot replacement.** A guest's seat card is kept for seven days in `localStorage` (plus `sessionStorage`) so closing and reopening the link on the same device reclaims the same seat without approval. The waiting panel has **Reconnect**, and a lost `welcome` resends `hello` up to three times.
 - **Feature previews.** `.github/workflows/pages.yml` publishes `main` at the root and `feature/invite-friends` under `/preview/invite-friends/`, so the feature can be tested without replacing production.
 
 ### Changed

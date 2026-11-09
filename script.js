@@ -348,6 +348,7 @@ const I18N = {
     "actions.newMatch": "New match",
     "actions.nextRound": "Next round",
     "actions.undo": "Cancel turn",
+    "actions.resync": "Refresh table",
     "actions.export": "Export JSON",
     "actions.continue": "Continue",
     "actions.keep": "Keep playing",
@@ -750,6 +751,7 @@ const I18N = {
     "invite.top": "Invite",
     "invite.action": "Invite friends",
     "invite.title": "Invite friends",
+    "invite.roomInfo": "Room info",
     "invite.lead": "Turn this solo table into a hosted room. Friends join with the room number and PIN, then you approve them.",
     "invite.starting": "Opening a room…",
     "invite.failed": "Could not open the room: {error}. Your solo game is still running.",
@@ -777,6 +779,22 @@ const I18N = {
     "net.joinQueuedRound": "The host approved you. You will join at the next round.",
     "net.joinQueuedMatch": "The host approved you. You will join at the next match.",
     "toast.netQueued": "{name} approved — joins after this trick.",
+    "toast.resyncRequested": "Asking the host for the current table…",
+    "toast.resynced": "Table refreshed from the host — try again.",
+    "toast.resyncFailed": "Still not in sync. Ask the host to send the table again.",
+    "toast.actionPending": "Waiting for the host to confirm…",
+    "toast.actionUnconfirmed": "That action was not confirmed. Refreshing the table — try again.",
+    "joinRequest.title": "{name} wants to join",
+    "joinRequest.titleMany": "{n} people want to join",
+    "joinRequest.bodyNow": "Give them {seat}'s seat now? Their name replaces the bot on the table.",
+    "joinRequest.bodyTrick": "Give them {seat}'s seat after this trick? The bot keeps playing until then.",
+    "joinRequest.bodyRound": "Give them {seat}'s seat at the next round? The bot keeps playing until then.",
+    "joinRequest.bodyMatch": "Give them {seat}'s seat in the next match? The bot keeps playing until then.",
+    "joinRequest.bodyFull": "No bot seat is free. They can watch only, or you can deny them.",
+    "joinRequest.approve": "Allow",
+    "joinRequest.viewer": "Watch only",
+    "joinRequest.deny": "Deny",
+    "joinRequest.later": "Later",
     "net.waitingApproval": "Waiting for the host to approve you…",
     "net.rejected.denied": "The host declined your request.",
     "net.rejected.bad-pin": "Wrong room PIN.",
@@ -795,6 +813,8 @@ const I18N = {
     "net.connectedWaiting": "Connected. The host will start when ready.",
     "net.reconnected": "Reconnected — restoring your seat…",
     "net.reconnecting": "Reconnecting to your seat…",
+    "net.reconnect": "Reconnect",
+    "net.stillWaiting": "Still waiting for the host. Try Reconnect.",
     "net.hostRestarting": "The host is restarting — reconnecting…",
     "net.resumingHost": "Restoring the hosted room…",
     "net.lobbyOpen": "Room open. Share the code or invite link.",
@@ -985,6 +1005,7 @@ const I18N = {
     "actions.newMatch": "แมตช์ใหม่",
     "actions.nextRound": "รอบถัดไป",
     "actions.undo": "ยกเลิกตานี้",
+    "actions.resync": "ซิงก์โต๊ะ",
     "actions.export": "ส่งออก JSON",
     "actions.continue": "เล่นต่อ",
     "actions.keep": "เล่นต่อ",
@@ -1390,6 +1411,7 @@ const I18N = {
     "invite.top": "ชวน",
     "invite.action": "ชวนเพื่อน",
     "invite.title": "ชวนเพื่อน",
+    "invite.roomInfo": "ข้อมูลห้อง",
     "invite.lead": "เปลี่ยนโต๊ะเล่นคนเดียวนี้เป็นห้อง host เพื่อนเข้าด้วยเลขห้องและ PIN แล้วคุณอนุมัติ",
     "invite.starting": "กำลังเปิดห้อง…",
     "invite.failed": "เปิดห้องไม่สำเร็จ: {error} เกม solo ยังเล่นต่อได้",
@@ -1417,6 +1439,22 @@ const I18N = {
     "net.joinQueuedRound": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้ารอบถัดไป",
     "net.joinQueuedMatch": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้าแมตช์ถัดไป",
     "toast.netQueued": "อนุมัติ {name} แล้ว — จะเข้าหลังจบตา",
+    "toast.resyncRequested": "กำลังขอสถานะล่าสุดจากเจ้าบ้าน…",
+    "toast.resynced": "ซิงก์โต๊ะล่าสุดแล้ว — ลองอีกครั้ง",
+    "toast.resyncFailed": "ยังไม่ตรงกัน ลองขอเจ้าบ้านส่งโต๊ะอีกครั้ง",
+    "toast.actionPending": "กำลังรอเจ้าบ้านยืนยัน…",
+    "toast.actionUnconfirmed": "ยังไม่ได้รับการยืนยัน กำลังซิงก์โต๊ะใหม่ ลองอีกครั้ง",
+    "joinRequest.title": "{name} ขอเข้าร่วม",
+    "joinRequest.titleMany": "มี {n} คนขอเข้าร่วม",
+    "joinRequest.bodyNow": "ให้ {name} นั่งแทน {seat} เลยไหม ชื่อจะแทนบอทบนโต๊ะทันที",
+    "joinRequest.bodyTrick": "ให้ {name} นั่งแทน {seat} หลังจบตานี้ไหม บอทจะเล่นต่อจนจบตา",
+    "joinRequest.bodyRound": "ให้ {name} นั่งแทน {seat} ในรอบถัดไปไหม บอทจะเล่นต่อจนจบรอบ",
+    "joinRequest.bodyMatch": "ให้ {name} นั่งแทน {seat} ในแมตช์ถัดไปไหม บอทจะเล่นต่อจนจบแมตช์",
+    "joinRequest.bodyFull": "ไม่มีที่นั่งบอทว่าง ให้ดูอย่างเดียวหรือปฏิเสธได้",
+    "joinRequest.approve": "อนุญาต",
+    "joinRequest.viewer": "ดูอย่างเดียว",
+    "joinRequest.deny": "ปฏิเสธ",
+    "joinRequest.later": "ไว้ก่อน",
     "net.waitingApproval": "กำลังรอเจ้าบ้านอนุมัติ…",
     "net.rejected.denied": "เจ้าบ้านปฏิเสธคำขอของคุณ",
     "net.rejected.bad-pin": "PIN ห้องไม่ถูกต้อง",
@@ -1435,6 +1473,8 @@ const I18N = {
     "net.connectedWaiting": "เชื่อมต่อแล้ว เจ้าบ้านจะเริ่มเมื่อพร้อม",
     "net.reconnected": "กลับเข้าห้องแล้ว — กำลังคืนที่นั่ง…",
     "net.reconnecting": "กำลังกลับเข้าที่นั่งเดิม…",
+    "net.reconnect": "เชื่อมต่อใหม่",
+    "net.stillWaiting": "ยังรอเจ้าบ้านอยู่ ลองเชื่อมต่อใหม่",
     "net.hostRestarting": "เจ้าบ้านกำลังรีสตาร์ท — กำลังเชื่อมต่อใหม่…",
     "net.resumingHost": "กำลังคืนห้องที่เปิดอยู่…",
     "net.lobbyOpen": "ห้องเปิดอยู่ แชร์รหัสหรือลิงก์เชิญ",
@@ -1942,6 +1982,14 @@ const pendingTimers = new Map();
 let queuedGuests = new Map();
 let inviteStarting = false;
 let inviteError = "";
+let dismissedJoinRequests = new Set();
+let resyncPending = false;
+let resyncTimer = null;
+let statePulseTimer = null;
+let actionSeq = 0;
+let pendingAction = null;
+let actionAckTimer = null;
+let lastResyncToastAt = 0;
 let roomPinPlain = "";
 let joinToken = 0;
 let hostRejoinTimer = null;
@@ -1978,6 +2026,8 @@ const VERSION_CHECK_MS = 5 * 60 * 1000;
 const PLAYER_NAME_KEY = "leabtui.name.v1";
 const ROOM_INTENT_KEY = "leabtui.room.v1";
 const REJOIN_KEY = "leabtui.rejoin.v1";
+const REJOIN_CARD_KEY = "leabtui.seat.v1";
+const REJOIN_CARD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const HOST_RECOVERY_KEY = "leabtui.host.v1";
 const LAUNCH_KEY = "leabtui.launch.v1";
 
@@ -3394,6 +3444,7 @@ function closeModal(id) {
   const modal = $(`#${id}`);
   if (modal) modal.hidden = true;
   if (id === "summaryModal") stopParty();
+  if (id === "inviteModal") renderJoinRequestPopup();
 }
 
 let threeLib = null;
@@ -4565,9 +4616,58 @@ function maybePublishHandLayout() {
   publishHandLayout(scene.exportHandSlots());
 }
 
+function clearPendingAction() {
+  pendingAction = null;
+  clearTimeout(actionAckTimer);
+  actionAckTimer = null;
+}
+
 function sendNetAction(kind, tileIds, reveal = false, value = null) {
   if (!isClient() || !net?.client) return false;
-  return net.client.send({ type: "action", kind, tiles: tileIds, reveal: Boolean(reveal), value });
+  if (pendingAction) {
+    toast(t("toast.actionPending"), "gold");
+    return false;
+  }
+  actionSeq += 1;
+  const actionId = `${MY_SEAT}-${Date.now().toString(36)}-${actionSeq}`;
+  const sent = net.client.send({ type: "action", actionId, kind, tiles: tileIds, reveal: Boolean(reveal), value });
+  if (!sent) return false;
+  pendingAction = { id: actionId, kind, at: Date.now() };
+  clearTimeout(actionAckTimer);
+  actionAckTimer = setTimeout(() => {
+    if (!pendingAction) return;
+    pendingAction = null;
+    actionAckTimer = null;
+    toast(t("toast.actionUnconfirmed"), "wine");
+    requestResync({ silent: true });
+  }, 3500);
+  return true;
+}
+
+function requestResync(options = {}) {
+  if (!isClient() || !net?.client || !net.started) return false;
+  if (resyncPending) return false;
+  resyncPending = true;
+  clearTimeout(resyncTimer);
+  const sent = net.client.send({ type: "resync" });
+  if (!sent) {
+    resyncPending = false;
+    return false;
+  }
+  resyncTimer = setTimeout(() => {
+    resyncPending = false;
+    toast(t("toast.resyncFailed"), "wine");
+  }, 5000);
+  if (!options.silent) toast(t("toast.resyncRequested"), "gold");
+  return true;
+}
+
+function finishResync() {
+  if (!resyncPending) return false;
+  resyncPending = false;
+  clearTimeout(resyncTimer);
+  resyncTimer = null;
+  return true;
 }
 
 function makeGhostTile(id) {
@@ -4749,6 +4849,24 @@ function queuePublish() {
   if (!isHost()) return;
   clearTimeout(publishTimer);
   publishTimer = setTimeout(publishState, NET_TICK_MS);
+}
+
+function startStatePulse() {
+  clearInterval(statePulseTimer);
+  statePulseTimer = setInterval(() => {
+    if (!isHost() || !net?.started || !net.host) return;
+    const seq = net.seq || 0;
+    for (const profile of SEAT_PROFILES || []) {
+      if (profile?.kind === "human" && profile.connId) {
+        net.host.send(profile.connId, { type: "pulse", seq });
+      }
+    }
+  }, 3000);
+}
+
+function stopStatePulse() {
+  clearInterval(statePulseTimer);
+  statePulseTimer = null;
 }
 
 function publishState() {
@@ -5393,6 +5511,11 @@ function hostMessage({ connId, message }) {
     case "action": {
       const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
       if (!profile) return;
+      const actionId = typeof message.actionId === "string" ? message.actionId.slice(0, 80) : "";
+      if (actionId && profile.lastActionId === actionId) {
+        if (profile.lastActionAck) net.host.send(connId, profile.lastActionAck);
+        return;
+      }
       const tiles = Array.isArray(message.tiles) ? message.tiles.filter((id) => typeof id === "string").slice(0, 6) : [];
       const ok = message.kind === "lead"
         ? leadTrick(profile.seat, tiles)
@@ -5409,7 +5532,10 @@ function hostMessage({ connId, message }) {
                   : message.kind === "draft"
                     ? draftPick(profile.seat, message.tiles)
                     : false;
-      if (!ok) net.host.send(connId, { type: "rejected", reason: "illegal" });
+      const ack = { type: "action-ack", actionId, ok: Boolean(ok), reason: ok ? null : "illegal", seq: net.seq || 0 };
+      profile.lastActionId = actionId || null;
+      profile.lastActionAck = ack;
+      net.host.send(connId, ack);
       break;
     }
     case "chat": {
@@ -5447,6 +5573,24 @@ function hostMessage({ connId, message }) {
     case "ping":
       net.host.send(connId, { type: "pong", at: Date.now() });
       break;
+    case "resync": {
+      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      if (!profile || !net?.started || !state) return;
+      const now = Date.now();
+      if (profile.resyncAt && now - profile.resyncAt < 800) return;
+      profile.resyncAt = now;
+      net.host.send(connId, {
+        type: "state",
+        roomCode: net.code,
+        seq: net.seq || 0,
+        seat: profile.seat,
+        players: serialiseRoster(),
+        hostName: net.name,
+        resync: true,
+        state: sanitizeForSeat(state, profile.seat)
+      });
+      break;
+    }
     case "leave": {
       if (queuedGuests.has(connId)) {
         clearQueued(connId, "");
@@ -5740,6 +5884,7 @@ async function resumeHostRoom(recovery) {
     renderNetChrome();
     syncVoicePeers();
     acquireHostWakeLock();
+    startStatePulse();
     queuePublish();
     saveHostRecovery();
     const url = new URL(location.href);
@@ -5798,6 +5943,7 @@ function startHostedMatch() {
   }
   closeLobby();
   beginMatch();
+  startStatePulse();
   toast(t("toast.netStarted", { code: formatRoomCode(net.code) }), "gold");
   sendLobbyToGuests();
   publishState();
@@ -5808,6 +5954,11 @@ function clientMessage({ message }) {
   if (!isProtocolMessage(message)) return;
   switch (message.type) {
     case "welcome": {
+      if (net) {
+        net.welcomed = true;
+        net.handshakeAck = true;
+      }
+      clearPendingAction();
       const welcomeSeat = Number(message.seat);
       MY_SEAT = Number.isInteger(welcomeSeat) && welcomeSeat >= -1 ? welcomeSeat : 1;
       net.viewer = Boolean(message.viewer) || MY_SEAT < 0;
@@ -5832,7 +5983,8 @@ function clientMessage({ message }) {
         players: message.players,
         status: message.rejoin ? t("net.reconnected") : t("net.connectedWaiting"),
         started: net.started,
-        pending: false
+        pending: false,
+        pin: net?.pin || lobbyState?.pin
       };
       chatHistory = Array.isArray(message.chat) ? message.chat.slice(-30) : [];
       if (message.state) {
@@ -5844,6 +5996,7 @@ function clientMessage({ message }) {
       renderNetChrome();
       renderChat();
       syncVoicePeers();
+      maybeJoinAutoAudio();
       audio?.play("win", 0);
       break;
     }
@@ -5866,12 +6019,28 @@ function clientMessage({ message }) {
         renderLobby();
       }
       syncVoicePeers();
+      maybeJoinAutoAudio();
       break;
-    case "state":
+    case "state": {
+      if (net) {
+        net.welcomed = true;
+        net.lastSeq = Number(message.seq) || net.lastSeq || 0;
+      }
+      finishResync();
       if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
       applyRemoteState(message.state);
       syncVoicePeers();
+      maybeJoinAutoAudio();
+      if (message.resync) {
+        clearPendingAction();
+        const now = Date.now();
+        if (now - lastResyncToastAt > 1200) {
+          lastResyncToastAt = now;
+          toast(t("toast.resynced"), "jade");
+        }
+      }
       break;
+    }
     case "hand-layout":
       if (Number.isInteger(message.seat) && message.seat !== MY_SEAT) {
         const slots = sanitizeHandSlots(message.slots);
@@ -5882,6 +6051,7 @@ function clientMessage({ message }) {
       if (message.entry) appendChat(message.entry);
       break;
     case "pending": {
+      if (net) net.handshakeAck = true;
       const queued = Boolean(message.queued);
       if (queued && message.rejoinToken) {
         saveRejoinSeat({
@@ -5904,17 +6074,32 @@ function clientMessage({ message }) {
         pending: !queued,
         queued,
         joinAfter,
-        seat: queued ? Number(message.seat) : null
+        seat: queued ? Number(message.seat) : null,
+        pin: lobbyState?.pin || net?.pin
       };
       showLobby("waiting");
       renderLobby();
       break;
     }
+    case "action-ack": {
+      if (!pendingAction || message.actionId !== pendingAction.id) break;
+      clearPendingAction();
+      if (!message.ok) {
+        toast(t("net.rejected.illegal"), "wine");
+        requestResync({ silent: true });
+      }
+      break;
+    }
     case "rejected": {
-      if (net) net.rejected = true;
+      if (net) {
+        net.rejected = true;
+        net.handshakeAck = true;
+      }
       lastNetError = message.reason || "rejected";
       if (message.reason === "illegal") {
+        clearPendingAction();
         toast(t("net.rejected.illegal"), "wine");
+        requestResync({ silent: true });
         break;
       }
       if (["bad-pin", "in-progress", "denied"].includes(message.reason)) clearRejoinSeat();
@@ -5933,6 +6118,9 @@ function clientMessage({ message }) {
     }
     case "closed":
       handleHostLost({ intentional: true });
+      break;
+    case "pulse":
+      if (isClient() && net?.started && Number(message.seq) > (net.lastSeq || 0)) requestResync({ silent: true });
       break;
     case "pong":
       remoteClock = Date.now() - Number(message.at || Date.now());
@@ -5990,7 +6178,10 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
   }
   const handle = cleanGuestName(name, t("net.guestDefault"));
   const roomPin = normalisePin(pin);
-  const storedRejoin = rejoinToken || loadRejoinSeat(normalized)?.token || "";
+  const storedCard = loadRejoinSeat(normalized);
+  const explicitHandle = cleanGuestName(name || "", "");
+  const cardNameMatches = Boolean(storedCard && (!explicitHandle || !storedCard.name || explicitHandle === storedCard.name));
+  const storedRejoin = rejoinToken || (cardNameMatches ? storedCard.token : "");
   const reconnecting = Boolean(storedRejoin);
   saveRoomIntent({ role: "guest", code: normalized, name: handle });
   const token = ++joinToken;
@@ -6005,6 +6196,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
     hostName: "",
     started: false,
     name: handle,
+    pin: roomPin,
     reconnecting
   };
   showLobby(reconnecting ? "waiting" : "join");
@@ -6014,6 +6206,13 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
     connectButton.textContent = t("net.connecting");
   }
   let client = null;
+  const sendHello = () => client?.send({
+    type: "hello",
+    name: handle,
+    pin: roomPin,
+    protocol: PROTOCOL_VERSION,
+    rejoinToken: storedRejoin
+  });
   const makeClient = () => {
     client = new PeerClient({
       code: normalized,
@@ -6021,7 +6220,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
       connectTimeoutMs: auto ? 4500 : 11000,
       onMessage: clientMessage,
       onOpen: () => {
-        client.send({ type: "hello", name: handle, pin: roomPin, protocol: PROTOCOL_VERSION, rejoinToken: storedRejoin });
+        sendHello();
         setLobbyStatus(t("net.handshake"), "jade");
       },
       onClose: () => {
@@ -6035,7 +6234,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
         if (status === "dialing" && token === joinToken) setLobbyStatus(t("net.connecting"), "wine");
       }
     });
-    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false };
+    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0 };
     return client;
   };
   const autoMic = prefs.autoAudio ? preloadAudio() : null;
@@ -6048,8 +6247,9 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
         if (token !== joinToken) return;
         if (autoMic) {
           autoMic.then((stream) => {
-            if (stream && token === joinToken && isClient()) joinAudioWithStream(stream);
-            else if (stream && !voice?.joined) releaseAutoAudio();
+            if (!stream) return;
+            if (isClient()) maybeJoinAutoAudio();
+            else if (!voice?.joined) releaseAutoAudio();
           });
         }
         savePlayerName(handle);
@@ -6057,6 +6257,18 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
           connectButton.disabled = false;
           connectButton.textContent = t("net.connect");
         }
+        const handshakeStart = Date.now();
+        const retryHandshake = () => {
+          if (token !== joinToken || !isClient()) return;
+          if (net?.welcomed || net?.handshakeAck) return;
+          if (Date.now() - handshakeStart > 24000) {
+            setLobbyStatus(t("net.stillWaiting"), "wine");
+            return;
+          }
+          if (lobbyState?.view === "waiting") sendHello();
+          setTimeout(retryHandshake, 6000);
+        };
+        setTimeout(retryHandshake, 5000);
         return;
       } catch (error) {
         const failedClient = client;
@@ -6116,6 +6328,7 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
   releaseAutoAudio();
   lastHandLayoutSig = "";
   clearTimeout(publishTimer);
+  stopStatePulse();
   actionToken += 1;
   joinToken += 1;
   const role = net?.role;
@@ -6157,6 +6370,8 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
   net = null;
   SEAT_PROFILES = null;
   queuedGuests = new Map();
+  dismissedJoinRequests = new Set();
+  clearPendingAction();
   inviteStarting = false;
   inviteError = "";
   MY_SEAT = 0;
@@ -6259,19 +6474,32 @@ function saveRejoinSeat(info) {
     if (!info?.token) return;
     const code = normalizeRoomCode(info.code || "");
     if (!code) return;
-    sessionStorage.setItem(REJOIN_KEY, JSON.stringify({
+    const card = {
       code,
       seat: Number(info.seat) || 0,
       token: String(info.token),
-      name: cleanGuestName(info.name || "", "")
-    }));
+      name: cleanGuestName(info.name || "", ""),
+      expiresAt: Date.now() + REJOIN_CARD_TTL_MS
+    };
+    sessionStorage.setItem(REJOIN_KEY, JSON.stringify(card));
+    localStorage.setItem(REJOIN_CARD_KEY, JSON.stringify(card));
   } catch { /* storage may be denied */ }
 }
 
 function loadRejoinSeat(code) {
   try {
     const normalized = normalizeRoomCode(code || "");
-    const parsed = JSON.parse(sessionStorage.getItem(REJOIN_KEY) || "null");
+    let parsed = null;
+    try { parsed = JSON.parse(sessionStorage.getItem(REJOIN_KEY) || "null"); } catch { parsed = null; }
+    if (!parsed || parsed.code !== normalized || !parsed.token) {
+      try {
+        const card = JSON.parse(localStorage.getItem(REJOIN_CARD_KEY) || "null");
+        if (card && card.code === normalized && card.token && Number(card.expiresAt) > Date.now()) {
+          parsed = card;
+          sessionStorage.setItem(REJOIN_KEY, JSON.stringify(card));
+        }
+      } catch { /* storage may be denied */ }
+    }
     if (!parsed || parsed.code !== normalized || !parsed.token) return null;
     return { code: normalized, seat: Number(parsed.seat) || 0, token: String(parsed.token), name: cleanGuestName(parsed.name || "", "") };
   } catch { return null; }
@@ -6279,6 +6507,7 @@ function loadRejoinSeat(code) {
 
 function clearRejoinSeat() {
   try { sessionStorage.removeItem(REJOIN_KEY); } catch { /* ignore */ }
+  try { localStorage.removeItem(REJOIN_CARD_KEY); } catch { /* ignore */ }
 }
 
 function renderRuleSelects() {
@@ -6681,6 +6910,8 @@ function renderLobby() {
   if (soloFromLost) soloFromLost.hidden = !(view === "lost" || view === "join");
   const waitLeave = $("#lobbyWaitLeave");
   if (waitLeave) waitLeave.hidden = view === "lost";
+  const retryJoin = $("#lobbyRetryBtn");
+  if (retryJoin) retryJoin.hidden = !(view === "waiting" && isClient() && !net?.started);
   const copyInfo = $("#lobbyCopyInfo");
   if (copyInfo) {
     copyInfo.disabled = !code;
@@ -6691,6 +6922,7 @@ function renderLobby() {
   renderPending();
   renderPinReveal();
   renderInviteSheet();
+  renderNetChrome();
 }
 
 function showLobby(view = "menu") {
@@ -6717,6 +6949,55 @@ function closeLobby() {
 
 function canInviteFriends() {
   return Boolean(state && !isNetworked() && $("#lobbyModal")?.hidden !== false);
+}
+
+let joinPopupConnId = null;
+
+function hideJoinRequestPopup() {
+  const pop = $("#joinRequestPop");
+  if (pop) pop.hidden = true;
+  joinPopupConnId = null;
+}
+
+function renderJoinRequestPopup() {
+  const pop = $("#joinRequestPop");
+  if (!pop) return;
+  const requests = pendingList().filter((request) => !dismissedJoinRequests.has(request.connId));
+  const eligible = isHost()
+    && net?.started
+    && requests.length > 0
+    && $("#lobbyModal")?.hidden !== false
+    && $("#inviteModal")?.hidden !== false;
+  if (!eligible) {
+    pop.hidden = true;
+    joinPopupConnId = null;
+    return;
+  }
+  const request = requests[0];
+  const seat = findBotSeat();
+  const boundary = joinBoundary();
+  const many = requests.length > 1;
+  joinPopupConnId = request.connId;
+  pop.hidden = false;
+  pop.dataset.conn = request.connId;
+  if ($("#joinRequestTitle")) {
+    $("#joinRequestTitle").textContent = many
+      ? t("joinRequest.titleMany", { n: requests.length })
+      : t("joinRequest.title", { name: request.name });
+  }
+  if ($("#joinRequestBody")) {
+    const bodyKey = seat < 0 ? "joinRequest.bodyFull"
+      : boundary === "round" ? "joinRequest.bodyRound"
+      : boundary === "match" ? "joinRequest.bodyMatch"
+      : boundary === "trick" ? "joinRequest.bodyTrick"
+      : "joinRequest.bodyNow";
+    $("#joinRequestBody").textContent = t(bodyKey, {
+      name: request.name,
+      seat: seat >= 0 ? seatName(seat) : ""
+    });
+  }
+  const approve = $("#joinRequestApprove");
+  if (approve) approve.hidden = seat < 0;
 }
 
 function renderInviteSheet() {
@@ -6759,6 +7040,7 @@ async function hostCurrentMatch() {
   inviteStarting = true;
   inviteError = "";
   renderInviteSheet();
+  const autoMic = prefs.autoAudio ? preloadAudio() : null;
   const handle = preferredPlayerName() || loadPlayerName() || t("net.hostDefault");
   let host = null;
   try {
@@ -6776,6 +7058,7 @@ async function hostCurrentMatch() {
     };
     MY_SEAT = 0;
     queuedGuests = new Map();
+    dismissedJoinRequests = new Set();
     let botIndex = 1;
     SEAT_PROFILES = [0, 1, 2, 3].map((seat) => seat === 0
       ? { seat, name: handle, kind: "host", connected: true, host: true, peerId: host.id, voice: false }
@@ -6797,7 +7080,13 @@ async function hostCurrentMatch() {
     renderAll();
     renderInviteSheet();
     publishState();
+    startStatePulse();
     acquireHostWakeLock();
+    if (autoMic) autoMic.then((stream) => {
+      if (stream && isHost() && net?.started) maybeJoinAutoAudio();
+      else if (stream && !voice?.joined) releaseAutoAudio();
+    });
+    else maybeJoinAutoAudio();
     audio?.play("win", 0);
     return true;
   } catch (error) {
@@ -6819,6 +7108,7 @@ async function hostCurrentMatch() {
 }
 
 function openInviteSheet() {
+  hideJoinRequestPopup();
   if (!state) {
     showLobby("menu");
     return;
@@ -6940,7 +7230,7 @@ function renderNetChrome() {
       const compact = window.matchMedia("(max-width: 520px)").matches;
       const code = compact ? `${net.code.slice(0, 3)}-${net.code.slice(3)}` : formatRoomCode(net.code);
       chip.textContent = `${isHost() ? "◉" : "◇"} ${code}`;
-      chip.title = isHost() ? t("net.copyRoomInfo") : t("net.copyLink");
+      chip.title = isHost() ? t("invite.roomInfo") : t("net.copyLink");
     } else {
       chip.hidden = true;
       chip.textContent = "";
@@ -6956,6 +7246,8 @@ function renderNetChrome() {
   }
   const undo = $("#undoBtn");
   if (undo && isClient()) undo.disabled = true;
+  const resync = $("#resyncBtn");
+  if (resync) resync.hidden = !(isClient() && net?.started);
   const leave = $("#leaveRoomBtn");
   if (leave) leave.hidden = !isNetworked();
   const leaveTop = $("#leaveRoomTopBtn");
@@ -6970,8 +7262,18 @@ function renderNetChrome() {
   if (inviteTop) inviteTop.hidden = !canInviteFriends();
   const inviteAction = $("#inviteBtn");
   if (inviteAction) inviteAction.hidden = !canInviteFriends();
+  const waiting = isHost() ? pendingRequests.size + queuedGuests.size : 0;
+  const joinAlert = $("#joinAlertBtn");
+  if (joinAlert) {
+    joinAlert.hidden = waiting === 0;
+    const label = $("#joinAlertText");
+    if (label) label.textContent = t("net.pendingCount", { n: waiting });
+    joinAlert.title = t("net.pendingTitle");
+    joinAlert.setAttribute("aria-label", t("net.pendingTitle"));
+  }
   renderChatBadge();
   renderPanelRail();
+  renderJoinRequestPopup();
 }
 
 async function copyText(text, message) {
@@ -7061,6 +7363,15 @@ async function shareRoomInfo() {
     }
   }
   await copyRoomInfo();
+}
+
+function retryGuestJoin() {
+  const code = lobbyState?.roomCode || net?.code || "";
+  if (!code) return;
+  const name = lobbyState?.name || net?.name || loadPlayerName();
+  const pin = net?.pin || lobbyState?.pin || "";
+  const token = loadRejoinSeat(code)?.token || "";
+  joinRoom(code, name, pin, token, { auto: true });
 }
 
 async function probeRoom(code, pin = "") {
@@ -7432,6 +7743,8 @@ function preloadAudio() {
 
 function joinAudioWithStream(stream) {
   if (!stream || voice?.joined || !isNetworked()) return false;
+  /* A queued guest is not seated yet; wait for welcome/promotion. */
+  if (isClient() && (!net?.started || MY_SEAT < 1 || !SEAT_PROFILES)) return false;
   const engine = ensureVoice();
   engine.attach({
     peer: currentVoicePeer(),
@@ -7442,6 +7755,12 @@ function joinAudioWithStream(stream) {
   const joined = engine.joinWithStream(stream);
   if (joined) autoAudioStream = stream;
   return joined;
+}
+
+function maybeJoinAutoAudio() {
+  if (!prefs.autoAudio || voice?.joined || !isNetworked()) return false;
+  if (isClient() && (!net?.started || MY_SEAT < 1 || !SEAT_PROFILES)) return false;
+  return autoAudioStream ? joinAudioWithStream(autoAudioStream) : false;
 }
 
 function releaseAutoAudio() {
@@ -9595,11 +9914,36 @@ function bindEvents() {
     audio?.play("click", 0);
   });
   $("#netChip")?.addEventListener("click", () => {
-    if (isHost()) copyRoomInfo();
+    if (isHost() && net?.started) openInviteSheet();
+    else if (isHost()) copyRoomInfo();
     else copyInvite();
+  });
+  $("#joinAlertBtn")?.addEventListener("click", openInviteSheet);
+  $("#joinRequestApprove")?.addEventListener("click", () => {
+    const connId = joinPopupConnId;
+    hideJoinRequestPopup();
+    if (connId) approvePending(connId);
+    renderJoinRequestPopup();
+  });
+  $("#joinRequestViewer")?.addEventListener("click", () => {
+    const connId = joinPopupConnId;
+    hideJoinRequestPopup();
+    if (connId) approvePending(connId, "viewer");
+    renderJoinRequestPopup();
+  });
+  $("#joinRequestDeny")?.addEventListener("click", () => {
+    const connId = joinPopupConnId;
+    hideJoinRequestPopup();
+    if (connId) denyPending(connId);
+    renderJoinRequestPopup();
+  });
+  $("#joinRequestLater")?.addEventListener("click", () => {
+    if (joinPopupConnId) dismissedJoinRequests.add(joinPopupConnId);
+    hideJoinRequestPopup();
   });
   $("#inviteTopBtn")?.addEventListener("click", openInviteSheet);
   $("#inviteBtn")?.addEventListener("click", openInviteSheet);
+  $("#resyncBtn")?.addEventListener("click", () => requestResync());
   $("#inviteCopyInfo")?.addEventListener("click", copyRoomInfo);
   $("#inviteCopyLink")?.addEventListener("click", copyInvite);
   $("#inviteShare")?.addEventListener("click", shareRoomInfo);
@@ -9774,6 +10118,7 @@ function bindEvents() {
       });
     }
   });
+  $("#lobbyRetryBtn")?.addEventListener("click", retryGuestJoin);
   $("#lobbyWaitLeave")?.addEventListener("click", requestLeaveRoom);
   $("#lobbyResumeBtn")?.addEventListener("click", closeLobby);
   $("#lobbySoloFromLost")?.addEventListener("click", backToSolo);
@@ -9900,6 +10245,7 @@ function bindEvents() {
       showLobby(lobbyState.view);
     }
     if (isHost()) acquireHostWakeLock();
+    if (isClient() && net?.started) requestResync({ silent: true });
     checkForUpdate();
   });
   window.addEventListener("pagehide", (event) => {
@@ -10040,7 +10386,8 @@ async function boot() {
       const explicitName = cleanGuestName(params.get("name") || "", "");
       const explicitPin = normalisePin(params.get("pin") || "");
       const rejoin = loadRejoinSeat(autoRoom);
-      if (rejoin) {
+      const rejoinMatchesName = Boolean(rejoin && (!explicitName || !rejoin.name || explicitName === rejoin.name));
+      if (rejoin && rejoinMatchesName) {
         const rejoinName = restoreName || rejoin.name || explicitName || loadPlayerName();
         joinRoom(autoRoom, rejoinName, "", rejoin.token);
         return;
@@ -10124,6 +10471,7 @@ window.LeabTui = {
       peerId: isHost() ? net.host?.id : net.client?.hostId,
       pending: isHost() ? pendingList() : [],
       queued: isHost() ? queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })) : [],
+      lastSeq: isClient() ? (net.lastSeq || 0) : null,
       approval: isHost() ? Boolean(net.security?.approval) : null,
       pinSet: isHost() ? Boolean(net.security?.pinSet) : null,
       lastPublished
@@ -10137,6 +10485,7 @@ window.LeabTui = {
     start: () => startHostedMatch(),
     pending: () => pendingList().map((request) => ({ connId: request.connId, name: request.name, at: request.at })),
     queued: () => queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })),
+    resync: () => requestResync(),
     approve: approvePending,
     deny: denyPending,
     pauseJoins: () => pauseJoinRequests(),

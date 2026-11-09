@@ -105,6 +105,10 @@
           <span aria-hidden="true">⏏</span><span class="leave-top-label" data-i18n="net.leave">Leave room</span>
         </button>
         <button id="netChip" class="pill net-chip" type="button" hidden aria-label="Room code">—</button>
+        <button id="joinAlertBtn" class="pill join-alert" type="button" hidden aria-label="Join requests" data-i18n-aria="net.pendingTitle" title="Join requests">
+          <span class="join-alert-icon" aria-hidden="true">＋</span>
+          <span id="joinAlertText">1 waiting</span>
+        </button>
         <button id="rulesBtn" class="icon-btn" type="button" aria-label="Rules" title="Rules">
           <span aria-hidden="true">?</span>
         </button>
@@ -222,6 +226,7 @@
             <button id="newMatchBtn" class="btn btn-ghost" type="button" data-i18n="actions.newMatch">New match</button>
             <button id="nextRoundBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.nextRound">Next round</button>
             <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo trick</button>
+            <button id="resyncBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.resync">Refresh table</button>
             <button id="exportBtn" class="btn btn-ghost" type="button" data-i18n="actions.export">Export JSON</button>
             <button id="lobbyBtn" class="btn btn-ghost" type="button" data-i18n="net.openLobby">Multiplayer</button>
             <button id="copyRoomBtn" class="btn btn-ghost" type="button" hidden data-i18n="net.copyRoomInfo">Copy room info</button>
@@ -522,6 +527,7 @@
           </div>
           <div id="lobbyWaitRoster" class="lobby-roster"></div>
           <div class="modal-actions">
+            <button id="lobbyRetryBtn" class="btn btn-ghost" type="button" hidden data-i18n="net.reconnect">Reconnect</button>
             <button id="lobbyWaitLeave" class="btn btn-ghost" type="button" data-i18n="net.leave">Leave room</button>
             <button id="lobbyResumeBtn" class="btn btn-gold" type="button" hidden data-i18n="net.resume">Back to table</button>
             <button id="lobbySoloFromLost" class="btn btn-gold" type="button" data-i18n="net.solo">Play solo</button>
@@ -574,6 +580,24 @@
           <div id="inviteSeats" class="lobby-roster"></div>
         </div>
         <p class="invite-version"><span class="version-label">v1.9.22</span></p>
+      </div>
+    </div>
+
+    <div id="joinRequestPop" class="join-request-pop" hidden role="dialog" aria-live="assertive" aria-labelledby="joinRequestTitle">
+      <div class="join-request-card">
+        <div class="join-request-head">
+          <span class="join-request-icon" aria-hidden="true">＋</span>
+          <div>
+            <h2 id="joinRequestTitle">A friend wants to join</h2>
+            <p id="joinRequestBody"></p>
+          </div>
+        </div>
+        <div class="join-request-actions">
+          <button id="joinRequestApprove" class="btn btn-gold" type="button" data-i18n="joinRequest.approve">Allow</button>
+          <button id="joinRequestViewer" class="btn btn-ghost" type="button" data-i18n="joinRequest.viewer">Watch only</button>
+          <button id="joinRequestDeny" class="btn btn-wine" type="button" data-i18n="joinRequest.deny">Deny</button>
+          <button id="joinRequestLater" class="btn btn-ghost" type="button" data-i18n="joinRequest.later">Later</button>
+        </div>
       </div>
     </div>
 
