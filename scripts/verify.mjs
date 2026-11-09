@@ -289,6 +289,11 @@ async function main() {
     const toastRect = document.querySelector('.toast-layer')?.getBoundingClientRect();
     const hudRect = document.querySelector('.hud-strip')?.getBoundingClientRect();
     const toastClear = Boolean(toastRect && hudRect && toastRect.top >= hudRect.bottom - 1);
+    const rail = document.querySelector('#panelRail');
+    const railOrbs = rail
+      ? [...rail.querySelectorAll('.panel-orb')].filter((node) => !node.hidden && getComputedStyle(node).display !== 'none').map((node) => node.textContent.trim())
+      : [];
+    const railState = { hidden: Boolean(rail?.hidden), display: rail ? getComputedStyle(rail).display : 'missing', orbs: railOrbs };
     document.querySelector('#dockFold')?.click();
     await sleep(1000);
     const expanded = LeabTui.getFraming();
@@ -304,6 +309,7 @@ async function main() {
       inspector,
       toasts,
       toastClear,
+      rail: railState,
       three: { topView: three?.topView, shadows: three?.shadows },
       two: { topView: two.cam?.topView, shadows: two.cam?.shadows, frame: two.frame },
       coarse: matchMedia('(pointer: coarse)').matches,
@@ -327,6 +333,9 @@ async function main() {
     else fail(`iPad ${orientation} hint toast names the suggested set`, JSON.stringify(value.toasts));
     if (value.toastClear === true) pass(`iPad ${orientation} toast clears the HUD strip`);
     else fail(`iPad ${orientation} toast clears the HUD strip`, JSON.stringify({ toasts: value.toasts, clear: value.toastClear }));
+    const expectedOrbs = ["C", "M", "A", "i", "H", "L"];
+    if (value.rail?.hidden === false && value.rail?.display === "flex" && expectedOrbs.every((label) => value.rail?.orbs?.includes(label))) pass(`iPad ${orientation} keeps the C/M/A/i/H/L panel rail visible`);
+    else fail(`iPad ${orientation} keeps the C/M/A/i/H/L panel rail visible`, JSON.stringify(value.rail));
     if (value.three?.topView === false && value.three?.shadows === true) pass(`iPad ${orientation} 3D enables shadows`);
     else fail(`iPad ${orientation} 3D enables shadows`, JSON.stringify(value.three));
     if (value.two?.topView === true && value.two?.shadows === false && value.two?.frame?.fits && value.two?.frame?.clearOfDock) pass(`iPad ${orientation} returns to a fitted, shadow-free 2D view`);

@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.20";
-import { VoiceChat } from "./voice-chat.js?v=1.9.20";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.20";
+} from "./peer-manager.js?v=1.9.21";
+import { VoiceChat } from "./voice-chat.js?v=1.9.21";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.21";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.20",
+  version: "1.9.21",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -6398,7 +6398,10 @@ function closeLobby() {
 }
 
 function isPanelRailMode() {
-  return window.matchMedia("(max-width: 1024px)").matches;
+  /* Must match the CSS rule that hides the sidebar. On iPad landscape the
+     viewport is wider than 1024 px, but `(pointer: coarse)` still hides the
+     sidebar, so the rail has to take over there too. */
+  return window.matchMedia("(max-width: 1024px), (pointer: coarse)").matches;
 }
 
 function setDockCollapsed(collapsed, options = {}) {
@@ -9218,7 +9221,7 @@ function bindEvents() {
     if (!dock) return;
     setDockCollapsed(!dock.classList.contains("dock-collapsed"));
   });
-  window.matchMedia("(max-width: 1024px)").addEventListener("change", renderPanelRail);
+  window.matchMedia("(max-width: 1024px), (pointer: coarse)").addEventListener("change", renderPanelRail);
   window.matchMedia("(max-width: 520px)").addEventListener("change", renderNetChrome);
   window.addEventListener("resize", () => requestAnimationFrame(updateLobbyScrollState));
   window.addEventListener("resize", () => requestAnimationFrame(positionToastLayer));

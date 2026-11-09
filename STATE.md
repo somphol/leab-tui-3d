@@ -3,7 +3,7 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.9.20**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.9.21**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 >
 > **Continuation handoff:** [`docs/CONTINUATION.md`](docs/CONTINUATION.md) — current behaviour, invariants, open items and release routine.
 
@@ -12,9 +12,9 @@
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.9.20` |
+| App version | `1.9.21` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.9.20, self-test 38/38) |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.9.21, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js`, `manifest.webmanifest`, `icons/` |
@@ -24,6 +24,10 @@
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.9.21 — the panel rail returns in iPad landscape
+
+At 1180 px wide the CSS hides the sidebar because the pointer is coarse, but the rail mode only checked `max-width: 1024px`, so both the sidebar and the C/M/A/i/H/L circle rail disappeared. `isPanelRailMode()` now uses the same `(max-width: 1024px), (pointer: coarse)` query as the sidebar rule, and its media listener follows it. The circular navigation is back on iPad horizontal.
 
 ## Release 1.9.20 — readable hints and hand controls on iPad
 

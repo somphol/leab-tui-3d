@@ -140,6 +140,12 @@ The 820×1180 portrait stage fitted to the whole rim: the 2D camera computes its
 
 The Thai hint toast sits below the HUD and names the suggested set. The inspector opens on the selected tile, and both hand controls read **H** in the panel rail and collapsed dock.
 
+## iPad landscape — panel rail
+
+![iPad landscape rail](../screenshots/ipad-landscape-rail-1921.jpg)
+
+The 1.9.21 fix: at 1180 px the sidebar is hidden for coarse pointers, so the C/M/A/i/H/L circle rail is the navigation. It now follows the same media query and is visible in landscape.
+
 ## iPad landscape — table
 
 ![iPad landscape table](../screenshots/ipad-landscape-1919.jpg)

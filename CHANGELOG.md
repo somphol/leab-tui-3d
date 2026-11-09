@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.21] — 2026-11-08
+
+### Fixed
+
+- **The C/M/A/i/H/L panel rail now appears on iPad landscape.** At 1180 px wide the CSS hid the sidebar because the pointer is coarse, but `isPanelRailMode()` only checked `max-width: 1024px`, so the rail stayed hidden and both navigation sets disappeared. `isPanelRailMode()` now uses the same `(max-width: 1024px), (pointer: coarse)` query as the sidebar rule, and its media listener follows the same query. The circle buttons return on iPad horizontal.
+
 ## [1.9.20] — 2026-11-08
 
 ### Fixed
