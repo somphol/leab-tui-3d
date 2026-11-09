@@ -318,6 +318,8 @@ ok(script.includes("hostCurrentMatch: () => hostCurrentMatch") && script.include
 ok(script.includes("function renderJoinRequestPopup") && script.includes("function queueBotSeat"), "host request popup and queue renderer exist");
 ok(script.includes("action-ack") && script.includes("lastActionId") && script.includes("pendingAction"), "actions are acknowledged and deduplicated");
 ok(script.includes("function startStatePulse") && script.includes("function requestResync") && script.includes("lastSeq"), "sequence pulse and resync exist");
+ok(script.includes("function startClientWatchdog") && script.includes("toast.connectionStalled"), "guest watchdog reconnects a stalled channel");
+ok(script.includes("function checkGuestTurnTimeout") && script.includes('type: "seat-timeout"'), "host converts an unresponsive turn to a bot");
 ok(script.includes("REJOIN_CARD_KEY") && script.includes("REJOIN_CARD_TTL_MS"), "guest seat card has a local TTL");
 ok(script.includes('if (isHost() && net?.started) openInviteSheet();') && script.includes('t("invite.roomInfo")'), "host room chip opens room info instead of only copying");
 ok(read(".github/workflows/pages.yml").includes("preview/invite-friends"), "Pages workflow builds the invite preview subpath");

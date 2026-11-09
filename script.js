@@ -784,6 +784,9 @@ const I18N = {
     "toast.resyncFailed": "Still not in sync. Ask the host to send the table again.",
     "toast.actionPending": "Waiting for the host to confirm…",
     "toast.actionUnconfirmed": "That action was not confirmed. Refreshing the table — try again.",
+    "toast.connectionStalled": "Connection stalled — reconnecting to your seat…",
+    "net.seatTimeout": "Your turn timed out. Reconnecting to reclaim your seat…",
+    "invite.turnTimeout": "{name} did not act within 30 seconds — the bot took the seat.",
     "joinRequest.title": "{name} wants to join",
     "joinRequest.titleMany": "{n} people want to join",
     "joinRequest.bodyNow": "Give them {seat}'s seat now? Their name replaces the bot on the table.",
@@ -1444,6 +1447,9 @@ const I18N = {
     "toast.resyncFailed": "ยังไม่ตรงกัน ลองขอเจ้าบ้านส่งโต๊ะอีกครั้ง",
     "toast.actionPending": "กำลังรอเจ้าบ้านยืนยัน…",
     "toast.actionUnconfirmed": "ยังไม่ได้รับการยืนยัน กำลังซิงก์โต๊ะใหม่ ลองอีกครั้ง",
+    "toast.connectionStalled": "การเชื่อมต่อสะดุด กำลังกลับเข้าที่นั่งเดิม…",
+    "net.seatTimeout": "หมดเวลาตาของคุณ กำลังกลับเข้าที่นั่งเดิม…",
+    "invite.turnTimeout": "{name} ไม่ได้เล่นภายใน 30 วินาที — บอทรับที่นั่งแทน",
     "joinRequest.title": "{name} ขอเข้าร่วม",
     "joinRequest.titleMany": "มี {n} คนขอเข้าร่วม",
     "joinRequest.bodyNow": "ให้ {name} นั่งแทน {seat} เลยไหม ชื่อจะแทนบอทบนโต๊ะทันที",
@@ -1990,6 +1996,8 @@ let actionSeq = 0;
 let pendingAction = null;
 let actionAckTimer = null;
 let lastResyncToastAt = 0;
+let clientWatchTimer = null;
+let clientPingTimer = null;
 let roomPinPlain = "";
 let joinToken = 0;
 let hostRejoinTimer = null;
@@ -2196,6 +2204,15 @@ function saveStats() {
   try { localStorage.setItem(APP.statsKey, JSON.stringify(stats)); } catch { /* ignore */ }
 }
 
+function markTurnClock(force = false) {
+  if (!net || !state) return;
+  const key = `${state.round}:${state.trick}:${state.phase}:${state.turn}`;
+  if (force || net.turnKey !== key) {
+    net.turnKey = key;
+    net.turnSince = Date.now();
+  }
+}
+
 function saveMatch() {
   if (!state) return;
   if (isClient()) return; // a guest view is not a resumable game
@@ -2210,6 +2227,7 @@ function saveMatch() {
     }));
   } catch { /* ignore */ }
   if (isHost()) {
+    markTurnClock();
     saveHostRecovery(game);
     queuePublish();
   }
@@ -4662,6 +4680,32 @@ function requestResync(options = {}) {
   return true;
 }
 
+function stopClientWatchdog() {
+  clearInterval(clientWatchTimer);
+  clearInterval(clientPingTimer);
+  clientWatchTimer = null;
+  clientPingTimer = null;
+}
+
+function startClientWatchdog() {
+  stopClientWatchdog();
+  clientWatchTimer = setInterval(() => {
+    if (!isClient() || !net?.started || net.recovering || document.hidden) return;
+    if (Date.now() - (net.lastMessageAt || 0) < 15000) return;
+    const code = net.code;
+    const name = net.name;
+    const pin = net.pin || "";
+    const token = loadRejoinSeat(code)?.token || "";
+    net.recovering = true;
+    toast(t("toast.connectionStalled"), "wine");
+    joinRoom(code, name, pin, token, { auto: true });
+  }, 2500);
+  clientPingTimer = setInterval(() => {
+    if (!isClient() || !net?.started || document.hidden) return;
+    net.client?.send?.({ type: "ping" });
+  }, 5000);
+}
+
 function finishResync() {
   if (!resyncPending) return false;
   resyncPending = false;
@@ -4838,7 +4882,7 @@ function serialiseRoster() {
     seat,
     name: profile?.name || t("net.emptySeat"),
     kind: profile?.kind || "bot",
-    connected: profile?.connected !== false,
+    connected: profile?.connected !== false && (!profile?.lastSeen || Date.now() - profile.lastSeen < 20000),
     bot: profile?.kind === "bot" || !profile,
     peerId: profile?.peerId || null,
     voice: Boolean(profile?.voice)
@@ -4851,17 +4895,45 @@ function queuePublish() {
   publishTimer = setTimeout(publishState, NET_TICK_MS);
 }
 
+function checkGuestTurnTimeout() {
+  if (!isHost() || !net?.started || !state) return false;
+  if (!["lead", "follow", "showdown", "bid", "draft"].includes(state.phase)) return false;
+  const seat = state.turn;
+  if (seat === MY_SEAT || !isHumanSeat(seat)) return false;
+  const profile = SEAT_PROFILES?.[seat];
+  if (!profile || profile.kind !== "human") return false;
+  if (!net.turnSince || Date.now() - net.turnSince < 30000) return false;
+  const name = profile.name;
+  const connId = profile.connId;
+  convertSeatToBot(seat, "timeout");
+  toast(t("invite.turnTimeout", { name }), "wine");
+  if (connId) {
+    net.host.send(connId, { type: "seat-timeout", roomCode: net.code, seat });
+    setTimeout(() => net?.host?.closeConnection?.(connId), 1000);
+  }
+  return true;
+}
+
 function startStatePulse() {
   clearInterval(statePulseTimer);
   statePulseTimer = setInterval(() => {
-    if (!isHost() || !net?.started || !net.host) return;
+    if (!isHost() || !net?.started || !net.host || !state) return;
+    /* A full snapshot is the repair mechanism: it fixes a guest that missed
+       the last publish even if no new action occurred. Pulses are cheaper for
+       the summary screens, where a full re-apply could re-open a modal. */
+    const active = ["dealing", "lead", "follow", "showdown", "bid", "draft"].includes(state.phase);
+    if (active) {
+      checkGuestTurnTimeout();
+      publishState();
+      return;
+    }
     const seq = net.seq || 0;
     for (const profile of SEAT_PROFILES || []) {
       if (profile?.kind === "human" && profile.connId) {
         net.host.send(profile.connId, { type: "pulse", seq });
       }
     }
-  }, 3000);
+  }, 4000);
 }
 
 function stopStatePulse() {
@@ -4990,8 +5062,10 @@ function acceptGuest(connId, name) {
     voice: false,
     clientId: `guest-${net.seatSeq}`,
     rejoinToken: makeRejoinToken(),
-    rejoinName: clean
+    rejoinName: clean,
+    lastSeen: Date.now()
   };
+  markTurnClock(true);
   net.host.send(connId, {
     type: "welcome",
     roomCode: net.code,
@@ -5058,9 +5132,11 @@ function reattachGuest(connId, seat, token) {
     voice: false,
     clientId: current.clientId || `guest-${seat}`,
     rejoinToken: token,
-    rejoinName: name
+    rejoinName: name,
+    lastSeen: Date.now()
   };
   const started = Boolean(net.started && state);
+  markTurnClock(true);
   net.host.send(connId, {
     type: "welcome",
     roomCode: net.code,
@@ -5277,7 +5353,8 @@ function promoteQueuedGuests(reason = "trick") {
       voice: false,
       clientId: `guest-${net.seatSeq + 1}`,
       rejoinToken: entry.token || makeRejoinToken(),
-      rejoinName: name
+      rejoinName: name,
+      lastSeen: Date.now()
     };
     net.seatSeq += 1;
     clearTimeout(entry.expiryTimer);
@@ -5296,6 +5373,7 @@ function promoteQueuedGuests(reason = "trick") {
       joinedSeat: true,
       state: sanitizeForSeat(state, seat)
     });
+    markTurnClock(true);
     toast(t("invite.joined", { name, seat: seatName(seat) }), "jade");
     changed = true;
   }
@@ -5327,7 +5405,8 @@ function approveBotSeat(connId, request, seat) {
     voice: false,
     clientId: `guest-${net.seatSeq}`,
     rejoinToken: makeRejoinToken(),
-    rejoinName: clean
+    rejoinName: clean,
+    lastSeen: Date.now()
   };
   net.host.send(connId, {
     type: "welcome",
@@ -5343,6 +5422,7 @@ function approveBotSeat(connId, request, seat) {
     joinedSeat: true,
     state: sanitizeForSeat(state, seat)
   });
+  markTurnClock(true);
   toast(t("toast.netBotReplaced", { name: clean, seat: seatName(seat) }), "jade");
   renderAll();
   renderLobby();
@@ -5504,6 +5584,8 @@ async function probeHost(connId, message) {
 
 function hostMessage({ connId, message }) {
   if (!isProtocolMessage(message)) return;
+  const sender = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+  if (sender) sender.lastSeen = Date.now();
   switch (message.type) {
     case "hello":
       requestGuest(connId, message).catch(() => rejectConnection(connId, "busy"));
@@ -5835,7 +5917,8 @@ async function resumeHostRoom(recovery) {
         voice: false,
         rejoinToken: saved.rejoinToken || null,
         rejoinName: saved.rejoinName || saved.name || "",
-        clientId: saved.clientId || null
+        clientId: saved.clientId || null,
+        lastSeen: isHost || saved.kind === "bot" ? null : Date.now()
       };
     });
     if (!SEAT_PROFILES[0]) {
@@ -5952,6 +6035,7 @@ function startHostedMatch() {
 
 function clientMessage({ message }) {
   if (!isProtocolMessage(message)) return;
+  if (net && isClient()) net.lastMessageAt = Date.now();
   switch (message.type) {
     case "welcome": {
       if (net) {
@@ -6116,6 +6200,15 @@ function clientMessage({ message }) {
       setLobbyStatus(t(`net.rejected.${message.reason}`), "wine");
       break;
     }
+    case "seat-timeout": {
+      const code = message.roomCode || net?.code || "";
+      const name = net?.name || lobbyState?.name || loadPlayerName();
+      const pin = net?.pin || lobbyState?.pin || "";
+      const token = loadRejoinSeat(code)?.token || "";
+      toast(t("net.seatTimeout"), "wine");
+      setTimeout(() => { if (code) joinRoom(code, name, pin, token, { auto: true }); }, 900);
+      break;
+    }
     case "closed":
       handleHostLost({ intentional: true });
       break;
@@ -6234,7 +6327,8 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
         if (status === "dialing" && token === joinToken) setLobbyStatus(t("net.connecting"), "wine");
       }
     });
-    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0 };
+    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0, lastMessageAt: Date.now(), recovering: false };
+    startClientWatchdog();
     return client;
   };
   const autoMic = prefs.autoAudio ? preloadAudio() : null;
@@ -6329,6 +6423,7 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
   lastHandLayoutSig = "";
   clearTimeout(publishTimer);
   stopStatePulse();
+  stopClientWatchdog();
   actionToken += 1;
   joinToken += 1;
   const role = net?.role;

@@ -221,8 +221,9 @@ play locally. That makes a lost guest message harmless to the global game: the
 host either processed it or it never happened. The repair problem is therefore
 a stale **view**, not a divergent rule state.
 
-- Every host state carries a monotonic `seq`. The host sends `pulse {seq}` to
-  seated humans every 3 s. A guest whose `lastSeq` is behind requests `resync`;
+- Every host state carries a monotonic `seq`. During active play the host
+  re-sends a full redacted snapshot every 4 s; on the summary screens it sends
+  `pulse {seq}` instead. A guest whose `lastSeq` is behind requests `resync`;
   the host rate-limits and returns a full redacted snapshot with
   `"resync": true`.
 - An action carries an `actionId`. The host stores the last id per seat and
@@ -232,10 +233,19 @@ a stale **view**, not a divergent rule state.
   blindly playing a second time.
 - An illegal action clears the pending intent and triggers one silent resync.
   The Actions **Refresh table** button and returning to the tab do the same.
+- The host tracks each guest's `lastSeen` from any message (the guest pings every
+  5 s). A roster entry older than 20 s shows as offline. If it is a human
+  guest's active turn (`lead`, `follow`, `showdown`, `bid`, `draft`) and
+  `turnSince` is older than 30 s, the host converts the seat to a bot, sends
+  `seat-timeout`, and closes the old connection. The guest reconnects with the
+  seat card; the bot's hand, captures and score stay on the seat. This prevents
+  the table from waiting indefinitely on a stalled client.
 - The DataChannel is ordered and reliable (`reliable: true`, JSON serialization).
   The real failure is a channel that stalls or closes before the final snapshot,
   not packet loss inside a healthy channel. Full snapshots make catch-up
-  idempotent: the latest `seq` wins.
+  idempotent: the latest `seq` wins. A client watchdog pings the host every 5 s;
+  after 15 s with no state, pulse or pong it reconnects to the same seat with the
+  stored token instead of leaving the table frozen on “Bot is thinking”.
 
 See [PROTOCOL.md](PROTOCOL.md) for the envelopes.
 

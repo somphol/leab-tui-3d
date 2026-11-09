@@ -215,7 +215,10 @@ A false ack means the action was rejected as illegal; the guest shows the reason
 
 ### `pulse` / `resync`
 
-The host sends a sequence heartbeat to seated humans every 3 s:
+The host sends a heartbeat to seated humans every 4 s. During active play
+(`dealing`, `lead`, `follow`, `showdown`, `bid`, `draft`) the heartbeat is a
+full redacted `state` snapshot, so a missed publish repairs itself even when no
+new action occurred. On the summary screens it is the cheaper:
 
 ```json
 { "type": "pulse", "seq": 12 }
@@ -227,7 +230,15 @@ A guest whose `lastSeq` is behind sends:
 { "type": "resync" }
 ```
 
-The host rate-limits resync (800 ms per seat) and replies with a normal `state` carrying `"resync": true`, the current `seq` and the seat's redacted snapshot. An illegal action ack, returning to the tab, or the Actions **Refresh table** button also requests a resync. The guest clears any pending action when the resync state arrives.
+The host rate-limits resync (800 ms per seat) and replies with a normal `state` carrying `"resync": true`, the current `seq` and the seat's redacted snapshot.
+
+If a human guest's active turn exceeds 30 seconds, the host converts the seat to a bot and sends:
+
+```json
+{ "type": "seat-timeout", "roomCode": "482173", "seat": 1 }
+```
+
+The guest shows the timeout, reconnects with the stored seat token, and `reattachGuest` stops the bot and restores the seat. The old connection is closed after this message. A host roster entry with no message for 20 seconds is shown as offline; it is not converted unless it is their turn. An illegal action ack, returning to the tab, or the Actions **Refresh table** button also requests a resync. The guest clears any pending action when the resync state arrives.
 
 PeerJS is configured with `reliable: true` and `serialization: "json"`, so an open data channel is ordered and reliable. The failure mode is not packet loss inside a healthy channel; it is a channel that stalls or closes without delivering the final state. Full snapshots make the repair idempotent: the latest `seq` wins, and a stale guest recovers by requesting a new snapshot rather than replaying events.
 
