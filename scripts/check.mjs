@@ -70,6 +70,7 @@ const required = [
   "scripts/net-check.mjs",
   "scripts/browser-check.mjs",
   "docs/README.md",
+  "docs/BRANCHING.md",
   "docs/RULES.md",
   "docs/ARCHITECTURE.md",
   "docs/CODE_MAP.md",

@@ -182,6 +182,15 @@ state.json              build record: time, tokens, model, harness
 
 The load order and module boundaries are documented in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
+## Development workflow
+
+`main` is production and deploys GitHub Pages; `develop` is the feature train. **Start every feature, fix or docs change from `develop`, not `main`.** Features merge into `develop`, a `release/x.y.z` branch carries the version bump and full verification, and the release is merged to `main`, tagged, then back-merged into `develop`. Hotfixes branch from `main` and are back-merged too. See **[docs/BRANCHING.md](docs/BRANCHING.md)** and **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+
+```bash
+git switch develop && git pull --ff-only
+git switch -c feature/<slug>
+```
+
 ## Design notes
 
 - **The rule engine is pure.** `buildDeck`, `detectCombo`, `compareScores`, `beats`, `allCombos`, `chooseLead` and `chooseFollow` have no DOM or Three.js dependency. The browser self-test exercises them without a GPU.

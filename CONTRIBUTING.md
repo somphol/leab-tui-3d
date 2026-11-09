@@ -19,6 +19,25 @@ python3 -m http.server 8123
 
 There is no install step and no build step.
 
+## Branches
+
+`main` is production and deploys GitHub Pages. `develop` is the feature train. **Start every feature, fix or
+docs change from `develop`, not `main`**:
+
+```bash
+git fetch origin
+git switch develop
+git pull --ff-only
+git switch -c feature/<short-slug>
+```
+
+Open the pull request against `develop`. A release branch (`release/x.y.z`) is cut from `develop`, verified,
+merged to `main` and tagged, then back-merged into `develop`. A hotfix branches from `main`, is merged to both
+branches, and is tagged. The full model, commands and verification gates are in
+**[docs/BRANCHING.md](docs/BRANCHING.md)**.
+
+Do not bump the version on a feature branch; the release branch owns the version strings.
+
 ## Verification
 
 ```bash
@@ -27,7 +46,7 @@ node scripts/check.mjs
 node scripts/verify.mjs      # needs Chrome; starts its own server if needed
 ```
 
-Open `?selftest=1` and confirm `SELFTEST PASS 25/25`. If you add a check, update the count in `docs/TESTING.md` and the title assertion.
+Open `?selftest=1` and confirm `SELFTEST PASS 38/38`. If you add a check, update the count in `docs/TESTING.md` and the title assertion.
 
 ## Style
 
@@ -52,9 +71,11 @@ A rule change must update all of:
 
 ## Pull requests
 
+- Base the PR on `develop` (or `main` only for `release/*` and `hotfix/*`).
 - One logical change per PR.
 - Include the commands you ran and their result.
 - Include a screenshot for UI changes.
+- Update `AGENTS.md` when a command, invariant or architecture boundary changes.
 - Do not commit `node_modules`, local saves, Chrome profiles, `.DS_Store` or secrets.
 
 ## Licence
