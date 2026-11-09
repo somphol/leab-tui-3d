@@ -147,17 +147,21 @@ a pending request and can:
   kept; the profile becomes human and the guest receives a fresh rejoin token
   plus the current state. Mid-trick, the host **queues** the guest: the bot
   plays out the current trick, the seat is reserved, and the guest is promoted
-  at the next `beginTrick`. The guest sees **“Approved — waiting for the
-  trick”**; the host sheet shows **“joins after this trick”**.
+  at the next `beginTrick`. The guest immediately enters the table as an
+  **audience viewer** (`seat: -1`, all hands ghosted, no dock/chat/voice) with
+  a **“Approved — watching until this trick ends”** banner. At the boundary the
+  host sends a normal `welcome` for the reserved seat and the dock returns. The
+  host sheet shows **“joins after this trick”**.
 - **Watch only** — approved as a viewer even if a bot remains.
 - **Deny** or **Pause 30 min** — a pause rejects new requests with
   `suppressed`; existing rejoin tokens still bypass it. Resume from the host
   panel. If no bot remains, the only approval is viewer.
 
 Queued guests have a rejoin token and can reconnect while waiting. If they
-disconnect, the reserved seat returns to the bot. A queued guest who is still
-waiting when the host reloads is restored from the host recovery blob and can
-reconnect with the same token.
+disconnect, the reservation is held for five minutes so a reload can reattach;
+the bot keeps playing, and the host can cancel the reservation from the invite
+sheet. A queued guest who is still waiting when the host reloads is restored
+from the host recovery blob and can reconnect with the same token.
 
 Viewers are not seats: they receive `seat: -1` and a state where every hand is
 ghosted, unrevealed centre plays are hidden, and the archive hides unrevealed

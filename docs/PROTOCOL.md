@@ -92,8 +92,10 @@ them.
 }
 ```
 
-`joinAfter` is `trick`, `round` or `match`. The host reserves the seat, keeps the bot active, and promotes the
-guest at the next `beginTrick` (or the next deal for `round`/`match`) by sending `welcome` with
+`joinAfter` is `trick`, `round` or `match`. The host reserves the seat, keeps the bot active, and immediately sends
+a **viewer welcome** so the guest can watch the table: `seat: -1`, `viewer: true`, `queued: true`,
+`queuedSeat`, `joinAfter` and `sanitizeForSeat(state, -1)`. The bot stays in the seat. At the next `beginTrick`
+(or next deal for `round`/`match`) the host promotes the guest with a normal `welcome` carrying
 `"joinedSeat": true` and `sanitizeForSeat(state, seat)`. A queued guest reconnects with the same `rejoinToken`;
 the host matches it before the PIN/approval gate. Protocol version stays 1 because the message shape is additive.
 

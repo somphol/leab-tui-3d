@@ -231,28 +231,21 @@ async function main() {
   ));
   if (queued[0]?.seat > 0 && queued[0]?.joinAfter === "trick") pass("guest queued until trick end", `seat ${queued[0].seat}`);
   else fail("guest queued until trick end", JSON.stringify(queued));
-  const status = JSON.parse(await guest.waitFor(
-    "/approved|อนุมัติ/i.test(document.querySelector('#lobbyWaitTitle')?.textContent||'') ? JSON.stringify({title:document.querySelector('#lobbyWaitTitle').textContent,status:document.querySelector('#lobbyWaitStatus')?.textContent||''}) : ''",
-    "guest queued status",
+  const queuedGuest = JSON.parse(await guest.waitFor(
+    "LeabTui.net?.getState?.()?.queued && LeabTui.net.getState().viewer && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,reserved:LeabTui.net.getState().queuedSeat,viewer:LeabTui.net.getState().viewer,banner:!document.querySelector('#queuedBanner').hidden,dock:getComputedStyle(document.querySelector('#handDock')).display,body:document.body.classList.contains('is-viewer')}) : ''",
+    "guest audience mode",
     20000
   ));
-  if (/approved|อนุมัติ/i.test(`${status.title} ${status.status}`)) pass("guest sees the wait message", status.title);
-  else fail("guest sees the wait message", JSON.stringify(status));
+  if (queuedGuest.viewer && queuedGuest.banner && queuedGuest.body && queuedGuest.dock === "none") pass("approved guest watches the current trick immediately", `reserved seat ${queuedGuest.reserved}`);
+  else fail("approved guest watches the current trick immediately", JSON.stringify(queuedGuest));
   await guest.send("Page.reload");
   await sleep(5000);
-  let requeued = {};
-  try {
-    requeued = JSON.parse(await guest.waitFor(
-      "/approved|อนุมัติ/i.test(document.querySelector('#lobbyWaitTitle')?.textContent||'') ? JSON.stringify({title:document.querySelector('#lobbyWaitTitle').textContent,token:(()=>{try{return JSON.parse(sessionStorage.getItem('leabtui.rejoin.v1')||'null')?.token?'yes':'no'}catch{return 'err'}})()}) : ''",
-      "guest reattached to the queue",
-      20000
-    ));
-  } catch (error) {
-    console.log("REQUEUE GUEST DIAG", await guest.eval("JSON.stringify({title:document.querySelector('#lobbyWaitTitle')?.textContent,status:document.querySelector('#lobbyWaitStatus')?.textContent,lobbyHidden:document.querySelector('#lobbyModal')?.hidden,view:[...document.querySelectorAll('#lobbyModal .lobby-view')].filter((n)=>!n.hidden).map((n)=>n.id),net:LeabTui?.net?.getState?.()||null,statusText:document.querySelector('#lobbyStatus')?.textContent,rejoin:sessionStorage.getItem('leabtui.rejoin.v1')})"));
-    console.log("REQUEUE HOST DIAG", await host.eval("JSON.stringify({queued:LeabTui.net.getState().queued,pending:LeabTui.net.pending(),players:LeabTui.net.getState().players})"));
-    throw error;
-  }
-  if (requeued.token === "yes") pass("queued guest reconnects with the same token", requeued.title);
+  const requeued = JSON.parse(await guest.waitFor(
+    "LeabTui.net?.getState?.()?.queued && LeabTui.net.getState().viewer && LeabTui.getState?.() && !document.querySelector('#queuedBanner').hidden ? JSON.stringify({reserved:LeabTui.net.getState().queuedSeat,token:(()=>{try{return JSON.parse(sessionStorage.getItem('leabtui.rejoin.v1')||'null')?.token?'yes':'no'}catch{return 'err'}})()}) : ''",
+    "guest reattached to the audience",
+    20000
+  ));
+  if (requeued.token === "yes" && requeued.reserved > 0) pass("queued guest reconnects with the same token", `reserved ${requeued.reserved}`);
   else fail("queued guest reconnects with the same token", JSON.stringify(requeued));
   const finish = JSON.parse(await host.eval(`(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));

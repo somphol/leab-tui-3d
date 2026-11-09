@@ -311,12 +311,14 @@ ok(script.includes("function positionToastLayer") && script.includes('layer.styl
 ok(script.includes("inspector.emptyTouch") && script.includes("const fallback = state?.selected?.length"), "inspector falls back to the selected tile");
 ok(index.includes('id="inviteTopBtn"') && index.includes('id="inviteBtn"') && index.includes('id="inviteModal"'), "Invite controls and modal exist");
 ok(index.includes('id="joinRequestPop"') && index.includes('id="joinRequestApprove"') && index.includes('id="joinRequestLater"'), "host join-request popup exists");
+ok(index.includes('id="queuedBanner"') && script.includes("queuedSeat"), "queued guests have an audience banner");
 ok(script.includes("function hostCurrentMatch") && script.includes("function queueBotSeat") && script.includes("function promoteQueuedGuests"), "solo-to-host invite engine exists");
 const inviteBody = script.slice(script.indexOf("async function hostCurrentMatch"), script.indexOf("function openInviteSheet"));
 ok(inviteBody && !inviteBody.includes("beginMatch(") && !inviteBody.includes("leaveRoom("), "invite conversion does not redeal or drop the solo game");
 ok(script.includes("hostCurrentMatch: () => hostCurrentMatch") && script.includes("queued: () => queuedList()"), "invite conversion and queue are exposed for tests");
 ok(script.includes("function renderJoinRequestPopup") && script.includes("function queueBotSeat"), "host request popup and queue renderer exist");
 ok(script.includes("action-ack") && script.includes("lastActionId") && script.includes("pendingAction"), "actions are acknowledged and deduplicated");
+ok(script.includes("sendWelcomeWithRetry") && script.includes("welcome lost its snapshot"), "welcome delivery retries and recovers a missing snapshot");
 ok(script.includes("function startStatePulse") && script.includes("function requestResync") && script.includes("lastSeq"), "sequence pulse and resync exist");
 ok(script.includes("function startClientWatchdog") && script.includes("toast.connectionStalled"), "guest watchdog reconnects a stalled channel");
 ok(script.includes("function checkGuestTurnTimeout") && script.includes('type: "seat-timeout"'), "host converts an unresponsive turn to a bot");

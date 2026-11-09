@@ -774,6 +774,9 @@ const I18N = {
     "invite.seats": "Seats",
     "invite.noPending": "No one is waiting.",
     "invite.joined": "{name} joined seat {seat}.",
+    "queued.banner": "Approved — watching until this trick ends. You will take {seat}.",
+    "queued.bannerRound": "Approved — watching until the next round. You will take {seat}.",
+    "queued.bannerMatch": "Approved — watching until the next match. You will take {seat}.",
     "net.joinQueuedTitle": "Approved — waiting for the trick",
     "net.joinQueuedStatus": "The host approved you. You will join automatically after this trick ends.",
     "net.joinQueuedRound": "The host approved you. You will join at the next round.",
@@ -1437,6 +1440,9 @@ const I18N = {
     "invite.seats": "ที่นั่ง",
     "invite.noPending": "ยังไม่มีใครรอ",
     "invite.joined": "{name} เข้านั่ง seat {seat} แล้ว",
+    "queued.banner": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบตา จะได้นั่ง {seat}",
+    "queued.bannerRound": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบรอบ จะได้นั่ง {seat}",
+    "queued.bannerMatch": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบแมตช์ จะได้นั่ง {seat}",
     "net.joinQueuedTitle": "อนุมัติแล้ว — รอจบตา",
     "net.joinQueuedStatus": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้าหลังจบตานี้",
     "net.joinQueuedRound": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้ารอบถัดไป",
@@ -5066,7 +5072,7 @@ function acceptGuest(connId, name) {
     lastSeen: Date.now()
   };
   markTurnClock(true);
-  net.host.send(connId, {
+  sendWelcomeWithRetry(connId, {
     type: "welcome",
     roomCode: net.code,
     protocol: PROTOCOL_VERSION,
@@ -5114,6 +5120,17 @@ function expirePending(connId) {
   clearPending(connId);
   rejectConnection(connId, "timeout");
   renderLobby();
+}
+
+function sendWelcomeWithRetry(connId, payload, attempt = 0) {
+  if (!net?.host || !connId) return false;
+  if (net.host.send(connId, payload)) return true;
+  if (attempt < 3) {
+    setTimeout(() => {
+      if (net?.host?.connections?.has(connId)) sendWelcomeWithRetry(connId, payload, attempt + 1);
+    }, 350 * (attempt + 1));
+  }
+  return false;
 }
 
 function reattachGuest(connId, seat, token) {
@@ -5263,6 +5280,7 @@ function clearQueued(connId, reason = "denied") {
   if (!entry || !key) return false;
   clearTimeout(entry.expiryTimer);
   queuedGuests.delete(key);
+  if (entry.connId) net?.viewers?.delete(entry.connId);
   const profile = SEAT_PROFILES?.[entry.seat];
   if (profile?.kind === "bot") delete profile.queuedFor;
   if (reason && entry.connId) rejectConnection(entry.connId, reason);
@@ -5273,15 +5291,24 @@ function clearQueued(connId, reason = "denied") {
 }
 
 function sendQueuedStatus(connId, entry) {
-  net.host.send(connId, {
-    type: "pending",
-    queued: true,
+  if (net?.viewers) net.viewers.set(connId, { name: entry.name, connId, at: Date.now(), queued: true });
+  sendWelcomeWithRetry(connId, {
+    type: "welcome",
     roomCode: net.code,
-    hostName: net.name,
-    seat: entry.seat,
+    protocol: PROTOCOL_VERSION,
+    seat: -1,
+    viewer: true,
+    queued: true,
+    queuedSeat: entry.seat,
     joinAfter: entry.joinAfter,
+    hostName: net.name,
+    players: serialiseRoster(),
+    viewers: serialiseViewers(),
+    chat: chatHistory.slice(-30),
+    canStart: false,
     rejoinToken: entry.token,
-    players: serialiseRoster()
+    started: true,
+    state: sanitizeForSeat(state, -1)
   });
 }
 
@@ -5359,7 +5386,8 @@ function promoteQueuedGuests(reason = "trick") {
     net.seatSeq += 1;
     clearTimeout(entry.expiryTimer);
     queuedGuests.delete(connId);
-    net.host.send(connId, {
+    net.viewers?.delete(connId);
+    sendWelcomeWithRetry(connId, {
       type: "welcome",
       roomCode: net.code,
       protocol: PROTOCOL_VERSION,
@@ -5408,7 +5436,8 @@ function approveBotSeat(connId, request, seat) {
     rejoinName: clean,
     lastSeen: Date.now()
   };
-  net.host.send(connId, {
+  markTurnClock(true);
+  sendWelcomeWithRetry(connId, {
     type: "welcome",
     roomCode: net.code,
     protocol: PROTOCOL_VERSION,
@@ -5422,7 +5451,6 @@ function approveBotSeat(connId, request, seat) {
     joinedSeat: true,
     state: sanitizeForSeat(state, seat)
   });
-  markTurnClock(true);
   toast(t("toast.netBotReplaced", { name: clean, seat: seatName(seat) }), "jade");
   renderAll();
   renderLobby();
@@ -5464,7 +5492,7 @@ function approveViewer(connId, request) {
   if (!isHost() || !net?.host || !net.viewers) return false;
   const name = cleanGuestName(request.name, "Viewer");
   net.viewers.set(connId, { name, connId, at: Date.now() });
-  net.host.send(connId, {
+  sendWelcomeWithRetry(connId, {
     type: "welcome",
     roomCode: net.code,
     protocol: PROTOCOL_VERSION,
@@ -5715,6 +5743,7 @@ function hostConnectionLost({ connId } = {}) {
     if (entry) {
       const key = `queued-${entry.seat}-${entry.token.slice(0, 8)}`;
       queuedGuests.delete(connId);
+      net?.viewers?.delete(connId);
       entry.connId = null;
       entry.at = Date.now();
       queuedGuests.set(key, entry);
@@ -6039,13 +6068,16 @@ function clientMessage({ message }) {
   switch (message.type) {
     case "welcome": {
       if (net) {
-        net.welcomed = true;
+        net.welcomed = Boolean(message.state) || !message.started;
         net.handshakeAck = true;
       }
       clearPendingAction();
       const welcomeSeat = Number(message.seat);
       MY_SEAT = Number.isInteger(welcomeSeat) && welcomeSeat >= -1 ? welcomeSeat : 1;
       net.viewer = Boolean(message.viewer) || MY_SEAT < 0;
+      net.queued = Boolean(message.queued);
+      net.queuedSeat = Number.isInteger(message.queuedSeat) ? message.queuedSeat : null;
+      net.joinAfter = message.joinAfter || null;
       SEAT_PROFILES = (message.players || []).map((player) => ({ ...player }));
       net.seat = MY_SEAT;
       net.name = message.players?.[MY_SEAT]?.name || net.name;
@@ -6053,7 +6085,7 @@ function clientMessage({ message }) {
       if (rejoinToken) {
         saveRejoinSeat({
           code: message.roomCode,
-          seat: MY_SEAT,
+          seat: net.queuedSeat || MY_SEAT,
           token: rejoinToken,
           name: net.name
         });
@@ -6072,7 +6104,19 @@ function clientMessage({ message }) {
       };
       chatHistory = Array.isArray(message.chat) ? message.chat.slice(-30) : [];
       if (message.state) {
-        applyRemoteState(message.state);
+        try {
+          applyRemoteState(message.state);
+        } catch (error) {
+          toast(t("toast.connectionStalled"), "wine");
+          requestResync({ silent: true });
+        }
+      } else if (net.started) {
+        /* The host says the match is live but the welcome lost its snapshot.
+           Ask again and keep the handshake retry alive. */
+        if (lobbyState) lobbyState.status = t("net.reconnecting");
+        showLobby("waiting");
+        renderLobby();
+        requestResync({ silent: true });
       } else {
         showLobby("waiting");
         renderLobby();
@@ -6327,7 +6371,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
         if (status === "dialing" && token === joinToken) setLobbyStatus(t("net.connecting"), "wine");
       }
     });
-    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0, lastMessageAt: Date.now(), recovering: false };
+    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0, lastMessageAt: Date.now(), recovering: false, queued: false, queuedSeat: null, joinAfter: null };
     startClientWatchdog();
     return client;
   };
@@ -6464,6 +6508,8 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
   pendingTimers.clear();
   net = null;
   SEAT_PROFILES = null;
+  const queuedBanner = $("#queuedBanner");
+  if (queuedBanner) queuedBanner.hidden = true;
   queuedGuests = new Map();
   dismissedJoinRequests = new Set();
   clearPendingAction();
@@ -7046,6 +7092,17 @@ function canInviteFriends() {
   return Boolean(state && !isNetworked() && $("#lobbyModal")?.hidden !== false);
 }
 
+function renderQueuedBanner() {
+  const banner = $("#queuedBanner");
+  if (!banner) return;
+  const active = isClient() && net?.queued && Number.isInteger(net.queuedSeat);
+  banner.hidden = !active;
+  if (!active) return;
+  const key = net.joinAfter === "round" ? "queued.bannerRound" : net.joinAfter === "match" ? "queued.bannerMatch" : "queued.banner";
+  const text = $("#queuedBannerText");
+  if (text) text.textContent = t(key, { seat: seatName(net.queuedSeat) });
+}
+
 let joinPopupConnId = null;
 
 function hideJoinRequestPopup() {
@@ -7368,6 +7425,7 @@ function renderNetChrome() {
   }
   renderChatBadge();
   renderPanelRail();
+  renderQueuedBanner();
   renderJoinRequestPopup();
 }
 
@@ -10561,11 +10619,12 @@ window.LeabTui = {
       mySeat: MY_SEAT,
       started: Boolean(net.started),
       viewer: Boolean(net.viewer) || MY_SEAT < 0,
+      queuedSeat: net.queuedSeat ?? null,
       players: serialiseRoster(),
       viewers: isHost() ? serialiseViewers() : [],
       peerId: isHost() ? net.host?.id : net.client?.hostId,
       pending: isHost() ? pendingList() : [],
-      queued: isHost() ? queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })) : [],
+      queued: isHost() ? queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })) : Boolean(net.queued),
       lastSeq: isClient() ? (net.lastSeq || 0) : null,
       approval: isHost() ? Boolean(net.security?.approval) : null,
       pinSet: isHost() ? Boolean(net.security?.pinSet) : null,

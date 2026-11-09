@@ -1520,6 +1520,32 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
   .undo-body .undo-vs { text-align: center; }
 }
 
+/* Queued guest: audience mode until the reserved seat is handed over. */
+.queued-banner {
+  position: fixed;
+  z-index: 38;
+  top: calc(var(--topbar-h) + 14px + var(--safe-top));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(520px, calc(100vw - 20px));
+  padding: 8px 14px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(127, 191, 154, 0.55);
+  border-radius: 999px;
+  background: rgba(16, 42, 34, 0.92);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  color: #bfe9d8;
+  font-size: calc(11.5px * var(--fs-scale));
+  line-height: 1.35;
+  text-align: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.queued-banner[hidden] { display: none; }
+.queued-banner-dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: var(--jade); box-shadow: 0 0 8px rgba(121, 195, 163, 0.8); animation: voiceCallPulse 1.6s ease-in-out infinite; }
+
 /* Host join-request popup: persistent on the table, above the HUD but below modals. */
 .join-request-pop {
   position: fixed;
