@@ -3,7 +3,7 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.9.21**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.9.22**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 >
 > **Continuation handoff:** [`docs/CONTINUATION.md`](docs/CONTINUATION.md) — current behaviour, invariants, open items and release routine.
 
@@ -12,9 +12,9 @@
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.9.21` |
+| App version | `1.9.22` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.9.21, self-test 38/38) |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.9.22, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js`, `manifest.webmanifest`, `icons/` |
@@ -24,6 +24,10 @@
 | Network | PeerJS public broker for signalling + public STUN; no game server |
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
+
+## Release 1.9.22 — play history from the turn-log sheet
+
+Opening **L** on iPad moves the turn log into the panel sheet, which hides the panel's own header and with it the old History button. The sheet header now carries **View trick log / ดูประวัติการเล่น**, the same action as the round summary. It closes the sheet and opens the shared `#lastTrickModal` round/trick browser; before the first completed trick it is disabled and explains “No completed turns yet.”
 
 ## Release 1.9.21 — the panel rail returns in iPad landscape
 

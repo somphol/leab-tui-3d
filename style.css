@@ -2457,6 +2457,8 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
   white-space: nowrap;
 }
 .panel-sheet-close { position: static; flex: 0 0 auto; }
+#panelSheetAction { flex: 0 0 auto; white-space: nowrap; }
+#panelSheetAction:disabled { opacity: 0.45; cursor: default; }
 .panel-sheet-body { min-height: 0; overflow-y: auto; padding: 8px 12px 14px; -webkit-overflow-scrolling: touch; }
 .panel.in-sheet { margin: 0; padding: 4px 2px; border: 0; background: transparent; box-shadow: none; }
 .panel.in-sheet > .panel-head { display: none; }

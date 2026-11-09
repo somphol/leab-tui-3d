@@ -294,6 +294,17 @@ async function main() {
       ? [...rail.querySelectorAll('.panel-orb')].filter((node) => !node.hidden && getComputedStyle(node).display !== 'none').map((node) => node.textContent.trim())
       : [];
     const railState = { hidden: Boolean(rail?.hidden), display: rail ? getComputedStyle(rail).display : 'missing', orbs: railOrbs };
+    document.querySelector('.panel-orb[data-panel="logPanel"]')?.click();
+    await sleep(350);
+    const logAction = document.querySelector('#panelSheetAction');
+    const logActionState = {
+      hidden: Boolean(logAction?.hidden),
+      disabled: Boolean(logAction?.disabled),
+      text: logAction?.textContent.trim() || '',
+      title: document.querySelector('#panelSheetTitle')?.textContent.trim() || ''
+    };
+    document.querySelector('#panelSheetClose')?.click();
+    await sleep(200);
     document.querySelector('#dockFold')?.click();
     await sleep(1000);
     const expanded = LeabTui.getFraming();
@@ -310,6 +321,7 @@ async function main() {
       toasts,
       toastClear,
       rail: railState,
+      logAction: logActionState,
       three: { topView: three?.topView, shadows: three?.shadows },
       two: { topView: two.cam?.topView, shadows: two.cam?.shadows, frame: two.frame },
       coarse: matchMedia('(pointer: coarse)').matches,
@@ -336,6 +348,8 @@ async function main() {
     const expectedOrbs = ["C", "M", "A", "i", "H", "L"];
     if (value.rail?.hidden === false && value.rail?.display === "flex" && expectedOrbs.every((label) => value.rail?.orbs?.includes(label))) pass(`iPad ${orientation} keeps the C/M/A/i/H/L panel rail visible`);
     else fail(`iPad ${orientation} keeps the C/M/A/i/H/L panel rail visible`, JSON.stringify(value.rail));
+    if (value.logAction?.hidden === false && value.logAction?.text === "View trick log" && value.logAction?.title === "Turn log") pass(`iPad ${orientation} turn-log sheet exposes the play-history link`);
+    else fail(`iPad ${orientation} turn-log sheet exposes the play-history link`, JSON.stringify(value.logAction));
     if (value.three?.topView === false && value.three?.shadows === true) pass(`iPad ${orientation} 3D enables shadows`);
     else fail(`iPad ${orientation} 3D enables shadows`, JSON.stringify(value.three));
     if (value.two?.topView === true && value.two?.shadows === false && value.two?.frame?.fits && value.two?.frame?.clearOfDock) pass(`iPad ${orientation} returns to a fitted, shadow-free 2D view`);
@@ -343,6 +357,50 @@ async function main() {
     if (!tabletExceptions.length) pass(`iPad ${orientation} console clean`);
     else fail(`iPad ${orientation} console clean`, tabletExceptions.map((event) => event.text).join(" | "));
   }
+
+  const logSheetExpr = `(async () => {
+    const s = (ms) => new Promise((r) => setTimeout(r, ms));
+    LeabTui.setFast(true);
+    let done = false;
+    for (let i = 0; i < 220 && !done; i += 1) {
+      const st = LeabTui.getState();
+      if (st.trickArchive && st.trickArchive.length >= 1) { done = true; break; }
+      if (!document.querySelector('#trickResultModal').hidden) document.querySelector('#trickResultContinue').click();
+      if (st.turn === 0 && st.phase === 'lead') { LeabTui.hint(); LeabTui.lead(LeabTui.getState().selected); }
+      else if (st.turn === 0 && st.phase === 'follow') { LeabTui.hint(); LeabTui.follow(LeabTui.getState().selected, false); }
+      else if (st.turn === 0 && st.phase === 'showdown') {
+        LeabTui.showdown(true);
+        await s(60);
+        const next = LeabTui.getState();
+        if (next.phase === 'showdown' && next.turn === 0) LeabTui.showdown(false);
+      }
+      await s(50);
+    }
+    if (!document.querySelector('#trickResultModal').hidden) document.querySelector('#trickResultContinue').click();
+    await s(200);
+    document.querySelector('.panel-orb[data-panel="logPanel"]')?.click();
+    await s(350);
+    const action = document.querySelector('#panelSheetAction');
+    const before = { disabled: Boolean(action?.disabled), text: action?.textContent.trim() || '', title: action?.title || '' };
+    action?.click();
+    await s(500);
+    const modal = document.querySelector('#lastTrickModal');
+    return JSON.stringify({
+      before,
+      after: {
+        open: Boolean(modal && !modal.hidden),
+        title: document.querySelector('#lastTrickTitle')?.textContent || '',
+        sheet: Boolean(document.querySelector('#panelSheet') && !document.querySelector('#panelSheet').hidden),
+        records: LeabTui.getState().trickArchive.length
+      }
+    });
+  })()`;
+  const logSheet = runHarness(["--url", soloBase, "--device", "ipad", "--orientation", "landscape", "--wait", "8000", "--eval", logSheetExpr]);
+  const logSheetValue = logSheet.evalValue || {};
+  if (logSheetValue.before?.disabled === false && logSheetValue.after?.records >= 1) pass("iPad turn-log link enables after the first completed trick");
+  else fail("iPad turn-log link enables after the first completed trick", JSON.stringify(logSheetValue));
+  if (logSheetValue.after?.open === true && logSheetValue.after?.sheet === false && logSheetValue.after?.title === "Turn history") pass("iPad turn-log link opens the shared turn-history modal");
+  else fail("iPad turn-log link opens the shared turn-history modal", JSON.stringify(logSheetValue.after));
 
   const flow = runHarness(["--url", soloBase, "--wait", "900", "--eval", playthrough]);
   const value = flow.evalValue || {};

@@ -1,12 +1,12 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-08 · release 1.9.21**
+**As of 2026-11-08 · release 1.9.22**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `7cb7898` — *Release Leab-Tui 3D 1.9.21: restore the iPad landscape panel rail*
+- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.9.22: play history from the turn-log sheet*
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -59,6 +59,7 @@ Current table/network model:
 | 1.9.19 | 2D shadows off; 2D camera fits iPad portrait/landscape; device-emulated checks |
 | 1.9.20 | Hint toast clears the HUD; inspector opens on the selected tile; 手 → H |
 | 1.9.21 | C/M/A/i/H/L rail visible on iPad landscape |
+| 1.9.22 | L sheet exposes the shared play-history browser |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),
@@ -95,6 +96,10 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 - **Panel rail (1.9.21).** `isPanelRailMode()` must match the CSS sidebar
   rule — `(max-width: 1024px), (pointer: coarse)`. iPad landscape is wider than
   1024 px yet coarse, so a width-only check hides both the sidebar and the rail.
+- **History from the log sheet (1.9.22).** `openPanelSheet("logPanel")`
+  shows `#panelSheetAction` with `summary.viewLog`; it hides the sheet and
+  calls the same `openLastTrickModal()` as `#logHistoryBtn` and the summary.
+  Keep one history renderer; do not fork a second modal.
 - **Hints and inspector (1.9.20).** `toast()` measures the HUD and positions
   the layer below it; never hard-code a top that a wrapped Thai HUD can cover.
   Selecting a tile records `inspectedTileId`, and opening the inspector falls
@@ -109,7 +114,7 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 cd ~/Projects/leab-tui-3d
 node --check script.js && node --check peer-manager.js
 node --check voice-chat.js && node --check security.js
-node scripts/check.mjs                 # 409/409
+node scripts/check.mjs                 # 413/413
 python3 -m http.server 8123 &          # if not running
 node scripts/verify.mjs                # ALL BROWSER CHECKS PASSED (includes iPad portrait/landscape)
 AUDIO_TEST=1 node scripts/verify.mjs   # includes a real audio peak

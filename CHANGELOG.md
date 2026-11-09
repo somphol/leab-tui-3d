@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.9.22] — 2026-11-08
+
+### Added
+
+- **Play-history link in the turn-log sheet.** On iPad, opening **L** moves the log into the panel sheet, which hides the panel's own header and therefore the old **History** button. The sheet header now carries the same **View trick log / ดูประวัติการเล่น** action used on the round summary. It opens the shared `#lastTrickModal` browser (round/trick selectors and the comparison cards), closes the sheet first, and is disabled with “No completed turns yet.” until the first trick resolves.
+
 ## [1.9.21] — 2026-11-08
 
 ### Fixed

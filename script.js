@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.9.21";
-import { VoiceChat } from "./voice-chat.js?v=1.9.21";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.21";
+} from "./peer-manager.js?v=1.9.22";
+import { VoiceChat } from "./voice-chat.js?v=1.9.22";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.22";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.21",
+  version: "1.9.22",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -406,6 +406,7 @@ const I18N = {
     "lastTrick.title": "Last turn",
     "log.history": "History",
     "log.browserTitle": "Turn history",
+    "log.noHistory": "No completed turns yet.",
     "log.round": "Round",
     "log.trick": "Turn",
     "log.call": "Call",
@@ -1012,6 +1013,7 @@ const I18N = {
     "lastTrick.title": "ตาล่าสุด",
     "log.history": "ประวัติ",
     "log.browserTitle": "ประวัติการเล่น",
+    "log.noHistory": "ยังไม่มีตาที่จบ",
     "log.round": "รอบ",
     "log.trick": "ตา",
     "log.call": "เรียก",
@@ -6457,6 +6459,14 @@ function openPanelSheet(id) {
   const title = panel.querySelector(".panel-head h2")?.textContent || "";
   const titleNode = $("#panelSheetTitle");
   if (titleNode) titleNode.textContent = title;
+  const action = $("#panelSheetAction");
+  if (action) {
+    const showAction = id === "logPanel";
+    action.hidden = !showAction;
+    action.disabled = !showAction || !(state?.trickArchive?.length);
+    action.textContent = t("summary.viewLog");
+    action.title = t(action.disabled ? "log.noHistory" : "log.browserTitle");
+  }
   activePanelId = id;
   panel.classList.add("in-sheet");
   $("#panelSheetBody")?.appendChild(panel);
@@ -6482,6 +6492,8 @@ function closePanelSheet() {
   panelHome = null;
   const sheet = $("#panelSheet");
   if (sheet) sheet.hidden = true;
+  const action = $("#panelSheetAction");
+  if (action) action.hidden = true;
   document.body.classList.remove("panel-sheet-open");
 }
 
@@ -9213,6 +9225,11 @@ function bindEvents() {
   });
   $$(".panel-orb").forEach((button) => button.addEventListener("click", () => openPanelSheet(button.dataset.panel)));
   $("#panelSheetClose")?.addEventListener("click", closePanelSheet);
+  $("#panelSheetAction")?.addEventListener("click", () => {
+    if (activePanelId !== "logPanel" || !state?.trickArchive?.length) return;
+    closePanelSheet();
+    openLastTrickModal();
+  });
   $("#panelSheet")?.addEventListener("pointerdown", (event) => {
     if (event.target === $("#panelSheet")) closePanelSheet();
   });

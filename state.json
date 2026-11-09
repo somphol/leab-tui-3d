@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.21",
-  "version": "1.9.21",
+  "projectVersion": "1.9.22",
+  "version": "1.9.22",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,13 +9,13 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-09T00:27:38.040Z",
-    "durationSeconds": 195725,
-    "durationHuman": "54h 22m 5s",
+    "packagedAt": "2026-11-09T00:57:28.520Z",
+    "durationSeconds": 197516,
+    "durationHuman": "54h 51m 56s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored.",
-    "publishedAt": "2026-11-09T00:27:38.040Z"
+    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link.",
+    "publishedAt": "2026-11-09T00:57:28.520Z"
   },
   "tokens": {
     "input": 6615671,
@@ -71,8 +71,8 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (409 checks)",
-    "browserCheck": "scripts/verify.mjs — 40 checks incl. iPad portrait/landscape framing, shadows, hints, inspector and panel rail",
+    "staticCheck": "scripts/check.mjs (413 checks)",
+    "browserCheck": "scripts/verify.mjs — 44 checks incl. iPad framing, shadows, hints, inspector, rail and the turn-log history link",
     "multiplayer": "scripts/net-check.mjs — 37/37 (local and live)",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
@@ -86,7 +86,7 @@
     "copyRoomInfo": "host Actions button + host chip title",
     "hostReload": "same room code, trick preserved, guest reconnected",
     "showdownLegality": "illegal pair explained; legal losing sets remain showable",
-    "ipad": "portrait and landscape: rim on-screen, clear of dock, 2D shadow-free, 3D shadows on, hint toast below HUD, inspector opens on selection, C/M/A/i/H/L rail visible"
+    "ipad": "portrait and landscape: rim on-screen, clear of dock, 2D shadow-free, 3D shadows on, hint toast below HUD, inspector on selection, C/M/A/i/H/L rail, L sheet opens shared turn history after a trick"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -355,9 +355,14 @@
       "version": "1.9.21",
       "date": "2026-11-08",
       "summary": "Restore the C/M/A/i/H/L panel rail on iPad landscape."
+    },
+    {
+      "version": "1.9.22",
+      "date": "2026-11-08",
+      "summary": "Turn-log sheet exposes the shared play-history browser on iPad."
     }
   ],
-  "releaseNotes": "1.9.21 restores the circular panel rail in iPad landscape by matching the rail mode to the coarse-pointer sidebar rule.",
+  "releaseNotes": "1.9.22 adds the View trick log action to the iPad turn-log sheet; it opens the same history modal as the round summary.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

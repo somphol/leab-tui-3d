@@ -4,7 +4,7 @@
 
 A static, bilingual 3D teaching table for **เลี๊ยบตุ่ย (Leab-Tui)**, the Thai trick-taking game played with the 32 tiles of a Chinese chess set. One page, six source files plus a web-app manifest and icons, Three.js r160 from jsDelivr, no build step. It plays four seats — solo (1 human + 3 heuristic AI) or a serverless WebRTC table (host + up to 3 guests, empty seats filled by bots), with host-routed text chat, independent full-mesh voice chat (mic mute + deafen), late join/bot replacement, read-only viewers, same-tab host reload recovery, installable full-screen mode, and an off-by-default experimental draft deal. It implements Leab/Tui/Sa Hoo/See Hoo/Ngoh Hoo/Lak Hoo and Soldier sets, and adds a tile inspector, live coach, Hint, Undo & Learn, synthesised audio, autosave and JSON export.
 
-It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.21**.
+It is **not** a gambling app, a game server, a tournament rules authority, or a complete implementation of the two- and three-player variants. Release **1.9.22**.
 
 Live: <https://somphol.github.io/leab-tui-3d/> · Local master: `~/Projects/leab-tui-3d`
 
@@ -86,7 +86,7 @@ TILE_RADIUS = 0.455; TILE_THICKNESS = 0.15
 rank power: soldier 1, cannon 2, horse 3, chariot 4, elephant 5, advisor 6, general 7
 scorePiles: 0..7 => -2..5; 8 => 16
 storage: leabtui.match.v1 / leabtui.prefs.v1 / leabtui.stats.v1 / leabtui.name.v1
-export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.21"
+export: leab_tui_3d_game.json, format "leab-tui-3d-save", version "1.9.22"
 prefs: theme daybreak (default)|mahogany|jade|midnight|parchment; fontSize sm|md|lg|xl; autoAudio on by default; CSS --fs-scale 0.9/1/1.12/1.24
 room: 482-173 (display; the peer id still carries a private leab prefix); peer id leabtui-v1-abc234; protocol 1; PeerJS 1.5.4; broker 0.peerjs.com:443
 ```
@@ -148,7 +148,7 @@ Persistence saves `{format, version, savedAt, network, game}` where `game` is th
 - **CSP.** `script-src` allows `'unsafe-inline'` only because import maps are inline. `connect-src` allows jsDelivr, `https://0.peerjs.com` and `wss://0.peerjs.com`. The app has no inline event handlers. Do not add remote fonts or analytics.
 - **Display settings.** Font size scales the interface through `--fs-scale` on `html[data-font-size]`, never the 3D table. Five themes are `html[data-theme]` CSS variables plus `SCENE_THEMES`: Mahogany, Jade Court, Midnight Lacquer, Parchment and Daybreak. `scene.setTheme` must dispose the replaced felt/wood/back textures. Never add a theme that only recolours the panels and leaves the 3D scene behind.
 - **Boot version guard.** `index.html` carries `<meta name="app-version">`; an inline head script fetches `state.json` with `no-store` and reloads once with `?v=` if they differ. Keep the meta in step with `APP.version` or every cached page reloads once (the session guard stops loops).
-- **Trick archive.** `state.trickArchive` records each resolved trick: round, trick, call, winner, combo, captured and per-seat `{seat, revealed, combo, tiles}`. It is serialized/sanitized and shown by the round/trick browser (`#lastTrickModal`, opened by Last trick, the Trick Log History button, or the summary).
+- **Trick archive.** `state.trickArchive` records each resolved trick: round, trick, call, winner, combo, captured and per-seat `{seat, revealed, combo, tiles}`. It is serialized/sanitized and shown by the round/trick browser (`#lastTrickModal`, opened by Last trick, the Trick Log History button, the round summary, or `#panelSheetAction` in the iPad L sheet). Keep one renderer and one entry point; do not fork the layout.
 - **Summary auto-next.** `prefs.autoNext` (host checkbox on the summary) controls the 30-second countdown; guests never see the control and only get **Back to table**.
 - **Versioned assets.** `index.html` links `style.css?v=X.Y.Z` / `script.js?v=X.Y.Z`, and `script.js` imports the three modules with the same query. Bump all five strings with `APP.version` on every release or a force reload can still use cached modules. `check.mjs` enforces the match.
 - **Version checks.** `checkForUpdate()` reads `state.json` with `no-store`, throttled to once per 5 minutes by `leabtui.versionCheck.v1` in localStorage. It runs 1.4 s after boot when the launch menu is shown and on `visibilitychange`. The launch-menu only may auto-reload once per version (sessionStorage `leabtui.autoReload.v1`); rooms, matches and every other view get the banner and the big Reload button instead. Pages reached by `forceReload` carry `?v=` and force one confirmation check so a stale deploy cannot loop.

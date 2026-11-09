@@ -140,6 +140,12 @@ The 820×1180 portrait stage fitted to the whole rim: the 2D camera computes its
 
 The Thai hint toast sits below the HUD and names the suggested set. The inspector opens on the selected tile, and both hand controls read **H** in the panel rail and collapsed dock.
 
+## iPad turn-log history — 1.9.22
+
+![iPad turn-log history](../screenshots/ipad-log-history-1922.jpg)
+
+Pressing **L** opens the turn-log sheet; **View trick log** closes the sheet and opens the shared history browser, the same `#lastTrickModal` used by the round summary.
+
 ## iPad landscape — panel rail
 
 ![iPad landscape rail](../screenshots/ipad-landscape-rail-1921.jpg)

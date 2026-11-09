@@ -111,7 +111,8 @@ const required = [
   "screenshots/ipad-portrait-1919.jpg",
   "screenshots/ipad-landscape-1919.jpg",
   "screenshots/ipad-hints-1920.jpg",
-  "screenshots/ipad-landscape-rail-1921.jpg"
+  "screenshots/ipad-landscape-rail-1921.jpg",
+  "screenshots/ipad-log-history-1922.jpg"
 ];
 
 for (const file of required) {
@@ -300,6 +301,8 @@ ok(script.includes("function applyShadowMode") && script.includes("renderer.shad
 ok(script.includes("getFraming: () => scene?.framing"), "2D framing is exposed for verification");
 ok(index.includes('data-panel="handPanel" aria-label="Your hand" title="Your hand">H</button>') && script.includes('button.textContent = collapsed ? "H" : "⌄"'), "hand controls use a readable H label");
 ok(script.includes("function isPanelRailMode") && script.includes('matchMedia("(max-width: 1024px), (pointer: coarse)")'), "panel rail follows the coarse-pointer sidebar rule");
+ok(index.includes('id="panelSheetAction"') && script.includes('t("summary.viewLog")'), "panel sheet exposes the summary play-history link");
+ok(script.includes('activePanelId !== "logPanel"') && script.includes("openLastTrickModal();"), "the sheet action opens the shared turn history");
 ok(script.includes("function positionToastLayer") && script.includes('layer.style.top'), "toasts position below the HUD strip");
 ok(script.includes("inspector.emptyTouch") && script.includes("const fallback = state?.selected?.length"), "inspector falls back to the selected tile");
 const harness = read("scripts/browser-check.mjs");
