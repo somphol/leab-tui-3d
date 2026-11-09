@@ -115,7 +115,8 @@ const required = [
   "screenshots/ipad-landscape-1919.jpg",
   "screenshots/ipad-hints-1920.jpg",
   "screenshots/ipad-landscape-rail-1921.jpg",
-  "screenshots/ipad-log-history-1922.jpg"
+  "screenshots/ipad-log-history-1922.jpg",
+  "screenshots/ipad-invite-preview.jpg"
 ];
 
 for (const file of required) {
