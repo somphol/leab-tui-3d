@@ -634,7 +634,7 @@ async function main() {
   if (queued[0]?.seat > 0 && queued[0]?.joinAfter === "trick") pass("approved guest is queued until the trick ends", `seat ${queued[0].seat}`);
   else fail("approved guest is queued until the trick ends", queuedRaw);
   const queuedGuest = JSON.parse(await lateGuest.waitFor(
-    "LeabTui.net?.getState?.()?.queued && LeabTui.net.getState().viewer && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,reserved:LeabTui.net.getState().queuedSeat,banner:!document.querySelector('#queuedBanner')?.hidden,dock:getComputedStyle(document.querySelector('#handDock')).display}) : ''",
+    "LeabTui.net?.getState?.()?.queued && LeabTui.net.getState().viewer && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,reserved:LeabTui.net.getState().queuedSeat,viewer:LeabTui.net.getState().viewer,banner:!document.querySelector('#queuedBanner')?.hidden,dock:getComputedStyle(document.querySelector('#handDock')).display}) : ''",
     "invite guest audience",
     20000
   ));
