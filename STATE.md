@@ -3,7 +3,7 @@
 **Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio**  
 **เลี๊ยบตุ่ย 3 มิติ · สตูดิโอเกมกินกองด้วยหมากรุกจีน**
 
-> Build record for release **1.10.0**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
+> Build record for release **1.10.1**: what shipped, how it was verified, how long it took, and how many tokens it consumed.
 >
 > **Continuation handoff:** [`docs/CONTINUATION.md`](docs/CONTINUATION.md) — current behaviour, invariants, open items and release routine.
 
@@ -12,9 +12,9 @@
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.10.0` |
+| App version | `1.10.1` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
-| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.10.0, self-test 38/38) |
+| Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.10.1, self-test 38/38) |
 | Primary branch | `main` |
 | Build type | Static site; no package manager, no build step |
 | Runtime files | `index.html`, `style.css`, `script.js`, `peer-manager.js`, `voice-chat.js`, `security.js`, `manifest.webmanifest`, `icons/` |
@@ -25,7 +25,7 @@
 | Storage | `localStorage` + JSON export |
 | Licence | MIT |
 
-## Release 1.10.0 — invite, audience, watchers and a stable iPad table
+## Release 1.10.1 — invite, audience, watchers and a stable iPad table
 
 A running solo table can become a hosted room with **Invite** in the top bar or Actions: the live round, hand and score are kept, a room number and PIN appear, and the host joins audio. A friend approved mid-trick enters immediately as an **audience viewer** with a banner, then takes the reserved bot seat at the next trick. Every participant sees a top-bar **👁 watcher** chip with names. Actions carry IDs and host ACKs, full snapshots are re-sent every 4 seconds, and a lagging guest can request a resync. A client watchdog reconnects a stalled seat; the host marks a silent guest offline after 20 seconds and gives the bot their seat after 30 seconds of an active turn, sending a reconnectable `seat-timeout`. The local hand fan now uses `seat === MY_SEAT` with a 0.245 rad step so an iPad guest's face-up tiles do not overlap, and promotion restores the hidden hand dock. Update no longer drops a host who started from `?mode=solo`.
 

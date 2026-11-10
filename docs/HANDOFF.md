@@ -1,10 +1,10 @@
-# Handoff — Leab-Tui 3D 1.10.0
+# Handoff — Leab-Tui 3D 1.10.1
 
 **Session:** 2026-11-08 → 2026-11-09 · OpenCode 2.2.5 · DeepSeek V4.1 Flash
 
 ## Outcome
 
-Release **1.10.0** is built, verified and published. It turns the table into a resilient multiplayer studio:
+Release **1.10.1** is built, verified and published. It turns the table into a resilient multiplayer studio:
 
 - **Invite from a solo game.** A gold **Invite** in the top bar and Actions opens a host room around the running solo match without redealing. The invite sheet shows the room number, PIN, Copy room info, Copy link, Share, seats and approvals. Host audio joins automatically.
 - **Audience queue.** A guest approved mid-trick enters the table immediately as a viewer (`seat: -1`, ghosted hands, no dock/chat/voice) with an “Approved — watching until this trick ends” banner, then takes the reserved bot seat at the next trick. The hand dock returns after promotion.

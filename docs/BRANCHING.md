@@ -142,7 +142,7 @@ BASE_URL="https://somphol.github.io/leab-tui-3d/preview/invite-friends/" node sc
 BASE_URL="https://somphol.github.io/leab-tui-3d/preview/invite-friends/" node scripts/invite-check.mjs
 ```
 
-The preview carries the release-candidate version (`1.10.0`) so testers can see which build they are on; the release branch still owns the final tag. Label it as a
+The preview carries the release-candidate version (`1.10.1`) so testers can see which build they are on; the release branch still owns the final tag. Label it as a
 preview of the next release in the PR.
 
 ## Verification by branch
