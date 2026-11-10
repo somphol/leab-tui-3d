@@ -3872,6 +3872,9 @@ function renderSelection() {
     $("#handDock")?.setAttribute("hidden", "");
     return;
   }
+  /* Audience mode sets the hidden attribute. Promotion must clear it or the
+     dock stays invisible after the queued guest receives the seat. */
+  $("#handDock")?.removeAttribute("hidden");
   const kicker = $("#selectionKicker");
   const title = $("#selectionTitle");
   const detail = $("#selectionDetail");
@@ -6793,7 +6796,15 @@ function forceReload() {
   try {
     const url = new URL(location.href);
     url.searchParams.set("v", String(Date.now()));
-    if (!isNetworked() && state && ["lead", "follow", "showdown", "draft", "bid", "resolving", "roundEnd", "matchEnd"].includes(state.phase)) {
+    if (isHost()) {
+      /* The recovery blob is the host's resume path; mode=solo would hide it. */
+      url.searchParams.delete("mode");
+      url.searchParams.delete("resume");
+      url.searchParams.delete("demo");
+      url.searchParams.delete("selftest");
+    } else if (isClient() && net?.code) {
+      url.searchParams.set("room", net.code);
+    } else if (state && ["lead", "follow", "showdown", "draft", "bid", "resolving", "roundEnd", "matchEnd"].includes(state.phase)) {
       url.searchParams.set("resume", "1");
     }
     url.searchParams.delete("pin");
@@ -7295,6 +7306,16 @@ async function hostCurrentMatch() {
     });
     else maybeJoinAutoAudio();
     audio?.play("win", 0);
+    try {
+      /* `?mode=solo` would suppress host recovery on the next boot. The room
+         is now decisive; strip solo/resume/demo markers from the same tab. */
+      const url = new URL(location.href);
+      url.searchParams.delete("mode");
+      url.searchParams.delete("resume");
+      url.searchParams.delete("demo");
+      url.searchParams.delete("selftest");
+      history.replaceState(null, "", url.toString());
+    } catch { /* URL may be unavailable */ }
     return true;
   } catch (error) {
     try { host?.close(); } catch { /* ignore */ }
@@ -8639,8 +8660,12 @@ function seatTangent(seat) {
 }
 
 function handPosition(seat, index, count) {
-  const total = seat === 0
-    ? Math.min(1.56, Math.max(0, count - 1) * 0.225)
+  /* The fan the owner sees must never overlap: at HAND_RADIUS the chord for
+     0.245 rad is ~1.01, a little wider than the 0.91 tile diameter. Guests
+     used to be treated as seat 0 and got the compact opponent fan. */
+  const local = seat === MY_SEAT;
+  const total = local
+    ? Math.min(1.78, Math.max(0, count - 1) * 0.245)
     : Math.min(1.08, Math.max(0, count - 1) * 0.15);
   const offsetAngle = count > 1 ? (index - (count - 1) / 2) * (total / (count - 1)) : 0;
   const angle = SEATS[seat].angle + offsetAngle;

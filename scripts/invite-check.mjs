@@ -274,6 +274,9 @@ async function main() {
   ));
   if (promoted.seat > 0 && promoted.hand > 0) pass("guest seated with a hand", `seat ${promoted.seat}, ${promoted.hand} tiles`);
   else fail("guest seated with a hand", JSON.stringify(promoted));
+  const promotedDock = JSON.parse(await guest.eval("JSON.stringify({hidden:document.querySelector('#handDock').hidden,display:getComputedStyle(document.querySelector('#handDock')).display,body:document.body.classList.contains('is-viewer')})"));
+  if (!promotedDock.hidden && promotedDock.display !== "none" && !promotedDock.body) pass("hand dock returns when the audience guest is seated");
+  else fail("hand dock returns when the audience guest is seated", JSON.stringify(promotedDock));
   await guest.eval("LeabTui.net.resync(); true");
   await sleep(700);
   const resyncToast = await guest.eval("[...document.querySelectorAll('.toast')].map((n) => n.textContent).join(' | ')");
