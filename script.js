@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.10.2";
-import { VoiceChat } from "./voice-chat.js?v=1.10.2";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.2";
+} from "./peer-manager.js?v=1.10.3";
+import { VoiceChat } from "./voice-chat.js?v=1.10.3";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.3";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.2",
+  version: "1.10.3",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -10485,10 +10485,16 @@ function bindEvents() {
   let lastTouchEnd = 0;
   document.addEventListener("touchend", (event) => {
     const now = Date.now();
-    const guarded = event.target.closest?.("input, textarea, select, #scene");
+    const guarded = event.target.closest?.("input, textarea, select");
+    /* Safari ignores user-scalable=no; cancelling the second touchend also on
+       the canvas is what stops the double-tap page zoom/white viewport. The
+       table's own double-tap is detected from pointerup before this. */
     if (!guarded && now - lastTouchEnd < 320) event.preventDefault();
     lastTouchEnd = now;
   }, { passive: false });
+  ["gesturestart", "gesturechange"].forEach((type) => {
+    document.addEventListener(type, (event) => event.preventDefault(), { passive: false });
+  });
   window.addEventListener("pointerdown", () => { audio?.resume(); audio?.play("click", 0); }, { once: true });
   window.addEventListener("keydown", () => audio?.resume(), { once: true });
   window.addEventListener("beforeunload", saveMatch);

@@ -220,7 +220,7 @@ The saved payload is:
 ```json
 {
   "format": "leab-tui-3d-save",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "savedAt": "2026-11-06T...",
   "network": false,
   "game": { "phase": "...", "hands": [["r-general-0"], ...], ... }

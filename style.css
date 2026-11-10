@@ -2843,6 +2843,7 @@ body.is-viewer #voiceCallBtn {
     height: calc(100dvh - var(--topbar-h) - 26px);
     min-height: 0;
   }
+  .app, .stage-wrap, #scene { touch-action: none; }
 }
 
 /* Tablet menus: reserve the right rail and let the HUD wrap instead of
