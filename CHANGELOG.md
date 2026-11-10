@@ -2,7 +2,7 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [1.10.1] — 2026-11-09
+## [1.10.2] — 2026-11-09
 
 ### Added
 
@@ -12,7 +12,7 @@ All notable changes to Leab-Tui 3D are documented here. The format follows [Keep
 - **Automatic host audio.** Opening the invite room auto-joins the host voice mesh (subject to microphone permission and the Auto audio preference). A queued guest waits for the seating `welcome` before joining audio.
 - **Action acknowledgement and state catch-up.** Guest actions carry an `actionId`; the host acknowledges and deduplicates retries. During active play the host re-sends a full snapshot every 4 seconds (plus `seq` pulses on summary screens); a lagging guest requests a full `resync`, and an illegal play or returning to the tab does the same. Actions has **Refresh table**. A client watchdog pings every 5 seconds and reconnects to the same seat after 15 seconds of silence, so a stalled channel no longer leaves “Bot 2 is thinking” frozen on screen. The host marks a guest offline after 20 seconds without a message; if it is that guest's active turn for 30 seconds, the bot takes the seat, the old connection closes, and the guest can reclaim it with the seat card.
 - **Stable iPad menus and viewport.** The tablet layout is a fixed `100dvh` viewport, the HUD wraps before the right rail instead of clipping the Result chip, and iOS double-tap page zoom/callout is suppressed. This stops a double-tap from scrolling the table, hiding the dock or leaving a white gap.
-- **Local hand fan and dock on iPad.** A guest's own hand now uses the wide local fan (`seat === MY_SEAT`) with a 0.245 rad step, so face-up tiles do not overlap. Promotion from audience mode clears the dock's `hidden` attribute, so “Choose a combination to lead” returns as soon as the seat is handed over.
+- **Local hand row and dock on iPad.** The owner's hand is now one straight row along the seat tangent (`seat === MY_SEAT`, step 0.98), so face-up tiles neither overlap nor collide with the next seat's fan. Promotion from audience mode clears the dock's `hidden` attribute, so “Choose a combination to lead” returns as soon as the seat is handed over.
 - **Watcher presence.** Every participant sees a top-bar `👁 n` chip and a name list whenever someone is watching, including queued audience members marked “waiting for seat”.
 - **Easy reconnect after a bot replacement.** A guest's seat card is kept for seven days in `localStorage` (plus `sessionStorage`) so closing and reopening the link on the same device reclaims the same seat without approval. The waiting panel has **Reconnect**, and a lost `welcome` resends `hello` up to three times.
 - **Feature previews.** `.github/workflows/pages.yml` publishes `main` at the root and `feature/invite-friends` under `/preview/invite-friends/`, so the feature can be tested without replacing production.

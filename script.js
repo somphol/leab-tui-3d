@@ -17,14 +17,14 @@ import {
   PeerClient,
   createLoopbackPair,
   isProtocolMessage
-} from "./peer-manager.js?v=1.10.1";
-import { VoiceChat } from "./voice-chat.js?v=1.10.1";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.1";
+} from "./peer-manager.js?v=1.10.2";
+import { VoiceChat } from "./voice-chat.js?v=1.10.2";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.2";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.1",
+  version: "1.10.2",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -8660,13 +8660,22 @@ function seatTangent(seat) {
 }
 
 function handPosition(seat, index, count) {
-  /* The fan the owner sees must never overlap: at HAND_RADIUS the chord for
-     0.245 rad is ~1.01, a little wider than the 0.91 tile diameter. Guests
-     used to be treated as seat 0 and got the compact opponent fan. */
-  const local = seat === MY_SEAT;
-  const total = local
-    ? Math.min(1.78, Math.max(0, count - 1) * 0.245)
-    : Math.min(1.08, Math.max(0, count - 1) * 0.15);
+  /* The owner's hand is one straight row along the seat tangent: no fan
+     overlap, no second row, and no collision with the compact fan of the
+     neighbouring seat. Opponents keep the smaller face-down fan. */
+  if (seat === MY_SEAT) {
+    const step = 0.98;
+    const offset = (index - (count - 1) / 2) * step;
+    const base = seatVector(seat, HAND_RADIUS);
+    const tangent = seatTangent(seat);
+    return {
+      x: base.x + tangent.x * offset,
+      y: TABLE_Y + TILE_THICKNESS / 2 + 0.012,
+      z: base.z + tangent.z * offset,
+      angle: SEATS[seat].angle
+    };
+  }
+  const total = Math.min(1.08, Math.max(0, count - 1) * 0.15);
   const offsetAngle = count > 1 ? (index - (count - 1) / 2) * (total / (count - 1)) : 0;
   const angle = SEATS[seat].angle + offsetAngle;
   const radius = HAND_RADIUS + Math.abs(offsetAngle) * 0.24;

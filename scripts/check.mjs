@@ -313,7 +313,7 @@ ok(index.includes('id="inviteTopBtn"') && index.includes('id="inviteBtn"') && in
 ok(index.includes('id="joinRequestPop"') && index.includes('id="joinRequestApprove"') && index.includes('id="joinRequestLater"'), "host join-request popup exists");
 ok(index.includes('id="queuedBanner"') && script.includes("queuedSeat"), "queued guests have an audience banner");
 ok(index.includes('id="watcherChip"') && index.includes('id="watcherList"') && script.includes("function renderWatcherChip"), "watchers are visible to every participant");
-ok(script.includes("const local = seat === MY_SEAT") && script.includes("0.245"), "the local hand fan uses MY_SEAT and avoids overlap");
+ok(script.includes("seat === MY_SEAT") && script.includes("const step = 0.98"), "the owner's hand is one straight row");
 ok(script.includes('$("#handDock")?.removeAttribute("hidden")'), "promotion restores the hand dock");
 ok(css.includes("pointer: coarse) and (min-width: 641px") && script.includes("lastTouchEnd"), "tablet menus lock the viewport and suppress double-tap zoom");
 ok(script.includes("function hostCurrentMatch") && script.includes("function queueBotSeat") && script.includes("function promoteQueuedGuests"), "solo-to-host invite engine exists");
