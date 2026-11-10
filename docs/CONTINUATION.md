@@ -1,14 +1,14 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-08 · release 1.9.22**
+**As of 2026-11-09 · release 1.10.0**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `4d4b28b` — *Release Leab-Tui 3D 1.9.22: play history from the turn-log sheet*
+- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.0: invite, audience, watchers and iPad fixes*
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
-- Feature train: `feature/invite-friends` — Invite from a solo table with queued mid-trick joins; preview at `/preview/invite-friends/`
+- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.0)
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -62,6 +62,7 @@ Current table/network model:
 | 1.9.20 | Hint toast clears the HUD; inspector opens on the selected tile; 手 → H |
 | 1.9.21 | C/M/A/i/H/L rail visible on iPad landscape |
 | 1.9.22 | L sheet exposes the shared play-history browser |
+| 1.10.0 | Invite from solo, audience queue, watchers, keepalive/resync, iPad hand fan and dock fixes |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),
@@ -116,15 +117,16 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 cd ~/Projects/leab-tui-3d
 node --check script.js && node --check peer-manager.js
 node --check voice-chat.js && node --check security.js
-node scripts/check.mjs                 # 420/420
+node scripts/check.mjs                 # 441/441
 python3 -m http.server 8123 &          # if not running
 node scripts/verify.mjs                # ALL BROWSER CHECKS PASSED (includes iPad portrait/landscape)
 AUDIO_TEST=1 node scripts/verify.mjs   # includes a real audio peak
-node scripts/net-check.mjs             # ALL 37 MULTIPLAYER CHECKS PASSED
+node scripts/net-check.mjs             # ALL 47 MULTIPLAYER CHECKS PASSED
+node scripts/invite-check.mjs          # ALL 16 INVITE CHECKS PASSED
 BASE_URL="https://somphol.github.io/leab-tui-3d/" node scripts/net-check.mjs
 ```
 
-`net-check.mjs` covers host/guest start, privacy, chat, voice, actions,
+`net-check.mjs` covers host/guest start, privacy, chat, voice, actions, invite/audience,
 guest reload rejoin, **host reload recovery**, **late join → bot seat**,
 **viewer mode**, **30-minute join pause**, **copy-room-info UI**, and
 disconnect-to-bot. `verify.mjs` covers boot, 3D, audio, display, the full

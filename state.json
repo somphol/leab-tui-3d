@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.22",
-  "version": "1.9.22",
+  "projectVersion": "1.10.0",
+  "version": "1.10.0",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,13 +9,13 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-09T00:57:28.520Z",
-    "durationSeconds": 197516,
-    "durationHuman": "54h 51m 56s",
+    "packagedAt": "2026-11-10T01:52:58.765Z",
+    "durationSeconds": 287246,
+    "durationHuman": "79h 47m 26s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link.",
-    "publishedAt": "2026-11-09T00:57:28.520Z"
+    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link. 1.10.0 Invite, audience mode, watchers, action ACK, heartbeats, keepalive/turn timeout, seat-card reconnect, iPad hand fan and dock restore.",
+    "publishedAt": "2026-11-10T01:52:58.765Z"
   },
   "tokens": {
     "input": 6615671,
@@ -71,9 +71,9 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (420 checks)",
-    "browserCheck": "scripts/verify.mjs — 44 checks incl. iPad framing, shadows, hints, inspector, rail and the turn-log history link",
-    "multiplayer": "scripts/net-check.mjs — 37/37 (local and live)",
+    "staticCheck": "scripts/check.mjs (441 checks)",
+    "browserCheck": "scripts/verify.mjs — 45 checks incl. iPad framing, shadows, hints, inspector, rail, history and invite controls",
+    "multiplayer": "scripts/net-check.mjs — 47 checks including the invite/audience path",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
@@ -86,7 +86,8 @@
     "copyRoomInfo": "host Actions button + host chip title",
     "hostReload": "same room code, trick preserved, guest reconnected",
     "showdownLegality": "illegal pair explained; legal losing sets remain showable",
-    "ipad": "portrait and landscape: rim on-screen, clear of dock, 2D shadow-free, 3D shadows on, hint toast below HUD, inspector on selection, C/M/A/i/H/L rail, L sheet opens shared turn history after a trick"
+    "ipad": "portrait and landscape: whole rim, no 2D shadows, Invite controls, C/M/A/i/H/L rail, hand fan without overlap",
+    "invite": "scripts/invite-check.mjs — 16 checks: solo → host, audio, popup, audience mode, promotion, resync, seat-card reconnect"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -360,9 +361,14 @@
       "version": "1.9.22",
       "date": "2026-11-08",
       "summary": "Turn-log sheet exposes the shared play-history browser on iPad."
+    },
+    {
+      "version": "1.10.0",
+      "date": "2026-11-09",
+      "summary": "Invite from solo, audience queue, watchers, keepalive, resync and iPad hand fixes."
     }
   ],
-  "releaseNotes": "1.9.22 adds the View trick log action to the iPad turn-log sheet; it opens the same history modal as the round summary.",
+  "releaseNotes": "1.10.0 turns a solo table into a hosted room, queues mid-trick guests as an audience, shows watchers to everyone, adds keepalive/resync and fixes the iPad hand fan and dock.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
