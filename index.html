@@ -6,7 +6,7 @@
   <title>Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio</title>
   <meta name="description" content="A bilingual, offline-friendly 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with 32 Chinese chess tiles. Vanilla HTML, CSS and Three.js." />
   <meta name="theme-color" content="#e8f0f2" />
-  <meta name="app-version" content="1.10.6" />
+  <meta name="app-version" content="1.10.7" />
   <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta property="og:type" content="website" />
@@ -55,7 +55,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Leab-Tui 3D" />
-  <link rel="stylesheet" href="style.css?v=1.10.6" />
+  <link rel="stylesheet" href="style.css?v=1.10.7" />
   <script type="importmap">
     {
       "imports": {
@@ -76,7 +76,7 @@
         <span class="brand-copy">
           <span class="brand-line">
             <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
-            <span id="brandVersion" class="brand-version">(v1.10.6)</span>
+            <span id="brandVersion" class="brand-version">(v1.10.7)</span>
           </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
@@ -146,11 +146,11 @@
           </div>
           <div class="hud-chips" role="status" aria-live="polite">
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.round">Round</span><strong id="roundChip">1</strong></span>
-            <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Trick</span><strong id="trickChip">0</strong></span>
+            <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Turn</span><strong id="trickChip">0</strong></span>
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.target">Target</span><strong id="targetChip">20</strong></span>
             <span class="hud-chip hud-turn"><span class="hud-label" data-i18n="hud.turn">Turn</span><strong id="turnChip">You</strong></span>
             <span class="hud-chip call-chip" id="callChip" hidden></span>
-            <button id="lastTrickBtn" class="hud-chip view-toggle" type="button" hidden data-i18n="lastTrick.button">Last trick</button>
+            <button id="lastTrickBtn" class="hud-chip view-toggle" type="button" hidden data-i18n="lastTrick.button">Last turn</button>
             <button id="draftChip" class="hud-chip view-toggle" type="button" hidden aria-pressed="false" title="Draft deal (experimental)">Draft: off</button>
             <label class="hud-chip result-chip" title="Result announcement">
               <span data-i18n="hud.result">Result</span>
@@ -191,6 +191,7 @@
             <div id="bidRow" class="bid-row" role="group" aria-label="Bid piles" hidden></div>
             <button id="hintBtn" class="btn btn-ghost" type="button" data-i18n="actions.hint">Hint</button>
             <button id="clearBtn" class="btn btn-ghost" type="button" data-i18n="actions.clear">Clear</button>
+            <button id="autoplayBtn" class="btn btn-ghost dock-auto" type="button" aria-pressed="false" data-i18n="actions.autoplayShort">Auto</button>
             <button id="tidyHandBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.tidy">Tidy hand</button>
             <button id="leadBtn" class="btn btn-gold" type="button" disabled data-i18n="actions.lead">Lead</button>
             <button id="revealBtn" class="btn btn-jade" type="button" hidden data-i18n="actions.reveal">Reveal &amp; challenge</button>
@@ -228,7 +229,7 @@
             <button id="inviteBtn" class="btn btn-gold invite-action" type="button" hidden data-i18n="invite.action">Invite friends</button>
             <button id="newMatchBtn" class="btn btn-ghost" type="button" data-i18n="actions.newMatch">New match</button>
             <button id="nextRoundBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.nextRound">Next round</button>
-            <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo trick</button>
+            <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo turn</button>
             <button id="resyncBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.resync">Refresh table</button>
             <button id="exportBtn" class="btn btn-ghost" type="button" data-i18n="actions.export">Export JSON</button>
             <button id="lobbyBtn" class="btn btn-ghost" type="button" data-i18n="net.openLobby">Multiplayer</button>
@@ -290,7 +291,7 @@
 
         <section class="panel log-panel" id="logPanel">
           <div class="panel-head">
-            <h2 data-i18n="log.title">Trick log</h2>
+            <h2 data-i18n="log.title">Turn log</h2>
             <button id="logHistoryBtn" class="mini-btn" type="button" data-i18n="log.history">History</button>
             <span class="badge" data-i18n="log.live">live</span>
           </div>
@@ -300,7 +301,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.10.6</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.10.7</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -316,7 +317,7 @@
         <button class="panel-orb" type="button" data-panel="chatPanel" aria-label="Table chat" title="Table chat">💬</button>
         <button class="panel-orb" type="button" data-panel="inspectorCard" aria-label="Tile inspector" title="Tile inspector">i</button>
         <button class="panel-orb" type="button" data-panel="handPanel" aria-label="Your hand" title="Your hand">H</button>
-        <button class="panel-orb" type="button" data-panel="logPanel" aria-label="Trick log" title="Trick log">L</button>
+        <button class="panel-orb" type="button" data-panel="logPanel" aria-label="Turn log" title="Turn log">L</button>
       </div>
 
       <div id="panelSheet" class="panel-sheet" hidden>
@@ -380,12 +381,7 @@
 
           <p class="lobby-or"><span data-i18n="net.orFriends">or play with friends</span></p>
 
-          <div class="lobby-modes lobby-modes-two">
-            <button id="lobbyHost" class="lobby-mode" type="button">
-              <span class="lobby-mode-icon" aria-hidden="true">◉</span>
-              <b data-i18n="net.host">Host a game</b>
-              <span data-i18n="net.hostDesc">Keep this tab open. We make a code you can send.</span>
-            </button>
+          <div class="lobby-modes lobby-modes-one">
             <button id="lobbyJoin" class="lobby-mode" type="button">
               <span class="lobby-mode-icon" aria-hidden="true">◇</span>
               <b data-i18n="net.join">Join a game</b>
@@ -545,7 +541,7 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.10.6</span>
+          <span class="version-chip version-label">v1.10.7</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
@@ -588,7 +584,7 @@
           <h3 data-i18n="invite.seats">Seats</h3>
           <div id="inviteSeats" class="lobby-roster"></div>
         </div>
-        <p class="invite-version"><span class="version-label">v1.10.6</span></p>
+        <p class="invite-version"><span class="version-label">v1.10.7</span></p>
       </div>
     </div>
 
@@ -600,6 +596,7 @@
     <div id="queuedBanner" class="queued-banner" hidden role="status" aria-live="polite">
       <span class="queued-banner-dot" aria-hidden="true"></span>
       <span id="queuedBannerText"></span>
+      <button id="queuedLeaveBtn" class="mini-btn queued-leave" type="button" data-i18n="net.leaveShort">Leave</button>
     </div>
 
     <div id="joinRequestPop" class="join-request-pop" hidden role="dialog" aria-live="assertive" aria-labelledby="joinRequestTitle">
@@ -717,10 +714,10 @@
     <div id="undoModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="undoTitle">
       <div class="modal-card">
         <button class="modal-close" type="button" data-close="undoModal" aria-label="Close">×</button>
-        <h2 id="undoTitle" data-i18n="undo.title">Why did that trick go wrong?</h2>
+        <h2 id="undoTitle" data-i18n="undo.title">Why did that turn go wrong?</h2>
         <div id="undoBody" class="undo-body"></div>
         <div class="modal-actions">
-          <button id="undoConfirm" class="btn btn-gold" type="button" data-i18n="actions.undo">Undo trick</button>
+          <button id="undoConfirm" class="btn btn-gold" type="button" data-i18n="actions.undo">Undo turn</button>
           <button id="undoCancel" class="btn btn-ghost" type="button" data-i18n="actions.keep">Keep playing</button>
         </div>
       </div>
@@ -754,10 +751,10 @@
     <div id="lastTrickModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="lastTrickTitle">
       <div class="modal-card modal-small log-browser">
         <button class="modal-close" type="button" data-close="lastTrickModal" aria-label="Close">×</button>
-        <h2 id="lastTrickTitle" data-i18n="log.browserTitle">Trick history</h2>
+        <h2 id="lastTrickTitle" data-i18n="log.browserTitle">Turn history</h2>
         <div class="log-filters">
           <label><span data-i18n="log.round">Round</span><select id="logRoundSelect"></select></label>
-          <label><span data-i18n="log.trick">Trick</span><select id="logTrickSelect"></select></label>
+          <label><span data-i18n="log.trick">Turn</span><select id="logTrickSelect"></select></label>
         </div>
         <p id="lastTrickMeta" class="lobby-note"></p>
         <div id="lastTrickList" class="last-trick-list"></div>
@@ -782,7 +779,7 @@
     <div id="trickResultModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="trickResultTitle">
       <div class="modal-card modal-small trick-result">
         <button class="modal-close" type="button" data-close="trickResultModal" aria-label="Close">×</button>
-        <h2 id="trickResultTitle" data-i18n="result.title">Trick result</h2>
+        <h2 id="trickResultTitle" data-i18n="result.title">Turn result</h2>
         <div id="trickResultBody" class="trick-result-body"></div>
         <div class="modal-actions">
           <button id="trickResultContinue" class="btn btn-gold" type="button" data-i18n="actions.continue">Continue</button>
@@ -832,6 +829,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.10.6"></script>
+  <script type="module" src="script.js?v=1.10.7"></script>
 </body>
 </html>

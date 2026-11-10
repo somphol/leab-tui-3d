@@ -19,6 +19,49 @@ export const PEER_ID_PREFIX = "leabtui-v1-";
 export const PEERJS_VERSION = "1.5.4";
 export const PEERJS_CDN = `https://cdn.jsdelivr.net/npm/peerjs@${PEERJS_VERSION}/dist/peerjs.min.js`;
 
+/* Test-only network impairment for the multiplayer soak. It never engages
+   unless a page is opened with `?netem=...`; the transport itself is
+   unchanged. Drops/duplicates/delays application frames, not PeerJS
+   signalling, so the data channel stays up while the game protocol is hurt. */
+let netem = null;
+let netemSeed = 0x9e3779b9;
+
+export function configureNetem(config = {}) {
+  const drop = Math.max(0, Math.min(0.9, Number(config.drop) || 0));
+  const dup = Math.max(0, Math.min(0.5, Number(config.dup) || 0));
+  const delay = Math.max(0, Math.min(5000, Number(config.delay) || 0));
+  const jitter = Math.max(0, Math.min(5000, Number(config.jitter) || 0));
+  const seed = Number(config.seed) || 0x9e3779b9;
+  netem = (drop || dup || delay || jitter) ? { drop, dup, delay, jitter } : null;
+  netemSeed = seed >>> 0;
+  return netem;
+}
+
+export function netemState() {
+  return netem ? { ...netem } : null;
+}
+
+function netemRoll() {
+  netemSeed = (netemSeed + 0x6d2b79f5) >>> 0;
+  let value = netemSeed;
+  value = Math.imul(value ^ (value >>> 15), value | 1);
+  value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+  return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+}
+
+function netemDeliver(deliver) {
+  if (!netem) { deliver(); return; }
+  if (netem.drop && netemRoll() < netem.drop) return;
+  const run = () => {
+    deliver();
+    if (netem.dup && netemRoll() < netem.dup) setTimeout(deliver, 20 + netemRoll() * 80);
+  };
+  const wait = netem.delay + (netem.jitter ? netemRoll() * netem.jitter : 0);
+  if (wait > 0) setTimeout(run, wait);
+  else run();
+}
+
+
 /* Numeric-only codes are easiest to read over the phone. */
 const ROOM_ALPHABET = "0123456789";
 
@@ -134,6 +177,9 @@ export function loadPeerJS(timeoutMs = 15000) {
 function defaultPeerOptions() {
   return {
     debug: 1,
+    /* BinaryPack chunks payloads above ~16 KB. JSON serialisation refuses
+       them, which used to kill a four-human state snapshot late in a round. */
+    serialization: "binary",
     /* Free public PeerJS broker. Explicit so a future PeerJS default cannot
        silently move the signalling endpoint. */
     host: "0.peerjs.com",
@@ -258,8 +304,9 @@ export class PeerHost {
         try { connection.close(); } catch { /* ignore */ }
         return;
       }
-      if (data && data.__leab === PROTOCOL_VERSION) this.onMessage({ connId, message: data, connection });
-      else this.onError({ scope: "host", type: "protocol", connId, message: data });
+      if (data && data.__leab === PROTOCOL_VERSION) {
+        netemDeliver(() => this.onMessage({ connId, message: data, connection }));
+      } else this.onError({ scope: "host", type: "protocol", connId, message: data });
     });
     connection.on("close", () => drop("closed"));
     connection.on("error", (error) => {
@@ -273,12 +320,12 @@ export class PeerHost {
   send(connId, message) {
     const connection = this.connections.get(connId);
     if (!connection || !connection.open) return false;
-    try {
-      connection.send({ __leab: PROTOCOL_VERSION, ...message });
-      return true;
-    } catch {
-      return false;
-    }
+    const payload = { __leab: PROTOCOL_VERSION, ...message };
+    netemDeliver(() => {
+      if (!connection.open) return;
+      try { connection.send(payload); } catch { /* the retry loop will notice */ }
+    });
+    return true;
   }
 
   broadcast(message, connIds = null) {
@@ -351,7 +398,7 @@ export class PeerClient {
         this.onStatus?.({ state: "dialing", code: this.code });
         const connection = this.peer.connect(this.hostId, {
           reliable: true,
-          serialization: "json",
+          serialization: "binary",
           metadata: { name: this.name, protocol: PROTOCOL_VERSION }
         });
         this.connection = connection;
@@ -372,8 +419,9 @@ export class PeerClient {
           }
         });
         connection.on("data", (data) => {
-          if (data && data.__leab === PROTOCOL_VERSION) this.onMessage({ message: data });
-          else this.onError({ scope: "client", type: "protocol", message: data });
+          if (data && data.__leab === PROTOCOL_VERSION) {
+            netemDeliver(() => this.onMessage({ message: data }));
+          } else this.onError({ scope: "client", type: "protocol", message: data });
         });
         connection.on("close", () => {
           if (this.closed) return;
@@ -409,12 +457,12 @@ export class PeerClient {
 
   send(message) {
     if (!this.connection || !this.connection.open) return false;
-    try {
-      this.connection.send({ __leab: PROTOCOL_VERSION, ...message });
-      return true;
-    } catch {
-      return false;
-    }
+    const payload = { __leab: PROTOCOL_VERSION, ...message };
+    netemDeliver(() => {
+      if (!this.connection?.open) return;
+      try { this.connection.send(payload); } catch { /* the retry loop will notice */ }
+    });
+    return true;
   }
 
   close() {

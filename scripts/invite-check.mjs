@@ -221,7 +221,7 @@ async function main() {
     console.log("POPUP DIAG", await host.eval("JSON.stringify({pending:LeabTui.net.pending(),popHidden:document.querySelector('#joinRequestPop')?.hidden,lobbyHidden:document.querySelector('#lobbyModal')?.hidden,inviteHidden:document.querySelector('#inviteModal')?.hidden,started:LeabTui.net.getState()?.started,alertHidden:document.querySelector('#joinAlertBtn')?.hidden,alertText:document.querySelector('#joinAlertText')?.textContent})"));
     throw error;
   }
-  if (/Late/.test(popup.title) && /Allow|อนุญาต|trick|ตา/i.test(`${popup.title} ${popup.body}`)) pass("host sees the join-request popup on the table", popup.title);
+  if (/Late/.test(popup.title) && /Allow|อนุญาต|trick|turn|ตา/i.test(`${popup.title} ${popup.body}`)) pass("host sees the join-request popup on the table", popup.title);
   else fail("host sees the join-request popup on the table", JSON.stringify(popup));
   await host.eval("document.querySelector('#joinRequestApprove').click(); true");
   const queued = JSON.parse(await host.waitFor(

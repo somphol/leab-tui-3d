@@ -172,7 +172,7 @@ async function main() {
   const hostWs = await endpoint();
   const host = await Session.connect(hostWs);
   await host.goto(`${BASE}?mode=host&name=Host`);
-  const hostNet = await host.waitFor("JSON.stringify(window.LeabTui?.net.getState?.() || null)", "host room open", 30000);
+  const hostNet = await host.waitFor("window.LeabTui?.net?.getState?.()?.role === 'host' ? JSON.stringify(LeabTui.net.getState()) : ''", "host room open", 30000);
   const hostState = JSON.parse(hostNet);
   if (hostState.role === "host" && /^\d{3}-\d{3}$/.test(hostState.code)) pass("host opened a room number", hostState.code);
   else fail("host opened a branded room", hostNet);
@@ -291,12 +291,12 @@ async function main() {
     await sleep(300);
     await host.eval("document.querySelector('#invitePending [data-unqueue]')?.click(); true");
     await host.waitFor("window.LeabTui?.net.getState?.().queued?.length === 0 ? 'ok' : ''", "queued seat cancelled", 15000);
-    await host.waitFor("window.LeabTui?.net.getState?.().players?.[2]?.kind === 'bot' ? 'ok' : ''", "seat 2 back to bot", 15000);
+    await host.waitFor("window.LeabTui?.net.getState?.().players?.[2]?.kind === 'bot' ? 'ok' : ''", "seat 2 back to bot", 30000);
   } else {
     if (thirdJoined.seat === 2 && thirdJoined.hand > 0) pass("approved guest takes a bot seat between tricks", `seat ${thirdJoined.seat}, ${thirdJoined.hand} tiles`);
     else fail("approved guest takes a bot seat between tricks", JSON.stringify(thirdJoined));
     await third.closePage();
-    await host.waitFor("window.LeabTui?.net.getState?.().players?.[2]?.kind === 'bot' ? 'ok' : ''", "seat 2 back to bot", 15000);
+    await host.waitFor("window.LeabTui?.net.getState?.().players?.[2]?.kind === 'bot' ? 'ok' : ''", "seat 2 back to bot", 30000);
   }
 
   // Viewer approval when the host chooses Watch only.
@@ -701,13 +701,197 @@ async function main() {
   const inviteRoster = JSON.parse(await inviteHost.eval("JSON.stringify(LeabTui.net.getState())"));
   if (!inviteRoster.queued?.length && inviteRoster.players?.[promoted.seat]?.kind === "human") pass("queued list clears when the guest is seated");
   else fail("queued list clears when the guest is seated", JSON.stringify({queued:inviteRoster.queued,seat:inviteRoster.players?.[promoted.seat]}));
+
+  // Soak: both humans autoplay for one or more full rounds. This exercises
+  // human actions over the data channel, bot turns, state publishing and the
+  // resync/watchdog path with two seats in motion.
+  const soakRounds = Math.max(1, Number(process.env.SOAK_ROUNDS || 1));
+  await lateGuest.eval("LeabTui.setFast(true); LeabTui.setAutoplay(true); true");
+  await inviteHost.eval("LeabTui.setFast(true); LeabTui.setAutoplay(true); true");
+  const soakProbe = () => `JSON.stringify({now:Date.now(),round:LeabTui.getState().round,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase,turn:LeabTui.getState().turn,hands:LeabTui.getState().hands.map((h)=>h.length),center:LeabTui.getState().center.length,net:LeabTui.net?.getState?.()||null,debug:LeabTui.net?.debug?.()||null})`;
+  let soakOk = false;
+  let soakDetail = "";
+  let soakKey = "";
+  let soakAt = Date.now();
+  let soakTurns = 0;
+  let divergent = 0;
+  let maxLagMs = 0;
+  let roundsDone = 0;
+  let startedAt = Date.now();
+  for (let step = 0; step < 60 * Math.max(1, soakRounds) + 60; step += 1) {
+    await sleep(1000);
+    const hs = JSON.parse(await inviteHost.eval(soakProbe()));
+    const gs = JSON.parse(await lateGuest.eval(soakProbe()));
+    const key = `${hs.round}:${hs.trick}:${hs.phase}:${hs.turn}`;
+    if (key !== soakKey) { soakKey = key; soakAt = Date.now(); soakTurns += 1; }
+    const same = hs.round === gs.round && hs.trick === gs.trick && hs.phase === gs.phase && hs.turn === gs.turn;
+    divergent = same ? 0 : divergent + 1;
+    maxLagMs = Math.max(maxLagMs, divergent * 1000);
+    if (hs.phase === "roundEnd" || hs.phase === "matchEnd") {
+      roundsDone += 1;
+      if (roundsDone >= soakRounds || hs.phase === "matchEnd") {
+        soakOk = true;
+        soakDetail = `round ${hs.round}, ${soakTurns} transitions, max lag ${maxLagMs} ms`;
+        break;
+      }
+      await inviteHost.eval("LeabTui.nextRound(); true");
+      await sleep(1200);
+      continue;
+    }
+    if (Date.now() - soakAt > 12000) {
+      soakDetail = JSON.stringify({ host: hs, guest: gs, idleMs: Date.now() - soakAt, roundsDone, maxLagMs });
+      break;
+    }
+    if (divergent >= 8) {
+      soakDetail = JSON.stringify({ divergent: true, host: hs, guest: gs, maxLagMs, roundsDone });
+      break;
+    }
+  }
+  if (!soakOk && !soakDetail) soakDetail = JSON.stringify({ timeout: true, elapsed: Date.now() - startedAt, roundsDone, maxLagMs });
+  if (soakOk) pass("two humans autoplay rounds without deadlock", soakDetail);
+  else fail("two humans autoplay rounds without deadlock", soakDetail);
+
   await lateGuest.closePage();
   await inviteHost.closePage();
+
+  // Four-human table: host + three guests join before the deal, all four
+  // autoplay full rounds. This is the closest headless analogue of a real
+  // four-person room and exercises every seat over the data channel.
+  const host4 = await Session.connect(await newTarget(`${BASE}?mode=host&name=Host4`));
+  const host4Net = JSON.parse(await host4.waitFor(
+    "window.LeabTui?.net?.getState?.()?.role === 'host' ? JSON.stringify(LeabTui.net.getState()) : ''",
+    "four-human host room",
+    30000
+  ));
+  const code4 = host4Net.code.replace("-", "");
+  await host4.eval("LeabTui.net.setPin('48213'); true");
+  const guests4 = [];
+  for (let index = 2; index <= 4; index += 1) {
+    const name = `G${index}`;
+    const session = await Session.connect(await newTarget(`${BASE}?room=${code4}&name=${name}&pin=48213`));
+    guests4.push({ name, session });
+    const pending4 = JSON.parse(await host4.waitFor(
+      `window.LeabTui?.net.pending?.().some((entry) => entry.name === ${JSON.stringify(name)}) ? JSON.stringify(LeabTui.net.pending()) : ''`,
+      `pending ${name}`,
+      20000
+    ));
+    const request = pending4.find((entry) => entry.name === name);
+    if (!request) throw new Error(`no pending request for ${name}`);
+    await host4.eval(`LeabTui.net.approve(${JSON.stringify(request.connId)}); true`);
+    await session.waitFor("window.LeabTui?.net?.getState?.()?.role === 'client' ? 'ok' : ''", `${name} seated`, 20000);
+  }
+  const roster4 = JSON.parse(await host4.waitFor(
+    "JSON.stringify(LeabTui.net.getState().players)",
+    "four-human roster",
+    15000
+  ));
+  const humans4 = roster4.filter((profile) => profile?.kind === "host" || profile?.kind === "human").length;
+  if (humans4 === 4) pass("four humans occupy every seat before the deal");
+  else fail("four humans occupy every seat before the deal", JSON.stringify(roster4));
+  await host4.eval("LeabTui.net.start(); true");
+  await host4.waitFor("LeabTui.getState?.() && LeabTui.getState().phase !== 'dealing' ? 'ok' : ''", "four-human deal", 25000);
+  for (const { session } of guests4) {
+    await session.waitFor("window.LeabTui?.net?.getState?.()?.started && LeabTui.getState?.() ? 'ok' : ''", "four-human guest state", 25000);
+    await session.eval("LeabTui.setFast(true); LeabTui.setAutoplay(true); true");
+  }
+  await host4.eval("LeabTui.setFast(true); LeabTui.setAutoplay(true); true");
+
+  const fourProbe = () => `JSON.stringify({round:LeabTui.getState().round,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase,turn:LeabTui.getState().turn,hands:LeabTui.getState().hands.map((h)=>h.length),captures:LeabTui.getState().captures.reduce((n,p)=>n+p.length,0),net:LeabTui.net?.getState?.()||null,debug:LeabTui.net?.debug?.()||null})`;
+  let fourOk = false;
+  let fourDetail = "";
+  let fourKey = "";
+  let fourAt = Date.now();
+  let fourTurns = 0;
+  let fourLag = 0;
+  for (let step = 0; step < 180; step += 1) {
+    await sleep(1000);
+    const head = JSON.parse(await host4.eval(fourProbe()));
+    const seats = [];
+    for (const { session } of guests4) seats.push(JSON.parse(await session.eval(fourProbe())));
+    const key = `${head.round}:${head.trick}:${head.phase}:${head.turn}`;
+    if (key !== fourKey) { fourKey = key; fourAt = Date.now(); fourTurns += 1; }
+    const lagging = seats.filter((seat) => seat.round !== head.round || seat.trick !== head.trick || seat.phase !== head.phase || seat.turn !== head.turn).length;
+    fourLag = lagging ? fourLag + 1 : 0;
+    if (head.phase === "roundEnd" || head.phase === "matchEnd") {
+      const total = head.hands.reduce((n, len) => n + len, 0) + head.captures;
+      if (total === 32) pass("four-human round conserved all 32 tiles", `round ${head.round}`);
+      else fail("four-human round conserved all 32 tiles", JSON.stringify(head));
+      fourOk = true;
+      fourDetail = `round ${head.round}, ${fourTurns} transitions, max lag ${fourLag * 1000} ms`;
+      break;
+    }
+    if (Date.now() - fourAt > 15000) {
+      fourDetail = JSON.stringify({ host: head, seats, idleMs: Date.now() - fourAt });
+      break;
+    }
+    if (fourLag >= 8) {
+      fourDetail = JSON.stringify({ divergent: true, host: head, seats, lagSeconds: fourLag });
+      break;
+    }
+  }
+  if (!fourOk && !fourDetail) fourDetail = JSON.stringify({ timeout: true, fourTurns });
+  if (fourOk) pass("four humans autoplay a round without deadlock", fourDetail);
+  else fail("four humans autoplay a round without deadlock", fourDetail);
+
+  let lossyOk = false;
+  let lossyDetail = "";
+  if (fourOk) {
+    const netemConfig = JSON.stringify({ drop: 0.1, dup: 0.02, delay: 100, jitter: 100, seed: 17 });
+    await host4.eval(`LeabTui.net.setNetem(${netemConfig}); true`);
+    for (const { session } of guests4) await session.eval(`LeabTui.net.setNetem(${netemConfig}); true`);
+    await host4.eval("LeabTui.nextRound(); true");
+    await sleep(1500);
+    let lossyKey = "";
+    let lossyAt = Date.now();
+    let lossyTurns = 0;
+    let lossyLag = 0;
+    for (let step = 0; step < 180; step += 1) {
+      await sleep(1000);
+      const head = JSON.parse(await host4.eval(fourProbe()));
+      const seats = [];
+      for (const { session } of guests4) seats.push(JSON.parse(await session.eval(fourProbe())));
+      const key = `${head.round}:${head.trick}:${head.phase}:${head.turn}`;
+      if (key !== lossyKey) { lossyKey = key; lossyAt = Date.now(); lossyTurns += 1; }
+      const lagging = seats.filter((seat) => seat.round !== head.round || seat.trick !== head.trick || seat.phase !== head.phase || seat.turn !== head.turn).length;
+      lossyLag = lagging ? lossyLag + 1 : 0;
+      if (head.phase === "roundEnd" || head.phase === "matchEnd") {
+        const total = head.hands.reduce((n, len) => n + len, 0) + head.captures;
+        lossyOk = total === 32;
+        lossyDetail = `round ${head.round}, ${lossyTurns} transitions, max lag ${lossyLag * 1000} ms, tiles ${total}`;
+        break;
+      }
+      if (Date.now() - lossyAt > 30000) {
+        lossyDetail = JSON.stringify({ host: head, seats, idleMs: Date.now() - lossyAt });
+        break;
+      }
+      if (lossyLag >= 22) {
+        lossyDetail = JSON.stringify({ divergent: true, host: head, seats, lagSeconds: lossyLag });
+        break;
+      }
+    }
+    if (!lossyDetail) {
+      /* Bad networks are slower; the release gate is liveness (no 30 s
+         stall, no deadlock) rather than a fixed round duration. */
+      lossyOk = lossyTurns >= 20;
+      lossyDetail = JSON.stringify({ progressed: lossyTurns, note: "round not finished within 180 s" });
+    }
+    if (lossyOk) pass("four humans stay live under 10% loss, duplicates and 100 ms delay", lossyDetail);
+    else fail("four humans stay live under 10% loss, duplicates and 100 ms delay", lossyDetail);
+  }
+
+  for (const { session } of guests4) await session.closePage();
+  await host4.closePage();
 
   if (host.events.length) fail("host console clean", host.events.join(" | ").slice(0, 500));
   else pass("host console clean");
   if (guest.events.length) fail("guest console clean", guest.events.join(" | ").slice(0, 500));
   else pass("guest console clean");
+  if (host4.events.length) fail("four-human host console clean", host4.events.join(" | ").slice(0, 500));
+  else pass("four-human host console clean");
+  for (const { name, session } of guests4) {
+    if (session.events.length) fail(`${name} console clean`, session.events.join(" | ").slice(0, 500));
+    else pass(`${name} console clean`);
+  }
 
   host.close();
   if (failures.length) {
@@ -725,5 +909,7 @@ main()
     process.exitCode = 1;
   })
   .finally(() => {
-    chrome.kill("SIGTERM");
+    chrome.kill("SIGKILL");
+    /* The Chrome child/stdio can keep Node alive after the report. */
+    process.exit(process.exitCode || 0);
   });

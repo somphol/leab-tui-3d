@@ -827,6 +827,8 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
 .pips i.on { background: var(--gold); box-shadow: 0 0 10px rgba(216, 178, 107, 0.6); }
 
 .dock-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 7px; flex: 0 0 auto; }
+.dock-auto { border-color: rgba(121, 195, 163, 0.35); }
+.dock-auto.active { color: var(--gold-bright); border-color: var(--gold); background: var(--gold-wash-strong); box-shadow: inset 0 0 0 1px rgba(240, 212, 154, 0.35); }
 
 /* Buttons */
 .btn {
@@ -1559,6 +1561,9 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
   pointer-events: none;
 }
 .queued-banner[hidden] { display: none; }
+.queued-banner .queued-leave { pointer-events: auto; flex: 0 0 auto; margin-left: 4px; }
+body.is-queued .panel-orb[data-panel="actionsPanel"],
+body.is-queued #actionsPanel { display: none !important; }
 .queued-banner-dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: var(--jade); box-shadow: 0 0 8px rgba(121, 195, 163, 0.8); animation: voiceCallPulse 1.6s ease-in-out infinite; }
 
 /* Host join-request popup: persistent on the table, above the HUD but below modals. */
@@ -1919,6 +1924,8 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
 
 .lobby-modes-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .lobby-modes-two .lobby-mode { min-height: 118px; }
+.lobby-modes-one { grid-template-columns: 1fr; }
+.lobby-modes-one .lobby-mode { min-height: 96px; }
 
 .lobby-name-row {
   display: flex;
@@ -2847,6 +2854,13 @@ body.is-viewer #voiceCallBtn {
     min-height: 0;
   }
   .app, .stage-wrap, #scene { touch-action: none; }
+}
+
+/* iPadOS Safari/Chrome: pin the document so a stray double-tap cannot scroll
+   the visual viewport and expose a white band under the table. */
+@supports (-webkit-touch-callout: none) {
+  html, body { position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
+  .app { height: 100dvh; }
 }
 
 /* Tablet menus: reserve the right rail and let the HUD wrap instead of

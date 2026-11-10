@@ -21,6 +21,7 @@ const base = `http://127.0.0.1:${port}/`;
 const soloBase = `${base}?mode=solo`;
 const failures = [];
 let server = null;
+let harnessPort = 9500;
 
 function pass(label) { console.log(`PASS ${label}`); }
 function fail(label, detail = "") { failures.push(`${label}${detail ? ` — ${detail}` : ""}`); console.error(`FAIL ${label}${detail ? ` — ${detail}` : ""}`); }
@@ -45,7 +46,8 @@ async function ensureServer() {
 }
 
 function runHarness(args) {
-  const output = execFileSync(process.execPath, ["scripts/browser-check.mjs", ...args], {
+  harnessPort += 1;
+  const output = execFileSync(process.execPath, ["scripts/browser-check.mjs", "--port", String(harnessPort), ...args], {
     cwd: root,
     encoding: "utf8",
     timeout: 120000,
@@ -396,7 +398,7 @@ async function main() {
     const expectedOrbs = ["C", "M", "A", "i", "H", "L"];
     if (value.rail?.hidden === false && value.rail?.display === "flex" && expectedOrbs.every((label) => value.rail?.orbs?.includes(label))) pass(`iPad ${orientation} keeps the C/M/A/i/H/L panel rail visible`);
     else fail(`iPad ${orientation} keeps the C/M/A/i/H/L panel rail visible`, JSON.stringify(value.rail));
-    if (value.logAction?.hidden === false && value.logAction?.text === "View trick log" && value.logAction?.title === "Turn log") pass(`iPad ${orientation} turn-log sheet exposes the play-history link`);
+    if (value.logAction?.hidden === false && value.logAction?.text === "View turn log" && value.logAction?.title === "Turn log") pass(`iPad ${orientation} turn-log sheet exposes the play-history link`);
     else fail(`iPad ${orientation} turn-log sheet exposes the play-history link`, JSON.stringify(value.logAction));
     if (value.invite?.top && value.invite?.action) pass(`iPad ${orientation} shows Invite in the top bar and Actions`);
     else fail(`iPad ${orientation} shows Invite in the top bar and Actions`, JSON.stringify(value.invite));

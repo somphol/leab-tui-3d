@@ -1,14 +1,14 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-09 · release 1.10.6**
+**As of 2026-11-09 · release 1.10.7**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.6: tile size, autoplay and seat recovery*
+- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.7: resilient multiplayer, tile size and autoplay*
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
-- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.6)
+- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.7)
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -65,6 +65,7 @@ Current table/network model:
 | 1.10.4 | Invite from solo, audience queue, watchers, keepalive/resync, iPad hand fan and dock fixes |
 | 1.10.5 | Approval receipts, welcome ack/retry, join-status recovery, queued/viewer resync |
 | 1.10.6 | Tile size (2D+3D), autoplay my seat, seat reclaim, state-freshness watchdog |
+| 1.10.7 | Launch menu offers only Play now (invite later) and Join a game |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),
@@ -119,11 +120,11 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 cd ~/Projects/leab-tui-3d
 node --check script.js && node --check peer-manager.js
 node --check voice-chat.js && node --check security.js
-node scripts/check.mjs                 # 443/443
+node scripts/check.mjs                 # 444/444
 python3 -m http.server 8123 &          # if not running
-node scripts/verify.mjs                # ALL BROWSER CHECKS PASSED (includes iPad portrait/landscape)
+node scripts/verify.mjs                # ALL 49 BROWSER CHECKS PASSED (includes iPad portrait/landscape)
 AUDIO_TEST=1 node scripts/verify.mjs   # includes a real audio peak
-node scripts/net-check.mjs             # ALL 47 MULTIPLAYER CHECKS PASSED
+node scripts/net-check.mjs             # ALL 57 MULTIPLAYER CHECKS PASSED (includes 4 humans + 10% loss)
 node scripts/invite-check.mjs          # ALL 16 INVITE CHECKS PASSED
 BASE_URL="https://somphol.github.io/leab-tui-3d/" node scripts/net-check.mjs
 ```
@@ -134,6 +135,15 @@ guest reload rejoin, **host reload recovery**, **late join → bot seat**,
 disconnect-to-bot. `verify.mjs` covers boot, 3D, audio, display, the full
 round, the showdown/result/history layout, **iPad portrait/landscape framing
 and the 2D/3D shadow switch**, and no console exceptions.
+
+## 4a. Multiplayer invariants (do not regress)
+
+- **Transport:** PeerJS `serialization: "binary"` on host and client. JSON refuses frames over 16 KB and silently kills late-round four-human snapshots.
+- **Ordering:** the host has an `epoch` (incremented on reload) and a monotonic `seq`; every `welcome` and `state` carries both. Clients ignore older sequences, duplicate frames and previous-epoch states.
+- **Anti-entropy:** seated clients send `state-ack`; the host resends a targeted snapshot to any seat behind, plus a 4 s full heartbeat.
+- **Actions:** at-least-once with the same `actionId` + host-side dedupe; retries at 1.5 s. Never generate a new id on retry.
+- **Failure detection:** silent/closed seats are swept to bots after 20–30 s; rejoin tokens survive so the guest can reclaim.
+- **Testing:** `?netem=drop:…,dup:…,delay:…,jitter:…` impairs app frames only (test hook). `net-check` includes a 4-human full round and a lossy round; both are release gates.
 
 ## 5. Open items / sensible next work
 

@@ -1,6 +1,6 @@
 # Wire protocol
 
-Version **1**. Every message is a JSON object with `__leab: 1` and `type`. PeerJS serialises with its JSON serialisation; the data channel is reliable and ordered.
+Version **1**. Every message is a JSON-compatible object with `__leab: 1` and `type`. PeerJS uses **binary** serialisation (BinaryPack): it chunks payloads above ~16 KB, whereas JSON serialisation refuses them. The data channel is reliable and ordered per connection; reconnects can still duplicate or delay messages, so the protocol is idempotent and epoch/seq ordered.
 
 `peer-manager.js` stamps `__leab` on send and ignores messages without it. `script.js` ignores messages whose `type` it does not know, so additive fields are safe.
 
@@ -117,12 +117,13 @@ the host matches it before the PIN/approval gate. Protocol version stays 1 becau
 
 ### `state`
 
-The authoritative game snapshot, redacted for the recipient. `seq` increases monotonically for the lifetime of the room.
+The authoritative game snapshot, redacted for the recipient. `epoch` increases once per host page incarnation (including reload recovery); `seq` increases monotonically for the lifetime of that incarnation. A client applies a frame only when `epoch` matches and `seq` is newer than the last applied sequence (or the frame is an explicit resync). Older, duplicate or previous-epoch frames are ignored, never applied backwards. Every applied state is acknowledged with `state-ack`; the host resends to a seat that acknowledges an older seq.
 
 ```json
 {
   "type": "state",
   "roomCode": "482173",
+  "epoch": 4,
   "seq": 17,
   "seat": 1,
   "players": [ ... ],
@@ -220,6 +221,16 @@ the queued welcome (with a fresh hidden snapshot), the viewer welcome, or a
 seated welcome. A client sends it every four seconds until a welcome lands, so
 a dropped approval cannot strand it. Safe to ignore; rate-limited by the same
 host message window.
+
+### `state-ack`
+
+```json
+{ "type": "state-ack", "epoch": 4, "seq": 17 }
+```
+
+Sent by a seated guest after a state snapshot is applied. The host records it
+per seat and, when the ack is behind `net.seq`, sends a fresh targeted snapshot
+without waiting for the 4 s heartbeat. Acks are small and safe to drop.
 
 ### `action`
 

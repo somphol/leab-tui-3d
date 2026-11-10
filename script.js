@@ -16,15 +16,16 @@ import {
   openHostWithRetry,
   PeerClient,
   createLoopbackPair,
-  isProtocolMessage
-} from "./peer-manager.js?v=1.10.4";
-import { VoiceChat } from "./voice-chat.js?v=1.10.4";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.4";
+  isProtocolMessage,
+  configureNetem
+} from "./peer-manager.js?v=1.10.7";
+import { VoiceChat } from "./voice-chat.js?v=1.10.7";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.7";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.6",
+  version: "1.10.7",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -309,7 +310,7 @@ const I18N = {
     "dock.followHidden": "Send these {n} tiles face-down. The leader reveals first once all four have sent.",
     "dock.showdown": "Showdown",
     "dock.showdownTitle": "Show or keep hidden?",
-    "dock.showdownCan": "Your {combo} beats {best}. Show it to take the trick.",
+    "dock.showdownCan": "Your {combo} beats {best}. Show it to take the turn.",
     "dock.showdownWait": "Only a revealed set can win. You may show yours even if it loses.",
     "dock.showdownLose": "Your {combo} does not beat {best}, but you may still show it.",
     "dock.showdownDouble": "Double-click your tile on the table to show it.",
@@ -320,13 +321,13 @@ const I18N = {
     "dock.showdownNoSet": "Your submitted tiles are not a {type}",
     "dock.showdownNoSetHelp": "Only a legal {type} can be shown; with this set, Keep hidden is the only option.",
     "dock.showdownWrongType": "Your {combo} is not a {type}",
-    "dock.showdownWrongTypeHelp": "The call was {type}. You can keep this set hidden, but it cannot be shown for this trick.",
+    "dock.showdownWrongTypeHelp": "The call was {type}. You can keep this set hidden, but it cannot be shown for this turn.",
     "dock.followInvalid": "These tiles do not form a {type}. You can send them face-down, but only a legal set can be shown.",
     "showdown.hidden": "face-down",
     "actions.showFirst": "Show first",
-    "result.title": "Trick result",
+    "result.title": "Turn result",
     "dock.waiting": "{seat} is thinking…",
-    "dock.pick": "Select {n} tile(s) for this trick.",
+    "dock.pick": "Select {n} tile(s) for this turn.",
     "dock.selected": "{n} selected.",
     "actions.hint": "Hint",
     "actions.clear": "Clear",
@@ -364,6 +365,7 @@ const I18N = {
     "actions.keep": "Keep playing",
     "actions.sound": "Sound",
     "actions.autoplay": "Autoplay my seat (AI)",
+    "actions.autoplayShort": "Auto",
     "actions.autoplayNote": "The coach plays your legal moves after a short pause. Turn it off at any time to take over.",
     "display.title": "Display",
     "display.language": "Language",
@@ -432,12 +434,12 @@ const I18N = {
     "log.trick": "Turn",
     "log.call": "Call",
     "log.winner": "Winner",
-    "log.why": "Only revealed sets compete; the highest revealed set takes the trick. Face-down tiles stay hidden.",
+    "log.why": "Only revealed sets compete; the highest revealed set takes the turn. Face-down tiles stay hidden.",
     "log.chuan": "Chuan",
     "log.draftPick": "picked 2 tiles",
-    "log.chuanWhy": "Chuan claim: seven piles plus the last Soldier. The Soldier takes the final trick by the special rule, not by rank.",
-    "log.empty": "No tricks recorded yet.",
-    "summary.viewLog": "View trick log",
+    "log.chuanWhy": "Chuan claim: seven piles plus the last Soldier. The Soldier takes the final turn by the special rule, not by rank.",
+    "log.empty": "No turns recorded yet.",
+    "summary.viewLog": "View turn log",
     "summary.autoNext": "Auto-start next round (30s)",
     "lastTrick.winner": "{seat} won {n} tiles with {combo}",
     "pile.title": "{seat} · pile {n}",
@@ -453,7 +455,7 @@ const I18N = {
     "inspector.copies": "Copies",
     "inspector.color": "Colour",
     "inspector.hidden": "Face-down tile",
-    "inspector.hiddenNote": "The carved face is hidden. In Leab-Tui, unrevealed tiles never win a trick — even if they could have.",
+    "inspector.hiddenNote": "The carved face is hidden. In Leab-Tui, unrevealed tiles never win a turn — even if they could have.",
     "inspector.selected": "Selected for play",
     "inspector.note": "Hierarchy: General > Advisor > Elephant > Chariot > Horse > Cannon > Soldier. Red beats black at equal rank; equal rank and colour keeps the earlier play ahead.",
     "handList.title": "Your hand",
@@ -462,7 +464,7 @@ const I18N = {
     "handList.empty": "No tiles left this round.",
     "log.title": "Turn log",
     "log.live": "live",
-    "log.empty": "The table is quiet. Lead the first trick.",
+    "log.empty": "The table is quiet. Lead the first turn.",
     "footer.credit": "Built with OpenCode + DeepSeek V4.1 Flash",
     "error.webglTitle": "The 3D table could not start",
     "error.webglBody": "Three.js needs WebGL 2 and a network connection to the CDN. The rules, score and coaching panels still work.",
@@ -523,32 +525,32 @@ const I18N = {
     "coach.yourLead": "Your lead. {n} tiles in hand. Choose a single, a pair, a straight or a Soldier set.",
     "coach.aiLead": "{seat} is choosing a lead…",
     "coach.follow": "{seat} led {combo}. Select exactly {n} tile(s).",
-    "coach.followBeat": "{seat} played {combo}. You can beat it with {yours}. Show it to win the trick.",
+    "coach.followBeat": "{seat} played {combo}. You can beat it with {yours}. Show it to win the turn.",
     "coach.followNoBeat": "Your best {type} is {yours}, but {best} still wins. Send {n} tiles face-down and keep your strength.",
     "coach.followNoCombo": "You have no legal {type}. Send {n} tiles face-down — hidden tiles cannot win.",
     "coach.followHidden": "Send these {n} tiles face-down. Everyone sends hidden; the leader reveals first.",
     "coach.showdownYou": "The leader has revealed. Show your set or keep it hidden — showing a losing set is allowed.",
     "coach.showdownWait": "Showdown: {seat} is deciding whether to reveal.",
     "coach.allHidden": "all hidden",
-    "coach.followReady": "Your {combo} beats {best}. Show it to win the trick and take the {tiles} tiles — or play face-down and keep them hidden.",
+    "coach.followReady": "Your {combo} beats {best}. Show it to win the turn and take the {tiles} tiles — or play face-down and keep them hidden.",
     "coach.followLose": "Your {combo} does not beat {best}. Play it face-down and save the tiles for a later lead.",
     "coach.invalidLead": "That mix is not a legal combination. A lead is 1 tile, 2 identical tiles, a 3–6 tile straight, or 3–5 identical Soldiers.",
     "coach.invalidFollow": "That selection is not a legal {type}. You may still send {n} tiles face-down.",
-    "coach.selectMore": "Select {n} tile(s) for this trick. You have {m} selected.",
+    "coach.selectMore": "Select {n} tile(s) for this turn. You have {m} selected.",
     "coach.hintLead": "Suggested lead: {combo}. {why}",
     "coach.hintFollow": "Suggested: {combo}. {why}",
     "coach.hintDiscard": "No beating {type} is available. Discard {n} low tiles face-down.",
-    "coach.trickWon": "You took the trick with {combo}. {piles} pile(s) captured so far.",
-    "coach.trickLost": "{seat} took the trick with {combo}. {why}",
-    "coach.hiddenLost": "{seat} took the trick with {combo}. You played face-down, so your tiles could not compete.",
+    "coach.trickWon": "You took the turn with {combo}. {piles} pile(s) captured so far.",
+    "coach.trickLost": "{seat} took the turn with {combo}. {why}",
+    "coach.hiddenLost": "{seat} took the turn with {combo}. You played face-down, so your tiles could not compete.",
     "coach.roundEnd": "Round complete. You scored {points} point(s) and now hold {score}.",
     "coach.matchEnd": "Match complete. {winner}",
     "coach.chuan": "ช้วน! All eight piles captured — worth 16 points.",
     "coach.redTie": "Equal rank and colour: the earlier play stays ahead.",
     "coach.tilesLeft": "{n} tiles left in each hand.",
-    "coach.youLead": "You lead the next trick.",
-    "coach.otherLead": "{seat} leads the next trick.",
-    "coach.lastTrick": "Last trick of the round.",
+    "coach.youLead": "You lead the next turn.",
+    "coach.otherLead": "{seat} leads the next turn.",
+    "coach.lastTrick": "Last turn of the round.",
     "coach.rematch": "Press New match to play again.",
     "coach.whyPair": "Only a higher pair of the same colour can beat it.",
     "coach.whyStraight": "Only a stronger {type} can beat it; the set size and pair ranks matter.",
@@ -559,7 +561,7 @@ const I18N = {
     "toast.dealt": "Eight tiles each. {seat} leads.",
     "toast.saved": "Match saved locally.",
     "toast.exported": "Game JSON downloaded.",
-    "toast.undone": "Trick undone. Learn, then try again.",
+    "toast.undone": "Turn undone. Learn, then try again.",
     "toast.newMatch": "New match started.",
     "toast.nextRound": "Round {n} dealt.",
     "toast.soundOff": "Sound muted.",
@@ -601,24 +603,24 @@ const I18N = {
     "summary.targetReached": "First to {target} points.",
     "summary.streak": "Round streak ×{n}",
     "summary.note": "Scoring follows the traditional pile table: 2 piles is par (0), each pile above or below is one point, and all 8 piles is a 16-point Chuan.",
-    "undo.intro": "The trick is stored. Step back, read the comparison, then replay it with a better plan.",
+    "undo.intro": "The turn is stored. Step back, read the comparison, then replay it with a better plan.",
     "undo.youPlayed": "You played",
     "undo.winnerPlayed": "{seat} won with",
     "undo.faceDown": "face-down",
     "undo.rankOrder": "Rank order, strongest to weakest",
     "undo.why": "Why it lost",
-    "undo.whyChuan": "The winner completed Chuan: seven piles plus the last Soldier. The Soldier takes the final trick by the special rule, not by rank.",
+    "undo.whyChuan": "The winner completed Chuan: seven piles plus the last Soldier. The Soldier takes the final turn by the special rule, not by rank.",
     "undo.whyHidden": "You kept your tiles face-down, so they never entered the comparison. Revealing is optional — but only a revealed set can win.",
     "undo.whyRank": "{losing} is below {winning} in the hierarchy. Rank is checked before colour.",
     "undo.whyColor": "Both sets share a rank, but {winning} is red and red beats black at equal rank.",
-    "undo.whyTie": "The sets are equal in rank and colour, so the earlier play keeps the trick.",
+    "undo.whyTie": "The sets are equal in rank and colour, so the earlier play keeps the turn.",
     "undo.whyType": "Only the called type can win. Your set did not match the call.",
     "undo.whyPair": "The duplicated pair decides a See Hoo: {winning} has the higher pair.",
     "undo.whySet": "The set value decides: {winning} is the stronger straight or same-rank set.",
     "undo.whyUnknown": "The winner's revealed combination outranks your entry for this call.",
-    "undo.noTrick": "No completed trick is stored yet.",
+    "undo.noTrick": "No completed turn is stored yet.",
     "about.intro": "A bilingual, single-page studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. It plays solo against three bots or hosts a serverless WebRTC table for up to four humans. It is a teaching table, not a gambling app, tournament server or complete historical rulebook.",
-    "about.how": "Thirty-two carved tiles, four seats, eight tiles each. The holder of the red General leads. Each trick calls a shape — Leab, Tui, Sa Hoo, See Hoo, Ngoh Hoo or Lak Hoo — and everyone sends that many tiles. Revealed sets compete; face-down sets never do. The winner takes 4×N tiles and leads next.",
+    "about.how": "Thirty-two carved tiles, four seats, eight tiles each. The holder of the red General leads. Each turn calls a shape — Leab, Tui, Sa Hoo, See Hoo, Ngoh Hoo or Lak Hoo — and everyone sends that many tiles. Revealed sets compete; face-down sets never do. The winner takes 4×N tiles and leads next.",
     "about.credits": "Credits",
     "about.harness": "Harness",
     "about.model": "Model",
@@ -634,7 +636,7 @@ const I18N = {
     "rules.source": "Rule reference",
     "rules.sourceBody": "The rules are modelled on the traditional Thai description compiled by Navee Angsuputiphant (2016), with the five-tile Ngoh Hoo included and the two- and three-player variants left out. Where the source is ambiguous, this studio documents its interpretation in docs/RULES.md.",
     "rules.digital": "Digital table conventions",
-    "rules.digitalBody": "You may always send tiles face-down, even when you hold a legal set. A set must be revealed to compete. The leader must be able to form the called combination. The holder of the red General leads the opening trick; the winner of a trick leads the next.",
+    "rules.digitalBody": "You may always send tiles face-down, even when you hold a legal set. A set must be revealed to compete. The leader must be able to form the called combination. The holder of the red General leads the opening turn; the winner of a turn leads the next.",
     "rules.target": "Play to",
     "rules.direction": "Turn order",
     "rules.cw": "Clockwise",
@@ -657,32 +659,32 @@ const I18N = {
     "rules.ex.soldier": "Soldier sets",
     "rules.ex.soldierBody": "A straight and a same-rank Soldier set are different categories; neither can beat the other.",
     "rules.ex.chuan": "Chuan",
-    "rules.ex.chuanBody": "With seven piles and the last Soldier in hand, reveal it to take the final trick and reach eight piles (16 points).",
+    "rules.ex.chuanBody": "With seven piles and the last Soldier in hand, reveal it to take the final turn and reach eight piles (16 points).",
     "rules.goal": "Goal",
-    "rules.goalBody": "Capture piles of four tiles. Two piles at the end of a round is par (0 points). Every pile above or below par is one point; capturing all eight piles is a 16-point Chuan. A player with seven piles and the last Soldier in hand may reveal it to take the final trick and complete the Chuan. The first player to the match target (20 points by default) wins.",
+    "rules.goalBody": "Capture piles of four tiles. Two piles at the end of a round is par (0 points). Every pile above or below par is one point; capturing all eight piles is a 16-point Chuan. A player with seven piles and the last Soldier in hand may reveal it to take the final turn and complete the Chuan. The first player to the match target (20 points by default) wins.",
     "rules.equipment": "Equipment",
     "rules.equipmentBody": "The 32 tiles of a Chinese chess set: 16 red and 16 black. Each colour has one General, two Advisors, two Elephants, two Chariots, two Horses, two Cannons and five Soldiers. Four players take eight tiles each.",
     "rules.hierarchy": "Hierarchy",
     "rules.color": "Colour and ties",
-    "rules.colorBody": "At equal rank, red beats black. If rank and colour are both equal, the earlier play keeps the trick — a later identical set cannot overtake it.",
+    "rules.colorBody": "At equal rank, red beats black. If rank and colour are both equal, the earlier play keeps the turn — a later identical set cannot overtake it.",
     "rules.calls": "Calls and combinations",
-    "rules.flow": "How a trick runs",
-    "rules.flowBody": "The leader chooses a call, plays the matching tiles face-up, and names the shape. Every other player sends exactly the same number of tiles, face-down. The leader's set is revealed first. In turn, each player may reveal a legal set of the called type that beats the current best; if they cannot or choose not to, their tiles stay hidden. The highest revealed set wins all 4×N tiles and leads the next trick.",
+    "rules.flow": "How a turn runs",
+    "rules.flowBody": "The leader chooses a call, plays the matching tiles face-up, and names the shape. Every other player sends exactly the same number of tiles, face-down. The leader's set is revealed first. In turn, each player may reveal a legal set of the called type that beats the current best; if they cannot or choose not to, their tiles stay hidden. The highest revealed set wins all 4×N tiles and leads the next turn.",
     "rules.scoring": "Scoring",
     "rules.piles": "Piles at the end",
     "rules.points": "Points",
     "rules.beginner": "Beginner guard",
-    "rules.beginnerBody": "Undo trick restores the position before the last trick and explains the comparison. The coach panel names the best lead or challenge in your hand, but never plays for you.",
+    "rules.beginnerBody": "Undo turn restores the position before the last turn and explains the comparison. The coach panel names the best lead or challenge in your hand, but never plays for you.",
     "rules.footnote": "This is an independent, open-source teaching implementation. It is not affiliated with any publisher or standards body.",
     "net.menuKicker": "Leab-Tui 3D",
     "net.launchTitle": "How do you want to play?",
-    "net.launchBody": "Start a game on this device, or invite friends with one link.",
-    "net.pickMode": "Start playing in one tap, or invite friends with a single link.",
+    "net.launchBody": "Start a game on this device, or join a friend's table.",
+    "net.pickMode": "Play right now, or join a friend's table with a room number.",
     "net.menuNote": "No account and no game server. The two browsers talk directly.",
-    "net.orFriends": "or play with friends",
+    "net.orFriends": "or join a friend's table",
     "net.orType": "or type it",
-    "net.solo": "Play now",
-    "net.soloDesc": "Start immediately. Three bots take the other seats.",
+    "net.solo": "Play now (invite friends later)",
+    "net.soloDesc": "Start immediately. Three bots take the other seats; use Invite when friends arrive.",
     "net.host": "Host a game",
     "net.hostDesc": "Keep this tab open. We make a room number you can send.",
     "net.join": "Join a game",
@@ -785,23 +787,23 @@ const I18N = {
     "invite.share": "Share",
     "invite.keepOpen": "Keep this tab open. Closing it ends the room; a reload in this tab recovers it.",
     "invite.pendingTitle": "Join requests",
-    "invite.queuedTitle": "Waiting for the trick to end",
-    "invite.queuedBadge": "Approved · joins after this trick",
+    "invite.queuedTitle": "Waiting for the turn to end",
+    "invite.queuedBadge": "Approved · joins after this turn",
     "invite.queuedRound": "Approved · joins next round",
     "invite.queuedMatch": "Approved · joins next match",
     "invite.cancelQueue": "Cancel",
-    "invite.approved": "{name} approved — joins after this trick.",
+    "invite.approved": "{name} approved — joins after this turn.",
     "invite.seats": "Seats",
     "invite.noPending": "No one is waiting.",
     "invite.joined": "{name} joined seat {seat}.",
-    "invite.noticeQueued": "Approved {name} — they watch now and take {seat} after this trick.",
+    "invite.noticeQueued": "Approved {name} — they watch now and take {seat} after this turn.",
     "invite.noticeViewer": "Approved {name} to watch this table.",
     "invite.noticeSeated": "Approved {name} — joining {seat} now.",
     "invite.noticeJoined": "Approved {name} — they are joining the room.",
     "invite.noticeReclaimed": "Approved {name} — reclaimed seat {seat}.",
     "invite.reclaimed": "{name} reclaimed seat {seat}.",
     "invite.noticeFailed": "Approval did not complete. Try again.",
-    "queued.banner": "Approved — watching until this trick ends. You will take {seat}.",
+    "queued.banner": "Approved — watching until this turn ends. You will take {seat}.",
     "queued.bannerRound": "Approved — watching until the next round. You will take {seat}.",
     "queued.bannerMatch": "Approved — watching until the next match. You will take {seat}.",
     "watch.title": "Watching",
@@ -809,11 +811,11 @@ const I18N = {
     "watch.you": "{name} (you)",
     "watch.empty": "No one is watching.",
     "watch.queued": "waiting for seat",
-    "net.joinQueuedTitle": "Approved — waiting for the trick",
-    "net.joinQueuedStatus": "The host approved you. You will join automatically after this trick ends.",
+    "net.joinQueuedTitle": "Approved — waiting for the turn",
+    "net.joinQueuedStatus": "The host approved you. You will join automatically after this turn ends.",
     "net.joinQueuedRound": "The host approved you. You will join at the next round.",
     "net.joinQueuedMatch": "The host approved you. You will join at the next match.",
-    "toast.netQueued": "{name} approved — joins after this trick.",
+    "toast.netQueued": "{name} approved — joins after this turn.",
     "toast.resyncRequested": "Asking the host for the current table…",
     "toast.resynced": "Table refreshed from the host — try again.",
     "toast.resyncFailed": "Still not in sync. Ask the host to send the table again.",
@@ -825,7 +827,7 @@ const I18N = {
     "joinRequest.title": "{name} wants to join",
     "joinRequest.titleMany": "{n} people want to join",
     "joinRequest.bodyNow": "Give them {seat}'s seat now? Their name replaces the bot on the table.",
-    "joinRequest.bodyTrick": "Give them {seat}'s seat after this trick? The bot keeps playing until then.",
+    "joinRequest.bodyTrick": "Give them {seat}'s seat after this turn? The bot keeps playing until then.",
     "joinRequest.bodyRound": "Give them {seat}'s seat at the next round? The bot keeps playing until then.",
     "joinRequest.bodyMatch": "Give them {seat}'s seat in the next match? The bot keeps playing until then.",
     "joinRequest.bodyFull": "No bot seat is free. They can watch only, or you can deny them.",
@@ -879,13 +881,14 @@ const I18N = {
     "net.hostLeft": "The host left the table. You can join another room or play solo.",
     "net.hostResumeFailed": "Could not restore the hosted room ({error}). The room is closed.",
     "net.reconnecting": "Signalling connection lost. Reconnecting…",
-    "net.hostOnly": "Only the host can undo a networked trick.",
+    "net.hostOnly": "Only the host can undo a networked turn.",
     "net.chipHint": "Your room. Click to copy the invite link.",
     "net.modeSolo": "Solo",
     "net.modeHost": "Host",
     "net.modeClient": "Guest",
     "net.modeViewer": "Viewer",
     "net.leave": "Leave room",
+    "net.leaveShort": "Leave",
     "net.back": "Back",
     "net.resume": "Back to table",
     "net.lostTitle": "Table closed",
@@ -897,7 +900,7 @@ const I18N = {
     "net.rejected.illegal": "That play was not legal.",
     "net.openLobby": "Multiplayer",
     "net.resumeMatch": "Resume match",
-    "net.resumeMeta": "Round {round} · trick {trick} · {score} points",
+    "net.resumeMeta": "Round {round} · turn {trick} · {score} points",
     "net.leaveTitle": "Leave the room?",
     "net.leaveBodyHost": "This closes the room for every guest. Their seats become bots and the room code stops working.",
     "net.leaveBodyGuest": "You will leave the table. A bot will take over your seat and the match will continue.",
@@ -1049,6 +1052,7 @@ const I18N = {
     "actions.keep": "เล่นต่อ",
     "actions.sound": "เสียง",
     "actions.autoplay": "เล่นอัตโนมัติเฉพาะที่นั่งฉัน (AI)",
+    "actions.autoplayShort": "ออโต้",
     "actions.autoplayNote": "โค้ชจะเล่นตาที่ถูกกติกาให้หลังหยุดสั้น ๆ ปิดได้ทุกเมื่อเพื่อกลับมาเล่นเอง",
     "display.title": "การแสดงผล",
     "display.language": "ภาษา",
@@ -1364,13 +1368,13 @@ const I18N = {
     "rules.footnote": "นี่คือimplementation สอนเล่นโอเพนซอร์สอิสระ ไม่ได้เกี่ยวข้องกับสำนักพิมพ์หรือองค์กรมาตรฐานใด",
     "net.menuKicker": "ละบตุ้ย 3D",
     "net.launchTitle": "จะเล่นแบบไหน?",
-    "net.launchBody": "เริ่มเกมบนเครื่องนี้ หรือชวนเพื่อนด้วยลิงก์เดียว",
-    "net.pickMode": "เริ่มเล่นได้ในแตะเดียว หรือชวนเพื่อนด้วยลิงก์เดียว",
+    "net.launchBody": "เริ่มเกมบนเครื่องนี้ หรือเข้าร่วมโต๊ะของเพื่อน",
+    "net.pickMode": "เริ่มเล่นเลย หรือเข้าร่วมโต๊ะด้วยเลขห้อง",
     "net.menuNote": "ไม่มีบัญชี ไม่มีเซิร์ฟเวอร์เกม สองเบราว์เซอร์คุยกันโดยตรง",
-    "net.orFriends": "หรือเล่นกับเพื่อน",
+    "net.orFriends": "หรือเข้าร่วมโต๊ะเพื่อน",
     "net.orType": "หรือพิมพ์เอง",
-    "net.solo": "เล่นเลย",
-    "net.soloDesc": "เริ่มทันที บอทสามตัวนั่งแทนที่เหลือ",
+    "net.solo": "เล่นเลย (แล้วชวนเพื่อนเข้ามาทีหลัง)",
+    "net.soloDesc": "เริ่มทันที บอทสามตัวนั่งแทนที่เหลือ แล้วกด Invite เมื่อเพื่อนมา",
     "net.host": "เปิดโต๊ะ",
     "net.hostDesc": "เปิดแท็บนี้ไว้ ระบบจะสร้างเลขห้องให้ส่งต่อ",
     "net.join": "เข้าร่วมโต๊ะ",
@@ -1574,6 +1578,7 @@ const I18N = {
     "net.modeClient": "แขก",
     "net.modeViewer": "ผู้ชม",
     "net.leave": "ออกจากห้อง",
+    "net.leaveShort": "ออก",
     "net.back": "กลับ",
     "net.resume": "กลับโต๊ะ",
     "net.lostTitle": "โต๊ะปิดแล้ว",
@@ -2087,7 +2092,7 @@ function scheduleHostRejoin(code, name, token) {
       lastNetError = error?.message || "rejoin-failed";
       if (hostRejoinAttempts < 12) scheduleHostRejoin(code, name, token);
     });
-  }, first ? 700 : 1200);
+  }, (first ? 700 : 1200) + Math.floor(Math.random() * 600));
 }
 let availableVersion = "";
 let lastNetError = "";
@@ -2108,7 +2113,18 @@ const REJOIN_KEY = "leabtui.rejoin.v1";
 const REJOIN_CARD_KEY = "leabtui.seat.v1";
 const REJOIN_CARD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const HOST_RECOVERY_KEY = "leabtui.host.v1";
+const HOST_EPOCH_KEY = "leabtui.host.epoch.v1";
 const LAUNCH_KEY = "leabtui.launch.v1";
+
+/* Lamport-style incarnation number. A host reload starts a new epoch so a
+   client can reject delayed state from the previous host page. */
+function nextHostEpoch() {
+  let value = 0;
+  try { value = Number(sessionStorage.getItem(HOST_EPOCH_KEY)) || 0; } catch { value = 0; }
+  value += 1;
+  try { sessionStorage.setItem(HOST_EPOCH_KEY, String(value)); } catch { /* storage may be denied */ }
+  return value;
+}
 
 function isNetworked() {
   return Boolean(net && (net.role === "host" || net.role === "client") && SEAT_PROFILES);
@@ -3477,6 +3493,13 @@ function setAutoplay(enabled, options = {}) {
 function renderAutoplay() {
   const box = document.querySelector("[data-autoplay-toggle]");
   if (box) box.checked = Boolean(prefs.autoplay);
+  const button = $("#autoplayBtn");
+  if (button) {
+    button.classList.toggle("active", Boolean(prefs.autoplay));
+    button.setAttribute("aria-pressed", String(Boolean(prefs.autoplay)));
+    button.setAttribute("aria-label", t("actions.autoplay"));
+    button.title = t("actions.autoplay");
+  }
   document.body.classList.toggle("autoplay-on", Boolean(prefs.autoplay));
 }
 
@@ -4827,8 +4850,37 @@ function clearPendingAction() {
   actionAckTimer = null;
 }
 
+function armActionRetry() {
+  clearTimeout(actionAckTimer);
+  actionAckTimer = setTimeout(() => {
+    if (!pendingAction) return;
+    if (pendingAction.attempts < 4) {
+      pendingAction.attempts += 1;
+      net.client?.send?.({
+        type: "action",
+        actionId: pendingAction.id,
+        kind: pendingAction.kind,
+        tiles: pendingAction.tiles,
+        reveal: pendingAction.reveal,
+        value: pendingAction.value
+      });
+      armActionRetry();
+      return;
+    }
+    clearPendingAction();
+    toast(t("toast.actionUnconfirmed"), "wine");
+    requestResync({ silent: true });
+  }, 1500);
+}
+
 function sendNetAction(kind, tileIds, reveal = false, value = null) {
   if (!isClient() || !net?.client) return false;
+  if (net.lastStateAt && Date.now() - net.lastStateAt > 6000) {
+    /* A stale snapshot must not produce an out-of-turn action. Ask for a
+       fresh one; autoplay will be rescheduled by the next render. */
+    requestResync({ silent: true });
+    return false;
+  }
   if (pendingAction) {
     toast(t("toast.actionPending"), "gold");
     return false;
@@ -4837,15 +4889,18 @@ function sendNetAction(kind, tileIds, reveal = false, value = null) {
   const actionId = `${MY_SEAT}-${Date.now().toString(36)}-${actionSeq}`;
   const sent = net.client.send({ type: "action", actionId, kind, tiles: tileIds, reveal: Boolean(reveal), value });
   if (!sent) return false;
-  pendingAction = { id: actionId, kind, at: Date.now() };
-  clearTimeout(actionAckTimer);
-  actionAckTimer = setTimeout(() => {
-    if (!pendingAction) return;
-    pendingAction = null;
-    actionAckTimer = null;
-    toast(t("toast.actionUnconfirmed"), "wine");
-    requestResync({ silent: true });
-  }, 3500);
+  pendingAction = {
+    id: actionId,
+    kind,
+    tiles: tileIds,
+    reveal: Boolean(reveal),
+    value,
+    attempts: 1,
+    at: Date.now()
+  };
+  /* The host deduplicates by actionId, so replaying the same intent is safe;
+     a lost data-channel frame must not cost the player their turn. */
+  armActionRetry();
   return true;
 }
 
@@ -5132,10 +5187,28 @@ function checkGuestTurnTimeout() {
   return true;
 }
 
+function sweepSilentGuests() {
+  if (!isHost() || !net?.started || !net.host) return;
+  const now = Date.now();
+  for (const profile of SEAT_PROFILES || []) {
+    if (!profile || profile.kind !== "human" || !profile.connId) continue;
+    const open = Boolean(net.host.connections?.has?.(profile.connId));
+    const age = now - (profile.lastSeen || 0);
+    if (open && age < 30000) continue;
+    const connId = profile.connId;
+    convertSeatToBot(profile.seat, "disconnected");
+    if (connId) {
+      net.host.send(connId, { type: "seat-timeout", roomCode: net.code, seat: profile.seat });
+      setTimeout(() => net?.host?.closeConnection?.(connId), 350);
+    }
+  }
+}
+
 function startStatePulse() {
   clearInterval(statePulseTimer);
   statePulseTimer = setInterval(() => {
     if (!isHost() || !net?.started || !net.host || !state) return;
+    sweepSilentGuests();
     /* A full snapshot is the repair mechanism: it fixes a guest that missed
        the last publish even if no new action occurred. Pulses are cheaper for
        the summary screens, where a full re-apply could re-open a modal. */
@@ -5143,6 +5216,16 @@ function startStatePulse() {
     if (active) {
       checkGuestTurnTimeout();
       publishState();
+      /* Targeted anti-entropy: a guest that acknowledged an older sequence
+         gets a fresh snapshot without waiting for the next 4 s beat. */
+      const now = Date.now();
+      for (const profile of SEAT_PROFILES || []) {
+        if (profile?.kind === "human" && profile.connId
+          && (profile.stateAck || 0) < (net.seq || 0)
+          && now - (profile.stateSentAt || 0) > 1500) {
+          sendStateToSeat(profile);
+        }
+      }
       return;
     }
     const seq = net.seq || 0;
@@ -5174,6 +5257,41 @@ function reconcileViewers() {
   }
 }
 
+function statePayloadFor(seat, roster = serialiseRoster()) {
+  return {
+    type: "state",
+    roomCode: net.code,
+    epoch: net.epoch,
+    seq: net.seq || 0,
+    seat,
+    players: roster,
+    viewers: serialiseViewers(),
+    hostName: net.name,
+    state: sanitizeForSeat(state, seat)
+  };
+}
+
+function sendStateToSeat(profile, roster = serialiseRoster()) {
+  if (!profile?.connId || !net?.host) return false;
+  const sent = net.host.send(profile.connId, statePayloadFor(profile.seat, roster));
+  if (sent) {
+    profile.stateSentAt = Date.now();
+    profile.stateSentSeq = net.seq || 0;
+  }
+  return sent;
+}
+
+function sendStateToViewer(viewer, roster = serialiseRoster()) {
+  if (!viewer?.connId || !net?.host) return false;
+  const sent = net.host.send(viewer.connId, {
+    ...statePayloadFor(-1, roster),
+    viewer: true,
+    state: sanitizeForSeat(state, -1)
+  });
+  if (sent) viewer.stateSentAt = Date.now();
+  return sent;
+}
+
 function publishState() {
   if (!isHost() || !state || !net?.host) return;
   if (!net.started) return;
@@ -5182,31 +5300,9 @@ function publishState() {
   net.seq = (net.seq || 0) + 1;
   for (const profile of SEAT_PROFILES) {
     if (!profile || profile.kind !== "human" || !profile.connId) continue;
-    const payload = sanitizeForSeat(state, profile.seat);
-    net.host.send(profile.connId, {
-      type: "state",
-      roomCode: net.code,
-      seq: net.seq,
-      seat: profile.seat,
-      players: roster,
-      viewers: serialiseViewers(),
-      hostName: net.name,
-      state: payload
-    });
+    sendStateToSeat(profile, roster);
   }
-  for (const viewer of net.viewers?.values() || []) {
-    net.host.send(viewer.connId, {
-      type: "state",
-      roomCode: net.code,
-      seq: net.seq,
-      seat: -1,
-      viewer: true,
-      players: roster,
-      viewers: serialiseViewers(),
-      hostName: net.name,
-      state: sanitizeForSeat(state, -1)
-    });
-  }
+  for (const viewer of net.viewers?.values() || []) sendStateToViewer(viewer, roster);
   lastPublished = Date.now();
 }
 
@@ -5366,6 +5462,10 @@ function sendWelcomeWithRetry(connId, payload) {
      it leaves a guest on "waiting" forever, so keep resending the same message
      until the guest acknowledges it (or the retry budget runs out). */
   if (!net?.host || !connId) return false;
+  if (payload && typeof payload === "object") {
+    payload.epoch = net.epoch || 0;
+    payload.seq = net.seq || 0;
+  }
   stopWelcomeRetry(connId);
   const id = ++welcomeSeq;
   const entry = { id, payload, tries: 0, timer: null };
@@ -5749,6 +5849,7 @@ function approveBotSeat(connId, request, seat) {
   const clean = cleanGuestName(request.name, `Guest ${seat}`);
   const queued = queuedGuests.get(connId);
   if (queued) queuedGuests.delete(connId);
+  net.viewers?.delete(connId);
   if (SEAT_PROFILES[seat]?.queuedFor === connId) delete SEAT_PROFILES[seat].queuedFor;
   net.seatSeq += 1;
   SEAT_PROFILES[seat] = {
@@ -6045,6 +6146,17 @@ function hostMessage({ connId, message }) {
     case "welcome-ack":
       stopWelcomeRetry(connId);
       break;
+    case "state-ack": {
+      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      if (!profile) break;
+      const acked = Number(message.seq) || 0;
+      profile.stateAck = Math.max(profile.stateAck || 0, acked);
+      profile.lastSeen = Date.now();
+      if (profile.stateAck < (net.seq || 0) && Date.now() - (profile.stateSentAt || 0) > 500) {
+        sendStateToSeat(profile);
+      }
+      break;
+    }
     case "status":
       resendJoinStatus(connId);
       break;
@@ -6128,6 +6240,7 @@ function hostMessage({ connId, message }) {
       net.host.send(connId, {
         type: "state",
         roomCode: net.code,
+        epoch: net.epoch,
         seq: net.seq || 0,
         seat: profile.seat,
         players: serialiseRoster(),
@@ -6192,6 +6305,32 @@ function hostConnectionLost({ connId } = {}) {
     saveHostRecovery();
     return;
   }
+  const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+  if (profile) {
+    /* A connection can be in the viewer map as well as a seat (older
+       approval paths). The seat must win: otherwise the viewer branch below
+       returns early and leaves a dead human seat blocking the table. */
+    net?.viewers?.delete(connId);
+    if (net?.started && state) {
+      convertSeatToBot(profile.seat, "disconnected");
+    } else {
+      SEAT_PROFILES[profile.seat] = {
+        ...profile,
+        connected: false,
+        connId: null,
+        peerId: null,
+        voice: false,
+        rejoinToken: profile.rejoinToken || null,
+        rejoinName: profile.rejoinName || profile.name
+      };
+      sendLobbyToGuests();
+      renderLobby();
+      syncVoicePeers();
+      toast(t("toast.netGuestHeld", { name: profile.name }), "wine");
+      saveHostRecovery();
+    }
+    return;
+  }
   if (net?.viewers?.has(connId)) {
     net.viewers.delete(connId);
     renderLobby();
@@ -6205,26 +6344,6 @@ function hostConnectionLost({ connId } = {}) {
     renderLobby();
     renderInviteSheet();
     return;
-  }
-  const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
-  if (!profile) return;
-  if (net?.started && state) {
-    convertSeatToBot(profile.seat, "disconnected");
-  } else {
-    SEAT_PROFILES[profile.seat] = {
-      ...profile,
-      connected: false,
-      connId: null,
-      peerId: null,
-      voice: false,
-      rejoinToken: profile.rejoinToken || null,
-      rejoinName: profile.rejoinName || profile.name
-    };
-    sendLobbyToGuests();
-    renderLobby();
-    syncVoicePeers();
-    toast(t("toast.netGuestHeld", { name: profile.name }), "wine");
-    saveHostRecovery();
   }
 }
 
@@ -6274,6 +6393,7 @@ async function createHostRoom(name) {
       host,
       code: host.code,
       name: handle,
+      epoch: nextHostEpoch(),
       seq: 0,
       started: false,
       seatSeq: 0,
@@ -6366,6 +6486,7 @@ async function resumeHostRoom(recovery) {
       host,
       code: host.code,
       name: handle,
+      epoch: nextHostEpoch(),
       seq: 0,
       started: Boolean(recovery.started),
       seatSeq: Number(recovery.seatSeq) || 0,
@@ -6520,11 +6641,21 @@ function clientMessage({ message }) {
   switch (message.type) {
     case "welcome": {
       const wasWelcomed = Boolean(net?.welcomed);
+      net?.client?.send?.({ type: "welcome-ack" });
+      const incomingEpoch = Number(message.epoch) || 0;
+      if (net) {
+        if (incomingEpoch && net.epoch && incomingEpoch < net.epoch) break;
+        if (incomingEpoch > (net.epoch || 0)) {
+          net.epoch = incomingEpoch;
+          net.lastSeq = 0;
+        }
+        if (wasWelcomed && incomingEpoch === (net.epoch || 0) && Number(message.seq) < (net.lastSeq || 0)) break;
+        net.lastSeq = Math.max(net.lastSeq || 0, Number(message.seq) || 0);
+      }
       if (net) {
         net.welcomed = Boolean(message.state) || !message.started;
         net.handshakeAck = true;
       }
-      net?.client?.send?.({ type: "welcome-ack" });
       stopJoinWatch();
       const incomingSeat = Number(message.seat);
       const incomingViewer = Boolean(message.viewer) || incomingSeat < 0;
@@ -6572,6 +6703,7 @@ function clientMessage({ message }) {
       if (message.state) {
         try {
           applyRemoteState(message.state);
+          net?.client?.send?.({ type: "state-ack", seq: net.lastSeq, epoch: net.epoch });
         } catch (error) {
           toast(t("toast.connectionStalled"), "wine");
           requestResync({ silent: true });
@@ -6619,16 +6751,24 @@ function clientMessage({ message }) {
       maybeJoinAutoAudio();
       break;
     case "state": {
+      const incomingEpoch = Number(message.epoch) || 0;
+      const incomingSeq = Number(message.seq) || 0;
       if (net) {
+        if (incomingEpoch && net.epoch && incomingEpoch !== net.epoch) break;
+        if (!message.resync && net.welcomed && incomingSeq && incomingSeq <= (net.lastSeq || 0)) break;
+        net.epoch = incomingEpoch || net.epoch || 0;
+        net.lastSeq = Math.max(net.lastSeq || 0, incomingSeq);
         net.welcomed = true;
-        net.lastSeq = Number(message.seq) || net.lastSeq || 0;
       }
       finishResync();
       if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
       if (Array.isArray(message.viewers)) net.viewers = message.viewers;
       try {
         applyRemoteState(message.state);
-        if (net) net.lastStateAt = Date.now();
+        if (net) {
+          net.lastStateAt = Date.now();
+          net.client?.send?.({ type: "state-ack", seq: net.lastSeq, epoch: net.epoch });
+        }
       } catch (error) {
         try { console.error("state apply failed", error); } catch { /* ignore */ }
         toast(t("toast.connectionStalled"), "wine");
@@ -6854,7 +6994,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
         if (status === "dialing" && token === joinToken) setLobbyStatus(t("net.connecting"), "wine");
       }
     });
-    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0, lastMessageAt: Date.now(), lastStateAt: 0, recovering: false, queued: false, queuedSeat: null, joinAfter: null };
+    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, epoch: 0, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0, lastMessageAt: Date.now(), lastStateAt: 0, recovering: false, queued: false, queuedSeat: null, joinAfter: null };
     startClientWatchdog();
     return client;
   };
@@ -7730,6 +7870,7 @@ async function hostCurrentMatch() {
       host,
       code: host.code,
       name: handle,
+      epoch: nextHostEpoch(),
       seq: 0,
       started: true,
       seatSeq: 0,
@@ -7913,6 +8054,7 @@ function closePanelSheet() {
 }
 
 function renderNetChrome() {
+  document.body.classList.toggle("is-queued", Boolean(isClient() && net?.queued));
   const chip = $("#netChip");
   if (chip) {
     if (isNetworked()) {
@@ -10595,6 +10737,9 @@ function bindEvents() {
   $$("[data-autoplay-toggle]").forEach((input) => input.addEventListener("change", () => {
     setAutoplay(input.checked);
   }));
+  $("#autoplayBtn")?.addEventListener("click", () => {
+    setAutoplay(!prefs.autoplay);
+  });
   $("#draftChip")?.addEventListener("click", () => {
     const current = state ? state.draftMode === true : prefs.draftMode === true;
     setDraftMode(!current);
@@ -10860,6 +11005,7 @@ function bindEvents() {
   $("#lobbySoloFromLost")?.addEventListener("click", backToSolo);
   $("#leaveRoomBtn")?.addEventListener("click", requestLeaveRoom);
   $("#leaveRoomTopBtn")?.addEventListener("click", requestLeaveRoom);
+  $("#queuedLeaveBtn")?.addEventListener("click", requestLeaveRoom);
   $("#leaveCancel")?.addEventListener("click", () => closeModal("leaveModal"));
   $("#leaveConfirm")?.addEventListener("click", () => {
     closeModal("leaveModal");
@@ -10969,6 +11115,19 @@ function bindEvents() {
   });
 
   let lastTouchEnd = 0;
+  let lastTouchStart = 0;
+  document.addEventListener("touchstart", (event) => {
+    const now = Date.now();
+    const guarded = event.target.closest?.("input, textarea, select");
+    /* Cancel the second tap at touchstart, not just touchend. iPadOS ignores
+       user-scalable=no and may scroll the visual viewport before the end
+       event, which is what leaves the white band under the table. */
+    if (!guarded && now - lastTouchStart < 320) event.preventDefault();
+    lastTouchStart = now;
+  }, { passive: false });
+  document.addEventListener("touchmove", (event) => {
+    if (event.touches.length > 1) event.preventDefault();
+  }, { passive: false });
   document.addEventListener("touchend", (event) => {
     const now = Date.now();
     const guarded = event.target.closest?.("input, textarea, select");
@@ -10980,6 +11139,9 @@ function bindEvents() {
   }, { passive: false });
   ["gesturestart", "gesturechange"].forEach((type) => {
     document.addEventListener(type, (event) => event.preventDefault(), { passive: false });
+  });
+  window.visualViewport?.addEventListener("resize", () => {
+    if (window.scrollY || document.documentElement.scrollTop) window.scrollTo(0, 0);
   });
   window.addEventListener("pointerdown", () => { audio?.resume(); audio?.play("click", 0); }, { once: true });
   window.addEventListener("keydown", () => audio?.resume(), { once: true });
@@ -11014,6 +11176,16 @@ function bindEvents() {
 }
 
 async function boot() {
+  const netemSpec = new URLSearchParams(location.search).get("netem");
+  if (netemSpec) {
+    const netemConfig = {};
+    for (const part of netemSpec.split(",")) {
+      const [key, value] = part.split(":");
+      if (key) netemConfig[key.trim()] = Number(value);
+    }
+    configureNetem(netemConfig);
+    console.info("network impairment enabled", netemConfig);
+  }
   loadPrefs();
   loadStats();
   applyFontSize(prefs.fontSize, { silent: true });
@@ -11227,6 +11399,12 @@ window.LeabTui = {
       pending: isHost() ? pendingList() : [],
       queued: isHost() ? queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })) : Boolean(net.queued),
       lastSeq: isClient() ? (net.lastSeq || 0) : null,
+      epoch: net.epoch || 0,
+      seq: isHost() ? (net.seq || 0) : null,
+      lastStateAt: isClient() ? (net.lastStateAt || 0) : null,
+      lastMessageAt: isClient() ? (net.lastMessageAt || 0) : null,
+      connections: isHost() && net.host?.connectionCount ? net.host.connectionCount() : null,
+      seats: isHost() ? (SEAT_PROFILES || []).map((profile) => (profile ? { seat: profile.seat, kind: profile.kind, connId: profile.connId || null, open: Boolean(profile.connId && net.host?.connections?.has?.(profile.connId)) } : null)) : null,
       approval: isHost() ? Boolean(net.security?.approval) : null,
       pinSet: isHost() ? Boolean(net.security?.pinSet) : null,
       lastPublished
@@ -11241,6 +11419,7 @@ window.LeabTui = {
     pending: () => pendingList().map((request) => ({ connId: request.connId, name: request.name, at: request.at })),
     queued: () => queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })),
     resync: () => requestResync(),
+    setNetem: (config) => configureNetem(config),
     approve: approvePending,
     deny: denyPending,
     pauseJoins: () => pauseJoinRequests(),

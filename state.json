@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.6",
-  "version": "1.10.6",
+  "projectVersion": "1.10.7",
+  "version": "1.10.7",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -14,7 +14,7 @@
     "durationHuman": "81h 6m 47s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link. 1.10.4 Invite, audience mode, watchers, action ACK, heartbeats, keepalive/turn timeout, seat-card reconnect, iPad hand fan and dock restore. 1.10.5 approval receipts, welcome ack/retry, join-status recovery. 1.10.6 tile size, autoplay, seat reclaim and state freshness.",
+    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link. 1.10.4 Invite, audience mode, watchers, action ACK, heartbeats, keepalive/turn timeout, seat-card reconnect, iPad hand fan and dock restore. 1.10.5 approval receipts, welcome ack/retry, join-status recovery. 1.10.6 tile size, autoplay, seat reclaim and state freshness. 1.10.7 binary transport, epoch/seq, state ACKs, action retries, four-human and lossy soak, fixed iPad viewport.",
     "publishedAt": "2026-11-10T03:12:20.409Z"
   },
   "tokens": {
@@ -71,9 +71,9 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (443 checks)",
+    "staticCheck": "scripts/check.mjs (444 checks)",
     "browserCheck": "scripts/verify.mjs — 49 checks incl. iPad framing, shadows, hints, inspector, rail, history, tile size and autoplay",
-    "multiplayer": "scripts/net-check.mjs — 48 checks including the invite/audience path and the host invite receipt",
+    "multiplayer": "scripts/net-check.mjs — 57 checks including a 4-human full-round soak, 10% loss/duplicate/100 ms delay soak, host reload and seat reclaim",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
@@ -93,7 +93,14 @@
     "autoplay": "toggle plays only the local seat in solo, host and guest roles; lead/follow/showdown/bid/draft covered",
     "seatReclaim": "a same-name viewer is returned to an offline human seat; recovered seats free to bots after a 30 s grace",
     "autoRejoin": "auto reconnect now retries every 1.2 s after a host reload instead of stopping at one attempt",
-    "stateFreshness": "client watchdog resyncs after 9 s without a snapshot and reconnects after 24 s"
+    "stateFreshness": "client watchdog resyncs after 9 s without a snapshot and reconnects after 24 s",
+    "transport": "PeerJS binary serialisation (chunked) so late-round four-human snapshots stay under the JSON 16 KB ceiling",
+    "ordering": "host epoch + monotonic seq on every state/welcome; guests ignore stale, duplicate or previous-incarnation messages",
+    "antiEntropy": "per-seat state ACKs with targeted resend; 4 s full snapshot heartbeat; 9 s resync and 24 s reconnect watchdogs",
+    "actions": "actionId dedupe plus same-ID retry every 1.5 s (4 attempts) and a stale-snapshot gate",
+    "silentSeats": "closed or quiet human connections are swept to bots after 20–30 s; a seat and a viewer entry can no longer mask each other",
+    "networkImpairment": "?netem=drop/dup/delay/jitter runs only in tests; 4 humans stay live at 10% loss",
+    "touch": "iOS fixed visual viewport, second-touchstart guard and pinch/gesture cancellation"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -382,9 +389,14 @@
       "version": "1.10.6",
       "date": "2026-11-09",
       "summary": "Adjustable tile size, autoplay for the local seat, seat reclaim after a lost rejoin token and a state-freshness watchdog."
+    },
+    {
+      "version": "1.10.7",
+      "date": "2026-11-09",
+      "summary": "Launch menu simplification, tile size, dock autoplay, turn wording, binary transport, epoch/seq ordering, state ACKs, silent-seat sweep and a 4-human lossy soak."
     }
   ],
-  "releaseNotes": "1.10.6 adds a four-step tile size (3D hand and dock chips), an autoplay toggle that plays only your seat, and recovery for guests who were seated but showed as viewers or froze on an old snapshot.",
+  "releaseNotes": "1.10.7 makes multiplayer survivable on real networks: binary chunked transport, epoch/sequence ordering, state ACKs with targeted repair, same-ID action retries, silent-seat sweeps and a four-human lossy soak. Also simplifies the launch menu, adds tile size, a dock Auto toggle, clearer turn wording and a fixed iPad viewport.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

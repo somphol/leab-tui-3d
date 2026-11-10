@@ -253,11 +253,14 @@ async function main() {
   chrome.kill("SIGTERM");
   await sleep(150);
   if (chromeErr && process.env.DEBUG_CHROME) console.error(chromeErr);
+  /* The child's stderr pipe can keep the event loop alive; execFileSync in
+     verify then waits forever even though the JSON report is complete. */
+  process.exit(0);
 }
 
 main().catch((error) => {
   console.error("BROWSER-CHECK FAILED:", error.message);
   if (process.env.DEBUG_CHROME) console.error(chromeErr);
   chrome.kill("SIGTERM");
-  process.exitCode = 1;
+  process.exit(1);
 });

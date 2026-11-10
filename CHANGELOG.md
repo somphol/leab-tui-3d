@@ -2,6 +2,31 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.7] — 2026-11-09
+
+### Changed
+
+- **Simpler launch menu.** “How do you want to play?” now offers **Play now (invite friends later)** and **Join a game** only. Hosting no longer has a separate entry: start solo, then use **Invite** on the live table to turn it into a room without redealing. The host panel remains available for `?mode=host`, recovery and diagnostics.
+- **Autoplay is one tap away.** The dock now carries an **Auto** toggle beside Hint and Clear, so the player can switch the coach in and out without opening Actions. It stays in sync with the Actions checkbox.
+- **Queued audience loses the confusing Actions orb.** While waiting for a seat, the Actions orb/panel is hidden and the status pill carries its own **Leave** button.
+- **“Trick” is “turn” in the English interface.** Turn result, turn log, turn history, next turn, the queued banner and the coach now use “turn” consistently. The genre name “trick-taking” stays only in the About/description text.
+
+### Fixed
+
+- **Four-human deadlock at the end of a round.** PeerJS JSON serialisation refuses any frame over 16 KB; a late-round four-human snapshot crossed that line, stopped state publishing and left every client on a different turn. The transport now uses binary serialisation, which chunks instead of refusing.
+- **Stale or duplicate state could move a client backwards.** Each host page has an epoch and every state/welcome carries a monotonic `seq`. Guests ignore older, duplicate or previous-epoch frames, so a delayed message or an old connection cannot regress the table.
+- **State loss now repairs in under a second.** Seated guests acknowledge every applied snapshot; the host resends a targeted snapshot to any seat that acknowledges an older `seq`, in addition to the 4-second full heartbeat.
+- **A dropped action is retried, not lost.** The client replays the same `actionId` up to four times at 1.5-second intervals; the host deduplicates it and returns the cached acknowledgement. The client also refuses to act on a snapshot older than 6 seconds.
+- **Silent seats no longer block the table.** A closed or quiet human connection is swept to a bot after 20–30 seconds, with a `seat-timeout` and preserved rejoin token. A connection that was both a seat and a viewer can no longer be cleaned up as a viewer and leave a dead seat behind.
+- **iPad white band after a double-tap.** iOS now pins the document to the visual viewport, cancels the second `touchstart` (not only `touchend`), and blocks pinch/gesture so the table cannot scroll under the browser bar.
+
+### Tests
+
+- `scripts/net-check.mjs` now runs **57 checks**, including a four-human full round, a 10% loss + duplicate + 100 ms delay round, state-ACK repair, host reload, lost-token seat reclaim and console cleanliness.
+- A test-only `?netem=drop:…,dup:…,delay:…,jitter:…` hook impairs application frames without touching PeerJS signalling, so recovery paths are exercised deterministically.
+- `scripts/verify.mjs` covers tile size and autoplay; `scripts/check.mjs` covers the two-choice launch menu.
+
+
 ## [1.10.6] — 2026-11-09
 
 ### Added
