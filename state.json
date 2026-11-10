@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (441 checks)",
+    "staticCheck": "scripts/check.mjs (442 checks)",
     "browserCheck": "scripts/verify.mjs — 45 checks incl. iPad framing, shadows, hints, inspector, rail, history and invite controls",
     "multiplayer": "scripts/net-check.mjs — 47 checks including the invite/audience path",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",

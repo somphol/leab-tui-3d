@@ -315,6 +315,7 @@ ok(index.includes('id="queuedBanner"') && script.includes("queuedSeat"), "queued
 ok(index.includes('id="watcherChip"') && index.includes('id="watcherList"') && script.includes("function renderWatcherChip"), "watchers are visible to every participant");
 ok(script.includes("const local = seat === MY_SEAT") && script.includes("0.245"), "the local hand fan uses MY_SEAT and avoids overlap");
 ok(script.includes('$("#handDock")?.removeAttribute("hidden")'), "promotion restores the hand dock");
+ok(css.includes("pointer: coarse) and (min-width: 641px") && script.includes("lastTouchEnd"), "tablet menus lock the viewport and suppress double-tap zoom");
 ok(script.includes("function hostCurrentMatch") && script.includes("function queueBotSeat") && script.includes("function promoteQueuedGuests"), "solo-to-host invite engine exists");
 const inviteBody = script.slice(script.indexOf("async function hostCurrentMatch"), script.indexOf("function openInviteSheet"));
 ok(inviteBody && !inviteBody.includes("beginMatch(") && !inviteBody.includes("leaveRoom("), "invite conversion does not redeal or drop the solo game");

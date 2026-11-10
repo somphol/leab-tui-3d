@@ -10473,6 +10473,13 @@ function bindEvents() {
     savePrefs();
   });
 
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", (event) => {
+    const now = Date.now();
+    const guarded = event.target.closest?.("input, textarea, select, #scene");
+    if (!guarded && now - lastTouchEnd < 320) event.preventDefault();
+    lastTouchEnd = now;
+  }, { passive: false });
   window.addEventListener("pointerdown", () => { audio?.resume(); audio?.play("click", 0); }, { once: true });
   window.addEventListener("keydown", () => audio?.resume(), { once: true });
   window.addEventListener("beforeunload", saveMatch);

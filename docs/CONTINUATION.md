@@ -117,7 +117,7 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 cd ~/Projects/leab-tui-3d
 node --check script.js && node --check peer-manager.js
 node --check voice-chat.js && node --check security.js
-node scripts/check.mjs                 # 441/441
+node scripts/check.mjs                 # 442/442
 python3 -m http.server 8123 &          # if not running
 node scripts/verify.mjs                # ALL BROWSER CHECKS PASSED (includes iPad portrait/landscape)
 AUDIO_TEST=1 node scripts/verify.mjs   # includes a real audio peak

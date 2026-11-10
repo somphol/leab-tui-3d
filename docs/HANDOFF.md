@@ -21,7 +21,7 @@ Release **1.10.0** is built, verified and published. It turns the table into a r
 
 ```
 node --check script.js / peer-manager.js / voice-chat.js / security.js   PASS
-node scripts/check.mjs                                                  PASS (441 checks)
+node scripts/check.mjs                                                  PASS (442 checks)
 ?selftest=1                                                             SELFTEST PASS 38/38
 node scripts/verify.mjs                                                 ALL BROWSER CHECKS PASSED
 node scripts/invite-check.mjs                                           ALL 16 INVITE CHECKS PASSED

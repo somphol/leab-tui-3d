@@ -518,9 +518,23 @@ a:hover { text-decoration: underline; }
 }
 
 html, body {
-  touch-action: pan-x pan-y;
+  /* manipulation keeps pan/pinch but suppresses the iOS double-tap zoom that
+     made the table jump and left the dock off-screen. */
+  touch-action: manipulation;
+  overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input, textarea, select, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-reset, .dock-actions, .lobby-check {
@@ -2809,4 +2823,47 @@ body.is-viewer .panel-orb[data-panel="handPanel"],
 body.is-viewer .panel-orb[data-panel="chatPanel"],
 body.is-viewer #voiceCallBtn {
   display: none !important;
+}
+
+/* Tablets: keep the game in one fixed viewport. The phone layout can scroll;
+   an iPad should not move the stage or the hand dock under the browser bar. */
+@media (min-width: 641px) and (pointer: coarse) {
+  html, body { overflow: hidden; overscroll-behavior: none; }
+  .app {
+    height: 100dvh;
+    min-height: 0;
+    grid-template-rows: var(--topbar-h) minmax(0, 1fr);
+  }
+  .layout {
+    height: 100%;
+    min-height: 0;
+    padding-bottom: 10px;
+  }
+  .stage-wrap {
+    height: calc(100dvh - var(--topbar-h) - 26px);
+    min-height: 0;
+  }
+}
+
+/* Tablet menus: reserve the right rail and let the HUD wrap instead of
+   clipping the result chip on an iPad in portrait. */
+@media (pointer: coarse) and (min-width: 641px) {
+  .hud-strip {
+    left: 12px;
+    right: 62px;
+    max-width: calc(100% - 74px);
+    gap: 6px;
+  }
+  .hud-chips {
+    max-width: 100%;
+    gap: 6px;
+  }
+  .hud-chip {
+    padding: 5px 10px;
+    font-size: calc(10px * var(--fs-scale));
+  }
+  .hud-chip strong { font-size: calc(13px * var(--fs-scale)); }
+  .stage-hint { display: none; }
+  .topbar { gap: 10px; }
+  .top-actions { gap: 6px; }
 }

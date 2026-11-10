@@ -37,7 +37,7 @@
 | **Leave voice** | Stop tracks and leave the voice mesh |
 | Room chip (header) | Host: open room info with the number and PIN. Guest: copy the invite link. |
 
-The camera is damped; release the mouse and it glides to a stop. Pan is clamped so the table cannot be lost off-screen.
+The camera is damped; release the mouse and it glides to a stop. Pan is clamped so the table cannot be lost off-screen. On touch, `touch-action: manipulation` suppresses the iOS double-tap page zoom; the canvas keeps its own gestures, and a non-canvas double-tap is cancelled.
 
 ## Touch
 
