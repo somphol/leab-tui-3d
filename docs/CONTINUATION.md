@@ -124,7 +124,8 @@ node scripts/check.mjs                 # 444/444
 python3 -m http.server 8123 &          # if not running
 node scripts/verify.mjs                # ALL 49 BROWSER CHECKS PASSED (includes iPad portrait/landscape)
 AUDIO_TEST=1 node scripts/verify.mjs   # includes a real audio peak
-node scripts/net-check.mjs             # ALL 57 MULTIPLAYER CHECKS PASSED (includes 4 humans + 10% loss)
+NET_QUICK=1 node scripts/net-check.mjs # 49 checks, ~3–4 min: everyday network fixes (no 4-human/loss soak)
+node scripts/net-check.mjs             # 57 checks, ~10–12 min: release gate (4 humans + 10% loss)
 node scripts/invite-check.mjs          # ALL 16 INVITE CHECKS PASSED
 BASE_URL="https://somphol.github.io/leab-tui-3d/" node scripts/net-check.mjs
 ```

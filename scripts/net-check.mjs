@@ -754,6 +754,7 @@ async function main() {
   await lateGuest.closePage();
   await inviteHost.closePage();
 
+  if (process.env.NET_QUICK !== "1") {
   // Four-human table: host + three guests join before the deal, all four
   // autoplay full rounds. This is the closest headless analogue of a real
   // four-person room and exercises every seat over the data channel.
@@ -891,6 +892,7 @@ async function main() {
   for (const { name, session } of guests4) {
     if (session.events.length) fail(`${name} console clean`, session.events.join(" | ").slice(0, 500));
     else pass(`${name} console clean`);
+  }
   }
 
   host.close();
