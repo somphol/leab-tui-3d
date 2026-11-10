@@ -1,14 +1,14 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-09 · release 1.10.5**
+**As of 2026-11-09 · release 1.10.6**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.5: reliable join approval and receipts*
+- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.6: tile size, autoplay and seat recovery*
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
-- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.5)
+- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.6)
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -64,6 +64,7 @@ Current table/network model:
 | 1.9.22 | L sheet exposes the shared play-history browser |
 | 1.10.4 | Invite from solo, audience queue, watchers, keepalive/resync, iPad hand fan and dock fixes |
 | 1.10.5 | Approval receipts, welcome ack/retry, join-status recovery, queued/viewer resync |
+| 1.10.6 | Tile size (2D+3D), autoplay my seat, seat reclaim, state-freshness watchdog |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),

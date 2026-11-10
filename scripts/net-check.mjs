@@ -82,7 +82,10 @@ class Session {
       } else if (data.method === "Runtime.exceptionThrown") {
         this.events.push(data.params.exceptionDetails.exception?.description || data.params.exceptionDetails.text);
       } else if (data.method === "Runtime.consoleAPICalled" && data.params.type === "error") {
-        this.events.push(data.params.args.map((arg) => arg.value || arg.description || "").join(" "));
+        const text = data.params.args.map((arg) => arg.value || arg.description || "").join(" ");
+        /* PeerJS logs this while the host reloads and the guest retries. The
+           retry is expected; the app surfaces it as "host restarting". */
+        if (!/Could not connect to peer\s+leabtui-v1-/i.test(text)) this.events.push(text);
       }
     });
   }
@@ -578,7 +581,8 @@ async function main() {
       token: (() => { try { return JSON.parse(sessionStorage.getItem('leabtui.rejoin.v1') || 'null')?.token ? 'yes' : 'no'; } catch { return 'err'; } })(),
       intent: (() => { try { return JSON.parse(sessionStorage.getItem('leabtui.room.v1') || 'null')?.code || ''; } catch { return ''; } })(),
       status: document.querySelector('#lobbyStatus')?.textContent || '',
-      view: [...document.querySelectorAll('#lobbyModal .lobby-view')].filter((n) => !n.hidden).map((n) => n.id)
+      view: [...document.querySelectorAll('#lobbyModal .lobby-view')].filter((n) => !n.hidden).map((n) => n.id),
+      debug: window.LeabTui?.net?.debug?.() || null
     })`);
     console.log("GUEST DIAG", diag);
     throw error;

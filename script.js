@@ -24,7 +24,7 @@ import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./s
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.5",
+  version: "1.10.6",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -86,6 +86,16 @@ const FONT_SIZES = Object.freeze([
   { id: "md", scale: 1.0, labelKey: "display.default" },
   { id: "lg", scale: 1.12, labelKey: "display.large" },
   { id: "xl", scale: 1.24, labelKey: "display.xlarge" }
+]);
+
+/* Display-only scale for the local player's tiles: the 3D hand and the
+   accessible chips in the dock. It never changes the rules or the shared
+   hand layout of the other seats. */
+const CARD_SIZES = Object.freeze([
+  { id: "sm", scale: 0.9, labelKey: "display.cardSmall" },
+  { id: "md", scale: 1.0, labelKey: "display.cardDefault" },
+  { id: "lg", scale: 1.12, labelKey: "display.cardLarge" },
+  { id: "xl", scale: 1.3, labelKey: "display.cardXlarge" }
 ]);
 
 const THEMES = Object.freeze([
@@ -353,6 +363,8 @@ const I18N = {
     "actions.continue": "Continue",
     "actions.keep": "Keep playing",
     "actions.sound": "Sound",
+    "actions.autoplay": "Autoplay my seat (AI)",
+    "actions.autoplayNote": "The coach plays your legal moves after a short pause. Turn it off at any time to take over.",
     "display.title": "Display",
     "display.language": "Language",
     "display.font": "Text size",
@@ -360,8 +372,13 @@ const I18N = {
     "display.default": "Default",
     "display.large": "Large",
     "display.xlarge": "Extra large",
+    "display.cards": "Tile size",
+    "display.cardSmall": "Small",
+    "display.cardDefault": "Default",
+    "display.cardLarge": "Large",
+    "display.cardXlarge": "Extra large",
     "display.theme": "Theme",
-    "display.note": "Text size scales the interface, not the 3D table. Theme changes the panels and the felt / wood palette.",
+    "display.note": "Text size scales the interface. Tile size scales your own 3D hand and the card chips in the dock; theme changes the panels and the felt / wood palette.",
     "display.fullscreen": "Full screen",
     "display.fullscreenBtn": "Enter full screen",
     "display.fullscreenExit": "Exit full screen",
@@ -380,6 +397,9 @@ const I18N = {
     "theme.daybreak": "Daybreak",
     "theme.daybreakDesc": "Pale blue-white panels, navy ink and a teal table.",
     "toast.fontSize": "Text size set to {size}.",
+    "toast.cardSize": "Tile size set to {size}.",
+    "toast.autoplayOn": "Autoplay is on — the coach plays your seat.",
+    "toast.autoplayOff": "Autoplay is off — your seat is yours.",
     "toast.theme": "Theme set to {theme}.",
     "toast.displayReset": "Display settings reset.",
     "toast.soundTest": "Sound test — a wooden clack.",
@@ -778,6 +798,8 @@ const I18N = {
     "invite.noticeViewer": "Approved {name} to watch this table.",
     "invite.noticeSeated": "Approved {name} — joining {seat} now.",
     "invite.noticeJoined": "Approved {name} — they are joining the room.",
+    "invite.noticeReclaimed": "Approved {name} — reclaimed seat {seat}.",
+    "invite.reclaimed": "{name} reclaimed seat {seat}.",
     "invite.noticeFailed": "Approval did not complete. Try again.",
     "queued.banner": "Approved — watching until this trick ends. You will take {seat}.",
     "queued.bannerRound": "Approved — watching until the next round. You will take {seat}.",
@@ -1026,6 +1048,8 @@ const I18N = {
     "actions.continue": "เล่นต่อ",
     "actions.keep": "เล่นต่อ",
     "actions.sound": "เสียง",
+    "actions.autoplay": "เล่นอัตโนมัติเฉพาะที่นั่งฉัน (AI)",
+    "actions.autoplayNote": "โค้ชจะเล่นตาที่ถูกกติกาให้หลังหยุดสั้น ๆ ปิดได้ทุกเมื่อเพื่อกลับมาเล่นเอง",
     "display.title": "การแสดงผล",
     "display.language": "ภาษา",
     "display.font": "ขนาดตัวอักษร",
@@ -1033,8 +1057,13 @@ const I18N = {
     "display.default": "ปกติ",
     "display.large": "ใหญ่",
     "display.xlarge": "ใหญ่พิเศษ",
+    "display.cards": "ขนาดเบี้ย",
+    "display.cardSmall": "เล็ก",
+    "display.cardDefault": "ปกติ",
+    "display.cardLarge": "ใหญ่",
+    "display.cardXlarge": "ใหญ่พิเศษ",
     "display.theme": "ธีม",
-    "display.note": "ขนาดตัวอักษรปรับเฉพาะหน้าจอ ไม่กระทบโต๊ะ 3 มิติ ส่วนธีมเปลี่ยนสีแผงและโทนโต๊ะ",
+    "display.note": "ขนาดตัวอักษรปรับเฉพาะหน้าจอ ส่วนขนาดเบี้ยปรับมือ 3 มิติของเราและการ์ดใน dock; ธีมเปลี่ยนสีแผงและโทนโต๊ะ",
     "display.fullscreen": "เต็มจอ",
     "display.fullscreenBtn": "เข้าสู่โหมดเต็มจอ",
     "display.fullscreenExit": "ออกจากโหมดเต็มจอ",
@@ -1053,6 +1082,9 @@ const I18N = {
     "theme.daybreak": "อรุณรุ่ง",
     "theme.daybreakDesc": "แผงขาวฟ้าอ่อน หมึกน้ำเงิน และโต๊ะสีเขียวน้ำทะเล",
     "toast.fontSize": "ตั้งขนาดตัวอักษรเป็น {size}",
+    "toast.cardSize": "ตั้งขนาดเบี้ยเป็น {size}",
+    "toast.autoplayOn": "เปิดเล่นอัตโนมัติ — โค้ชเล่นแทนที่นั่งของคุณ",
+    "toast.autoplayOff": "ปิดเล่นอัตโนมัติ — กลับมาเล่นเอง",
     "toast.theme": "ตั้งธีมเป็น {theme}",
     "toast.displayReset": "รีเซ็ตการแสดงผลแล้ว",
     "toast.soundTest": "ทดสอบเสียง — เสียงไม้กระทบ",
@@ -1454,6 +1486,8 @@ const I18N = {
     "invite.noticeViewer": "อนุมัติ {name} เป็นผู้ชมแล้ว",
     "invite.noticeSeated": "อนุมัติ {name} แล้ว — เข้านั่ง {seat} ทันที",
     "invite.noticeJoined": "อนุมัติ {name} แล้ว — กำลังเข้าห้อง",
+    "invite.noticeReclaimed": "อนุมัติ {name} แล้ว — กลับมานั่ง {seat}",
+    "invite.reclaimed": "{name} กลับมานั่ง {seat} แล้ว",
     "invite.noticeFailed": "อนุมัติไม่สำเร็จ ลองอีกครั้ง",
     "queued.banner": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบตา จะได้นั่ง {seat}",
     "queued.bannerRound": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบรอบ จะได้นั่ง {seat}",
@@ -1978,7 +2012,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -1988,6 +2022,8 @@ let scene = null;
 let audio = null;
 let inspectedTileId = null;
 let actionTimer = null;
+let autoPlayTimer = null;
+let autoPlayKey = "";
 let actionToken = 0;
 let newMatchGuard = false;
 
@@ -2030,6 +2066,7 @@ let clientWatchTimer = null;
 let clientPingTimer = null;
 let roomPinPlain = "";
 let joinToken = 0;
+let joinStage = "idle";
 let hostRejoinTimer = null;
 let hostRejoinAttempts = 0;
 
@@ -2045,8 +2082,12 @@ function scheduleHostRejoin(code, name, token) {
   hostRejoinTimer = setTimeout(() => {
     hostRejoinTimer = null;
     hostRejoinAttempts += 1;
-    joinRoom(code, name, "", token, { auto: true });
-  }, first ? 1200 : 2500);
+    joinRoom(code, name, "", token, { auto: true }).catch((error) => {
+      try { console.warn("auto rejoin failed", error); } catch { /* ignore */ }
+      lastNetError = error?.message || "rejoin-failed";
+      if (hostRejoinAttempts < 12) scheduleHostRejoin(code, name, token);
+    });
+  }, first ? 700 : 1200);
 }
 let availableVersion = "";
 let lastNetError = "";
@@ -2311,6 +2352,8 @@ function loadPrefs() {
   } catch { prefs = { ...DEFAULT_PREFS }; }
   LANG = prefs.lang === "th" ? "th" : "en";
   if (!FONT_SIZES.some((entry) => entry.id === prefs.fontSize)) prefs.fontSize = "md";
+  if (!CARD_SIZES.some((entry) => entry.id === prefs.cardSize)) prefs.cardSize = "md";
+  prefs.autoplay = prefs.autoplay === true;
   if (!THEMES.some((entry) => entry.id === prefs.theme)) prefs.theme = "daybreak";
   if (![20, 50, 100].includes(Number(prefs.target))) prefs.target = 20;
   if (!["cw", "ccw"].includes(prefs.direction)) prefs.direction = "cw";
@@ -3335,26 +3378,106 @@ function clearSelection() {
   audio?.play("click", 0);
 }
 
-function applyHint() {
+function applyHint(options = {}) {
   if (!state || !["lead", "follow"].includes(state.phase) || state.turn !== MY_SEAT) return;
   if (state.phase === "lead") {
     const combo = chooseLead(state.hands[MY_SEAT], { jitter: false });
     if (!combo) return;
     state.selected = combo.tiles.map((tile) => tile.id);
-    toast(t("toast.hintCombo", { combo: comboSummary(combo) }), "jade");
+    if (!options.silent) toast(t("toast.hintCombo", { combo: comboSummary(combo) }), "jade");
   } else {
     const recommendation = recommendedFollow(state.hands[MY_SEAT], state.lead.combo, state.lead.combo);
     if (recommendation.kind === "beat") {
       state.selected = recommendation.combo.tiles.map((tile) => tile.id);
-      toast(t("toast.hintCombo", { combo: comboSummary(recommendation.combo) }), "jade");
+      if (!options.silent) toast(t("toast.hintCombo", { combo: comboSummary(recommendation.combo) }), "jade");
     } else {
       state.selected = recommendation.tiles.map((tile) => tile.id);
-      toast(t("toast.hintDiscard", { n: recommendation.tiles.length }), "jade");
+      if (!options.silent) toast(t("toast.hintDiscard", { n: recommendation.tiles.length }), "jade");
     }
   }
   renderAll();
   if (scene) scene.setSelected(state.selected);
   coachTick();
+}
+
+function autoplayEligible() {
+  if (!prefs.autoplay || !state || MY_SEAT < 0) return false;
+  if (!["lead", "follow", "showdown", "bid", "draft"].includes(state.phase)) return false;
+  if (state.turn !== MY_SEAT) return false;
+  if (isClient() && pendingAction) return false;
+  return true;
+}
+
+function scheduleAutoplay() {
+  if (!autoplayEligible()) {
+    clearTimeout(autoPlayTimer);
+    autoPlayTimer = null;
+    autoPlayKey = "";
+    return;
+  }
+  const key = `${state.round}:${state.trick}:${state.phase}:${state.turn}:${state.bidTurn ?? "-"}:${state.draftIndex ?? "-"}`;
+  if (key === autoPlayKey) return;
+  autoPlayKey = key;
+  clearTimeout(autoPlayTimer);
+  autoPlayTimer = setTimeout(() => {
+    autoPlayTimer = null;
+    runAutoplay();
+  }, 700);
+}
+
+function runAutoplay() {
+  if (!autoplayEligible()) return;
+  if (state.phase === "bid") {
+    if (isClient()) {
+      const hand = state.hands[MY_SEAT] || [];
+      const strength = hand.reduce((sum, tile) => sum + (tile.power >= 5 ? 2 : tile.power >= 4 ? 1 : 0), 0);
+      let value = Math.max(0, Math.min(8, Math.round(strength / 2)));
+      if (state.bidTurn === 3) {
+        const forbidden = bidForbidden();
+        if (value === forbidden) value = value >= 8 ? 7 : value + 1;
+      }
+      sendNetAction("bid", [], false, value);
+    } else {
+      aiBid(MY_SEAT);
+    }
+    return;
+  }
+  if (state.phase === "draft") {
+    const picks = randomDraftPair(state.draftPool).map((tile) => tile.id);
+    if (picks.length !== 2) return;
+    if (isClient()) sendNetAction("draft", picks, false);
+    else draftPick(MY_SEAT, picks);
+    return;
+  }
+  if (state.phase === "showdown") {
+    /* Show when the seat can beat the table or is first; otherwise keep the
+       set hidden (fold). */
+    humanFollow(!state.best || showdownCanBeat(MY_SEAT));
+    return;
+  }
+  applyHint({ silent: true });
+  if (state.phase === "lead") humanLead();
+  else if (state.phase === "follow") humanFollow(false);
+}
+
+function setAutoplay(enabled, options = {}) {
+  prefs.autoplay = Boolean(enabled);
+  clearTimeout(autoPlayTimer);
+  autoPlayTimer = null;
+  autoPlayKey = "";
+  savePrefs();
+  renderAutoplay();
+  if (!options.silent) {
+    toast(t(prefs.autoplay ? "toast.autoplayOn" : "toast.autoplayOff"), "jade");
+    audio?.play("click", 0);
+  }
+  scheduleAutoplay();
+}
+
+function renderAutoplay() {
+  const box = document.querySelector("[data-autoplay-toggle]");
+  if (box) box.checked = Boolean(prefs.autoplay);
+  document.body.classList.toggle("autoplay-on", Boolean(prefs.autoplay));
 }
 
 function coachTick() {
@@ -3748,6 +3871,7 @@ function renderAll() {
   renderDraft();
   focusTurnIfNeeded();
   refreshHistoryModal();
+  scheduleAutoplay();
 }
 
 let historyFollowLatest = true;
@@ -4447,6 +4571,30 @@ function setRankReference(open) {
   button.classList.toggle("active", open);
 }
 
+function cardScale() {
+  const entry = CARD_SIZES.find((item) => item.id === prefs.cardSize) || CARD_SIZES[1];
+  return entry.scale;
+}
+
+function applyCardSize(id, options = {}) {
+  const entry = CARD_SIZES.find((item) => item.id === id) || CARD_SIZES[1];
+  prefs.cardSize = entry.id;
+  document.documentElement.dataset.cardSize = entry.id;
+  document.documentElement.style.setProperty("--card-scale", String(entry.scale));
+  /* Reflow the free hand layout: keeping old absolute slots would make larger
+     tiles overlap. Tidy restores the scaled row and also re-publishes it. */
+  if (scene?.tidyHand) {
+    scene.tidyHand();
+    if (isNetworked() && MY_SEAT >= 0) publishHandLayout(null);
+  } else scene?.refreshFraming?.();
+  if (!options.silent) {
+    savePrefs();
+    audio?.play("click", 0);
+    toast(t("toast.cardSize", { size: t(entry.labelKey) }));
+  }
+  renderDisplay();
+}
+
 function applyFontSize(id, options = {}) {
   const entry = FONT_SIZES.find((item) => item.id === id) || FONT_SIZES[1];
   prefs.fontSize = entry.id;
@@ -4479,6 +4627,11 @@ function renderDisplay() {
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
+  $$("button[data-card-size]").forEach((button) => {
+    const active = button.dataset.cardSize === prefs.cardSize;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
   $$("button[data-theme-choice]").forEach((button) => {
     const active = button.dataset.themeChoice === prefs.theme;
     button.classList.toggle("active", active);
@@ -4488,6 +4641,7 @@ function renderDisplay() {
 
 function resetDisplay() {
   applyFontSize("md", { silent: true });
+  applyCardSize("md", { silent: true });
   applyTheme("daybreak", { silent: true });
   savePrefs();
   toast(t("toast.displayReset"), "jade");
@@ -4707,7 +4861,7 @@ function requestResync(options = {}) {
   }
   resyncTimer = setTimeout(() => {
     resyncPending = false;
-    toast(t("toast.resyncFailed"), "wine");
+    if (!options.silent) toast(t("toast.resyncFailed"), "wine");
   }, 5000);
   if (!options.silent) toast(t("toast.resyncRequested"), "gold");
   return true;
@@ -4737,18 +4891,32 @@ function startJoinWatch() {
   }, 4000);
 }
 
+function recoverClientConnection() {
+  if (!isClient() || !net || net.recovering) return;
+  const code = net.code;
+  const name = net.name;
+  const pin = net.pin || "";
+  const token = loadRejoinSeat(code)?.token || "";
+  net.recovering = true;
+  toast(t("toast.connectionStalled"), "wine");
+  joinRoom(code, name, pin, token, { auto: true });
+}
+
 function startClientWatchdog() {
   stopClientWatchdog();
   clientWatchTimer = setInterval(() => {
     if (!isClient() || !net?.started || net.recovering || document.hidden) return;
+    const active = state && ["dealing", "lead", "follow", "showdown", "bid", "draft"].includes(state.phase);
+    if (active) {
+      /* Pings keep the channel warm even when the host stopped publishing
+         state. Track the snapshot separately so a frozen table re-syncs, then
+         reconnects, instead of waiting forever on a fresh pong. */
+      const stateAge = Date.now() - (net.lastStateAt || 0);
+      if (stateAge > 24000) return recoverClientConnection();
+      if (stateAge > 9000) requestResync({ silent: true });
+    }
     if (Date.now() - (net.lastMessageAt || 0) < 15000) return;
-    const code = net.code;
-    const name = net.name;
-    const pin = net.pin || "";
-    const token = loadRejoinSeat(code)?.token || "";
-    net.recovering = true;
-    toast(t("toast.connectionStalled"), "wine");
-    joinRoom(code, name, pin, token, { auto: true });
+    recoverClientConnection();
   }, 2500);
   clientPingTimer = setInterval(() => {
     if (!isClient() || !net?.started || document.hidden) return;
@@ -4991,9 +5159,25 @@ function stopStatePulse() {
   statePulseTimer = null;
 }
 
+let reconcilingViewers = false;
+
+function reconcileViewers() {
+  if (!isHost() || !net?.viewers || reconcilingViewers) return;
+  reconcilingViewers = true;
+  try {
+    for (const [connId, viewer] of [...net.viewers.entries()]) {
+      const seat = findReclaimSeat(viewer.name);
+      if (seat > 0) reclaimSeat(connId, { name: viewer.name }, seat);
+    }
+  } finally {
+    reconcilingViewers = false;
+  }
+}
+
 function publishState() {
   if (!isHost() || !state || !net?.host) return;
   if (!net.started) return;
+  reconcileViewers();
   const roster = serialiseRoster();
   net.seq = (net.seq || 0) + 1;
   for (const profile of SEAT_PROFILES) {
@@ -5313,6 +5497,69 @@ function findBotSeat() {
   return SEAT_PROFILES?.findIndex((profile, seat) => seat > 0 && profile?.kind === "bot" && !profile.queuedFor) ?? -1;
 }
 
+/* A returning guest whose stored token was lost should reclaim the seat that
+   already carries their name, instead of being approved as a viewer while the
+   stale seat freezes the table. The host still taps Allow for this. */
+function findReclaimSeat(name) {
+  const clean = cleanGuestName(name, "").trim().toLowerCase();
+  if (!clean) return -1;
+  return SEAT_PROFILES?.findIndex((profile, seat) => (
+    seat > 0
+    && profile
+    && profile.kind === "human"
+    && !profile.connId
+    && String(profile.name || "").trim().toLowerCase() === clean
+  )) ?? -1;
+}
+
+function reclaimSeat(connId, request, seat) {
+  const profile = SEAT_PROFILES?.[seat];
+  if (!profile || !net?.host) return false;
+  const name = cleanGuestName(request.name || profile.name, profile.name || `Guest ${seat}`);
+  if (profile.queuedFor && queuedGuests.has(profile.queuedFor)) queuedGuests.delete(profile.queuedFor);
+  delete profile.queuedFor;
+  queuedGuests.delete(connId);
+  net.viewers?.delete(connId);
+  SEAT_PROFILES[seat] = {
+    ...profile,
+    seat,
+    name,
+    kind: "human",
+    connected: true,
+    connId,
+    peerId: connId,
+    rejoinToken: profile.rejoinToken || makeRejoinToken(),
+    rejoinName: name,
+    lastSeen: Date.now()
+  };
+  markTurnClock(true);
+  sendWelcomeWithRetry(connId, {
+    type: "welcome",
+    roomCode: net.code,
+    protocol: PROTOCOL_VERSION,
+    seat,
+    hostName: net.name,
+    players: serialiseRoster(),
+    viewers: serialiseViewers(),
+    chat: chatHistory.slice(-30),
+    canStart: true,
+    rejoinToken: SEAT_PROFILES[seat].rejoinToken,
+    started: Boolean(net.started && state),
+    joinedSeat: true,
+    state: net.started && state ? sanitizeForSeat(state, seat) : null
+  });
+  toast(t("invite.reclaimed", { name, seat: seatName(seat) }), "jade");
+  renderAll();
+  renderLobby();
+  renderPending();
+  renderInviteSheet();
+  sendLobbyToGuests();
+  syncVoicePeers();
+  queuePublish();
+  saveHostRecovery();
+  return true;
+}
+
 function joinBoundary() {
   if (!state) return "now";
   if (state.phase === "matchEnd") return "match";
@@ -5562,6 +5809,11 @@ function approvePending(connId, mode = "auto") {
       acceptGuest(connId, request.name);
       inviteNotice = t("invite.noticeJoined", { name });
       renderLobby();
+      return true;
+    }
+    const reclaim = findReclaimSeat(request.name);
+    if (reclaim > 0 && reclaimSeat(connId, request, reclaim)) {
+      inviteNotice = t("invite.noticeReclaimed", { name, seat: seatName(reclaim) });
       return true;
     }
     const seat = findBotSeat();
@@ -6143,6 +6395,16 @@ async function resumeHostRoom(recovery) {
     }
     SEAT_PROFILES[0].name = handle;
     queuedGuests = new Map();
+    /* Recovered human seats have no live connection yet. Give the guests a
+       grace window to dial back in; after that, free every seat so an absent
+       device cannot freeze the table. Their rejoin token is preserved. */
+    setTimeout(() => {
+      if (!isHost() || !net?.started || !SEAT_PROFILES) return;
+      for (let seat = 1; seat < TABLE_SEATS; seat += 1) {
+        const profile = SEAT_PROFILES[seat];
+        if (profile?.kind === "human" && !profile.connId) convertSeatToBot(seat, "disconnected");
+      }
+    }, 30000);
     (Array.isArray(recovery.queued) ? recovery.queued : []).forEach((entry, index) => {
       if (!entry || !Number.isInteger(entry.seat) || entry.seat < 1 || entry.seat >= TABLE_SEATS) return;
       queuedGuests.set(`recovered-${entry.seat}-${index}`, {
@@ -6165,6 +6427,7 @@ async function resumeHostRoom(recovery) {
       state.language = LANG;
       ensureHiddenTags(state);
       net.started = true;
+      markTurnClock(true);
       closeLobby();
       renderAll();
       if (scene) {
@@ -6256,12 +6519,22 @@ function clientMessage({ message }) {
   if (net && isClient()) net.lastMessageAt = Date.now();
   switch (message.type) {
     case "welcome": {
+      const wasWelcomed = Boolean(net?.welcomed);
       if (net) {
         net.welcomed = Boolean(message.state) || !message.started;
         net.handshakeAck = true;
       }
       net?.client?.send?.({ type: "welcome-ack" });
       stopJoinWatch();
+      const incomingSeat = Number(message.seat);
+      const incomingViewer = Boolean(message.viewer) || incomingSeat < 0;
+      /* A queued/viewer welcome arriving after the real seat was granted (for
+         example from a retry on an older connection) must not demote this
+         guest. Seat changes only happen through a fresh join handshake. */
+      if (wasWelcomed && MY_SEAT >= 0 && (incomingViewer || (Number.isInteger(incomingSeat) && incomingSeat !== MY_SEAT))) {
+        try { console.warn("ignored stale welcome", { incomingSeat, mySeat: MY_SEAT }); } catch { /* ignore */ }
+        break;
+      }
       clearPendingAction();
       const welcomeSeat = Number(message.seat);
       MY_SEAT = Number.isInteger(welcomeSeat) && welcomeSeat >= -1 ? welcomeSeat : 1;
@@ -6283,6 +6556,7 @@ function clientMessage({ message }) {
         });
       }
       net.started = Boolean(message.started) || Boolean(message.rejoin && message.state);
+      if (message.state && net) net.lastStateAt = Date.now();
       resetHostRejoin();
       lobbyState = {
         view: "waiting",
@@ -6352,7 +6626,15 @@ function clientMessage({ message }) {
       finishResync();
       if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
       if (Array.isArray(message.viewers)) net.viewers = message.viewers;
-      applyRemoteState(message.state);
+      try {
+        applyRemoteState(message.state);
+        if (net) net.lastStateAt = Date.now();
+      } catch (error) {
+        try { console.error("state apply failed", error); } catch { /* ignore */ }
+        toast(t("toast.connectionStalled"), "wine");
+        requestResync({ silent: true });
+        break;
+      }
       syncVoicePeers();
       maybeJoinAutoAudio();
       if (message.resync) {
@@ -6504,10 +6786,12 @@ function handleHostLost(options = {}) {
 
 async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
   const auto = Boolean(options.auto);
+  joinStage = auto ? "auto-enter" : "manual-enter";
   if (!auto) resetHostRejoin();
   if (net) leaveRoom({ silent: true, keepRejoin: auto });
   const normalized = normalizeRoomCode(code);
   if (!normalized) {
+    joinStage = "bad-code";
     setLobbyStatus(t("net.badCode"), "wine");
     return;
   }
@@ -6553,7 +6837,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
     client = new PeerClient({
       code: normalized,
       name: handle,
-      connectTimeoutMs: auto ? 4500 : 11000,
+      connectTimeoutMs: auto ? 3500 : 11000,
       onMessage: clientMessage,
       onOpen: () => {
         sendHello();
@@ -6570,7 +6854,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
         if (status === "dialing" && token === joinToken) setLobbyStatus(t("net.connecting"), "wine");
       }
     });
-    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0, lastMessageAt: Date.now(), recovering: false, queued: false, queuedSeat: null, joinAfter: null };
+    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0, lastMessageAt: Date.now(), lastStateAt: 0, recovering: false, queued: false, queuedSeat: null, joinAfter: null };
     startClientWatchdog();
     return client;
   };
@@ -6582,6 +6866,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
       try {
         await client.connect();
         if (token !== joinToken) return;
+        joinStage = "connected";
         if (autoMic) {
           autoMic.then((stream) => {
             if (!stream) return;
@@ -6611,13 +6896,14 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
         const failedClient = client;
         try { failedClient?.close(); } catch { /* ignore */ }
         if (net?.client === failedClient) net = null;
-        if (attempt === 1) {
+        if (!auto && attempt === 1) {
           if (token !== joinToken) return;
           setLobbyStatus(t("net.retrying", { n: 2 }), "");
           await new Promise((resolve) => setTimeout(resolve, 800));
           continue;
         }
         const type = error?.code || error?.type || error?.message || "unknown";
+        joinStage = `failed:${type}`;
         lastNetError = type;
         lastNetStage = error?.stage || "";
         if (auto && reconnecting && hostRejoinAttempts < 12) {
@@ -6632,6 +6918,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
           };
           showLobby("lost");
           setLobbyStatus(t("net.hostRestarting"), "");
+          joinStage = "retry-scheduled";
           scheduleHostRejoin(normalized, handle, storedRejoin);
           return;
         }
@@ -7360,7 +7647,8 @@ function renderJoinRequestPopup() {
     return;
   }
   const request = requests[0];
-  const seat = findBotSeat();
+  const reclaim = findReclaimSeat(request.name);
+  const seat = reclaim > 0 ? reclaim : findBotSeat();
   const boundary = joinBoundary();
   const many = requests.length > 1;
   joinPopupConnId = request.connId;
@@ -8839,13 +9127,17 @@ function handPosition(seat, index, count) {
      overlap, no second row, and no collision with the compact fan of the
      neighbouring seat. Opponents keep the smaller face-down fan. */
   if (seat === MY_SEAT) {
-    const step = 0.98;
+    const scale = cardScale();
+    const step = 0.98 * scale;
     const offset = (index - (count - 1) / 2) * step;
-    const base = seatVector(seat, HAND_RADIUS);
+    /* Larger cards pull the row slightly inward so the outer edge can never
+       hang off the rim. */
+    const radius = HAND_RADIUS - Math.max(0, scale - 1) * 2.5;
+    const base = seatVector(seat, radius);
     const tangent = seatTangent(seat);
     return {
       x: base.x + tangent.x * offset,
-      y: TABLE_Y + TILE_THICKNESS / 2 + 0.012,
+      y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.012,
       z: base.z + tangent.z * offset,
       angle: SEATS[seat].angle
     };
@@ -9451,9 +9743,11 @@ async function createScene() {
     if (placement.kind === "hand") {
       const custom = handLayout.get(placement.id) || placement.custom;
       if (custom) {
+        const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
+        const scale = placement.seat === localSeat ? cardScale() : 1;
         return {
           x: custom.x,
-          y: TABLE_Y + TILE_THICKNESS / 2 + 0.012,
+          y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.012,
           z: custom.z,
           angle: custom.a ?? custom.angle
         };
@@ -9480,6 +9774,8 @@ async function createScene() {
   function applyState(gameState, options = {}) {
     currentState = gameState;
     const map = placementMap(gameState);
+    const localSeat = Number.isInteger(gameState.mySeat) ? gameState.mySeat : (Number.isInteger(MY_SEAT) ? MY_SEAT : 0);
+    const scale = cardScale();
     const duration = options.duration ?? 620;
     const arc = options.arc ?? 0.26;
     for (const record of tileObjects.values()) {
@@ -9492,6 +9788,8 @@ async function createScene() {
       record.kind = placement.kind;
       record.index = placement.index;
       record.pileIndex = placement.pileIndex || 0;
+      const ownHand = placement.kind === "hand" && placement.seat === localSeat;
+      record.root.scale.setScalar(ownHand ? scale : 1);
       const target = positionFor(placement);
       orient(record, placement.seat, placement.angle);
       moveTile(record, target, options.deal ? 560 : duration, options.deal ? 0.75 : arc);
@@ -9518,10 +9816,13 @@ async function createScene() {
         record.faceAnim = null;
       }
       const entries = [...map.entries()];
+      const localSeat = Number.isInteger(gameState.mySeat) ? gameState.mySeat : (Number.isInteger(MY_SEAT) ? MY_SEAT : 0);
+      const scale = cardScale();
       entries.forEach(([id, placement], index) => {
         const record = tileObjects.get(id);
         if (!record) return;
         const target = positionFor(placement);
+        record.root.scale.setScalar(placement.kind === "hand" && placement.seat === localSeat ? scale : 1);
         setTimeout(() => {
           orient(record, placement.seat, placement.angle);
           moveTile(record, target, 520, 0.9);
@@ -9568,6 +9869,11 @@ async function createScene() {
       x: rect.left + ((point.x + 1) / 2) * rect.width,
       y: rect.top + ((1 - point.y) / 2) * rect.height
     };
+  }
+
+  function tileScale(id) {
+    const record = tileObjects.get(id);
+    return record ? record.root.scale.x : null;
   }
 
   function pick(event) {
@@ -9682,7 +9988,7 @@ async function createScene() {
     handDrag.point = target;
     const record = handDrag.record;
     record.anim = null;
-    record.root.position.set(target.x, TABLE_Y + TILE_THICKNESS / 2 + 0.26, target.z);
+    record.root.position.set(target.x, TABLE_Y + (TILE_THICKNESS * cardScale()) / 2 + 0.26, target.z);
     record.root.rotation.y = -target.angle;
     const hint = $("#playHint");
     if (hint) hint.hidden = Math.hypot(target.x, target.z) >= HAND_PLAY_RADIUS;
@@ -9755,7 +10061,7 @@ async function createScene() {
       }
       handLayout.set(record.id, { x: point.x, z: point.z, angle: point.angle });
       record.anim = null;
-      record.root.position.set(point.x, TABLE_Y + TILE_THICKNESS / 2 + 0.012, point.z);
+      record.root.position.set(point.x, TABLE_Y + (TILE_THICKNESS * cardScale()) / 2 + 0.012, point.z);
       record.root.rotation.y = -point.angle;
       if (typeof onHandLayoutChange === "function") onHandLayoutChange();
       if (typeof renderSelection === "function") renderSelection();
@@ -10137,6 +10443,7 @@ async function createScene() {
     setSeatLayout,
     getSeatLayout(seat) { return seatLayouts.get(Number(seat)) || null; },
     tileScreen,
+    tileScale,
     refreshFraming() { return fitTopFraming(false); },
     framing() {
       const rect = canvas.getBoundingClientRect();
@@ -10229,6 +10536,7 @@ function bindEvents() {
     if (pinPanel && !pinPanel.hidden && !pinPanel.contains(event.target) && !pinButton?.contains(event.target)) setPinInfo(false);
   });
   $$("button[data-font-size]").forEach((button) => button.addEventListener("click", () => applyFontSize(button.dataset.fontSize)));
+  $$("button[data-card-size]").forEach((button) => button.addEventListener("click", () => applyCardSize(button.dataset.cardSize)));
   $$("button[data-theme-choice]").forEach((button) => button.addEventListener("click", () => applyTheme(button.dataset.themeChoice)));
   $("#displayReset")?.addEventListener("click", resetDisplay);
   $("#soundTest")?.addEventListener("click", () => {
@@ -10283,6 +10591,9 @@ function bindEvents() {
   });
   $$("[data-draft-toggle]").forEach((input) => input.addEventListener("change", () => {
     setDraftMode(input.checked);
+  }));
+  $$("[data-autoplay-toggle]").forEach((input) => input.addEventListener("change", () => {
+    setAutoplay(input.checked);
   }));
   $("#draftChip")?.addEventListener("click", () => {
     const current = state ? state.draftMode === true : prefs.draftMode === true;
@@ -10706,7 +11017,9 @@ async function boot() {
   loadPrefs();
   loadStats();
   applyFontSize(prefs.fontSize, { silent: true });
+  applyCardSize(prefs.cardSize, { silent: true });
   applyTheme(prefs.theme, { silent: true });
+  renderAutoplay();
   audio = new StudioAudio();
   applyLanguage(LANG);
   bindEvents();
@@ -10878,13 +11191,16 @@ window.LeabTui = {
   getCamera: () => scene?.getState?.() || null,
   getFraming: () => scene?.framing?.() || null,
   applyFontSize,
+  applyCardSize,
   applyTheme,
-  getDisplay: () => ({ fontSize: prefs.fontSize, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),
+  setAutoplay,
+  getDisplay: () => ({ fontSize: prefs.fontSize, cardSize: prefs.cardSize, autoplay: prefs.autoplay, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), cardSizes: CARD_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),
   checkUpdate: (force = false) => checkForUpdate({ force }),
   exportHandSlots: () => scene?.exportHandSlots?.() || [],
   publishHandLayout: (slots) => publishHandLayout(slots),
   getSeatLayout: (seat) => scene?.getSeatLayout?.(seat) || null,
   getTileScreen: (id) => scene?.tileScreen?.(id) || null,
+  getTileScale: (id) => scene?.tileScale?.(id) ?? null,
   getVersionState: () => ({ current: APP.version, available: availableVersion, checkedAt: (() => { try { return JSON.parse(localStorage.getItem(VERSION_CHECK_KEY) || "null")?.at || 0; } catch { return 0; } })() }),
   openRanks: () => setRankReference(true),
   closeRanks: () => setRankReference(false),
@@ -10940,6 +11256,21 @@ window.LeabTui = {
     copyInvite,
     roomInfo: roomInfoText,
     probe: (code, pin = "") => probeRoom(code, pin),
+    debug: () => ({
+      netRole: net?.role || null,
+      lobbyView: lobbyState?.view || null,
+      status: lobbyState?.status || "",
+      lastNetError,
+      lastNetStage,
+      joinStage,
+      hostRejoinAttempts,
+      joinToken,
+      mySeat: MY_SEAT,
+      phase: state?.phase || null,
+      turn: state?.turn ?? null,
+      welcomed: Boolean(net?.welcomed),
+      recovering: Boolean(net?.recovering)
+    }),
     diagnostics: diagnosticsText
   },
   chat: {

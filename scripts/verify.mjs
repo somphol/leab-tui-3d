@@ -158,7 +158,12 @@ async function main() {
   else fail("rank reference opens with 7 cards and toggles closed", JSON.stringify(rankValue));
 
   const display = runHarness(["--url", soloBase, "--wait", "2500", "--eval", `(async () => {
+    LeabTui.newMatch({ seed: 12 });
+    await new Promise((r) => setTimeout(r, 900));
     LeabTui.applyFontSize('xl');
+    LeabTui.applyCardSize('xl');
+    const handId = LeabTui.getState()?.hands?.[0]?.[0] || null;
+    const tileScale = handId ? LeabTui.getTileScale(handId) : null;
     LeabTui.applyTheme('jade');
     const jadeScene = LeabTui.getCamera()?.theme;
     LeabTui.applyTheme('parchment');
@@ -168,6 +173,9 @@ async function main() {
     return JSON.stringify({
       font: document.documentElement.dataset.fontSize,
       scale: style.getPropertyValue('--fs-scale').trim(),
+      card: document.documentElement.dataset.cardSize,
+      cardScale: style.getPropertyValue('--card-scale').trim(),
+      tileScale,
       theme: document.documentElement.dataset.theme,
       scene: LeabTui.getCamera()?.theme,
       background: LeabTui.getCamera()?.background,
@@ -175,18 +183,53 @@ async function main() {
       prefs: LeabTui.getPrefs(),
       modal: !document.querySelector('#displayModal').hidden,
       fontButtons: document.querySelectorAll('button[data-font-size]').length,
+      cardButtons: document.querySelectorAll('button[data-card-size]').length,
       themeButtons: document.querySelectorAll('button[data-theme-choice]').length
     });
   })()`]);
   const displayValue = display.evalValue || {};
   if (displayValue.font === "xl" && displayValue.scale === "1.24") pass("text size XL applies a 1.24 scale");
   else fail("text size XL applies a 1.24 scale", JSON.stringify(displayValue));
+  if (displayValue.card === "xl" && displayValue.cardScale === "1.3") pass("tile size XL applies a 1.3 scale");
+  else fail("tile size XL applies a 1.3 scale", JSON.stringify(displayValue));
+  if (Math.abs(Number(displayValue.tileScale) - 1.3) < 0.001) pass("tile size XL scales the local 3D hand");
+  else fail("tile size XL scales the local 3D hand", String(displayValue.tileScale));
   if (displayValue.jadeScene === "jade" && displayValue.theme === "parchment" && displayValue.scene === "parchment" && displayValue.background === "d9cdb8") pass("bright Parchment theme reaches the UI and 3D scene");
   else fail("bright Parchment theme reaches the UI and 3D scene", JSON.stringify(displayValue));
   if (displayValue.prefs?.fontSize === "xl" && displayValue.prefs?.theme === "parchment") pass("display preferences persist");
   else fail("display preferences persist", JSON.stringify(displayValue.prefs));
-  if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.themeButtons === 5) pass("display panel exposes four sizes and five themes");
-  else fail("display panel exposes four sizes and five themes", JSON.stringify(displayValue));
+  if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.cardButtons === 4 && displayValue.themeButtons === 5) pass("display panel exposes four text sizes, four tile sizes and five themes");
+  else fail("display panel exposes four text sizes, four tile sizes and five themes", JSON.stringify(displayValue));
+
+  const autoplay = runHarness(["--url", `${soloBase}&seed=777`, "--wait", "2500", "--eval", `(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    LeabTui.setFast(true);
+    LeabTui.newMatch({ seed: 777 });
+    const before = LeabTui.getState().hands[0].length;
+    LeabTui.setAutoplay(true);
+    let played = false;
+    for (let step = 0; step < 160; step += 1) {
+      await wait(100);
+      const current = LeabTui.getState();
+      if (current.phase === "roundEnd" || current.phase === "matchEnd") break;
+      if (current.hands[0].length < before) { played = true; break; }
+    }
+    const after = LeabTui.getState();
+    return JSON.stringify({
+      enabled: LeabTui.getPrefs().autoplay,
+      checkbox: document.querySelector('[data-autoplay-toggle]')?.checked === true,
+      played,
+      before,
+      after: after.hands[0].length,
+      phase: after.phase,
+      trick: after.trick
+    });
+  })()`]);
+  const autoplayValue = autoplay.evalValue || {};
+  if (autoplayValue.enabled && autoplayValue.checkbox) pass("autoplay toggle persists and updates the panel");
+  else fail("autoplay toggle persists and updates the panel", JSON.stringify(autoplayValue));
+  if (autoplayValue.played) pass("autoplay plays the local seat without a click", `hand ${autoplayValue.before} → ${autoplayValue.after}, trick ${autoplayValue.trick}`);
+  else fail("autoplay plays the local seat without a click", JSON.stringify(autoplayValue));
 
   const draftExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

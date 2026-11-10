@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.5",
-  "version": "1.10.5",
+  "projectVersion": "1.10.6",
+  "version": "1.10.6",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -14,7 +14,7 @@
     "durationHuman": "81h 6m 47s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link. 1.10.4 Invite, audience mode, watchers, action ACK, heartbeats, keepalive/turn timeout, seat-card reconnect, iPad hand fan and dock restore.",
+    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link. 1.10.4 Invite, audience mode, watchers, action ACK, heartbeats, keepalive/turn timeout, seat-card reconnect, iPad hand fan and dock restore. 1.10.5 approval receipts, welcome ack/retry, join-status recovery. 1.10.6 tile size, autoplay, seat reclaim and state freshness.",
     "publishedAt": "2026-11-10T03:12:20.409Z"
   },
   "tokens": {
@@ -72,7 +72,7 @@
   "verification": {
     "selfTest": "38/38",
     "staticCheck": "scripts/check.mjs (443 checks)",
-    "browserCheck": "scripts/verify.mjs — 45 checks incl. iPad framing, shadows, hints, inspector, rail, history and invite controls",
+    "browserCheck": "scripts/verify.mjs — 49 checks incl. iPad framing, shadows, hints, inspector, rail, history, tile size and autoplay",
     "multiplayer": "scripts/net-check.mjs — 48 checks including the invite/audience path and the host invite receipt",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
@@ -88,7 +88,12 @@
     "showdownLegality": "illegal pair explained; legal losing sets remain showable",
     "ipad": "portrait and landscape: whole rim, no 2D shadows, Invite controls, C/M/A/i/H/L rail, hand fan without overlap",
     "invite": "scripts/invite-check.mjs — 16 checks: solo → host, audio, popup, audience mode, promotion, resync, seat-card reconnect",
-    "joinRecovery": "welcome retried until welcome-ack; waiting guest polls status every 4 s; queued/viewer resync answered; invite sheet clears with a receipt"
+    "joinRecovery": "welcome retried until welcome-ack; waiting guest polls status every 4 s; queued/viewer resync answered; invite sheet clears with a receipt",
+    "displayTiles": "four tile sizes (0.9 / 1.0 / 1.12 / 1.3) scale the local 3D hand and dock chips; hand row reflows inward at XL",
+    "autoplay": "toggle plays only the local seat in solo, host and guest roles; lead/follow/showdown/bid/draft covered",
+    "seatReclaim": "a same-name viewer is returned to an offline human seat; recovered seats free to bots after a 30 s grace",
+    "autoRejoin": "auto reconnect now retries every 1.2 s after a host reload instead of stopping at one attempt",
+    "stateFreshness": "client watchdog resyncs after 9 s without a snapshot and reconnects after 24 s"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -372,9 +377,14 @@
       "version": "1.10.5",
       "date": "2026-11-09",
       "summary": "Approval receipts, welcome acknowledgement/retry and join-status recovery so approved guests never stall on the waiting screen."
+    },
+    {
+      "version": "1.10.6",
+      "date": "2026-11-09",
+      "summary": "Adjustable tile size, autoplay for the local seat, seat reclaim after a lost rejoin token and a state-freshness watchdog."
     }
   ],
-  "releaseNotes": "1.10.5 makes join approval observable and self-healing: the invite sheet clears with a receipt, welcomes retry until acknowledged, and a waiting guest asks the host for its status instead of hanging.",
+  "releaseNotes": "1.10.6 adds a four-step tile size (3D hand and dock chips), an autoplay toggle that plays only your seat, and recovery for guests who were seated but showed as viewers or froze on an old snapshot.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

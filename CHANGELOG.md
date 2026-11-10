@@ -2,6 +2,21 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.6] — 2026-11-09
+
+### Added
+
+- **Tile size.** Display now offers four sizes (Small, Default, Large, Extra large) for your own 3D hand and the accessible card chips in the dock. The 3D row reflows with a wider spacing and pulls slightly inward at Extra large so the outer tile never overhangs the rim. The preference is saved per device and does not change other seats or the rules.
+- **Autoplay my seat.** Actions has an opt-in toggle that lets the coach take your legal turn after a short pause. It works in solo, as host and as guest, covers lead, follow, showdown, bid and draft, and stops the moment you switch it off. It never touches another player's seat.
+
+### Fixed
+
+- **Seated guest showing as a spectator.** A returning guest whose rejoin token was lost could be approved as a viewer while its stale human seat froze the table, so both devices showed the guest's name “thinking” with no controls. The host now reclaims an offline human seat with the same name when it approves the request, and automatically reconciles an already-approved viewer into that seat.
+- **Frozen snapshot with a live channel.** Pings kept the old watchdog satisfied even when state messages stopped. The client now tracks the last applied snapshot: it asks for a resync after 9 seconds and reconnects after 24 seconds. A failed snapshot apply is caught and recovered instead of leaving the lobby on “waiting”.
+- **Zombie seats after host recovery.** Recovered human seats get a 30-second grace window to reconnect, then become bots; their rejoin token is preserved so the guest can still reclaim the seat.
+- **Automatic rejoin no longer gives up after one try.** The auto path was taking the manual two-attempt branch, showing “Connection attempt 2 of 2…” and stopping without scheduling another host-rejoin attempt. It now reaches the retry loop, which retries every 1.2 s until the recovered host answers.
+- **Stale welcome could demote a seated guest.** A queued/viewer welcome arriving after the real seat was granted (for example from a retry on an older connection) is now acknowledged but ignored.
+
 ## [1.10.5] — 2026-11-09
 
 ### Fixed

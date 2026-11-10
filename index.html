@@ -6,7 +6,7 @@
   <title>Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio</title>
   <meta name="description" content="A bilingual, offline-friendly 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with 32 Chinese chess tiles. Vanilla HTML, CSS and Three.js." />
   <meta name="theme-color" content="#e8f0f2" />
-  <meta name="app-version" content="1.10.5" />
+  <meta name="app-version" content="1.10.6" />
   <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta property="og:type" content="website" />
@@ -55,7 +55,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Leab-Tui 3D" />
-  <link rel="stylesheet" href="style.css?v=1.10.5" />
+  <link rel="stylesheet" href="style.css?v=1.10.6" />
   <script type="importmap">
     {
       "imports": {
@@ -76,7 +76,7 @@
         <span class="brand-copy">
           <span class="brand-line">
             <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
-            <span id="brandVersion" class="brand-version">(v1.10.5)</span>
+            <span id="brandVersion" class="brand-version">(v1.10.6)</span>
           </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
@@ -239,6 +239,11 @@
             <input type="checkbox" data-draft-toggle />
             <span data-i18n="draft.toggle">Draft next deal (experimental)</span>
           </label>
+          <label id="autoplayToggleWrap" class="lobby-check action-toggle">
+            <input type="checkbox" data-autoplay-toggle />
+            <span data-i18n="actions.autoplay">Autoplay my seat (AI)</span>
+          </label>
+          <p class="display-note" data-i18n="actions.autoplayNote">The coach plays your legal moves after a short pause. Turn it off at any time to take over.</p>
         </section>
 
         <section class="panel chat-panel" id="chatPanel" hidden>
@@ -295,7 +300,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.10.5</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.10.6</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -540,7 +545,7 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.10.5</span>
+          <span class="version-chip version-label">v1.10.6</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
@@ -583,7 +588,7 @@
           <h3 data-i18n="invite.seats">Seats</h3>
           <div id="inviteSeats" class="lobby-roster"></div>
         </div>
-        <p class="invite-version"><span class="version-label">v1.10.5</span></p>
+        <p class="invite-version"><span class="version-label">v1.10.6</span></p>
       </div>
     </div>
 
@@ -636,6 +641,15 @@
           </div>
         </div>
         <div class="display-section">
+          <h3 data-i18n="display.cards">Tile size</h3>
+          <div class="segmented" id="cardSizeGroup" role="group" aria-label="Tile size">
+            <button type="button" data-card-size="sm" data-i18n="display.cardSmall">Small</button>
+            <button type="button" data-card-size="md" data-i18n="display.cardDefault">Default</button>
+            <button type="button" data-card-size="lg" data-i18n="display.cardLarge">Large</button>
+            <button type="button" data-card-size="xl" data-i18n="display.cardXlarge">Extra large</button>
+          </div>
+        </div>
+        <div class="display-section">
           <h3 data-i18n="display.theme">Theme</h3>
           <div class="theme-grid" id="themeGroup" role="group" aria-label="Theme">
             <button type="button" class="theme-card" data-theme-choice="mahogany">
@@ -665,7 +679,7 @@
           <button id="fullscreenBtn" class="btn btn-ghost display-wide" type="button" data-i18n="display.fullscreenBtn">Enter full screen</button>
           <p class="display-note" data-i18n="display.fullscreenNote">On iPad or iPhone, use Share → Add to Home Screen for a browser-free full-screen game.</p>
         </div>
-        <p class="display-note" data-i18n="display.note">Text size scales the interface, not the 3D table. Theme changes the panels and the felt / wood palette.</p>
+        <p class="display-note" data-i18n="display.note">Text size scales the interface. Tile size scales your own 3D hand and the card chips in the dock; theme changes the panels and the felt / wood palette.</p>
         <div class="modal-actions">
           <button id="soundTest" class="btn btn-ghost" type="button" data-i18n="display.testSound">Test sound</button>
           <button id="displayReset" class="btn btn-ghost" type="button" data-i18n="display.reset">Reset display</button>
@@ -818,6 +832,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.10.5"></script>
+  <script type="module" src="script.js?v=1.10.6"></script>
 </body>
 </html>

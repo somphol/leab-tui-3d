@@ -38,6 +38,7 @@
   --topbar-h: 76px;
   --sidebar-w: 386px;
   --fs-scale: 1;
+  --card-scale: 1;
   --app-bg:
     radial-gradient(1200px 700px at 70% -10%, rgba(123, 36, 52, 0.28), transparent 60%),
     radial-gradient(900px 600px at 0% 100%, rgba(44, 108, 88, 0.12), transparent 55%),
@@ -1136,23 +1137,23 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
 .tile-note { margin: 8px 0 0; color: var(--ink-faint); font-size: calc(10.5px * var(--fs-scale)); line-height: 1.4; }
 
 /* Tile list */
-.tile-list { display: flex; flex-wrap: wrap; gap: 5px; }
+.tile-list { display: flex; flex-wrap: wrap; gap: calc(5px * var(--card-scale)); }
 .tile-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 8px 4px 5px;
+  gap: calc(5px * var(--card-scale));
+  padding: calc(4px * var(--card-scale)) calc(8px * var(--card-scale)) calc(4px * var(--card-scale)) calc(5px * var(--card-scale));
   border: 1px solid var(--line-soft);
   border-radius: 999px;
   background: var(--chip-tile-bg);
   color: var(--ink-dim);
-  font-size: calc(10.5px * var(--fs-scale));
+  font-size: calc(10.5px * var(--fs-scale) * var(--card-scale));
   cursor: pointer;
   transition: all 150ms ease;
 }
 .tile-chip:hover { border-color: var(--line); color: var(--ink); }
 .tile-chip.selected { border-color: var(--gold); background: var(--gold-wash-strong); color: var(--gold-bright); }
-.tile-chip b { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(244, 231, 203, 0.9); color: #8d1f24; font-family: var(--serif); font-size: calc(11px * var(--fs-scale)); font-weight: 600; }
+.tile-chip b { display: grid; place-items: center; width: calc(20px * var(--card-scale)); height: calc(20px * var(--card-scale)); border-radius: 50%; background: rgba(244, 231, 203, 0.9); color: #8d1f24; font-family: var(--serif); font-size: calc(11px * var(--fs-scale) * var(--card-scale)); font-weight: 600; }
 .tile-chip.black b { color: #1d1716; }
 .tile-chip.red b { color: #8d1f24; }
 .tile-list-empty { color: var(--ink-faint); font-size: calc(11px * var(--fs-scale)); }
