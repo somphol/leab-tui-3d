@@ -642,6 +642,12 @@ async function main() {
   if (inviteBefore.trick >= 1) pass("invite conversion kept the live round and trick", `round ${inviteBefore.round}, trick ${inviteBefore.trick}`);
   else fail("invite conversion kept the live round and trick", JSON.stringify(inviteBefore));
   await inviteHost.eval(`LeabTui.net.approve(${JSON.stringify(invitePending[0].connId)}); true`);
+  const inviteSheet = JSON.parse(await inviteHost.eval(`JSON.stringify({
+    pendingRows: document.querySelectorAll('#invitePending [data-conn]').length,
+    notice: document.querySelector('#inviteNotice')?.hidden === false ? document.querySelector('#inviteNotice').textContent : ''
+  })`));
+  if (inviteSheet.pendingRows === 0 && inviteSheet.notice) pass("host invite sheet clears and confirms the approval", inviteSheet.notice);
+  else fail("host invite sheet clears and confirms the approval", JSON.stringify(inviteSheet));
   const queuedRaw = await inviteHost.waitFor(
     "window.LeabTui?.net.getState?.().queued?.length >= 1 ? JSON.stringify(LeabTui.net.getState().queued) : ''",
     "guest queued until trick end",

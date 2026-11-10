@@ -43,6 +43,22 @@ true` and the state. A **viewer** receives `"seat": -1`, `"viewer": true`,
 `"started": true` and `sanitizeForSeat(state, -1)` (all hands and unrevealed
 sets hidden). Viewer state publications use the same `seat: -1` envelope.
 
+The host treats a `welcome` as delivered only when the guest answers
+`welcome-ack`; otherwise it repeats the same welcome (same seat/state) up to
+eight times at roughly one-second spacing. A queued guest's welcome carries
+`"seat": -1`, `"viewer": true`, `"queued": true`, `"queuedSeat": n`,
+`"joinAfter": "trick" | "round" | "match"`, `"rejoinToken"` and a hidden-state
+snapshot.
+
+### `welcome-ack` (guest → host)
+
+```json
+{ "type": "welcome-ack" }
+```
+
+Stops host retries for that connection. Sent immediately on receiving any
+`welcome`, before the guest applies the snapshot.
+
 ### `lobby`
 
 Roster update while the room is open.
@@ -195,6 +211,15 @@ against an in-memory SHA-256 digest, then either queues the request (`pending`)
 or rejects it. The host assigns the lowest free seat 1–3 only after approval. Names are trimmed to 18 characters; control characters and angle brackets are stripped. Empty names become `Guest n`.
 
 `bad-pin`, `denied`, `busy`, `timeout`, `full`, `in-progress` and `suppressed` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s. A started room queues a valid PIN request instead of rejecting `in-progress`; the host decides bot seat, viewer, deny or a 30-minute pause. An approved bot-seat request is still queued when the trick has started; see `pending`.
+
+### `status`
+
+Sent by a guest that is connected but still on the waiting screen. The host
+answers with whatever the connection's current role is: the pending notice,
+the queued welcome (with a fresh hidden snapshot), the viewer welcome, or a
+seated welcome. A client sends it every four seconds until a welcome lands, so
+a dropped approval cannot strand it. Safe to ignore; rate-limited by the same
+host message window.
 
 ### `action`
 

@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.4",
-  "version": "1.10.4",
+  "projectVersion": "1.10.5",
+  "version": "1.10.5",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -73,7 +73,7 @@
     "selfTest": "38/38",
     "staticCheck": "scripts/check.mjs (443 checks)",
     "browserCheck": "scripts/verify.mjs — 45 checks incl. iPad framing, shadows, hints, inspector, rail, history and invite controls",
-    "multiplayer": "scripts/net-check.mjs — 47 checks including the invite/audience path",
+    "multiplayer": "scripts/net-check.mjs — 48 checks including the invite/audience path and the host invite receipt",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
@@ -87,7 +87,8 @@
     "hostReload": "same room code, trick preserved, guest reconnected",
     "showdownLegality": "illegal pair explained; legal losing sets remain showable",
     "ipad": "portrait and landscape: whole rim, no 2D shadows, Invite controls, C/M/A/i/H/L rail, hand fan without overlap",
-    "invite": "scripts/invite-check.mjs — 16 checks: solo → host, audio, popup, audience mode, promotion, resync, seat-card reconnect"
+    "invite": "scripts/invite-check.mjs — 16 checks: solo → host, audio, popup, audience mode, promotion, resync, seat-card reconnect",
+    "joinRecovery": "welcome retried until welcome-ack; waiting guest polls status every 4 s; queued/viewer resync answered; invite sheet clears with a receipt"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -366,9 +367,14 @@
       "version": "1.10.4",
       "date": "2026-11-09",
       "summary": "Invite from solo, audience queue, watchers, keepalive, resync and iPad hand fixes."
+    },
+    {
+      "version": "1.10.5",
+      "date": "2026-11-09",
+      "summary": "Approval receipts, welcome acknowledgement/retry and join-status recovery so approved guests never stall on the waiting screen."
     }
   ],
-  "releaseNotes": "1.10.4 turns a solo table into a hosted room, queues mid-trick guests as an audience, shows watchers to everyone, adds keepalive/resync and fixes the iPad hand fan and dock.",
+  "releaseNotes": "1.10.5 makes join approval observable and self-healing: the invite sheet clears with a receipt, welcomes retry until acknowledged, and a waiting guest asks the host for its status instead of hanging.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

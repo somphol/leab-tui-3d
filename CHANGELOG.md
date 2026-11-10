@@ -2,6 +2,15 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.5] — 2026-11-09
+
+### Fixed
+
+- **Approval no longer looks stuck.** The invite sheet re-renders on every approval path and shows a green receipt (seated, watching, or queued with the reserved seat). Previously a seated/viewer approval left the pending row in place, so the host could not tell whether the tap worked.
+- **Lost welcomes are retried until acknowledged.** The host now resends a welcome every second (up to eight tries) until the guest returns `welcome-ack`; a guest that receives a welcome acknowledges it immediately.
+- **Waiting guests recover themselves.** While a guest is on the waiting screen it asks the host for its join status every four seconds. The host answers with the pending notice, the queued welcome with a fresh snapshot, a viewer welcome, or a seated state, so a dropped approval message cannot strand the guest.
+- **Resync works before a seat exists.** Queued guests and viewers can now request a resync; the host answers with their role-appropriate welcome instead of ignoring the request.
+
 ## [1.10.4] — 2026-11-09
 
 ### Added

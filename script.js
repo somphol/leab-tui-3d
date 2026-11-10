@@ -24,7 +24,7 @@ import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./s
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.4",
+  version: "1.10.5",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -774,6 +774,11 @@ const I18N = {
     "invite.seats": "Seats",
     "invite.noPending": "No one is waiting.",
     "invite.joined": "{name} joined seat {seat}.",
+    "invite.noticeQueued": "Approved {name} — they watch now and take {seat} after this trick.",
+    "invite.noticeViewer": "Approved {name} to watch this table.",
+    "invite.noticeSeated": "Approved {name} — joining {seat} now.",
+    "invite.noticeJoined": "Approved {name} — they are joining the room.",
+    "invite.noticeFailed": "Approval did not complete. Try again.",
     "queued.banner": "Approved — watching until this trick ends. You will take {seat}.",
     "queued.bannerRound": "Approved — watching until the next round. You will take {seat}.",
     "queued.bannerMatch": "Approved — watching until the next match. You will take {seat}.",
@@ -1445,6 +1450,11 @@ const I18N = {
     "invite.seats": "ที่นั่ง",
     "invite.noPending": "ยังไม่มีใครรอ",
     "invite.joined": "{name} เข้านั่ง seat {seat} แล้ว",
+    "invite.noticeQueued": "อนุมัติ {name} แล้ว — ตอนนี้ดูโต๊ะอยู่ จะได้นั่ง {seat} หลังจบตา",
+    "invite.noticeViewer": "อนุมัติ {name} เป็นผู้ชมแล้ว",
+    "invite.noticeSeated": "อนุมัติ {name} แล้ว — เข้านั่ง {seat} ทันที",
+    "invite.noticeJoined": "อนุมัติ {name} แล้ว — กำลังเข้าห้อง",
+    "invite.noticeFailed": "อนุมัติไม่สำเร็จ ลองอีกครั้ง",
     "queued.banner": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบตา จะได้นั่ง {seat}",
     "queued.bannerRound": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบรอบ จะได้นั่ง {seat}",
     "queued.bannerMatch": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบแมตช์ จะได้นั่ง {seat}",
@@ -2004,9 +2014,13 @@ const pendingTimers = new Map();
 let queuedGuests = new Map();
 let inviteStarting = false;
 let inviteError = "";
+let inviteNotice = "";
 let dismissedJoinRequests = new Set();
 let resyncPending = false;
 let resyncTimer = null;
+let welcomeSeq = 0;
+const welcomeRetries = new Map();
+let joinWatchTimer = null;
 let statePulseTimer = null;
 let actionSeq = 0;
 let pendingAction = null;
@@ -4706,6 +4720,23 @@ function stopClientWatchdog() {
   clientPingTimer = null;
 }
 
+function stopJoinWatch() {
+  clearInterval(joinWatchTimer);
+  joinWatchTimer = null;
+}
+
+function startJoinWatch() {
+  /* Before the first welcome the client watchdog is dormant (`net.started`
+     is false), so a lost approval would leave the guest waiting silently.
+     Ask the host for the join status until a welcome lands. */
+  stopJoinWatch();
+  joinWatchTimer = setInterval(() => {
+    if (lobbyState?.view === "table") return stopJoinWatch();
+    if (!isClient() || !net?.client) return;
+    if (!net.client.send({ type: "status" })) stopJoinWatch();
+  }, 4000);
+}
+
 function startClientWatchdog() {
   stopClientWatchdog();
   clientWatchTimer = setInterval(() => {
@@ -5135,17 +5166,47 @@ function expirePending(connId) {
   clearPending(connId);
   rejectConnection(connId, "timeout");
   renderLobby();
+  renderInviteSheet();
 }
 
-function sendWelcomeWithRetry(connId, payload, attempt = 0) {
+function stopWelcomeRetry(connId) {
+  const entry = welcomeRetries.get(connId);
+  if (!entry) return false;
+  clearTimeout(entry.timer);
+  welcomeRetries.delete(connId);
+  return true;
+}
+
+function sendWelcomeWithRetry(connId, payload) {
+  /* A welcome carries the seat, the roster and the first full snapshot. Losing
+     it leaves a guest on "waiting" forever, so keep resending the same message
+     until the guest acknowledges it (or the retry budget runs out). */
   if (!net?.host || !connId) return false;
-  if (net.host.send(connId, payload)) return true;
-  if (attempt < 3) {
-    setTimeout(() => {
-      if (net?.host?.connections?.has(connId)) sendWelcomeWithRetry(connId, payload, attempt + 1);
-    }, 350 * (attempt + 1));
-  }
-  return false;
+  stopWelcomeRetry(connId);
+  const id = ++welcomeSeq;
+  const entry = { id, payload, tries: 0, timer: null };
+  welcomeRetries.set(connId, entry);
+  const attempt = () => {
+    const current = welcomeRetries.get(connId);
+    if (!current || current.id !== id) return;
+    if (!net?.host?.connections?.has(connId)) {
+      welcomeRetries.delete(connId);
+      return;
+    }
+    current.tries += 1;
+    net.host.send(connId, payload);
+    if (current.tries >= 8) {
+      welcomeRetries.delete(connId);
+      return;
+    }
+    current.timer = setTimeout(attempt, 700 + current.tries * 350);
+  };
+  attempt();
+  return true;
+}
+
+function clearAllWelcomeRetries() {
+  for (const connId of [...welcomeRetries.keys()]) stopWelcomeRetry(connId);
 }
 
 function reattachGuest(connId, seat, token) {
@@ -5485,24 +5546,52 @@ function approveBotSeat(connId, request, seat) {
 
 function approvePending(connId, mode = "auto") {
   const request = pendingRequests.get(connId);
-  if (!request) return false;
+  if (!request) {
+    /* A stale row can outlive its request (timeout, second device, reload).
+       Refresh the sheet instead of leaving the host on a dead button. */
+    inviteNotice = "";
+    renderPending();
+    renderInviteSheet();
+    renderNetChrome();
+    return false;
+  }
   clearPending(connId);
-  if (!net?.started) {
-    acceptGuest(connId, request.name);
-    renderLobby();
-    return true;
+  const name = request.name || `Guest ${net?.seatSeq || ""}`;
+  try {
+    if (!net?.started) {
+      acceptGuest(connId, request.name);
+      inviteNotice = t("invite.noticeJoined", { name });
+      renderLobby();
+      return true;
+    }
+    const seat = findBotSeat();
+    if (mode === "viewer" || seat < 0) {
+      approveViewer(connId, request);
+      inviteNotice = t("invite.noticeViewer", { name });
+      return true;
+    }
+    if (joinBoundary() !== "now") {
+      if (queueBotSeat(connId, request, seat)) {
+        inviteNotice = t("invite.noticeQueued", { name, seat: seatName(seat) });
+        return true;
+      }
+      approveViewer(connId, request);
+      inviteNotice = t("invite.noticeViewer", { name });
+      return true;
+    }
+    const seated = approveBotSeat(connId, request, seat);
+    if (seated) inviteNotice = t("invite.noticeSeated", { name, seat: seatName(seat) });
+    return seated;
+  } catch (error) {
+    inviteNotice = "";
+    inviteError = t("invite.noticeFailed");
+    try { console.error("approvePending failed", error); } catch { /* ignore */ }
+    return false;
+  } finally {
+    renderPending();
+    renderInviteSheet();
+    renderNetChrome();
   }
-  const seat = findBotSeat();
-  if (mode === "viewer" || seat < 0) {
-    approveViewer(connId, request);
-    return true;
-  }
-  if (joinBoundary() !== "now") {
-    if (queueBotSeat(connId, request, seat)) return true;
-    approveViewer(connId, request);
-    return true;
-  }
-  return approveBotSeat(connId, request, seat);
 }
 
 function serialiseViewers() {
@@ -5514,9 +5603,8 @@ function currentViewers() {
   return Array.isArray(net?.viewers) ? net.viewers : [];
 }
 
-function approveViewer(connId, request) {
+function sendViewerWelcome(connId, name) {
   if (!isHost() || !net?.host || !net.viewers) return false;
-  const name = cleanGuestName(request.name, "Viewer");
   net.viewers.set(connId, { name, connId, at: Date.now() });
   sendWelcomeWithRetry(connId, {
     type: "welcome",
@@ -5532,12 +5620,67 @@ function approveViewer(connId, request) {
     started: Boolean(net.started && state),
     state: net.started && state ? sanitizeForSeat(state, -1) : null
   });
+  return true;
+}
+
+function approveViewer(connId, request) {
+  if (!isHost() || !net?.host || !net.viewers) return false;
+  const name = cleanGuestName(request.name, "Viewer");
+  sendViewerWelcome(connId, name);
   toast(t("toast.netViewer", { name }), "jade");
   renderLobby();
+  renderInviteSheet();
   sendLobbyToGuests();
   queuePublish();
   saveHostRecovery();
   return true;
+}
+
+function resendPending(connId) {
+  const request = pendingRequests.get(connId);
+  if (!request || !net?.host) return false;
+  net.host.send(connId, {
+    type: "pending",
+    roomCode: net.code,
+    hostName: net.name,
+    players: serialiseRoster(),
+    queued: false
+  });
+  return true;
+}
+
+function resendSeatedState(connId, profile) {
+  if (!profile || !net?.host || !net.started || !state) return false;
+  sendWelcomeWithRetry(connId, {
+    type: "welcome",
+    roomCode: net.code,
+    protocol: PROTOCOL_VERSION,
+    seat: profile.seat,
+    hostName: net.name,
+    players: serialiseRoster(),
+    viewers: serialiseViewers(),
+    chat: chatHistory.slice(-30),
+    canStart: true,
+    rejoinToken: profile.rejoinToken,
+    started: true,
+    joinedSeat: true,
+    state: sanitizeForSeat(state, profile.seat)
+  });
+  return true;
+}
+
+function resendJoinStatus(connId) {
+  if (!isHost() || !net?.host) return false;
+  const queued = queuedGuests.get(connId);
+  if (queued) {
+    sendQueuedStatus(connId, queued);
+    return true;
+  }
+  const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+  if (profile && resendSeatedState(connId, profile)) return true;
+  const viewer = net.viewers?.get(connId);
+  if (viewer) return sendViewerWelcome(connId, viewer.name);
+  return resendPending(connId);
 }
 
 function denyPending(connId, reason = "denied") {
@@ -5545,6 +5688,9 @@ function denyPending(connId, reason = "denied") {
   clearPending(connId);
   rejectConnection(connId, reason);
   renderLobby();
+  renderPending();
+  renderInviteSheet();
+  renderNetChrome();
   return true;
 }
 
@@ -5644,6 +5790,12 @@ function hostMessage({ connId, message }) {
     case "hello":
       requestGuest(connId, message).catch(() => rejectConnection(connId, "busy"));
       break;
+    case "welcome-ack":
+      stopWelcomeRetry(connId);
+      break;
+    case "status":
+      resendJoinStatus(connId);
+      break;
     case "action": {
       const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
       if (!profile) return;
@@ -5711,7 +5863,13 @@ function hostMessage({ connId, message }) {
       break;
     case "resync": {
       const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
-      if (!profile || !net?.started || !state) return;
+      if (!profile) {
+        /* Queued guests and viewers have no seat profile yet. Answering their
+           resync is what recovers them if a welcome snapshot was lost. */
+        resendJoinStatus(connId);
+        break;
+      }
+      if (!net?.started || !state) return;
       const now = Date.now();
       if (profile.resyncAt && now - profile.resyncAt < 800) return;
       profile.resyncAt = now;
@@ -5764,6 +5922,7 @@ function hostMessage({ connId, message }) {
 
 function hostConnectionLost({ connId } = {}) {
   if (!connId) return;
+  stopWelcomeRetry(connId);
   if (queuedGuests.has(connId)) {
     const entry = queuedGuests.get(connId);
     if (entry) {
@@ -5784,6 +5943,7 @@ function hostConnectionLost({ connId } = {}) {
   if (net?.viewers?.has(connId)) {
     net.viewers.delete(connId);
     renderLobby();
+    renderInviteSheet();
     queuePublish();
     saveHostRecovery();
     return;
@@ -5791,6 +5951,7 @@ function hostConnectionLost({ connId } = {}) {
   if (pendingRequests.has(connId)) {
     clearPending(connId);
     renderLobby();
+    renderInviteSheet();
     return;
   }
   const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
@@ -6099,6 +6260,8 @@ function clientMessage({ message }) {
         net.welcomed = Boolean(message.state) || !message.started;
         net.handshakeAck = true;
       }
+      net?.client?.send?.({ type: "welcome-ack" });
+      stopJoinWatch();
       clearPendingAction();
       const welcomeSeat = Number(message.seat);
       MY_SEAT = Number.isInteger(welcomeSeat) && welcomeSeat >= -1 ? welcomeSeat : 1;
@@ -6240,6 +6403,7 @@ function clientMessage({ message }) {
       };
       showLobby("waiting");
       renderLobby();
+      startJoinWatch();
       break;
     }
     case "action-ack": {
@@ -6256,6 +6420,7 @@ function clientMessage({ message }) {
         net.rejected = true;
         net.handshakeAck = true;
       }
+      stopJoinWatch();
       lastNetError = message.reason || "rejected";
       if (message.reason === "illegal") {
         clearPendingAction();
@@ -6370,6 +6535,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
     reconnecting
   };
   showLobby(reconnecting ? "waiting" : "join");
+  startJoinWatch();
   const connectButton = $("#lobbyConnectBtn");
   if (connectButton) {
     connectButton.disabled = true;
@@ -6501,6 +6667,8 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
   clearTimeout(publishTimer);
   stopStatePulse();
   stopClientWatchdog();
+  stopJoinWatch();
+  clearAllWelcomeRetries();
   actionToken += 1;
   joinToken += 1;
   const role = net?.role;
@@ -7230,6 +7398,11 @@ function renderInviteSheet() {
     errorBlock.hidden = !inviteError;
     errorBlock.textContent = inviteError;
   }
+  const noticeBlock = $("#inviteNotice");
+  if (noticeBlock) {
+    noticeBlock.hidden = !inviteNotice;
+    noticeBlock.textContent = inviteNotice;
+  }
   const retry = $("#inviteRetry");
   if (retry) retry.hidden = !inviteError || starting;
   const readyBlock = $("#inviteReady");
@@ -7257,6 +7430,7 @@ async function hostCurrentMatch() {
   if (inviteStarting) return false;
   inviteStarting = true;
   inviteError = "";
+  inviteNotice = "";
   renderInviteSheet();
   const autoMic = prefs.autoAudio ? preloadAudio() : null;
   const handle = preferredPlayerName() || loadPlayerName() || t("net.hostDefault");
@@ -7346,6 +7520,7 @@ function openInviteSheet() {
   if (!modal) return;
   modal.hidden = false;
   inviteError = "";
+  inviteNotice = "";
   renderInviteSheet();
   audio?.play("click", 0);
   if (!isHost()) hostCurrentMatch();

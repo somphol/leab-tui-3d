@@ -1610,6 +1610,8 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
 @keyframes inviteSpin { to { transform: rotate(360deg); } }
 .invite-error { margin: 10px 0; padding: 10px 12px; border: 1px solid rgba(182, 75, 95, 0.55); border-radius: 10px; background: rgba(182, 75, 95, 0.12); color: var(--bad-ink); font-size: calc(11.5px * var(--fs-scale)); line-height: 1.45; }
 .invite-error[hidden] { display: none; }
+.invite-notice { margin: 10px 0; padding: 10px 12px; border: 1px solid rgba(61, 138, 106, 0.5); border-radius: 10px; background: rgba(61, 138, 106, 0.13); color: var(--ink); font-size: calc(11.5px * var(--fs-scale)); line-height: 1.45; }
+.invite-notice[hidden] { display: none; }
 .invite-retry { margin: 0 0 10px; }
 .invite-retry[hidden] { display: none; }
 .invite-code-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 4px 0 12px; }
