@@ -46,8 +46,8 @@ the only publisher, so Settings must not also point at a branch.
 The runtime files are versioned in `index.html` and in the module imports:
 
 ```html
-<link rel="stylesheet" href="style.css?v=1.10.3" />
-<script type="module" src="script.js?v=1.10.3"></script>
+<link rel="stylesheet" href="style.css?v=1.10.4" />
+<script type="module" src="script.js?v=1.10.4"></script>
 ```
 
 `script.js` imports `peer-manager.js`, `voice-chat.js` and `security.js` with the same query. Bump all of them,

@@ -5,7 +5,7 @@
 ```bash
 git switch develop
 git pull --ff-only
-git switch -c release/1.10.3
+git switch -c release/1.10.4
 ```
 
 - [ ] The branch is cut from `develop`, not `main`.
@@ -46,12 +46,12 @@ git switch -c release/1.10.3
 git status
 git diff --stat
 git add -A
-git commit -m "Release Leab-Tui 3D 1.10.3"
-git push origin release/1.10.3
+git commit -m "Release Leab-Tui 3D 1.10.4"
+git push origin release/1.10.4
 # open the release PR against main, then:
 git switch main
 git pull --ff-only
-git merge --no-ff release/1.10.3 -m "Release Leab-Tui 3D 1.10.3"
+git merge --no-ff release/1.10.4 -m "Release Leab-Tui 3D 1.10.4"
 git push origin main
 ```
 
@@ -64,9 +64,9 @@ Use one release commit if possible. Do not commit `node_modules`, local saves, s
 - [ ] Open the live URL and repeat the smoke test: boot, selftest, one trick, language toggle, export.
 - [ ] Check the live page over HTTPS and confirm there is no mixed content.
 - [ ] Confirm the repository is public and contains no secrets.
-- [ ] Tag the release: `git tag -a v1.10.3 -m "Leab-Tui 3D 1.10.3" && git push origin v1.10.3`.
+- [ ] Tag the release: `git tag -a v1.10.4 -m "Leab-Tui 3D 1.10.4" && git push origin v1.10.4`.
 - [ ] Back-merge production into the train: `git switch develop && git merge --no-ff main && git push origin develop`.
-- [ ] Delete the merged `release/1.10.3` branch.
+- [ ] Delete the merged `release/1.10.4` branch.
 - [ ] Create a GitHub release with the changelog and the hero screenshot.
 - [ ] Verify the Open Graph image path resolves on Pages.
 - [ ] Update the README “Live demo” link if the Pages URL changed.

@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.3",
-  "version": "1.10.3",
+  "projectVersion": "1.10.4",
+  "version": "1.10.4",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,13 +9,13 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-10T02:56:56.862Z",
-    "durationSeconds": 291084,
-    "durationHuman": "80h 51m 24s",
+    "packagedAt": "2026-11-10T03:12:20.409Z",
+    "durationSeconds": 292007,
+    "durationHuman": "81h 6m 47s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link. 1.10.3 Invite, audience mode, watchers, action ACK, heartbeats, keepalive/turn timeout, seat-card reconnect, iPad hand fan and dock restore.",
-    "publishedAt": "2026-11-10T02:56:56.862Z"
+    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link. 1.10.4 Invite, audience mode, watchers, action ACK, heartbeats, keepalive/turn timeout, seat-card reconnect, iPad hand fan and dock restore.",
+    "publishedAt": "2026-11-10T03:12:20.409Z"
   },
   "tokens": {
     "input": 6615671,
@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (442 checks)",
+    "staticCheck": "scripts/check.mjs (443 checks)",
     "browserCheck": "scripts/verify.mjs — 45 checks incl. iPad framing, shadows, hints, inspector, rail, history and invite controls",
     "multiplayer": "scripts/net-check.mjs — 47 checks including the invite/audience path",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
@@ -363,12 +363,12 @@
       "summary": "Turn-log sheet exposes the shared play-history browser on iPad."
     },
     {
-      "version": "1.10.3",
+      "version": "1.10.4",
       "date": "2026-11-09",
       "summary": "Invite from solo, audience queue, watchers, keepalive, resync and iPad hand fixes."
     }
   ],
-  "releaseNotes": "1.10.3 turns a solo table into a hosted room, queues mid-trick guests as an audience, shows watchers to everyone, adds keepalive/resync and fixes the iPad hand fan and dock.",
+  "releaseNotes": "1.10.4 turns a solo table into a hosted room, queues mid-trick guests as an audience, shows watchers to everyone, adds keepalive/resync and fixes the iPad hand fan and dock.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

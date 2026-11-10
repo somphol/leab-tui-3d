@@ -2849,6 +2849,21 @@ body.is-viewer #voiceCallBtn {
 /* Tablet menus: reserve the right rail and let the HUD wrap instead of
    clipping the result chip on an iPad in portrait. */
 @media (pointer: coarse) and (min-width: 641px) {
+  /* A room adds Join audio + Leave + the room chip; compact the top bar so it
+     cannot widen the layout viewport and crop the table. */
+  .topbar { min-width: 0; gap: 8px; padding: 10px 14px; }
+  .brand { min-width: 0; gap: 10px; }
+  .brand-sub { display: none; }
+  .brand-title { font-size: calc(21px * var(--fs-scale)); }
+  .brand-version { font-size: 9px; }
+  .top-actions { min-width: 0; gap: 5px; }
+  .update-pill [data-update-label] { display: none; }
+  .update-pill { padding: 0 10px; }
+  .voice-call .voice-call-label { display: none; }
+  .voice-call { padding: 0 10px; }
+  #leaveRoomTopBtn { display: none; }
+  #aboutBtn { display: none; }
+  .net-chip { padding: 0 9px; font-size: calc(10px * var(--fs-scale)); }
   .hud-strip {
     left: 12px;
     right: 62px;
