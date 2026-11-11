@@ -137,9 +137,10 @@ stays dormant only so an old saved match can be migrated to standard scoring.
 
 ## Optional house variant: Blind pick (not standard)
 
-The host may enable **Blind pick** in Actions. Each seat receives eight cards
-drawn face-down from a deck shuffled with the platform CSPRNG; there is no
-open pool and no choice. It changes only the deal and is **off by default**.
+The host may enable **Blind pick** in Actions. Each seat chooses two cards by
+position from a pool of card backs, four times; the pool is shuffled with the
+platform CSPRNG, values stay hidden until the cards join the hand, and bots
+pick randomly. It changes only the deal and is **off by default**.
 It is not part of the Navee source.
 
 ## Removed house variant: draft pick (not standard)

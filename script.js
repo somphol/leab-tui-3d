@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.15";
-import { VoiceChat } from "./voice-chat.js?v=1.10.15";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.15";
+} from "./peer-manager.js?v=1.10.16";
+import { VoiceChat } from "./voice-chat.js?v=1.10.16";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.16";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.15",
+  version: "1.10.16",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -362,6 +362,9 @@ const I18N = {
     "actions.revealLog": "showed",
     "actions.facedown": "Play face-down",
     "draft.title": "Draft — pick 2 tiles",
+    "draft.blindTitle": "Blind pick — choose 2 cards",
+    "draft.blindMeta": "The cards are face-down. Pick 2 by position; you will see them after they join your hand. Round {step}/4 · {pool} left.",
+    "draft.blindConfirm": "Take 2 face-down cards",
     "draft.metaYou": "You have {n} tiles · pick 2 from the pool ({step}/4). {pool} left.",
     "draft.waiting": "{seat} is picking 2 tiles…",
     "draft.waitingShort": "Waiting…",
@@ -425,7 +428,7 @@ const I18N = {
     "toast.autoplayOn": "Autoplay is on — the coach plays your seat.",
     "toast.autoplayOff": "Autoplay is off — your seat is yours.",
     "toast.blindDeal": "Blind pick — eight random cards face-down.",
-    "toast.blindPickOn": "Blind pick on — next deal is crypto-shuffled face-down.",
+    "toast.blindPickOn": "Blind pick on — each deal lets you choose 2 face-down cards.",
     "toast.blindPickOff": "Blind pick off — standard seeded deal.",
     "toast.blindPickHostOnly": "Only the host chooses the deal.",
     "toast.theme": "Theme set to {theme}.",
@@ -1058,6 +1061,9 @@ const I18N = {
     "actions.revealLog": "เปิด",
     "actions.facedown": "ลงคว่ำ",
     "draft.title": "เลือกไพ่ — หยิบ 2 ใบ",
+    "draft.blindTitle": "Blind pick — เลือก 2 ใบคว่ำหน้า",
+    "draft.blindMeta": "ไพ่ทุกใบคว่ำหน้า เลือกตามตำแหน่ง 2 ใบ แล้วจะเห็นหน้าหลังจากเข้ามือ รอบ {step}/4 · เหลือ {pool} ใบ",
+    "draft.blindConfirm": "หยิบ 2 ใบคว่ำนี้",
     "draft.metaYou": "คุณมี {n} ใบ · เลือก 2 ใบจากกองกลาง (รอบ {step}/4) เหลือ {pool} ใบ",
     "draft.waiting": "{seat} กำลังเลือก 2 ใบ…",
     "draft.waitingShort": "รอ…",
@@ -1121,7 +1127,7 @@ const I18N = {
     "toast.autoplayOn": "เปิดเล่นอัตโนมัติ — โค้ชเล่นแทนที่นั่งของคุณ",
     "toast.autoplayOff": "ปิดเล่นอัตโนมัติ — กลับมาเล่นเอง",
     "toast.blindDeal": "Blind pick — สุ่มแจก 8 ใบคว่ำหน้า",
-    "toast.blindPickOn": "เปิด Blind pick — การแจกครั้งถัดไปสลับด้วย crypto และคว่ำหน้า",
+    "toast.blindPickOn": "เปิด Blind pick — แต่ละรอบจะให้เลือก 2 ใบคว่ำหน้า",
     "toast.blindPickOff": "ปิด Blind pick — กลับไปแจกแบบมาตรฐาน",
     "toast.blindPickHostOnly": "เจ้าบ้านเป็นคนเลือกวิธีแจกเท่านั้น",
     "toast.theme": "ตั้งธีมเป็น {theme}",
@@ -2649,7 +2655,7 @@ function aiBid(seat) {
 function startDraft() {
   clearTimeout(actionTimer);
   actionToken += 1;
-  const deck = shuffle(buildDeck());
+  const deck = state.blindPick ? cryptoShuffle(buildDeck()) : shuffle(buildDeck());
   state.hands = [[], [], [], []];
   state.hiddenTags = [{}, {}, {}, {}];
   state.captures = [[], [], [], []];
@@ -2795,10 +2801,10 @@ function dealRound(leaderHint = null) {
   random = Number.isFinite(state.seed)
     ? mulberry32(state.seed + state.round * 7919 + (state.redraws || 0) * 104729)
     : Math.random;
-  if (state.draftMode) { startDraft(); return; }
+  if (state.draftMode || state.blindPick) { startDraft(); return; }
   clearTimeout(actionTimer);
   actionToken += 1;
-  const deck = state.blindPick ? cryptoShuffle(buildDeck()) : shuffle(buildDeck());
+  const deck = shuffle(buildDeck());
   const hands = [[], [], [], []];
   for (let i = 0; i < 32; i += 1) hands[i % 4].push(deck[i]);
   state.hands = hands;
@@ -8462,7 +8468,7 @@ function renderDraft() {
     modal.hidden = true;
     return;
   }
-  const mode = state ? state.draftMode === true : prefs.draftMode === true;
+  const mode = state ? state.blindPick === true : prefs.blindPick === true;
   $$("[data-draft-toggle]").forEach((input) => { input.checked = mode; });
   const wrap = $("#draftToggleWrap");
   if (wrap) wrap.hidden = isClient();
@@ -8487,10 +8493,12 @@ function renderDraft() {
     draftSent = false;
   }
   modal.hidden = false;
+  const title = $("#draftTitle");
+  if (title) title.textContent = t(state.blindPick ? "draft.blindTitle" : "draft.title");
   const meta = $("#draftMeta");
   if (meta) {
     meta.textContent = humanTurn
-      ? t("draft.metaYou", {
+      ? t(state.blindPick ? "draft.blindMeta" : "draft.metaYou", {
         n: state.hands[MY_SEAT]?.length ?? 0,
         step: Math.min(state.draftCycle + 1, 4),
         pool: state.draftPool?.length ?? 0
@@ -8500,14 +8508,16 @@ function renderDraft() {
   const pool = $("#draftPool");
   if (pool) {
     pool.innerHTML = (state.draftPool || []).map((tile) => (
-      `<button type="button" class="draft-tile ${tile.color === "r" ? "red" : "black"} ${draftSelection.includes(tile.id) ? "selected" : ""}" data-draft-id="${tile.id}" ${humanTurn ? "" : "disabled"}>${tile.hanzi}</button>`
+      state.blindPick
+        ? `<button type="button" class="draft-tile blind ${draftSelection.includes(tile.id) ? "selected" : ""}" data-draft-id="${tile.id}" aria-label="Face-down card" ${humanTurn ? "" : "disabled"}><span class="draft-back" aria-hidden="true">◈</span></button>`
+        : `<button type="button" class="draft-tile ${tile.color === "r" ? "red" : "black"} ${draftSelection.includes(tile.id) ? "selected" : ""}" data-draft-id="${tile.id}" ${humanTurn ? "" : "disabled"}>${tile.hanzi}</button>`
     )).join("");
   }
   const confirm = $("#draftConfirm");
   if (confirm) {
     confirm.disabled = !humanTurn || draftSelection.length !== 2;
     confirm.textContent = state.turn === MY_SEAT
-      ? (draftSent ? t("draft.waitingShort") : t("draft.confirm"))
+      ? (draftSent ? t("draft.waitingShort") : t(state.blindPick ? "draft.blindConfirm" : "draft.confirm"))
       : t("draft.waitingShort");
   }
 }
@@ -9388,13 +9398,14 @@ function handPosition(seat, index, count) {
       angle: SEATS[seat].angle
     };
   }
-  const total = Math.min(1.08, Math.max(0, count - 1) * 0.15);
+  const scale = cardScale();
+  const total = Math.min(1.6, Math.max(0, count - 1) * 0.18 * scale);
   const offsetAngle = count > 1 ? (index - (count - 1) / 2) * (total / (count - 1)) : 0;
   const angle = SEATS[seat].angle + offsetAngle;
-  const radius = HAND_RADIUS + Math.abs(offsetAngle) * 0.24;
+  const radius = HAND_RADIUS + Math.abs(offsetAngle) * 0.24 + Math.max(0, scale - 1) * 0.3;
   return {
     x: Math.sin(angle) * radius,
-    y: TABLE_Y + TILE_THICKNESS / 2 + 0.012,
+    y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.012,
     z: Math.cos(angle) * radius,
     angle
   };
@@ -9405,14 +9416,15 @@ function centerPosition(seat, index, count) {
   const rows = Math.ceil(count / cols);
   const col = index % cols;
   const row = Math.floor(index / cols);
-  const tangentOffset = (col - (cols - 1) / 2) * CENTER_TILE_SPACING;
-  const radialOffset = (row - (rows - 1) / 2) * CENTER_TILE_SPACING;
+  const spacing = CENTER_TILE_SPACING * cardScale();
+  const tangentOffset = (col - (cols - 1) / 2) * spacing;
+  const radialOffset = (row - (rows - 1) / 2) * spacing;
   const base = seatVector(seat, CENTER_RADIUS);
   const tangent = seatTangent(seat);
   const radial = { x: Math.sin(SEATS[seat].angle), z: Math.cos(SEATS[seat].angle) };
   return {
     x: base.x + tangent.x * tangentOffset + radial.x * radialOffset,
-    y: TABLE_Y + TILE_THICKNESS / 2 + 0.012,
+    y: TABLE_Y + (TILE_THICKNESS * cardScale()) / 2 + 0.012,
     z: base.z + tangent.z * tangentOffset + radial.z * radialOffset
   };
 }
@@ -9434,11 +9446,12 @@ function captureGroupsFor(game, seat) {
 }
 
 function capturePosition(seat, pileIndex = 0, within = 0, pileCount = 1) {
-  const step = CAPTURE_PILE_SPACING / CAPTURE_RADIUS;
+  const scale = cardScale();
+  const step = (CAPTURE_PILE_SPACING * scale) / CAPTURE_RADIUS;
   const angle = SEATS[seat].angle + (pileIndex - (pileCount - 1) / 2) * step;
   return {
     x: Math.sin(angle) * CAPTURE_RADIUS,
-    y: TABLE_Y + TILE_THICKNESS / 2 + 0.014 + within * 0.036,
+    y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.014 + within * 0.036 * scale,
     z: Math.cos(angle) * CAPTURE_RADIUS
   };
 }
@@ -9989,8 +10002,7 @@ async function createScene() {
     if (placement.kind === "hand") {
       const custom = handLayout.get(placement.id) || placement.custom;
       if (custom) {
-        const localSeat = Number.isInteger(currentState?.mySeat) ? currentState.mySeat : MY_SEAT;
-        const scale = placement.seat === localSeat ? cardScale() : 1;
+        const scale = cardScale();
         return {
           x: custom.x,
           y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.012,
@@ -10034,8 +10046,7 @@ async function createScene() {
       record.kind = placement.kind;
       record.index = placement.index;
       record.pileIndex = placement.pileIndex || 0;
-      const ownHand = placement.kind === "hand" && placement.seat === localSeat;
-      record.root.scale.setScalar(ownHand ? scale : 1);
+      record.root.scale.setScalar(scale);
       const target = positionFor(placement);
       orient(record, placement.seat, placement.angle);
       moveTile(record, target, options.deal ? 560 : duration, options.deal ? 0.75 : arc);
@@ -10068,7 +10079,7 @@ async function createScene() {
         const record = tileObjects.get(id);
         if (!record) return;
         const target = positionFor(placement);
-        record.root.scale.setScalar(placement.kind === "hand" && placement.seat === localSeat ? scale : 1);
+        record.root.scale.setScalar(scale);
         setTimeout(() => {
           orient(record, placement.seat, placement.angle);
           moveTile(record, target, 520, 0.9);

@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.16] — 2026-11-10
+
+### Changed
+
+- **Blind pick is now a face-down choice, not an automatic deal.** When the house variant is enabled, each seat sees a pool of card backs and picks two by position; the values are hidden until the cards join the hand. The pool is CSPRNG-shuffled, bots pick randomly, and the standard deal remains untouched when the variant is off.
+
 ## [1.10.15] — 2026-11-10
 
 ### Changed

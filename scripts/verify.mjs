@@ -165,7 +165,9 @@ async function main() {
     LeabTui.applyFontSize('xl');
     LeabTui.applyCardSize('xl');
     const handId = LeabTui.getState()?.hands?.[0]?.[0] || null;
+    const otherId = LeabTui.getState()?.hands?.[1]?.[0] || null;
     const tileScale = handId ? LeabTui.getTileScale(handId) : null;
+    const otherScale = otherId ? LeabTui.getTileScale(otherId) : null;
     LeabTui.applyTheme('jade');
     const jadeScene = LeabTui.getCamera()?.theme;
     LeabTui.applyTheme('parchment');
@@ -178,6 +180,7 @@ async function main() {
       card: document.documentElement.dataset.cardSize,
       cardScale: style.getPropertyValue('--card-scale').trim(),
       tileScale,
+      otherScale,
       theme: document.documentElement.dataset.theme,
       scene: LeabTui.getCamera()?.theme,
       background: LeabTui.getCamera()?.background,
@@ -194,8 +197,8 @@ async function main() {
   else fail("text size XL applies a 1.24 scale", JSON.stringify(displayValue));
   if (displayValue.card === "xl" && displayValue.cardScale === "1.3") pass("tile size XL applies a 1.3 scale");
   else fail("tile size XL applies a 1.3 scale", JSON.stringify(displayValue));
-  if (Math.abs(Number(displayValue.tileScale) - 1.3) < 0.001) pass("tile size XL scales the local 3D hand");
-  else fail("tile size XL scales the local 3D hand", String(displayValue.tileScale));
+  if (Math.abs(Number(displayValue.tileScale) - 1.3) < 0.001 && Math.abs(Number(displayValue.otherScale) - 1.3) < 0.001) pass("tile size XL scales every 3D tile on this screen");
+  else fail("tile size XL scales every 3D tile on this screen", JSON.stringify({ local: displayValue.tileScale, other: displayValue.otherScale }));
   if (displayValue.jadeScene === "jade" && displayValue.theme === "parchment" && displayValue.scene === "parchment" && displayValue.background === "d9cdb8") pass("bright Parchment theme reaches the UI and 3D scene");
   else fail("bright Parchment theme reaches the UI and 3D scene", JSON.stringify(displayValue));
   if (displayValue.prefs?.fontSize === "xl" && displayValue.prefs?.theme === "parchment") pass("display preferences persist");
@@ -251,7 +254,7 @@ async function main() {
     const state = LeabTui.getState();
     return JSON.stringify({
       chip: Boolean(document.querySelector('#draftChip')),
-      modal: Boolean(document.querySelector('#draftModal')),
+      modalOpen: document.querySelector('#draftModal') ? !document.querySelector('#draftModal').hidden : false,
       toggles: document.querySelectorAll('[data-draft-toggle]').length,
       phase: state.phase,
       hand: state.hands[0].length
@@ -259,30 +262,43 @@ async function main() {
   })()`;
   const draft = runHarness(["--url", soloBase, "--wait", "2500", "--eval", draftExpr]);
   const draftValue = draft.evalValue || {};
-  if (!draftValue.chip && !draftValue.modal && draftValue.toggles === 0 && draftValue.hand === 8) pass("standard random deal replaces the removed draft picker");
-  else fail("standard random deal replaces the removed draft picker", JSON.stringify(draftValue));
+  if (!draftValue.chip && !draftValue.modalOpen && draftValue.toggles === 0 && draftValue.hand === 8) pass("standard deal stays automatic and ignores the blind picker");
+  else fail("standard deal stays automatic and ignores the blind picker", JSON.stringify(draftValue));
 
   const blind = runHarness(["--url", soloBase, "--wait", "2500", "--eval", `(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     LeabTui.setBlindPick(true);
     LeabTui.newMatch({ seed: 1 });
-    await wait(1500);
-    const first = LeabTui.getState().hands.map((hand) => hand.slice().sort().join(","));
-    LeabTui.newMatch({ seed: 1 });
-    await wait(1500);
-    const second = LeabTui.getState().hands.map((hand) => hand.slice().sort().join(","));
+    for (let step = 0; step < 90; step += 1) {
+      await wait(100);
+      const s = LeabTui.getState();
+      if (s.phase === "draft" && s.turn === 0) break;
+    }
+    const before = LeabTui.getState().hands[0].length;
+    const modal = !document.querySelector("#draftModal")?.hidden;
+    const title = document.querySelector("#draftTitle")?.textContent || "";
+    const pool = [...document.querySelectorAll("#draftPool .draft-tile")];
+    const backs = pool.map((node) => node.textContent.trim());
+    if (pool[0]) pool[0].click();
+    await wait(80);
+    const second = document.querySelectorAll("#draftPool .draft-tile")[1];
+    if (second) second.click();
+    await wait(80);
+    document.querySelector("#draftConfirm")?.click();
+    await wait(400);
     return JSON.stringify({
-      enabled: LeabTui.getPrefs().blindPick,
-      first,
-      second,
-      same: first.join("|") === second.join("|"),
-      counts: second.map((hand) => hand ? hand.split(",").length : 0),
-      unique: new Set(second.join(",").split(",")).size
+      modal,
+      title,
+      pool: pool.length,
+      backs,
+      before,
+      after: LeabTui.getState().hands[0].length,
+      phase: LeabTui.getState().phase
     });
   })()`]);
   const blindValue = blind.evalValue || {};
-  if (blindValue.enabled && !blindValue.same && blindValue.unique === 32 && blindValue.counts.every((n) => n === 8)) pass("blind pick crypto-shuffles eight face-down cards per seat");
-  else fail("blind pick crypto-shuffles eight face-down cards per seat", JSON.stringify(blindValue));
+  if (blindValue.modal && /Blind/i.test(blindValue.title) && blindValue.pool >= 8 && blindValue.backs.every((text) => text === "◈") && blindValue.after >= blindValue.before + 2) pass("blind pick shows face-down cards and takes two");
+  else fail("blind pick shows face-down cards and takes two", JSON.stringify(blindValue));
 
   const compareExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

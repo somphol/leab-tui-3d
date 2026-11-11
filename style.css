@@ -910,6 +910,8 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
 .draft-tile.red { color: #8d1f24; }
 .draft-tile.black { color: #1d1716; }
 .draft-tile.selected { border-color: var(--gold-bright); box-shadow: 0 0 0 3px rgba(216, 178, 107, 0.4); transform: translateY(-2px); }
+.draft-tile.blind { background: repeating-linear-gradient(45deg, #3b1a20, #3b1a20 5px, #2a1116 5px, #2a1116 10px); border-color: rgba(216, 178, 107, 0.55); }
+.draft-tile.blind .draft-back { display: grid; place-items: center; width: 64%; height: 64%; border-radius: 50%; border: 1px solid rgba(240, 212, 154, 0.55); color: var(--gold-bright); font-family: var(--serif); font-size: calc(18px * var(--fs-scale)); opacity: 0.85; }
 .draft-tile:disabled { cursor: default; opacity: 0.75; }
 .pile-why {
   margin: 8px 0 4px;
