@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.15] — 2026-11-10
+
+### Changed
+
+- **The hand dock opens automatically.** It no longer starts collapsed, so the Hint/Clear/Auto/Lead controls are visible on first load. A legacy saved `dockCollapsed: true` is ignored once; collapsing with H is stored in a new `dockChosen` flag and respected afterwards.
+
 ## [1.10.14] — 2026-11-10
 
 ### Added

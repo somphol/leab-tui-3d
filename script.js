@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.14";
-import { VoiceChat } from "./voice-chat.js?v=1.10.14";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.14";
+} from "./peer-manager.js?v=1.10.15";
+import { VoiceChat } from "./voice-chat.js?v=1.10.15";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.15";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.14",
+  version: "1.10.15",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -2054,7 +2054,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: false, dockChosen: false, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -2409,6 +2409,10 @@ function loadPrefs() {
   if (!CARD_SIZES.some((entry) => entry.id === prefs.cardSize)) prefs.cardSize = "md";
   prefs.autoplay = prefs.autoplay === true;
   prefs.blindPick = prefs.blindPick === true;
+  prefs.dockChosen = prefs.dockChosen === true;
+  /* The dock starts open. A legacy saved `dockCollapsed: true` is ignored
+     once; after the player taps H the choice is remembered. */
+  if (!prefs.dockChosen) prefs.dockCollapsed = false;
   if (!THEMES.some((entry) => entry.id === prefs.theme)) prefs.theme = "daybreak";
   if (![20, 50, 100].includes(Number(prefs.target))) prefs.target = 20;
   if (!["cw", "ccw"].includes(prefs.direction)) prefs.direction = "cw";
@@ -8064,6 +8068,7 @@ function setDockCollapsed(collapsed, options = {}) {
   if (!dock) return;
   dock.classList.toggle("dock-collapsed", Boolean(collapsed));
   prefs.dockCollapsed = Boolean(collapsed);
+  if (!options.silent) prefs.dockChosen = true;
   if (button) {
     button.textContent = collapsed ? "H" : "⌄";
     button.setAttribute("aria-expanded", String(!collapsed));
@@ -11013,7 +11018,7 @@ function bindEvents() {
   $("#dockFold")?.addEventListener("click", () => {
     const dock = $("#handDock");
     if (!dock) return;
-    setDockCollapsed(!dock.classList.contains("dock-collapsed"));
+    setDockCollapsed(!dock.classList.contains("dock-collapsed"), { user: true });
   });
   window.matchMedia("(max-width: 1024px), (pointer: coarse)").addEventListener("change", renderPanelRail);
   window.matchMedia("(max-width: 520px)").addEventListener("change", renderNetChrome);
@@ -11304,7 +11309,7 @@ async function boot() {
   renderRuleSelects();
   chatOpen = prefs.chatOpen !== false;
   setChatOpen(chatOpen);
-  setDockCollapsed(prefs.dockCollapsed !== false, { silent: true });
+  setDockCollapsed(prefs.dockCollapsed === true, { silent: true });
   renderChat();
 
   const params = new URLSearchParams(location.search);

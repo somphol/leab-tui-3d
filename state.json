@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.14",
-  "version": "1.10.14",
+  "projectVersion": "1.10.15",
+  "version": "1.10.15",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -431,9 +431,14 @@
       "version": "1.10.14",
       "date": "2026-11-10",
       "summary": "Optional Blind pick house variant: crypto-shuffled eight-card deal, face-down, no open pool."
+    },
+    {
+      "version": "1.10.15",
+      "date": "2026-11-10",
+      "summary": "The hand dock opens by default; a player's H choice is remembered separately."
     }
   ],
-  "releaseNotes": "1.10.14 adds an off-by-default Blind pick house variant: eight cards per seat from a crypto-shuffled deck, face-down, with no open pool or choosing. Standard deal remains the default.",
+  "releaseNotes": "1.10.15 opens the hand dock automatically, including for existing devices. Collapsing it with H is remembered; it no longer starts hidden.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
