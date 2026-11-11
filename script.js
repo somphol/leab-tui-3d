@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.8";
-import { VoiceChat } from "./voice-chat.js?v=1.10.8";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.8";
+} from "./peer-manager.js?v=1.10.9";
+import { VoiceChat } from "./voice-chat.js?v=1.10.9";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.9";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.8",
+  version: "1.10.9",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -869,6 +869,7 @@ const I18N = {
     "net.hostBadge": "Host",
     "net.guestBadge": "Guest",
     "net.botBadge": "Bot",
+    "net.youTag": "You",
     "net.emptySeat": "Empty",
     "net.botPreview": "Bot seat {n}",
     "net.startingHost": "Opening the room…",
@@ -1561,6 +1562,7 @@ const I18N = {
     "net.hostBadge": "เจ้าบ้าน",
     "net.guestBadge": "แขก",
     "net.botBadge": "บอท",
+    "net.youTag": "คุณ",
     "net.emptySeat": "ว่าง",
     "net.botPreview": "ที่นั่งบอท {n}",
     "net.startingHost": "กำลังเปิดห้อง…",
@@ -3998,9 +4000,10 @@ function renderScoreboard() {
     const tag = isBotSeat(seat.id) ? `<span class="seat-tag bot">${escapeHTML(t("net.botBadge"))}</span>`
       : profile?.kind === "host" ? `<span class="seat-tag host">${escapeHTML(t("net.hostBadge"))}</span>`
       : profile?.kind === "human" ? `<span class="seat-tag guest">${escapeHTML(t("net.guestBadge"))}</span>` : "";
+    const youTag = seat.id === MY_SEAT ? `<span class="seat-tag you">${escapeHTML(t("net.youTag"))}</span>` : "";
     return `<div class="score-row ${active ? "active" : ""} ${seat.id === MY_SEAT ? "you" : ""} ${profile?.connected === false ? "offline" : ""} ${speakingSeats.has(seat.id) ? "speaking" : ""}" data-seat="${seat.id}">
       <span class="score-seat">${seat.wind}</span>
-      <span class="score-name">${escapeHTML(seatName(seat.id))}${tag}</span>
+      <span class="score-name">${escapeHTML(seatName(seat.id))}${tag}${youTag}</span>
       <span class="score-piles">${piles} ${escapeHTML(piles === 1 ? t("score.pile") : t("score.piles"))}</span>
       <span class="score-points">${state.scores[seat.id]}</span>
     </div>`;
@@ -5326,8 +5329,12 @@ function sendLobbyToGuests() {
 }
 
 function nextBotName() {
-  const used = SEAT_PROFILES ? SEAT_PROFILES.filter((profile) => profile?.kind === "bot").length : 0;
-  return `Bot ${used + 1}`;
+  const used = new Set((SEAT_PROFILES || [])
+    .filter((profile) => profile)
+    .map((profile) => String(profile.name || "").trim()));
+  let index = 1;
+  while (used.has(`Bot ${index}`)) index += 1;
+  return `Bot ${index}`;
 }
 
 function convertSeatToBot(seat, reason = "left") {

@@ -2,6 +2,13 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.9] — 2026-11-10
+
+### Fixed
+
+- **Duplicate bot names.** Two seats could both be called “Bot 3” after takeovers because the name was derived from the current bot count. Bot names now choose the lowest unused number across the roster, so the coach line and turn chip always identify one seat.
+- **Your seat is unmistakable.** The scoreboard marks the local row with a **You** badge, so a human at South is not confused with the East/North/West bot labels.
+
 ## [1.10.8] — 2026-11-10
 
 ### Fixed

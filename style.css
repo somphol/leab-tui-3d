@@ -2068,6 +2068,7 @@ body.is-queued #actionsPanel { display: none !important; }
   vertical-align: middle;
 }
 .seat-tag.host, .seat-tag.bot { color: var(--gold); }
+.seat-tag.you { color: var(--jade); border-color: rgba(121, 195, 163, 0.5); }
 .seat-tag.guest { color: var(--ok-ink); }
 .score-row.offline { opacity: 0.55; }
 

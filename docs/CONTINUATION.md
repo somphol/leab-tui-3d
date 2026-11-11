@@ -1,14 +1,14 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-10 · release 1.10.8**
+**As of 2026-11-10 · release 1.10.9**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.8: slow players keep their seat and host push-state*
+- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.9: slow players keep their seat, host push-state and clear seat names*
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
-- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.8)
+- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.9)
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -67,6 +67,7 @@ Current table/network model:
 | 1.10.6 | Tile size (2D+3D), autoplay my seat, seat reclaim, state-freshness watchdog |
 | 1.10.7 | Launch menu offers only Play now (invite later) and Join a game |
 | 1.10.8 | Slow but connected players keep their seat; host push-state |
+| 1.10.9 | Unique bot names and a You badge on the scoreboard |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),

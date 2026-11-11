@@ -609,6 +609,9 @@ async function main() {
   const afterClose = JSON.parse(takeover);
   if (afterClose[1]?.kind === "bot" && /^Bot/.test(afterClose[1]?.name || "")) pass("disconnected guest converted to a bot", afterClose[1].name);
   else fail("disconnected guest converted to a bot", takeover);
+  const botNames = afterClose.filter((profile) => profile?.kind === "bot").map((profile) => profile.name);
+  if (new Set(botNames).size === botNames.length) pass("bot names stay unique after a takeover", botNames.join(", "));
+  else fail("bot names stay unique after a takeover", botNames.join(", "));
 
 
   // Solo → Invite: a running local table becomes a host room without redealing.
