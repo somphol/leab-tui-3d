@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.13] — 2026-11-10
+
+### Removed
+
+- **Draft picker.** The experimental public pool (“pick 2 tiles ×4”) let players choose from open cards, which is not how Leab-Tui is dealt. The source deals eight random tiles face-down to each seat. The toggle, HUD chip and modal are gone; old draft saves are refused and the engine path is dormant.
+
 ## [1.10.12] — 2026-11-10
 
 ### Fixed

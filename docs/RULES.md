@@ -135,13 +135,12 @@ last bidder could not make the total exactly 8, a hit scored +5). It is **not
 in the Navee source** and has been removed from the interface; the engine path
 stays dormant only so an old saved match can be migrated to standard scoring.
 
-## Experimental draft deal (not standard)
+## Removed house variant: draft pick (not standard)
 
-An optional deal variant lets each seat pick **2 tiles at a time from a public
-pool, four times**, for an 8-tile hand. It is **off by default**, host-only, and
-is not part of the Navee source. It changes only the deal; Chuan, bidding,
-scoring and showdown are unchanged. The red-General holder leads. See
-**[DRAFT.md](DRAFT.md)** for the full behaviour and the bot heuristic.
+An earlier build let each seat pick **2 tiles at a time from a public pool,
+four times**. That is not how the game is dealt: the source deals eight random
+tiles face-down. The picker has been removed from the interface; the engine
+path is dormant so an old save cannot reopen it.
 
 ## Chuan and “Soldier beats General”
 

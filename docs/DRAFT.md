@@ -1,3 +1,5 @@
+> **Removed from the interface (1.10.13).** The draft picker was an experimental house variant, not part of the Navee source. The standard deal is eight random tiles face-down. This file remains as a design record only.
+
 # Draft deal (experimental)
 
 Draft is an **optional, experimental** way to deal a round. It is **off by

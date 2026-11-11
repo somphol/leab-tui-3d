@@ -246,20 +246,21 @@ async function main() {
 
   const draftExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-    const chip = document.querySelector('#draftChip');
-    const before = { hidden: chip.hidden, text: chip.textContent, pressed: chip.getAttribute('aria-pressed') };
-    chip.click();
-    await sleep(150);
-    const on = { text: chip.textContent, pressed: chip.getAttribute('aria-pressed'), state: LeabTui.getState().draftMode };
-    chip.click();
-    await sleep(150);
-    const off = { text: chip.textContent, pressed: chip.getAttribute('aria-pressed'), state: LeabTui.getState().draftMode };
-    return JSON.stringify({ before, on, off });
+    LeabTui.newMatch({ seed: 5 });
+    await sleep(1400);
+    const state = LeabTui.getState();
+    return JSON.stringify({
+      chip: Boolean(document.querySelector('#draftChip')),
+      modal: Boolean(document.querySelector('#draftModal')),
+      toggles: document.querySelectorAll('[data-draft-toggle]').length,
+      phase: state.phase,
+      hand: state.hands[0].length
+    });
   })()`;
   const draft = runHarness(["--url", soloBase, "--wait", "2500", "--eval", draftExpr]);
   const draftValue = draft.evalValue || {};
-  if (draftValue.before?.hidden === false && draftValue.on?.pressed === "true" && draftValue.off?.pressed === "false" && draftValue.off?.state === false) pass("draft switch toggles from the table HUD");
-  else fail("draft switch toggles from the table HUD", JSON.stringify(draftValue));
+  if (!draftValue.chip && !draftValue.modal && draftValue.toggles === 0 && draftValue.hand === 8) pass("standard random deal replaces the removed draft picker");
+  else fail("standard random deal replaces the removed draft picker", JSON.stringify(draftValue));
 
   const compareExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

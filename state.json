@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.12",
-  "version": "1.10.12",
+  "projectVersion": "1.10.13",
+  "version": "1.10.13",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -71,7 +71,7 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (445 checks)",
+    "staticCheck": "scripts/check.mjs (444 checks)",
     "browserCheck": "scripts/verify.mjs — 50 checks incl. iPad framing, dealt-hand completeness, shadows, hints, inspector, rail, history, tile size and autoplay",
     "multiplayer": "scripts/net-check.mjs — ≈58 checks including a 4-human full-round soak, 10% loss/duplicate/100 ms delay soak, host push-state, host reload and seat reclaim",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
@@ -420,9 +420,14 @@
       "version": "1.10.12",
       "date": "2026-11-10",
       "summary": "iPad deal reflows the local hand automatically so all eight tiles appear without pressing Tidy hand."
+    },
+    {
+      "version": "1.10.13",
+      "date": "2026-11-10",
+      "summary": "Remove the experimental draft picker; standard random face-down deal only."
     }
   ],
-  "releaseNotes": "1.10.12 fixes the iPad deal: each deal now tidies the local hand and refreshes framing when the animation ends, with a 1.4-second fallback, so a throttled tile timer cannot leave a card behind.",
+  "releaseNotes": "1.10.13 removes the experimental draft picker. The game deals eight random tiles face-down as in the source; no public pool, no choosing.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

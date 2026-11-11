@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.12";
-import { VoiceChat } from "./voice-chat.js?v=1.10.12";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.12";
+} from "./peer-manager.js?v=1.10.13";
+import { VoiceChat } from "./voice-chat.js?v=1.10.13";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.13";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.12",
+  version: "1.10.13",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -2382,7 +2382,9 @@ function loadPrefs() {
   prefs.mode = "piles";
   if (![0, 2, 4, 6].includes(Number(prefs.resultSeconds))) prefs.resultSeconds = 2;
   prefs.autoNext = prefs.autoNext !== false;
-  prefs.draftMode = prefs.draftMode === true;
+  /* Draft-pick was an experimental house deal; the standard game deals
+     eight random tiles face-down. */
+  prefs.draftMode = false;
 }
 
 function loadStats() {
@@ -2405,7 +2407,8 @@ function loadMatch() {
     const game = parsed.game;
     if (!Array.isArray(game.hands) || game.hands.length !== 4) return false;
     if (!Array.isArray(game.scores) || game.scores.length !== 4) return false;
-    if (!["lead", "follow", "showdown", "roundEnd", "matchEnd", "draft"].includes(game.phase)) return false;
+    if (!["lead", "follow", "showdown", "roundEnd", "matchEnd"].includes(game.phase)) return false;
+    if (game.draftMode) return false;
     const tileIds = new Set(DECK.map((tile) => tile.id));
     for (const hand of game.hands) {
       if (!Array.isArray(hand) || hand.length > 8) return false;
@@ -2858,7 +2861,7 @@ function beginMatch(options = {}) {
   state.multiplier = 1;
   state.redraws = 0;
   state.resultSeconds = prefs.resultSeconds;
-  state.draftMode = prefs.draftMode === true;
+  state.draftMode = false;
   state.bids = null;
   state.bidOrder = null;
   state.bidTurn = 0;
@@ -5108,6 +5111,7 @@ function hydrateRemoteState(raw) {
      rules. Force the standard pile scoring even for an old saved state. */
   game.mode = "piles";
   game.bids = null;
+  game.draftMode = false;
   game.hands = (raw.hands || []).map((hand) => hand.map(tileFromWire));
   game.captures = (raw.captures || [[], [], [], []]).map((pile) => pile.map(tileFromWire));
   game.captureHidden = [0, 1, 2, 3].map((seat) => (
