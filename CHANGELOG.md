@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.10] — 2026-11-10
+
+### Changed
+
+- **The bid screen now explains itself.** The title asks “How many piles will you capture this round?” and the help line defines a pile (four captured tiles, eight per round), states the exact-bid bonus (+5, or +3 for a zero bid), the miss penalty, the running total and the last-bidder restriction. Thai copy uses “ทายกอง” instead of the ambiguous “คุณจะได้กี่กอง?”.
+
 ## [1.10.9] — 2026-11-10
 
 ### Fixed

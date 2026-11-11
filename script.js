@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.9";
-import { VoiceChat } from "./voice-chat.js?v=1.10.9";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.9";
+} from "./peer-manager.js?v=1.10.10";
+import { VoiceChat } from "./voice-chat.js?v=1.10.10";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.10";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.9",
+  version: "1.10.10",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -508,10 +508,10 @@ const I18N = {
     "phase.lead": "Lead",
     "phase.follow": "Follow",
     "phase.bid": "Bid",
-    "bid.kicker": "Auction",
-    "bid.title": "How many piles will you take?",
+    "bid.kicker": "Bid your piles",
+    "bid.title": "How many piles will you capture this round?",
     "bid.waiting": "{seat} is bidding…",
-    "bid.help": "Bids so far total {total}. The last bidder may not make the total exactly 8.",
+    "bid.help": "A pile is four captured tiles; a round has eight. Declared so far: {total}. Exact bid scores +5 (0 = +3); a miss loses the difference. The last bidder cannot make the total exactly 8.",
     "phase.resolving": "Resolving",
     "phase.roundEnd": "Round over",
     "phase.matchEnd": "Match over",
@@ -1198,10 +1198,10 @@ const I18N = {
     "phase.lead": "นำ",
     "phase.follow": "ตาม",
     "phase.bid": "ประเมิน",
-    "bid.kicker": "ประเมินกอง",
-    "bid.title": "คุณจะได้กี่กอง?",
-    "bid.waiting": "{seat} กำลังประเมิน…",
-    "bid.help": "ประเมินรวมแล้ว {total} คนสุดท้ายห้ามทำให้รวมเป็น 8 พอดี",
+    "bid.kicker": "ทายกอง",
+    "bid.title": "รอบนี้คุณจะกินได้กี่กอง?",
+    "bid.waiting": "{seat} กำลังทายกอง…",
+    "bid.help": "1 กอง = ไพ่ 4 ใบ · ทั้งรอบมี 8 กอง · ทายแล้วรวม {total} กอง · ทายถูก +5 (ทาย 0 ได้ +3) ทายผิดหักตามส่วนต่าง · คนสุดท้ายห้ามทำให้รวมเป็น 8 พอดี",
     "phase.resolving": "ตัดสิน",
     "phase.roundEnd": "จบรอบ",
     "phase.matchEnd": "จบแมตช์",
