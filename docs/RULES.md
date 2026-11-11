@@ -135,6 +135,13 @@ last bidder could not make the total exactly 8, a hit scored +5). It is **not
 in the Navee source** and has been removed from the interface; the engine path
 stays dormant only so an old saved match can be migrated to standard scoring.
 
+## Optional house variant: Blind pick (not standard)
+
+The host may enable **Blind pick** in Actions. Each seat receives eight cards
+drawn face-down from a deck shuffled with the platform CSPRNG; there is no
+open pool and no choice. It changes only the deal and is **off by default**.
+It is not part of the Navee source.
+
 ## Removed house variant: draft pick (not standard)
 
 An earlier build let each seat pick **2 tiles at a time from a public pool,

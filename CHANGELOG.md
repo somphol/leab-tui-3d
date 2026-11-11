@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.14] — 2026-11-10
+
+### Added
+
+- **Blind pick (house variant).** An off-by-default host toggle in Actions deals eight cards per seat from a **CSPRNG Fisher-Yates shuffle**, face-down, with no open pool and no choosing. It is labelled as a house variant, not part of the Navee source; the standard seeded deal remains the default. The host's choice is stored with the match, and guests simply receive the dealt hands.
+
 ## [1.10.13] — 2026-11-10
 
 ### Removed

@@ -140,6 +140,7 @@ ok(/name="description"/i.test(index), "index has description");
 ok(/Content-Security-Policy/.test(index), "index has CSP");
 ok(index.includes("https://0.peerjs.com") && index.includes("wss://0.peerjs.com"), "CSP allows the PeerJS broker");
 ok(!index.includes('value="bid"') && !index.includes('id="modeSelect"'), "non-standard bid-piles option is gone");
+ok(index.includes("data-blind-pick") && script.includes("cryptoShuffle"), "blind pick house variant exists");
 ok(index.includes('id="lobbyModal"') && index.includes('id="lobbySolo"') && index.includes('id="lobbyJoin"') && !index.includes('id="lobbyHost"'), "launch lobby markup offers play and join");
 ok(index.includes('id="netChip"'), "network room chip exists");
 ok(index.includes('id="chatPanel"') && index.includes('id="chatList"') && index.includes('id="chatForm"'), "table chat markup exists");

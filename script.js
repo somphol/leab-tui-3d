@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.13";
-import { VoiceChat } from "./voice-chat.js?v=1.10.13";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.13";
+} from "./peer-manager.js?v=1.10.14";
+import { VoiceChat } from "./voice-chat.js?v=1.10.14";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.14";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.13",
+  version: "1.10.14",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -264,6 +264,25 @@ function shuffle(list) {
   return out;
 }
 
+function cryptoShuffle(list) {
+  /* House "blind pick" deal: Fisher-Yates with the platform CSPRNG so the
+     order is not derived from the match seed. */
+  const out = list.slice();
+  const draw = () => {
+    if (globalThis.crypto?.getRandomValues) {
+      const buffer = new Uint32Array(1);
+      crypto.getRandomValues(buffer);
+      return buffer[0] / 4294967296;
+    }
+    return Math.random();
+  };
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(draw() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 function clone(value) {
   if (typeof structuredClone === "function") {
     try { return structuredClone(value); } catch { /* fall through */ }
@@ -367,6 +386,8 @@ const I18N = {
     "actions.sound": "Sound",
     "actions.autoplay": "Autoplay my seat (AI)",
     "actions.autoplayShort": "Auto",
+    "actions.blindPick": "Blind pick deal (house variant)",
+    "actions.blindPickNote": "Eight cards are drawn face-down from a crypto-shuffled deck. No open pool, no choosing. Not part of the Navee source.",
     "actions.autoplayNote": "The coach plays your legal moves after a short pause. Turn it off at any time to take over.",
     "display.title": "Display",
     "display.language": "Language",
@@ -403,6 +424,10 @@ const I18N = {
     "toast.cardSize": "Tile size set to {size}.",
     "toast.autoplayOn": "Autoplay is on — the coach plays your seat.",
     "toast.autoplayOff": "Autoplay is off — your seat is yours.",
+    "toast.blindDeal": "Blind pick — eight random cards face-down.",
+    "toast.blindPickOn": "Blind pick on — next deal is crypto-shuffled face-down.",
+    "toast.blindPickOff": "Blind pick off — standard seeded deal.",
+    "toast.blindPickHostOnly": "Only the host chooses the deal.",
     "toast.theme": "Theme set to {theme}.",
     "toast.displayReset": "Display settings reset.",
     "toast.soundTest": "Sound test — a wooden clack.",
@@ -1057,6 +1082,8 @@ const I18N = {
     "actions.sound": "เสียง",
     "actions.autoplay": "เล่นอัตโนมัติเฉพาะที่นั่งฉัน (AI)",
     "actions.autoplayShort": "ออโต้",
+    "actions.blindPick": "แจกแบบ Blind pick (กฎเสริม)",
+    "actions.blindPickNote": "แจก 8 ใบคว่ำหน้าจากกองที่สลับด้วย crypto ไม่มีกองกลางให้เลือก และไม่อยู่ในแหล่ง Navee",
     "actions.autoplayNote": "โค้ชจะเล่นตาที่ถูกกติกาให้หลังหยุดสั้น ๆ ปิดได้ทุกเมื่อเพื่อกลับมาเล่นเอง",
     "display.title": "การแสดงผล",
     "display.language": "ภาษา",
@@ -1093,6 +1120,10 @@ const I18N = {
     "toast.cardSize": "ตั้งขนาดเบี้ยเป็น {size}",
     "toast.autoplayOn": "เปิดเล่นอัตโนมัติ — โค้ชเล่นแทนที่นั่งของคุณ",
     "toast.autoplayOff": "ปิดเล่นอัตโนมัติ — กลับมาเล่นเอง",
+    "toast.blindDeal": "Blind pick — สุ่มแจก 8 ใบคว่ำหน้า",
+    "toast.blindPickOn": "เปิด Blind pick — การแจกครั้งถัดไปสลับด้วย crypto และคว่ำหน้า",
+    "toast.blindPickOff": "ปิด Blind pick — กลับไปแจกแบบมาตรฐาน",
+    "toast.blindPickHostOnly": "เจ้าบ้านเป็นคนเลือกวิธีแจกเท่านั้น",
     "toast.theme": "ตั้งธีมเป็น {theme}",
     "toast.displayReset": "รีเซ็ตการแสดงผลแล้ว",
     "toast.soundTest": "ทดสอบเสียง — เสียงไม้กระทบ",
@@ -2023,7 +2054,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -2195,6 +2226,7 @@ function makeState(seed) {  return {
     target: 20,
     direction: "cw",
     mode: "piles",
+    blindPick: false,
     multiplier: 1,
     redraws: 0,
     resultSeconds: 2,
@@ -2376,6 +2408,7 @@ function loadPrefs() {
   if (!FONT_SIZES.some((entry) => entry.id === prefs.fontSize)) prefs.fontSize = "md";
   if (!CARD_SIZES.some((entry) => entry.id === prefs.cardSize)) prefs.cardSize = "md";
   prefs.autoplay = prefs.autoplay === true;
+  prefs.blindPick = prefs.blindPick === true;
   if (!THEMES.some((entry) => entry.id === prefs.theme)) prefs.theme = "daybreak";
   if (![20, 50, 100].includes(Number(prefs.target))) prefs.target = 20;
   if (!["cw", "ccw"].includes(prefs.direction)) prefs.direction = "cw";
@@ -2761,7 +2794,7 @@ function dealRound(leaderHint = null) {
   if (state.draftMode) { startDraft(); return; }
   clearTimeout(actionTimer);
   actionToken += 1;
-  const deck = shuffle(buildDeck());
+  const deck = state.blindPick ? cryptoShuffle(buildDeck()) : shuffle(buildDeck());
   const hands = [[], [], [], []];
   for (let i = 0; i < 32; i += 1) hands[i % 4].push(deck[i]);
   state.hands = hands;
@@ -2822,7 +2855,7 @@ function dealRound(leaderHint = null) {
       if (!state || state.phase !== "dealing") return;
       if (state.mode === "bid") beginBidPhase();
       else beginTrick();
-      toast(t("toast.dealt", { seat: seatName(state.leader) }));
+      toast(t(state.blindPick ? "toast.blindDeal" : "toast.dealt", { seat: seatName(state.leader) }));
     }, state.fast ? 10 : 380);
   };
 
@@ -2858,6 +2891,7 @@ function beginMatch(options = {}) {
   state.target = options.target ?? prefs.target ?? 20;
   state.direction = prefs.direction || "cw";
   state.mode = prefs.mode || "piles";
+  state.blindPick = prefs.blindPick === true;
   state.multiplier = 1;
   state.redraws = 0;
   state.resultSeconds = prefs.resultSeconds;
@@ -3511,11 +3545,38 @@ function setAutoplay(enabled, options = {}) {
   autoPlayKey = "";
   savePrefs();
   renderAutoplay();
+  renderBlindPick();
   if (!options.silent) {
     toast(t(prefs.autoplay ? "toast.autoplayOn" : "toast.autoplayOff"), "jade");
     audio?.play("click", 0);
   }
   scheduleAutoplay();
+}
+
+function setBlindPick(enabled, options = {}) {
+  if (isClient()) {
+    toast(t("toast.blindPickHostOnly"), "wine");
+    return false;
+  }
+  prefs.blindPick = Boolean(enabled);
+  if (state) {
+    state.blindPick = prefs.blindPick;
+    saveMatch();
+  }
+  savePrefs();
+  renderBlindPick();
+  if (!options.silent) {
+    toast(t(prefs.blindPick ? "toast.blindPickOn" : "toast.blindPickOff"), "jade");
+    audio?.play("click", 0);
+  }
+  return true;
+}
+
+function renderBlindPick() {
+  const box = document.querySelector("[data-blind-pick]");
+  if (box) box.checked = Boolean(prefs.blindPick);
+  const wrap = $("#blindPickWrap");
+  if (wrap) wrap.hidden = isClient();
 }
 
 function renderAutoplay() {
@@ -8142,6 +8203,7 @@ function renderNetChrome() {
     joinAlert.setAttribute("aria-label", t("net.pendingTitle"));
   }
   renderChatBadge();
+  renderBlindPick();
   renderPanelRail();
   renderQueuedBanner();
   renderWatcherChip();
@@ -10774,6 +10836,9 @@ function bindEvents() {
   $$("[data-autoplay-toggle]").forEach((input) => input.addEventListener("change", () => {
     setAutoplay(input.checked);
   }));
+  $$("[data-blind-pick]").forEach((input) => input.addEventListener("change", () => {
+    setBlindPick(input.checked);
+  }));
   $("#autoplayBtn")?.addEventListener("click", () => {
     setAutoplay(!prefs.autoplay);
   });
@@ -11230,6 +11295,7 @@ async function boot() {
   applyCardSize(prefs.cardSize, { silent: true });
   applyTheme(prefs.theme, { silent: true });
   renderAutoplay();
+  renderBlindPick();
   audio = new StudioAudio();
   applyLanguage(LANG);
   bindEvents();
@@ -11404,6 +11470,7 @@ window.LeabTui = {
   applyCardSize,
   applyTheme,
   setAutoplay,
+  setBlindPick,
   getDisplay: () => ({ fontSize: prefs.fontSize, cardSize: prefs.cardSize, autoplay: prefs.autoplay, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), cardSizes: CARD_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),
   checkUpdate: (force = false) => checkForUpdate({ force }),
   exportHandSlots: () => scene?.exportHandSlots?.() || [],

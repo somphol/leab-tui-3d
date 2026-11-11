@@ -262,6 +262,28 @@ async function main() {
   if (!draftValue.chip && !draftValue.modal && draftValue.toggles === 0 && draftValue.hand === 8) pass("standard random deal replaces the removed draft picker");
   else fail("standard random deal replaces the removed draft picker", JSON.stringify(draftValue));
 
+  const blind = runHarness(["--url", soloBase, "--wait", "2500", "--eval", `(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    LeabTui.setBlindPick(true);
+    LeabTui.newMatch({ seed: 1 });
+    await wait(1500);
+    const first = LeabTui.getState().hands.map((hand) => hand.slice().sort().join(","));
+    LeabTui.newMatch({ seed: 1 });
+    await wait(1500);
+    const second = LeabTui.getState().hands.map((hand) => hand.slice().sort().join(","));
+    return JSON.stringify({
+      enabled: LeabTui.getPrefs().blindPick,
+      first,
+      second,
+      same: first.join("|") === second.join("|"),
+      counts: second.map((hand) => hand ? hand.split(",").length : 0),
+      unique: new Set(second.join(",").split(",")).size
+    });
+  })()`]);
+  const blindValue = blind.evalValue || {};
+  if (blindValue.enabled && !blindValue.same && blindValue.unique === 32 && blindValue.counts.every((n) => n === 8)) pass("blind pick crypto-shuffles eight face-down cards per seat");
+  else fail("blind pick crypto-shuffles eight face-down cards per seat", JSON.stringify(blindValue));
+
   const compareExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     LeabTui.setFast(true);

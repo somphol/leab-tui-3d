@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.13",
-  "version": "1.10.13",
+  "projectVersion": "1.10.14",
+  "version": "1.10.14",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -71,8 +71,8 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (444 checks)",
-    "browserCheck": "scripts/verify.mjs — 50 checks incl. iPad framing, dealt-hand completeness, shadows, hints, inspector, rail, history, tile size and autoplay",
+    "staticCheck": "scripts/check.mjs (445 checks)",
+    "browserCheck": "scripts/verify.mjs — 51 checks incl. iPad dealt-hand completeness, blind pick, tile size and autoplay",
     "multiplayer": "scripts/net-check.mjs — ≈58 checks including a 4-human full-round soak, 10% loss/duplicate/100 ms delay soak, host push-state, host reload and seat reclaim",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
@@ -101,7 +101,8 @@
     "silentSeats": "closed or quiet human connections are swept to bots after 20–30 s; a seat and a viewer entry can no longer mask each other",
     "networkImpairment": "?netem=drop/dup/delay/jitter runs only in tests; 4 humans stay live at 10% loss",
     "touch": "iOS fixed visual viewport, second-touchstart guard and pinch/gesture cancellation",
-    "slowPlayers": "a connected player is never bot-replaced for taking >30 s; only a closed or silent connection loses the seat"
+    "slowPlayers": "a connected player is never bot-replaced for taking >30 s; only a closed or silent connection loses the seat",
+    "blindPick": "CSPRNG Fisher-Yates deal; 8 face-down tiles per seat, 32 unique, same seed produces different hands"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -425,9 +426,14 @@
       "version": "1.10.13",
       "date": "2026-11-10",
       "summary": "Remove the experimental draft picker; standard random face-down deal only."
+    },
+    {
+      "version": "1.10.14",
+      "date": "2026-11-10",
+      "summary": "Optional Blind pick house variant: crypto-shuffled eight-card deal, face-down, no open pool."
     }
   ],
-  "releaseNotes": "1.10.13 removes the experimental draft picker. The game deals eight random tiles face-down as in the source; no public pool, no choosing.",
+  "releaseNotes": "1.10.14 adds an off-by-default Blind pick house variant: eight cards per seat from a crypto-shuffled deck, face-down, with no open pool or choosing. Standard deal remains the default.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
