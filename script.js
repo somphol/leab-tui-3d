@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.7";
-import { VoiceChat } from "./voice-chat.js?v=1.10.7";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.7";
+} from "./peer-manager.js?v=1.10.8";
+import { VoiceChat } from "./voice-chat.js?v=1.10.8";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.8";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.7",
+  version: "1.10.8",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -360,6 +360,7 @@ const I18N = {
     "actions.nextRound": "Next round",
     "actions.undo": "Cancel turn",
     "actions.resync": "Refresh table",
+    "actions.pushState": "Push table update",
     "actions.export": "Export JSON",
     "actions.continue": "Continue",
     "actions.keep": "Keep playing",
@@ -818,7 +819,8 @@ const I18N = {
     "toast.netQueued": "{name} approved — joins after this turn.",
     "toast.resyncRequested": "Asking the host for the current table…",
     "toast.resynced": "Table refreshed from the host — try again.",
-    "toast.resyncFailed": "Still not in sync. Ask the host to send the table again.",
+    "toast.resyncFailed": "Still not in sync. Ask the host to push the table again.",
+    "toast.statePushed": "Latest table state sent to everyone.",
     "toast.actionPending": "Waiting for the host to confirm…",
     "toast.actionUnconfirmed": "That action was not confirmed. Refreshing the table — try again.",
     "toast.connectionStalled": "Connection stalled — reconnecting to your seat…",
@@ -1047,6 +1049,7 @@ const I18N = {
     "actions.nextRound": "รอบถัดไป",
     "actions.undo": "ยกเลิกตานี้",
     "actions.resync": "ซิงก์โต๊ะ",
+    "actions.pushState": "ส่งสถานะล่าสุดให้ทุกคน",
     "actions.export": "ส่งออก JSON",
     "actions.continue": "เล่นต่อ",
     "actions.keep": "เล่นต่อ",
@@ -1508,7 +1511,8 @@ const I18N = {
     "toast.netQueued": "อนุมัติ {name} แล้ว — จะเข้าหลังจบตา",
     "toast.resyncRequested": "กำลังขอสถานะล่าสุดจากเจ้าบ้าน…",
     "toast.resynced": "ซิงก์โต๊ะล่าสุดแล้ว — ลองอีกครั้ง",
-    "toast.resyncFailed": "ยังไม่ตรงกัน ลองขอเจ้าบ้านส่งโต๊ะอีกครั้ง",
+    "toast.resyncFailed": "ยังไม่ตรงกัน ลองขอเจ้าบ้านส่งสถานะอีกครั้ง",
+    "toast.statePushed": "ส่งสถานะโต๊ะล่าสุดให้ทุกคนแล้ว",
     "toast.actionPending": "กำลังรอเจ้าบ้านยืนยัน…",
     "toast.actionUnconfirmed": "ยังไม่ได้รับการยืนยัน กำลังซิงก์โต๊ะใหม่ ลองอีกครั้ง",
     "toast.connectionStalled": "การเชื่อมต่อสะดุด กำลังกลับเข้าที่นั่งเดิม…",
@@ -5169,21 +5173,18 @@ function queuePublish() {
 }
 
 function checkGuestTurnTimeout() {
-  if (!isHost() || !net?.started || !state) return false;
-  if (!["lead", "follow", "showdown", "bid", "draft"].includes(state.phase)) return false;
-  const seat = state.turn;
-  if (seat === MY_SEAT || !isHumanSeat(seat)) return false;
-  const profile = SEAT_PROFILES?.[seat];
-  if (!profile || profile.kind !== "human") return false;
-  if (!net.turnSince || Date.now() - net.turnSince < 30000) return false;
-  const name = profile.name;
-  const connId = profile.connId;
-  convertSeatToBot(seat, "timeout");
-  toast(t("invite.turnTimeout", { name }), "wine");
-  if (connId) {
-    net.host.send(connId, { type: "seat-timeout", roomCode: net.code, seat });
-    setTimeout(() => net?.host?.closeConnection?.(connId), 1000);
-  }
+  /* Slow thinking is not a failure. A seat is only taken over when its
+     connection is closed or silent (see sweepSilentGuests). State ACKs and
+     pings are keepalive: a player who takes five minutes but stays connected
+     keeps the seat. */
+  return false;
+}
+
+function pushLatestState() {
+  if (!isHost() || !net?.started || !state || !net.host) return false;
+  publishState();
+  toast(t("toast.statePushed"), "jade");
+  audio?.play("click", 0);
   return true;
 }
 
@@ -8081,6 +8082,8 @@ function renderNetChrome() {
   if (undo && isClient()) undo.disabled = true;
   const resync = $("#resyncBtn");
   if (resync) resync.hidden = !(isClient() && net?.started);
+  const pushState = $("#pushStateBtn");
+  if (pushState) pushState.hidden = !(isHost() && net?.started);
   const leave = $("#leaveRoomBtn");
   if (leave) leave.hidden = !isNetworked();
   const leaveTop = $("#leaveRoomTopBtn");
@@ -10825,6 +10828,7 @@ function bindEvents() {
   $("#inviteTopBtn")?.addEventListener("click", openInviteSheet);
   $("#inviteBtn")?.addEventListener("click", openInviteSheet);
   $("#resyncBtn")?.addEventListener("click", () => requestResync());
+  $("#pushStateBtn")?.addEventListener("click", () => pushLatestState());
   $("#inviteCopyInfo")?.addEventListener("click", copyRoomInfo);
   $("#inviteCopyLink")?.addEventListener("click", copyInvite);
   $("#inviteShare")?.addEventListener("click", shareRoomInfo);
@@ -11419,6 +11423,7 @@ window.LeabTui = {
     pending: () => pendingList().map((request) => ({ connId: request.connId, name: request.name, at: request.at })),
     queued: () => queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })),
     resync: () => requestResync(),
+    pushState: () => pushLatestState(),
     setNetem: (config) => configureNetem(config),
     approve: approvePending,
     deny: denyPending,

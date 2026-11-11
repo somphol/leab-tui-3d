@@ -2,6 +2,16 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.8] — 2026-11-10
+
+### Fixed
+
+- **Slow players are no longer kicked.** A seat was replaced by a bot after 30 seconds of turn time even when the player was still connected and sending keepalive. Takeover is now liveness-only: a seat is covered after 30 seconds of silence or a closed connection, never because a player is thinking. State ACKs and pings keep the seat.
+
+### Added
+
+- **Host: Push table update.** Actions has a host-only button that publishes a fresh snapshot to every seated guest and viewer immediately, with a receipt toast. It is the manual counterpart to the automatic 4-second heartbeat and per-seat state ACK repair.
+
 ## [1.10.7] — 2026-11-09
 
 ### Changed
@@ -22,7 +32,7 @@ All notable changes to Leab-Tui 3D are documented here. The format follows [Keep
 
 ### Tests
 
-- `scripts/net-check.mjs` now runs **57 checks**, including a four-human full round, a 10% loss + duplicate + 100 ms delay round, state-ACK repair, host reload, lost-token seat reclaim and console cleanliness.
+- `scripts/net-check.mjs` runs **≈58 checks**, including a four-human full round, a 10% loss + duplicate + 100 ms delay round, state-ACK repair, host reload, lost-token seat reclaim and console cleanliness.
 - A test-only `?netem=drop:…,dup:…,delay:…,jitter:…` hook impairs application frames without touching PeerJS signalling, so recovery paths are exercised deterministically.
 - `scripts/verify.mjs` covers tile size and autoplay; `scripts/check.mjs` covers the two-choice launch menu.
 

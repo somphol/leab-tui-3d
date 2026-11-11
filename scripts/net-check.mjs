@@ -230,6 +230,15 @@ async function main() {
   if (["lead", "follow"].includes(guestPhase)) pass("guest received authoritative state", guestPhase);
   else fail("guest received authoritative state", guestPhase);
 
+  const pushBefore = Number(await host.eval("LeabTui.net.getState().seq"));
+  await host.eval("LeabTui.net.pushState(); true");
+  try {
+    await guest.waitFor(`window.LeabTui?.net?.getState?.()?.lastSeq > ${pushBefore} ? 'ok' : ''`, "host pushed state", 10000);
+    pass("host can push the latest state to every guest");
+  } catch (error) {
+    fail("host can push the latest state to every guest", error.message);
+  }
+
   const privacy = await guest.eval(`JSON.stringify({
     seat: LeabTui.net.getState().mySeat,
     own: LeabTui.getState().hands[LeabTui.net.getState().mySeat].map((t) => typeof t === "string" ? t : t?.id ?? null),

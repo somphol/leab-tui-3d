@@ -1,14 +1,14 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-09 · release 1.10.7**
+**As of 2026-11-10 · release 1.10.8**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.7: resilient multiplayer, tile size and autoplay*
+- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.8: slow players keep their seat and host push-state*
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
-- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.7)
+- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.8)
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -66,6 +66,7 @@ Current table/network model:
 | 1.10.5 | Approval receipts, welcome ack/retry, join-status recovery, queued/viewer resync |
 | 1.10.6 | Tile size (2D+3D), autoplay my seat, seat reclaim, state-freshness watchdog |
 | 1.10.7 | Launch menu offers only Play now (invite later) and Join a game |
+| 1.10.8 | Slow but connected players keep their seat; host push-state |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),
@@ -124,8 +125,8 @@ node scripts/check.mjs                 # 444/444
 python3 -m http.server 8123 &          # if not running
 node scripts/verify.mjs                # ALL 49 BROWSER CHECKS PASSED (includes iPad portrait/landscape)
 AUDIO_TEST=1 node scripts/verify.mjs   # includes a real audio peak
-NET_QUICK=1 node scripts/net-check.mjs # 49 checks, ~3–4 min: everyday network fixes (no 4-human/loss soak)
-node scripts/net-check.mjs             # 57 checks, ~10–12 min: release gate (4 humans + 10% loss)
+NET_QUICK=1 node scripts/net-check.mjs # ~48–50 checks, ~3–4 min: everyday network fixes (no 4-human/loss soak)
+node scripts/net-check.mjs             # ~58 checks, ~10–12 min: release gate (4 humans + 10% loss)
 node scripts/invite-check.mjs          # ALL 16 INVITE CHECKS PASSED
 BASE_URL="https://somphol.github.io/leab-tui-3d/" node scripts/net-check.mjs
 ```
@@ -143,7 +144,8 @@ and the 2D/3D shadow switch**, and no console exceptions.
 - **Ordering:** the host has an `epoch` (incremented on reload) and a monotonic `seq`; every `welcome` and `state` carries both. Clients ignore older sequences, duplicate frames and previous-epoch states.
 - **Anti-entropy:** seated clients send `state-ack`; the host resends a targeted snapshot to any seat behind, plus a 4 s full heartbeat.
 - **Actions:** at-least-once with the same `actionId` + host-side dedupe; retries at 1.5 s. Never generate a new id on retry.
-- **Failure detection:** silent/closed seats are swept to bots after 20–30 s; rejoin tokens survive so the guest can reclaim.
+- **Failure detection:** liveness only. A connected player is never bot-replaced for being slow; a seat is covered after 30 s of silence or a closed connection, and the rejoin token survives.
+- **Manual repair:** host **Actions → Push table update** publishes a fresh snapshot to every seat and viewer immediately.
 - **Testing:** `?netem=drop:…,dup:…,delay:…,jitter:…` impairs app frames only (test hook). `net-check` includes a 4-human full round and a lossy round; both are release gates.
 
 ## 5. Open items / sensible next work
