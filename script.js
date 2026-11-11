@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.10";
-import { VoiceChat } from "./voice-chat.js?v=1.10.10";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.10";
+} from "./peer-manager.js?v=1.10.11";
+import { VoiceChat } from "./voice-chat.js?v=1.10.11";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.11";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.10",
+  version: "1.10.11",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -2379,7 +2379,7 @@ function loadPrefs() {
   if (!THEMES.some((entry) => entry.id === prefs.theme)) prefs.theme = "daybreak";
   if (![20, 50, 100].includes(Number(prefs.target))) prefs.target = 20;
   if (!["cw", "ccw"].includes(prefs.direction)) prefs.direction = "cw";
-  if (!["piles", "bid"].includes(prefs.mode)) prefs.mode = "piles";
+  prefs.mode = "piles";
   if (![0, 2, 4, 6].includes(Number(prefs.resultSeconds))) prefs.resultSeconds = 2;
   prefs.autoNext = prefs.autoNext !== false;
   prefs.draftMode = prefs.draftMode === true;
@@ -2413,6 +2413,8 @@ function loadMatch() {
     }
     const savedPhase = game.phase;
     state = { ...makeState(game.seed), ...game, fast: false };
+    state.mode = "piles";
+    state.bids = null;
     state.hands = state.hands.map((hand) => hand.map((id) => TILE_BY_ID[id]).filter(Boolean));
     state.captures = (state.captures || [[], [], [], []]).map((pile) => pile.map((id) => TILE_BY_ID[id]).filter(Boolean));
     state.captureHidden = [0, 1, 2, 3].map((seat) => (
@@ -5085,6 +5087,10 @@ function sanitizeForSeat(source, seat) {
 function hydrateRemoteState(raw) {
   if (!raw) return null;
   const game = { ...raw };
+  /* Bid-piles was an experimental house variant, not part of the Navee
+     rules. Force the standard pile scoring even for an old saved state. */
+  game.mode = "piles";
+  game.bids = null;
   game.hands = (raw.hands || []).map((hand) => hand.map(tileFromWire));
   game.captures = (raw.captures || [[], [], [], []]).map((pile) => pile.map(tileFromWire));
   game.captureHidden = [0, 1, 2, 3].map((seat) => (

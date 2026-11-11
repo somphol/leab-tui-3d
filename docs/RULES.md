@@ -124,9 +124,16 @@ This is an independent, open-source teaching implementation. It is not affiliate
 
 - **Target:** 20, 50 or 100 points (the source suggests 100 or a fixed number of rounds).
 - **Direction:** clockwise (default) or counter-clockwise, by agreement.
-- **Scoring:** most piles (default) or **bid piles**. In bid piles each seat bids 0–8; the last bidder may not make the total exactly 8. A hit scores bid + 5 (zero bid + 3); a miss scores minus the difference.
+- **Scoring:** most piles, as in the source. Bid-piles was an experimental house variant and is not offered in the interface.
 - **Redraw (โละ):** before the first play, a seat with no tile from the red Elephant up may redeal. The requester leads; the round scores ×2, ×3 … per redraw.
 - **Chuan special:** with seven piles and the last Soldier, the final follower may reveal it and take the last trick, reaching eight piles for 16.
+
+## Removed house variant: bid piles (not standard)
+
+An earlier build offered a **bid-piles** scoring variant (each seat bid 0–8,
+last bidder could not make the total exactly 8, a hit scored +5). It is **not
+in the Navee source** and has been removed from the interface; the engine path
+stays dormant only so an old saved match can be migrated to standard scoring.
 
 ## Experimental draft deal (not standard)
 

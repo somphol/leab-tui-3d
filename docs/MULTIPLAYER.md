@@ -244,7 +244,7 @@ a stale **view**, not a divergent rule state.
   The Actions **Refresh table** button and returning to the tab do the same.
 - The host tracks each guest's `lastSeen` from any message (the guest pings every
   5 s). A roster entry older than 20 s shows as offline. If it is a human
-  guest's active turn (`lead`, `follow`, `showdown`, `bid`, `draft`) and
+  guest's active turn (`lead`, `follow`, `showdown`, `draft`) and
   `turnSince` is older than 30 s, the host converts the seat to a bot, sends
   `seat-timeout`, and closes the old connection. The guest reconnects with the
   seat card; the bot's hand, captures and score stay on the seat. This prevents

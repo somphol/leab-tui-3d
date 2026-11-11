@@ -254,7 +254,7 @@ A false ack means the action was rejected as illegal; the guest shows the reason
 ### `pulse` / `resync`
 
 The host sends a heartbeat to seated humans every 4 s. During active play
-(`dealing`, `lead`, `follow`, `showdown`, `bid`, `draft`) the heartbeat is a
+(`dealing`, `lead`, `follow`, `showdown`, `draft`) the heartbeat is a
 full redacted `state` snapshot, so a missed publish repairs itself even when no
 new action occurred. On the summary screens it is the cheaper:
 

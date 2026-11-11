@@ -62,7 +62,7 @@ a different hand.
 - **No redraw (โละ) in draft mode.** The redraw rule exists to soften a bad
   random deal; a drafted hand is the player's own choice, so `canRedraw` returns
   false whenever draft mode is on.
-- **Chuan, bidding, scoring, captures and reveal/showdown are unchanged.** The
+- **Chuan, scoring, captures and reveal/showdown are unchanged.** The
   draft only replaces the deal.
 - **Lead** is the red-General holder rather than the previous trick's winner.
   This is the same idea as the first-round lead rule, applied to each drafted

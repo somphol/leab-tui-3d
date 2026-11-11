@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.11] — 2026-11-10
+
+### Removed
+
+- **Bid-piles scoring.** The 0–8 bid variant was an experimental house rule, **not part of the Navee source**. It is no longer offered in the rules panel or stored as a preference. The engine path is dormant only to migrate an old saved match back to standard scoring. Standard “most piles” scoring is the only mode.
+
 ## [1.10.10] — 2026-11-10
 
 ### Changed
