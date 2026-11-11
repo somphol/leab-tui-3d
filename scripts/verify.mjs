@@ -233,6 +233,17 @@ async function main() {
   if (autoplayValue.played) pass("autoplay plays the local seat without a click", `hand ${autoplayValue.before} → ${autoplayValue.after}, trick ${autoplayValue.trick}`);
   else fail("autoplay plays the local seat without a click", JSON.stringify(autoplayValue));
 
+  const dealHand = runHarness(["--url", `${soloBase}&seed=42`, "--device", "ipad", "--orientation", "landscape", "--wait", "3000", "--eval", `(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    LeabTui.newMatch({ seed: 42 });
+    await wait(1600);
+    const ids = LeabTui.getState().hands[0];
+    return JSON.stringify({ total: ids.length, visible: ids.map((id) => LeabTui.getTileScreen(id)).filter(Boolean).length });
+  })()`]);
+  const dealValue = dealHand.evalValue || {};
+  if (dealValue.total === 8 && dealValue.visible === 8) pass("iPad landscape shows all eight dealt tiles without Tidy hand");
+  else fail("iPad landscape shows all eight dealt tiles without Tidy hand", JSON.stringify(dealValue));
+
   const draftExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const chip = document.querySelector('#draftChip');

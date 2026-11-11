@@ -2,6 +2,13 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.12] — 2026-11-10
+
+### Fixed
+
+- **iPad showed an incomplete hand until Tidy hand.** iPad Safari can throttle the staged deal timers while booting, leaving one or more local tiles at their start position. Every deal now tidies and re-applies the local row when the animation finishes, with a 1.4-second fallback, and refreshes the 2D framing. All eight tiles are visible without pressing Tidy hand.
+- **Regression test.** `verify.mjs` now checks all eight dealt tiles are on screen in iPad landscape at 1.6 seconds (50 browser checks).
+
 ## [1.10.11] — 2026-11-10
 
 ### Removed

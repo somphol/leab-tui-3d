@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.11";
-import { VoiceChat } from "./voice-chat.js?v=1.10.11";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.11";
+} from "./peer-manager.js?v=1.10.12";
+import { VoiceChat } from "./voice-chat.js?v=1.10.12";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.12";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.11",
+  version: "1.10.12",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -2799,9 +2799,22 @@ function dealRound(leaderHint = null) {
   saveMatch();
   audio?.play("shuffle", 0);
 
+  const settleDeal = () => {
+    if (!state || !scene) return;
+    /* Reflow the local row once the deal animation is over. iPad Safari can
+       throttle the staged tile timeouts during boot, leaving a tile behind
+       until the player presses Tidy hand; this makes that automatic. */
+    scene.tidyHand();
+    scene.refreshFraming?.();
+  };
+
   const finishDeal = () => {
     if (!state || state.phase !== "dealing") return;
-    if (scene) scene.flipHumanHand(state);
+    if (scene) {
+      scene.tidyHand();
+      scene.flipHumanHand(state);
+      scene.refreshFraming?.();
+    }
     setTimeout(() => {
       if (!state || state.phase !== "dealing") return;
       if (state.mode === "bid") beginBidPhase();
@@ -2812,6 +2825,10 @@ function dealRound(leaderHint = null) {
 
   if (scene) {
     scene.deal(state).then(finishDeal).catch(finishDeal);
+    setTimeout(() => {
+      if (!state || state.phase !== "dealing") return;
+      settleDeal();
+    }, state.fast ? 400 : 1400);
   } else {
     setTimeout(finishDeal, state.fast ? 0 : 30);
   }

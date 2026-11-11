@@ -1,6 +1,6 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-10 · release 1.10.11**
+**As of 2026-11-10 · release 1.10.12**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
@@ -8,7 +8,7 @@
 - Primary branch: `main` (GitHub Pages serves the repository root)
 - Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.9: slow players keep their seat, host push-state and clear seat names*
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
-- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.11)
+- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.12)
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -70,6 +70,7 @@ Current table/network model:
 | 1.10.9 | Unique bot names and a You badge on the scoreboard |
 | 1.10.10 | Bid screen explains piles, scoring and the last-bidder rule |
 | 1.10.11 | Remove the non-standard bid-piles variant; standard scoring only |
+| 1.10.12 | iPad deal reflows automatically; all eight tiles visible |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),
