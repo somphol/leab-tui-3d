@@ -147,7 +147,6 @@
           <div class="hud-chips" role="status" aria-live="polite">
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.round">Round</span><strong id="roundChip">1</strong></span>
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Turn</span><strong id="trickChip">0</strong></span>
-            <span class="hud-chip"><span class="hud-label" data-i18n="hud.target">Target</span><strong id="targetChip">20</strong></span>
             <span class="hud-chip hud-turn"><span class="hud-label" data-i18n="hud.turn">Turn</span><strong id="turnChip">You</strong></span>
             <span class="hud-chip call-chip" id="callChip" hidden></span>
             <button id="lastTrickBtn" class="hud-chip view-toggle" type="button" hidden data-i18n="lastTrick.button">Last turn</button>
@@ -216,9 +215,7 @@
           </div>
           <div id="scoreboard" class="scoreboard"></div>
           <div class="score-foot">
-            <span data-i18n="score.target">First to</span>
-            <strong id="scoreTarget">20</strong>
-            <span data-i18n="score.points">points</span>
+            <span data-i18n="score.note">Par is 8 tiles — every tile above 8 scores a point.</span>
           </div>
         </section>
 
@@ -398,13 +395,6 @@
           </div>
 
           <div class="rule-row">
-            <label class="rule-field"><span data-i18n="rules.target">Play to</span>
-              <select id="targetSelect" data-rule="target">
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </label>
             <label class="rule-field"><span data-i18n="rules.direction">Turn order</span>
               <select id="directionSelect" data-rule="direction">
                 <option value="cw" data-i18n="rules.cw">Clockwise</option>

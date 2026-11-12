@@ -89,15 +89,17 @@ In this studio followers select the required number of tiles and send them with 
 
 ## Scoring
 
-Each captured group of four tiles is a **pile**. At the end of a round:
+Every seat starts a round with eight tiles, so **eight tiles back is par**. A round scores by tiles captured:
 
-| Piles | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Points | −2 | −1 | **0** | +1 | +2 | +3 | +4 | +5 | **16** |
+| Captured tiles | 0 | 4 | 8 | 12 | 16 | 24 | 32 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Points | −8 | −4 | **0** | +4 | +8 | +16 | +24 |
 
-Two piles is par. Every pile above or below par is one point. Capturing all eight piles is a **Chuan (ช้วน)** worth 16 points. Scores accumulate across rounds; the first player to the match target (20 by default in this studio) wins.
+Par is 8, every tile above par is +1, every tile below is −1. Two piles (eight tiles) is the familiar even round; a **Chuan (ช้วน)** captures all 32 tiles and therefore scores +24. Redraws multiply the round points (×2, ×3 …).
 
-Because every trick awards `4 × N` tiles, the four players' round points always sum to zero. The self-test asserts the 32-tile conservation and the scoring table.
+There is **no match target and no match end**: scores accumulate for as long as the table keeps playing, and players leave when they choose (**Leave room** in a network room, or a new match in solo). The studio deliberately drops the "first to 20/50/100" rule from earlier versions.
+
+Because every trick awards `4 × N` tiles, the four players' round points always sum to zero. The self-test asserts 32-tile conservation and the par-eight scoring table.
 
 ## Digital table conventions
 
@@ -122,7 +124,7 @@ This is an independent, open-source teaching implementation. It is not affiliate
 
 ## Four-player table options
 
-- **Target:** 20, 50 or 100 points (the source suggests 100 or a fixed number of rounds).
+- **Endless play:** no target score and no match end (the source suggests 100 points or a fixed number of rounds; this studio plays on until players leave).
 - **Direction:** clockwise (default) or counter-clockwise, by agreement.
 - **Scoring:** most piles, as in the source. Bid-piles was an experimental house variant and is not offered in the interface.
 - **Redraw (โละ):** before the first play, a seat with no tile from the red Elephant up may redeal. The requester leads; the round scores ×2, ×3 … per redraw.
