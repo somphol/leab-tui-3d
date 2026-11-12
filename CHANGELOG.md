@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.24] — 2026-11-11
+
+### Fixed
+
+- **The host's turn no longer starts while its result sheet is up.** The authority gates the next trick on its own turn-result dialog, so a 15 s result actually holds the table for the host. Guests are unaffected and keep their own sheet and autoplay hold.
+
 ## [1.10.23] — 2026-11-11
 
 ### Changed
