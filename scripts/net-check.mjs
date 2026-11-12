@@ -730,8 +730,13 @@ async function main() {
   let maxLagMs = 0;
   let roundsDone = 0;
   let startedAt = Date.now();
+  const dismissResult = "(() => { const m = document.querySelector('#trickResultModal'); if (m && !m.hidden) document.querySelector('#trickResultContinue')?.click(); return true; })()";
   for (let step = 0; step < 60 * Math.max(1, soakRounds) + 60; step += 1) {
     await sleep(1000);
+    /* The result sheet is per player and the host now waits for it, so a soak
+       that never closes it would idle by design, not by a deadlock. */
+    await inviteHost.eval(dismissResult);
+    await lateGuest.eval(dismissResult);
     const hs = JSON.parse(await inviteHost.eval(soakProbe()));
     const gs = JSON.parse(await lateGuest.eval(soakProbe()));
     const key = `${hs.round}:${hs.trick}:${hs.phase}:${hs.turn}`;
@@ -816,8 +821,11 @@ async function main() {
   let fourAt = Date.now();
   let fourTurns = 0;
   let fourLag = 0;
+  const dismiss4 = "(() => { const m = document.querySelector('#trickResultModal'); if (m && !m.hidden) document.querySelector('#trickResultContinue')?.click(); return true; })()";
   for (let step = 0; step < 180; step += 1) {
     await sleep(1000);
+    await host4.eval(dismiss4);
+    for (const { session } of guests4) await session.eval(dismiss4);
     const head = JSON.parse(await host4.eval(fourProbe()));
     const seats = [];
     for (const { session } of guests4) seats.push(JSON.parse(await session.eval(fourProbe())));
