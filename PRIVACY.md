@@ -12,6 +12,7 @@ In this browser's `localStorage`:
 | `leabtui.prefs.v1` | language, sound, coach, tile-list visibility, cinema preference |
 | `leabtui.stats.v1` | lifetime matches, wins, losses, draws, rounds, streaks, last 40 round summaries |
 | `leabtui.name.v1` | the last multiplayer handle you typed (local only) |
+| `leabtui.seat.v1` | a seven-day reconnect card for one room seat: room code, seat number, bearer token and display name; cleared by Leave or a denied join, and expires automatically |
 
 This data never leaves the browser unless you press **Export JSON**, which writes a file locally, or you play a network match. There is no upload to a game server.
 
@@ -27,6 +28,7 @@ When you host or join a room:
 - **Chat** messages are visible to the host and every guest and are kept in memory only.
 - **Voice** is opt-in. The browser asks for microphone permission when you press **Join voice**. Audio flows directly between voice-active peers over encrypted WebRTC media; the host does not relay it and the app does not record it. PeerJS IDs of voice-active peers are shared so the mesh can connect. Public STUN sees your IP.
 - **Room PIN** is sent by the guest over the encrypted data channel and stored by the host only as an in-memory SHA-256 digest. It is never in the invite URL, roster, exported game, or `localStorage`.
+- **Guest seat card.** A guest can reclaim the same seat after closing the tab on the same device because the room code, seat number, display name and a random bearer token are kept in `localStorage` for seven days. Anyone with that token can claim the seat, so use **Leave room** on a shared device. It is never in the invite URL, the host roster, the exported game or the host recovery blob.
 - **Copy room info** writes the room code, link and (if set) the PIN to the clipboard. Clipboard managers and the operating system may retain it; share only in a trusted channel and clear the clipboard if that matters.
 - Closing the host tab ends the room. No game data is stored on a server.
 

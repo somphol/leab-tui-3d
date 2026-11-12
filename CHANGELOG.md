@@ -2,7 +2,139 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.10.17] — 2026-11-11
+
+### Fixed
+
+- **The guest panel no longer flickers when the host leaves.** An intentional host exit (`closed {reason:"host-left"}`) is terminal for the guest: the scheduled rejoin, the client watchdog and the join watch are cancelled, so the panel cannot alternate between "Table closed" and "Reconnecting". Re-entry is manual through a **Reconnect to the room** button that uses the stored seat token. A host reload (no `closed` message) still auto-rejoins.
+
+### Changed
+
+- **Tile size applies to your own hand only.** The display setting no longer scales opponents' hands, centre plays or captures, which had pushed those tiles into neighbouring seats and off the rim on tablets. The local row grows with the setting (capped at 1.18) and pulls inward to keep its outer edge on the felt.
+
+## [1.10.16] — 2026-11-10
+
+### Changed
+
+- **Blind pick is now a face-down choice, not an automatic deal.** When the house variant is enabled, each seat sees a pool of card backs and picks two by position; the values are hidden until the cards join the hand. The pool is CSPRNG-shuffled, bots pick randomly, and the standard deal remains untouched when the variant is off.
+
+## [1.10.15] — 2026-11-10
+
+### Changed
+
+- **The hand dock opens automatically.** It no longer starts collapsed, so the Hint/Clear/Auto/Lead controls are visible on first load. A legacy saved `dockCollapsed: true` is ignored once; collapsing with H is stored in a new `dockChosen` flag and respected afterwards.
+
+## [1.10.14] — 2026-11-10
+
+### Added
+
+- **Blind pick (house variant).** An off-by-default host toggle in Actions deals eight cards per seat from a **CSPRNG Fisher-Yates shuffle**, face-down, with no open pool and no choosing. It is labelled as a house variant, not part of the Navee source; the standard seeded deal remains the default. The host's choice is stored with the match, and guests simply receive the dealt hands.
+
+## [1.10.13] — 2026-11-10
+
+### Removed
+
+- **Draft picker.** The experimental public pool (“pick 2 tiles ×4”) let players choose from open cards, which is not how Leab-Tui is dealt. The source deals eight random tiles face-down to each seat. The toggle, HUD chip and modal are gone; old draft saves are refused and the engine path is dormant.
+
+## [1.10.12] — 2026-11-10
+
+### Fixed
+
+- **iPad showed an incomplete hand until Tidy hand.** iPad Safari can throttle the staged deal timers while booting, leaving one or more local tiles at their start position. Every deal now tidies and re-applies the local row when the animation finishes, with a 1.4-second fallback, and refreshes the 2D framing. All eight tiles are visible without pressing Tidy hand.
+- **Regression test.** `verify.mjs` now checks all eight dealt tiles are on screen in iPad landscape at 1.6 seconds (50 browser checks).
+
+## [1.10.11] — 2026-11-10
+
+### Removed
+
+- **Bid-piles scoring.** The 0–8 bid variant was an experimental house rule, **not part of the Navee source**. It is no longer offered in the rules panel or stored as a preference. The engine path is dormant only to migrate an old saved match back to standard scoring. Standard “most piles” scoring is the only mode.
+
+## [1.10.10] — 2026-11-10
+
+### Changed
+
+- **The bid screen now explains itself.** The title asks “How many piles will you capture this round?” and the help line defines a pile (four captured tiles, eight per round), states the exact-bid bonus (+5, or +3 for a zero bid), the miss penalty, the running total and the last-bidder restriction. Thai copy uses “ทายกอง” instead of the ambiguous “คุณจะได้กี่กอง?”.
+
+## [1.10.9] — 2026-11-10
+
+### Fixed
+
+- **Duplicate bot names.** Two seats could both be called “Bot 3” after takeovers because the name was derived from the current bot count. Bot names now choose the lowest unused number across the roster, so the coach line and turn chip always identify one seat.
+- **Your seat is unmistakable.** The scoreboard marks the local row with a **You** badge, so a human at South is not confused with the East/North/West bot labels.
+
+## [1.10.8] — 2026-11-10
+
+### Fixed
+
+- **Slow players are no longer kicked.** A seat was replaced by a bot after 30 seconds of turn time even when the player was still connected and sending keepalive. Takeover is now liveness-only: a seat is covered after 30 seconds of silence or a closed connection, never because a player is thinking. State ACKs and pings keep the seat.
+
+### Added
+
+- **Host: Push table update.** Actions has a host-only button that publishes a fresh snapshot to every seated guest and viewer immediately, with a receipt toast. It is the manual counterpart to the automatic 4-second heartbeat and per-seat state ACK repair.
+
+## [1.10.7] — 2026-11-09
+
+### Changed
+
+- **Simpler launch menu.** “How do you want to play?” now offers **Play now (invite friends later)** and **Join a game** only. Hosting no longer has a separate entry: start solo, then use **Invite** on the live table to turn it into a room without redealing. The host panel remains available for `?mode=host`, recovery and diagnostics.
+- **Autoplay is one tap away.** The dock now carries an **Auto** toggle beside Hint and Clear, so the player can switch the coach in and out without opening Actions. It stays in sync with the Actions checkbox.
+- **Queued audience loses the confusing Actions orb.** While waiting for a seat, the Actions orb/panel is hidden and the status pill carries its own **Leave** button.
+- **“Trick” is “turn” in the English interface.** Turn result, turn log, turn history, next turn, the queued banner and the coach now use “turn” consistently. The genre name “trick-taking” stays only in the About/description text.
+
+### Fixed
+
+- **Four-human deadlock at the end of a round.** PeerJS JSON serialisation refuses any frame over 16 KB; a late-round four-human snapshot crossed that line, stopped state publishing and left every client on a different turn. The transport now uses binary serialisation, which chunks instead of refusing.
+- **Stale or duplicate state could move a client backwards.** Each host page has an epoch and every state/welcome carries a monotonic `seq`. Guests ignore older, duplicate or previous-epoch frames, so a delayed message or an old connection cannot regress the table.
+- **State loss now repairs in under a second.** Seated guests acknowledge every applied snapshot; the host resends a targeted snapshot to any seat that acknowledges an older `seq`, in addition to the 4-second full heartbeat.
+- **A dropped action is retried, not lost.** The client replays the same `actionId` up to four times at 1.5-second intervals; the host deduplicates it and returns the cached acknowledgement. The client also refuses to act on a snapshot older than 6 seconds.
+- **Silent seats no longer block the table.** A closed or quiet human connection is swept to a bot after 20–30 seconds, with a `seat-timeout` and preserved rejoin token. A connection that was both a seat and a viewer can no longer be cleaned up as a viewer and leave a dead seat behind.
+- **iPad white band after a double-tap.** iOS now pins the document to the visual viewport, cancels the second `touchstart` (not only `touchend`), and blocks pinch/gesture so the table cannot scroll under the browser bar.
+
+### Tests
+
+- `scripts/net-check.mjs` runs **≈58 checks**, including a four-human full round, a 10% loss + duplicate + 100 ms delay round, state-ACK repair, host reload, lost-token seat reclaim and console cleanliness.
+- A test-only `?netem=drop:…,dup:…,delay:…,jitter:…` hook impairs application frames without touching PeerJS signalling, so recovery paths are exercised deterministically.
+- `scripts/verify.mjs` covers tile size and autoplay; `scripts/check.mjs` covers the two-choice launch menu.
+
+
+## [1.10.6] — 2026-11-09
+
+### Added
+
+- **Tile size.** Display now offers four sizes (Small, Default, Large, Extra large) for your own 3D hand and the accessible card chips in the dock. The 3D row reflows with a wider spacing and pulls slightly inward at Extra large so the outer tile never overhangs the rim. The preference is saved per device and does not change other seats or the rules.
+- **Autoplay my seat.** Actions has an opt-in toggle that lets the coach take your legal turn after a short pause. It works in solo, as host and as guest, covers lead, follow, showdown, bid and draft, and stops the moment you switch it off. It never touches another player's seat.
+
+### Fixed
+
+- **Seated guest showing as a spectator.** A returning guest whose rejoin token was lost could be approved as a viewer while its stale human seat froze the table, so both devices showed the guest's name “thinking” with no controls. The host now reclaims an offline human seat with the same name when it approves the request, and automatically reconciles an already-approved viewer into that seat.
+- **Frozen snapshot with a live channel.** Pings kept the old watchdog satisfied even when state messages stopped. The client now tracks the last applied snapshot: it asks for a resync after 9 seconds and reconnects after 24 seconds. A failed snapshot apply is caught and recovered instead of leaving the lobby on “waiting”.
+- **Zombie seats after host recovery.** Recovered human seats get a 30-second grace window to reconnect, then become bots; their rejoin token is preserved so the guest can still reclaim the seat.
+- **Automatic rejoin no longer gives up after one try.** The auto path was taking the manual two-attempt branch, showing “Connection attempt 2 of 2…” and stopping without scheduling another host-rejoin attempt. It now reaches the retry loop, which retries every 1.2 s until the recovered host answers.
+- **Stale welcome could demote a seated guest.** A queued/viewer welcome arriving after the real seat was granted (for example from a retry on an older connection) is now acknowledged but ignored.
+
+## [1.10.5] — 2026-11-09
+
+### Fixed
+
+- **Approval no longer looks stuck.** The invite sheet re-renders on every approval path and shows a green receipt (seated, watching, or queued with the reserved seat). Previously a seated/viewer approval left the pending row in place, so the host could not tell whether the tap worked.
+- **Lost welcomes are retried until acknowledged.** The host now resends a welcome every second (up to eight tries) until the guest returns `welcome-ack`; a guest that receives a welcome acknowledges it immediately.
+- **Waiting guests recover themselves.** While a guest is on the waiting screen it asks the host for its join status every four seconds. The host answers with the pending notice, the queued welcome with a fresh snapshot, a viewer welcome, or a seated state, so a dropped approval message cannot strand the guest.
+- **Resync works before a seat exists.** Queued guests and viewers can now request a resync; the host answers with their role-appropriate welcome instead of ignoring the request.
+
+## [1.10.4] — 2026-11-09
+
+### Added
+
+- **Invite friends from a solo game.** A gold **Invite** control in the top bar and Actions promotes the running solo table into a host room without redealing: room number, generated PIN, Copy room info, Copy link, Share, seat roster and approval queue. Host approval and the PIN still gate every guest.
+- **Queued mid-trick joins.** A guest approved during a trick reserves a bot seat, immediately enters the table as an audience viewer with an “Approved — watching until this trick ends” banner, and is seated at the next trick with the bot’s hand, captures and score. A disconnect keeps the reservation for five minutes so a reload can reattach; queued guests get a rejoin token and are restored by host recovery.
+- **Host-request popup and room info.** A join request while the host is on the table shows a persistent Allow / Watch only / Deny / Later popup; Later leaves an **n waiting** pill in the top bar. The top-bar room chip now opens the room-info sheet instead of only copying, so the host can read the number and PIN aloud.
+- **Automatic host audio.** Opening the invite room auto-joins the host voice mesh (subject to microphone permission and the Auto audio preference). A queued guest waits for the seating `welcome` before joining audio.
+- **Action acknowledgement and state catch-up.** Guest actions carry an `actionId`; the host acknowledges and deduplicates retries. During active play the host re-sends a full snapshot every 4 seconds (plus `seq` pulses on summary screens); a lagging guest requests a full `resync`, and an illegal play or returning to the tab does the same. Actions has **Refresh table**. A client watchdog pings every 5 seconds and reconnects to the same seat after 15 seconds of silence, so a stalled channel no longer leaves “Bot 2 is thinking” frozen on screen. The host marks a guest offline after 20 seconds without a message; if it is that guest's active turn for 30 seconds, the bot takes the seat, the old connection closes, and the guest can reclaim it with the seat card.
+- **Stable iPad menus and viewport.** The tablet layout is a fixed `100dvh` viewport, the HUD wraps before the right rail instead of clipping the Result chip, and iOS double-tap page zoom/callout is suppressed. The second `touchend` and Safari gesture events are cancelled on the canvas as well, so double-tapping a tile cannot zoom the page or leave a white gap. The in-room tablet top bar is compact (icon-only Update/Join audio, no About/Leave in the bar, Actions owns Leave) so the room chip cannot widen the layout and crop the table. This stops a double-tap from scrolling the table, hiding the dock or leaving a white gap.
+- **Local hand row and dock on iPad.** The owner's hand is now one straight row along the seat tangent (`seat === MY_SEAT`, step 0.98), so face-up tiles neither overlap nor collide with the next seat's fan. Promotion from audience mode clears the dock's `hidden` attribute, so “Choose a combination to lead” returns as soon as the seat is handed over.
+- **Watcher presence.** Every participant sees a top-bar `👁 n` chip and a name list whenever someone is watching, including queued audience members marked “waiting for seat”.
+- **Easy reconnect after a bot replacement.** A guest's seat card is kept for seven days in `localStorage` (plus `sessionStorage`) so closing and reopening the link on the same device reclaims the same seat without approval. The waiting panel has **Reconnect**, and a lost `welcome` resends `hello` up to three times.
+- **Feature previews.** `.github/workflows/pages.yml` publishes `main` at the root and `feature/invite-friends` under `/preview/invite-friends/`, so the feature can be tested without replacing production.
 
 ### Changed
 

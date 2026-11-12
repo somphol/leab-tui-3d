@@ -1,0 +1,58 @@
+name: Pages
+
+on:
+  push:
+    branches: [main, feature/invite-friends]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out production
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: site
+          fetch-depth: 1
+
+      - name: Add the invite feature preview
+        if: github.ref != 'refs/heads/main'
+        run: |
+          mkdir -p site/preview
+          git clone --depth 1 --branch feature/invite-friends \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            site/preview/invite-friends
+          rm -rf site/preview/invite-friends/.git
+          # Keep previews out of search results; production stays indexable.
+          if ! grep -q 'name="robots"' site/preview/invite-friends/index.html; then
+            sed -i '/<head>/a\  <meta name="robots" content="noindex" />' site/preview/invite-friends/index.html
+          fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

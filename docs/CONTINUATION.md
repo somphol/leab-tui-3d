@@ -1,13 +1,14 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-08 · release 1.9.22**
+**As of 2026-11-11 · release 1.10.17**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `4d4b28b` — *Release Leab-Tui 3D 1.9.22: play history from the turn-log sheet*
+- Last release: **1.10.17** — host-left is terminal with a manual Reconnect; tile size scales only your own hand
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
+- Feature train: `develop` — the 1.10.x train is merged; host-left recovery and own-hand tile sizing shipped in 1.10.17
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -61,6 +62,20 @@ Current table/network model:
 | 1.9.20 | Hint toast clears the HUD; inspector opens on the selected tile; 手 → H |
 | 1.9.21 | C/M/A/i/H/L rail visible on iPad landscape |
 | 1.9.22 | L sheet exposes the shared play-history browser |
+| 1.10.4 | Invite from solo, audience queue, watchers, keepalive/resync, iPad hand fan and dock fixes |
+| 1.10.5 | Approval receipts, welcome ack/retry, join-status recovery, queued/viewer resync |
+| 1.10.6 | Tile size (2D+3D), autoplay my seat, seat reclaim, state-freshness watchdog |
+| 1.10.7 | Launch menu offers only Play now (invite later) and Join a game |
+| 1.10.8 | Slow but connected players keep their seat; host push-state |
+| 1.10.9 | Unique bot names and a You badge on the scoreboard |
+| 1.10.10 | Bid screen explains piles, scoring and the last-bidder rule |
+| 1.10.11 | Remove the non-standard bid-piles variant; standard scoring only |
+| 1.10.12 | iPad deal reflows automatically; all eight tiles visible |
+| 1.10.13 | Remove the experimental draft picker; random face-down deal only |
+| 1.10.14 | Optional Blind pick house variant: CSPRNG face-down deal |
+| 1.10.15 | Hand dock opens by default; H collapse is remembered |
+| 1.10.16 | Blind pick: choose two face-down cards by position |
+| 1.10.17 | Host-left is terminal with manual Reconnect; tile size scales only your hand |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),
@@ -115,20 +130,32 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 cd ~/Projects/leab-tui-3d
 node --check script.js && node --check peer-manager.js
 node --check voice-chat.js && node --check security.js
-node scripts/check.mjs                 # 420/420
+node scripts/check.mjs                 # 444/444
 python3 -m http.server 8123 &          # if not running
-node scripts/verify.mjs                # ALL BROWSER CHECKS PASSED (includes iPad portrait/landscape)
+node scripts/verify.mjs                # ALL 49 BROWSER CHECKS PASSED (includes iPad portrait/landscape)
 AUDIO_TEST=1 node scripts/verify.mjs   # includes a real audio peak
-node scripts/net-check.mjs             # ALL 37 MULTIPLAYER CHECKS PASSED
+NET_QUICK=1 node scripts/net-check.mjs # ~48–50 checks, ~3–4 min: everyday network fixes (no 4-human/loss soak)
+node scripts/net-check.mjs             # ~58 checks, ~10–12 min: release gate (4 humans + 10% loss)
+node scripts/invite-check.mjs          # ALL 16 INVITE CHECKS PASSED
 BASE_URL="https://somphol.github.io/leab-tui-3d/" node scripts/net-check.mjs
 ```
 
-`net-check.mjs` covers host/guest start, privacy, chat, voice, actions,
+`net-check.mjs` covers host/guest start, privacy, chat, voice, actions, invite/audience,
 guest reload rejoin, **host reload recovery**, **late join → bot seat**,
 **viewer mode**, **30-minute join pause**, **copy-room-info UI**, and
 disconnect-to-bot. `verify.mjs` covers boot, 3D, audio, display, the full
 round, the showdown/result/history layout, **iPad portrait/landscape framing
 and the 2D/3D shadow switch**, and no console exceptions.
+
+## 4a. Multiplayer invariants (do not regress)
+
+- **Transport:** PeerJS `serialization: "binary"` on host and client. JSON refuses frames over 16 KB and silently kills late-round four-human snapshots.
+- **Ordering:** the host has an `epoch` (incremented on reload) and a monotonic `seq`; every `welcome` and `state` carries both. Clients ignore older sequences, duplicate frames and previous-epoch states.
+- **Anti-entropy:** seated clients send `state-ack`; the host resends a targeted snapshot to any seat behind, plus a 4 s full heartbeat.
+- **Actions:** at-least-once with the same `actionId` + host-side dedupe; retries at 1.5 s. Never generate a new id on retry.
+- **Failure detection:** liveness only. A connected player is never bot-replaced for being slow; a seat is covered after 30 s of silence or a closed connection, and the rejoin token survives.
+- **Manual repair:** host **Actions → Push table update** publishes a fresh snapshot to every seat and viewer immediately.
+- **Testing:** `?netem=drop:…,dup:…,delay:…,jitter:…` impairs app frames only (test hook). `net-check` includes a 4-human full round and a lossy round; both are release gates.
 
 ## 5. Open items / sensible next work
 

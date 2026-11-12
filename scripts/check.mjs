@@ -68,6 +68,8 @@ const required = [
   "scripts/check.mjs",
   "scripts/verify.mjs",
   "scripts/net-check.mjs",
+  "scripts/invite-check.mjs",
+  ".github/workflows/pages.yml",
   "scripts/browser-check.mjs",
   "docs/README.md",
   "docs/BRANCHING.md",
@@ -113,7 +115,8 @@ const required = [
   "screenshots/ipad-landscape-1919.jpg",
   "screenshots/ipad-hints-1920.jpg",
   "screenshots/ipad-landscape-rail-1921.jpg",
-  "screenshots/ipad-log-history-1922.jpg"
+  "screenshots/ipad-log-history-1922.jpg",
+  "screenshots/ipad-invite-preview.jpg"
 ];
 
 for (const file of required) {
@@ -136,12 +139,15 @@ ok(/name="viewport"/i.test(index), "index has viewport");
 ok(/name="description"/i.test(index), "index has description");
 ok(/Content-Security-Policy/.test(index), "index has CSP");
 ok(index.includes("https://0.peerjs.com") && index.includes("wss://0.peerjs.com"), "CSP allows the PeerJS broker");
-ok(index.includes('id="lobbyModal"') && index.includes('id="lobbyHost"') && index.includes('id="lobbyJoin"'), "launch lobby markup exists");
+ok(!index.includes('value="bid"') && !index.includes('id="modeSelect"'), "non-standard bid-piles option is gone");
+ok(index.includes("data-blind-pick") && script.includes("cryptoShuffle"), "blind pick house variant exists");
+ok(index.includes('id="lobbyModal"') && index.includes('id="lobbySolo"') && index.includes('id="lobbyJoin"') && !index.includes('id="lobbyHost"'), "launch lobby markup offers play and join");
 ok(index.includes('id="netChip"'), "network room chip exists");
 ok(index.includes('id="chatPanel"') && index.includes('id="chatList"') && index.includes('id="chatForm"'), "table chat markup exists");
 ok(index.includes('id="voiceJoinBtn"') && index.includes('id="micBtn"') && index.includes('id="deafenBtn"'), "voice controls exist");
 ok(index.includes('id="hostApproval"') && index.includes('id="hostPinValue"') && index.includes('id="hostPinRegenerate"') && index.includes('id="hostPinInfo"') && index.includes('id="lobbyPinInput"'), "approval and PIN controls exist");
 ok(index.includes('id="lobbyPending"') && index.includes('id="lobbyApproveAll"'), "pending request UI exists");
+ok(!index.includes('id="lobbyHost"') && index.includes('id="lobbySolo"') && index.includes('id="lobbyJoin"'), "launch menu offers play and join only");
 ok(index.includes('id="remoteAudio"') && css.includes(".remote-audio") && css.includes(".chat-panel"), "remote audio and chat styles exist");
 ok(/type="importmap"/.test(index), "index has an import map");
 ok(index.includes("three@0.160.0/build/three.module.js"), "Three.js r160 is pinned");
@@ -236,11 +242,11 @@ ok(script.includes("return piles - 2;"), "par scoring is piles - 2");
 ok(script.includes('["single", "pair", "triple", "quad", "quint", "sahoo", "seehoo", "ngohoo", "lakhoo"]'), "all nine combination types are declared");
 ok(/if \(n === 2\) \{[\s\S]*?tiles\[0\]\.power !== 7/.test(script), "General pair is rejected in detection");
 ok(script.includes("CORE_BIG") && script.includes("CORE_SMALL"), "both straight cores are declared");
-ok(index.includes('id="draftModal"') && index.includes("data-draft-toggle"), "draft modal and host toggles exist");
+ok(index.includes('id="draftModal"') && index.includes('data-i18n="draft.blindTitle"') && !index.includes("data-draft-toggle"), "blind pick modal exists without the old draft toggles");
 ok(script.includes("function startDraft") && script.includes("function draftPick") && script.includes("function finishDraft"), "draft engine exists");
 ok(/state\.hands\.every\(\(hand\) => hand\.length === 8\)/.test(script), "draft finishes only when every hand has 8 tiles");
 ok(/kind === "draft"[\s\S]{0,80}draftPick\(profile\.seat/.test(script), "draft picks are relayed through the host");
-ok(index.includes('id="draftChip"') && script.includes("function setDraftMode"), "draft can be toggled at the table");
+ok(!index.includes('id="draftChip"'), "draft can no longer be toggled at the table");
 const aiDraftBody = script.slice(script.indexOf("function aiDraftPick"), script.indexOf("function beginTrick"));
 ok(script.includes("let bootSeed") && /makeState\(options\.seed \?\? bootSeed/.test(script), "the URL seed reaches the match and the draft");
 ok(aiDraftBody.includes("randomDraftPair") && !aiDraftBody.includes(".sort("), "bot draft picks are uniformly random");
@@ -251,7 +257,7 @@ ok(index.includes('id="copyRoomBtn"') && script.includes("function pauseJoinRequ
 ok(script.includes("function saveHostRecovery") && script.includes("function resumeHostRoom"), "host reload recovery exists");
 ok(script.includes("sessionStorage.setItem(HOST_RECOVERY_KEY") && !/localStorage[^\n]*HOST_RECOVERY_KEY/.test(script), "host recovery is session-only, never localStorage");
 ok(script.includes("function scheduleHostRejoin") && script.includes("net.hostRestarting"), "guest retries while the host reloads");
-ok(script.includes("prefs.draftMode = prefs.draftMode === true"), "draft mode defaults off");
+ok(script.includes("prefs.draftMode = false"), "draft picker is forced off");
 ok(script.includes("copy.draftPool") && script.includes("game.draftPool"), "draft pool survives save and hydrate");
 ok(script.includes("function trickCompareMarkup"), "one comparison renderer is shared");
 ok(/if \(!isClient\(\)\) \{\s*showTrickResult\(record\)/.test(script), "every local seat sees the trick result");
@@ -306,6 +312,27 @@ ok(index.includes('id="panelSheetAction"') && script.includes('t("summary.viewLo
 ok(script.includes('activePanelId !== "logPanel"') && script.includes("openLastTrickModal();"), "the sheet action opens the shared turn history");
 ok(script.includes("function positionToastLayer") && script.includes('layer.style.top'), "toasts position below the HUD strip");
 ok(script.includes("inspector.emptyTouch") && script.includes("const fallback = state?.selected?.length"), "inspector falls back to the selected tile");
+ok(index.includes('id="inviteTopBtn"') && index.includes('id="inviteBtn"') && index.includes('id="inviteModal"'), "Invite controls and modal exist");
+ok(index.includes('id="joinRequestPop"') && index.includes('id="joinRequestApprove"') && index.includes('id="joinRequestLater"'), "host join-request popup exists");
+ok(index.includes('id="queuedBanner"') && script.includes("queuedSeat"), "queued guests have an audience banner");
+ok(index.includes('id="watcherChip"') && index.includes('id="watcherList"') && script.includes("function renderWatcherChip"), "watchers are visible to every participant");
+ok(script.includes("seat === MY_SEAT") && script.includes("const step = 0.98"), "the owner's hand is one straight row");
+ok(script.includes('$("#handDock")?.removeAttribute("hidden")'), "promotion restores the hand dock");
+ok(css.includes("pointer: coarse) and (min-width: 641px") && script.includes("lastTouchEnd"), "tablet menus lock the viewport and suppress double-tap zoom");
+ok(css.includes("#leaveRoomTopBtn { display: none; }") && css.includes(".brand-sub { display: none; }"), "tablet top bar compacts for the room chip");
+ok(script.includes("function hostCurrentMatch") && script.includes("function queueBotSeat") && script.includes("function promoteQueuedGuests"), "solo-to-host invite engine exists");
+const inviteBody = script.slice(script.indexOf("async function hostCurrentMatch"), script.indexOf("function openInviteSheet"));
+ok(inviteBody && !inviteBody.includes("beginMatch(") && !inviteBody.includes("leaveRoom("), "invite conversion does not redeal or drop the solo game");
+ok(script.includes("hostCurrentMatch: () => hostCurrentMatch") && script.includes("queued: () => queuedList()"), "invite conversion and queue are exposed for tests");
+ok(script.includes("function renderJoinRequestPopup") && script.includes("function queueBotSeat"), "host request popup and queue renderer exist");
+ok(script.includes("action-ack") && script.includes("lastActionId") && script.includes("pendingAction"), "actions are acknowledged and deduplicated");
+ok(script.includes("sendWelcomeWithRetry") && script.includes("welcome lost its snapshot"), "welcome delivery retries and recovers a missing snapshot");
+ok(script.includes("function startStatePulse") && script.includes("function requestResync") && script.includes("lastSeq"), "sequence pulse and resync exist");
+ok(script.includes("function startClientWatchdog") && script.includes("toast.connectionStalled"), "guest watchdog reconnects a stalled channel");
+ok(script.includes("function checkGuestTurnTimeout") && script.includes('type: "seat-timeout"'), "host converts an unresponsive turn to a bot");
+ok(script.includes("REJOIN_CARD_KEY") && script.includes("REJOIN_CARD_TTL_MS"), "guest seat card has a local TTL");
+ok(script.includes('if (isHost() && net?.started) openInviteSheet();') && script.includes('t("invite.roomInfo")'), "host room chip opens room info instead of only copying");
+ok(read(".github/workflows/pages.yml").includes("preview/invite-friends"), "Pages workflow builds the invite preview subpath");
 const harness = read("scripts/browser-check.mjs");
 ok(harness.includes("const DEVICES") && harness.includes("setDeviceMetricsOverride") && harness.includes("setTouchEmulationEnabled"), "browser harness has iPad device emulation");
 ok(css.includes("prefers-reduced-motion"), "reduced-motion support exists");

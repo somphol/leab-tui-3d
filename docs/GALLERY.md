@@ -140,6 +140,12 @@ The 820×1180 portrait stage fitted to the whole rim: the 2D camera computes its
 
 The Thai hint toast sits below the HUD and names the suggested set. The inspector opens on the selected tile, and both hand controls read **H** in the panel rail and collapsed dock.
 
+## Invite from a solo table — preview
+
+![Invite from solo](../screenshots/ipad-invite-preview.jpg)
+
+The preview build: **Invite** in the top bar and Actions opens a room around the running solo match, with the room number, PIN, copy/share actions, seats and the approval queue. The guest is queued until the current trick ends.
+
 ## iPad turn-log history — 1.9.22
 
 ![iPad turn-log history](../screenshots/ipad-log-history-1922.jpg)

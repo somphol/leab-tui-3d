@@ -11,6 +11,7 @@
 | Flow | CDP playthrough (below) | a complete round, 32-tile conservation |
 | Tablet | `scripts/browser-check.mjs --device ipad` | 820×1180 / 1180×820 viewport, coarse pointer, whole rim on screen, clear of the dock, 2D shadows off / 3D on |
 | Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, PIN/approval, probe, chat, voice mesh, mute/deafen, actions, disconnect-to-bot |
+| Invite | `node scripts/invite-check.mjs` | solo mid-trick → Invite → host room + auto audio, host popup, guest audience mode, promotion, resync, seat-card reconnect |
 | Visual | screenshots in `screenshots/` | desktop EN, desktop TH, rules drawer, 390×844 phone, iPad portrait/landscape, lobby |
 
 Run the static checks first:
@@ -26,10 +27,11 @@ Start a server for browser checks:
 ```bash
 python3 -m http.server 8123 &
 node scripts/verify.mjs
-node scripts/net-check.mjs   # real broker, needs outbound 0.peerjs.com
+node scripts/net-check.mjs     # real broker, needs outbound 0.peerjs.com
+node scripts/invite-check.mjs  # solo → Invite → queued guest, real broker
 ```
 
-`scripts/verify.mjs` starts its own server on port 8123 if one is not already running, launches Chrome through `scripts/browser-check.mjs`, reads `window.__selftest`, and fails on any console exception. `scripts/net-check.mjs` is separate because it depends on the public broker; it launches two pages in one headless Chrome.
+`scripts/verify.mjs` starts its own server on port 8123 if one is not already running, launches Chrome through `scripts/browser-check.mjs`, reads `window.__selftest`, and fails on any console exception. `scripts/net-check.mjs` and `scripts/invite-check.mjs` are separate because they depend on the public broker; each launches multiple pages in one headless Chrome. `invite-check.mjs` asserts the conversion does not redeal, the guest is told to wait, and the reserved seat is promoted at the next trick.
 
 ## The 38 self-checks
 

@@ -32,6 +32,11 @@ The felt is 6.62 units in radius. Two zones are drawn on it:
 ## 2. Hand arrangement
 
 - `handLayout` is a scene-local `Map<tileId, {x, z, angle}>` for the local seat.
+- The owner's hand is detected with `seat === MY_SEAT`, not `seat === 0`, so a
+  guest's own hand is not rendered with the compact opponent fan. The owner's
+  tiles are one **straight row along the seat tangent** at `HAND_RADIUS`, step
+  0.98, so the face-up hand never overlaps or collides with the neighbouring
+  fan. Opponent fans stay compact.
 - The first drag snapshots every tile in the hand at its current arc position,
   so playing one tile does not re-flow the rest of the arrangement.
 - A new deal clears the map. **Tidy hand** clears it immediately and restores

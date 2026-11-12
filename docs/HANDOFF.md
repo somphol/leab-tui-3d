@@ -1,91 +1,56 @@
-# Handoff — Leab-Tui 3D 1.9.22
+# Handoff — Leab-Tui 3D 1.10.4
 
-**Session:** 2026-11-08 · OpenCode 2.2.5 · DeepSeek V4.1 Flash
+**Session:** 2026-11-08 → 2026-11-09 · OpenCode 2.2.5 · DeepSeek V4.1 Flash
 
 ## Outcome
 
-Release **1.9.22** is built, verified and published. It follows the 1.9.19–1.9.21 iPad work with these fixes:
+Release **1.10.4** is built, verified and published. It turns the table into a resilient multiplayer studio:
 
-- **Hints clear the HUD.** `positionToastLayer()` measures the HUD strip before every toast, so a wrapped Thai HUD cannot cover the message; the layer also sits above the HUD on the z-axis. The Hint toast now names the suggested set (`Hint: Red Advisor`) or the discard count.
-- **The inspector opens on the selected tile.** A tap, hand-list click or Hint records the tile, and opening the `i` orb falls back to the newest selection instead of the empty prompt. Touch devices get a tap-specific prompt.
-- **Readable hand controls.** The two circular buttons that showed **手** — the panel-rail hand orb and the collapsed hand dock — now show **H**, with the same `Your hand` / `Expand hand dock` labels.
-- **The C/M/A/i/H/L rail is back on iPad landscape.** `isPanelRailMode()` now matches the coarse-pointer sidebar rule instead of width alone.
-- **The L sheet links to play history.** The panel-sheet header shows **View trick log / ดูประวัติการเล่น**, closes the sheet and opens the same `#lastTrickModal` as the round summary. It is disabled with “No completed turns yet.” until a trick resolves.
-- Release **1.9.19** removed 2D cast shadows and fitted the whole table to iPad portrait and landscape, with `--device ipad` emulation and `getFraming()` checks.
-- **Branch workflow documented.** `main` is production; `develop` is the feature train. Features, fixes and docs start from `develop`; releases merge through `release/x.y.z` and are back-merged. See **[BRANCHING.md](BRANCHING.md)**.
+- **Invite from a solo game.** A gold **Invite** in the top bar and Actions opens a host room around the running solo match without redealing. The invite sheet shows the room number, PIN, Copy room info, Copy link, Share, seats and approvals. Host audio joins automatically.
+- **Audience queue.** A guest approved mid-trick enters the table immediately as a viewer (`seat: -1`, ghosted hands, no dock/chat/voice) with an “Approved — watching until this trick ends” banner, then takes the reserved bot seat at the next trick. The hand dock returns after promotion.
+- **Watchers everywhere.** Every participant sees a top-bar `👁 n` chip and a name list; queued audience members are marked “waiting for seat”.
+- **Reliability.** Guest actions carry an `actionId`; the host ACKs and deduplicates retries. Active play re-sends a full snapshot every 4 s; summary screens use `pulse {seq}`. A lagging guest requests `resync`; Actions has **Refresh table**. A client watchdog pings every 5 s and reconnects a stalled seat after 15 s.
+- **Host keepalive.** A silent guest is marked offline after 20 s. If it is their active turn for 30 s, the host gives the bot the seat, sends `seat-timeout`, and closes the old connection; the guest reclaims it with the seven-day seat card.
+- **iPad fixes.** Local hand fan uses `seat === MY_SEAT` with a 0.245 rad step (no overlap), promotion clears the dock’s `hidden` attribute, and a host who started from `?mode=solo` now recovers the same room after **Update**.
 - Live: [https://somphol.github.io/leab-tui-3d/](https://somphol.github.io/leab-tui-3d/)
+- Preview: [https://somphol.github.io/leab-tui-3d/preview/invite-friends/](https://somphol.github.io/leab-tui-3d/preview/invite-friends/)
 - Repository: [https://github.com/somphol/leab-tui-3d](https://github.com/somphol/leab-tui-3d)
 - Local master: `~/Projects/leab-tui-3d`
-- Permanent branches: `main` (production) and `develop` (feature train)
-- Current continuation: **[CONTINUATION.md](CONTINUATION.md)**
-- Durable rules: **[../AGENTS.md](../AGENTS.md)**
-
-## What is in the box
-
-| Area | State |
-| --- | --- |
-| Rules engine | Four-player game: 9 combo types, strict comparison, Chuan |
-| AI | Heuristic lead/follow; fills empty network seats; random draft picks |
-| Draft | Off-by-default, public 32-tile pool, 2×4 picks, seeded, logged |
-| 3D | Carved tiles, ghosts, captured piles on the rim, 2D pan/zoom and 3D orbit, reset-board, safe area |
-| 2D framing | Fit to stage aspect and HUD/dock/rail occupancy; no cast shadows |
-| Hints / inspector | HUD-aware toasts, combo named in the hint, inspector follows the selection |
-| Showdown | Face-down sends, full circle, legal losing sets showable, result for everyone, Chuan-aware reason |
-| History | Turn Log live, Turn history card comparison, pile popup with winner/reason |
-| Multiplayer | Host-authoritative WebRTC; guest rejoin tokens; host same-tab reload recovery; late join into bot seats; viewers; 30-min join pause |
-| Privacy | Per-seat redaction; viewer seat `-1` ghosts all hands |
-| Chat / voice | Host-routed chat; full-mesh voice with mute/deafen; viewers have neither |
-| Full screen | `manifest.webmanifest`, icons, Apple meta, Display → Full screen |
-| Persistence | Autosave, solo resume, stats, JSON export; network saves non-resumable; sessionStorage rejoin/host recovery |
-| Verification | 38/38 self-test, 420 static checks, 44 browser checks (incl. iPad portrait/landscape), 37-check two-browser WebRTC suite (local and live) |
-| Docs | README, AGENTS, STATE, CONTINUATION, rules, architecture, multiplayer, protocol, tests, deployment, data, controls, accessibility, performance, design, browsers, FAQ, roadmap, checklist, gallery, glossary |
 
 ## Evidence
 
 ```
 node --check script.js / peer-manager.js / voice-chat.js / security.js   PASS
-node scripts/check.mjs                                                  PASS (420 checks)
+node scripts/check.mjs                                                  PASS (443 checks)
 ?selftest=1                                                             SELFTEST PASS 38/38
-node scripts/verify.mjs                                                 ALL 44 BROWSER CHECKS PASSED
-AUDIO_TEST=1 node scripts/verify.mjs                                    audio peak measured
-node scripts/net-check.mjs                                              ALL 37 PASSED
-BASE_URL=https://somphol.github.io/leab-tui-3d/ node scripts/net-check.mjs  ALL 37 PASSED
-iPad portrait 820×1180    whole rim on-screen, clear of dock, 2D shadows off, 3D shadows on
-iPad landscape 1180×820   whole rim on-screen, clear of dock, 2D shadows off, 3D shadows on
-iPad hint                 toast below the HUD, names the suggested set
-iPad inspector            opens with the selected tile and "Selected for play"
-iPad landscape rail       C/M/A/i/H/L circles visible
-iPad L sheet              View trick log enabled after one trick; opens the shared history
-hand controls             panel rail and collapsed dock both read H
-host + guest              2 humans + 2 bots; guest privacy (8 real / 24 ghost)
-late join                 third guest approved into bot seat 2 with a live hand
-viewer                    seat -1, all hands ghosted, hand dock hidden, console clean
-join pause                new guest rejected with "not accepting"
-guest reload              same seat via token; no PIN/approval
-host reload               same room code, trick 3, guest seat reconnected
-showdown legality         illegal pair explained; Show disabled; Keep hidden only
-full round                roundEnd, 32 tiles conserved, points sum 0
+node scripts/verify.mjs                                                 ALL BROWSER CHECKS PASSED
+node scripts/invite-check.mjs                                           ALL 16 INVITE CHECKS PASSED
+node scripts/net-check.mjs                                              ALL 47 MULTIPLAYER CHECKS PASSED
+BASE_URL=…/preview/invite-friends/ node scripts/invite-check.mjs        ALL 16 INVITE CHECKS PASSED
+invite/audience      solo → Invite → host audio, popup, audience, promotion
+reconnect            closed tab reopens the same seat through the seat card
+state catch-up       manual resync + heartbeat + action ACK/dedup
+iPad                 hand fan no overlap, dock returns, host update recovers
+watchers             host and guest see the same name list; chip clears on leave
 ```
 
 ## Decisions a next agent must not silently change
 
-See **[CONTINUATION.md](CONTINUATION.md) §3** and **[../AGENTS.md](../AGENTS.md) §4**. The short list: full-circle judgement; legal losing sets can be shown; redaction/seat `-1` for viewers; host authority; session-only PIN/token/recovery handling; draft is experimental; 2D is fixed-orientation; **2D has no cast shadows**; **2D framing is computed from the live stage**; **toasts measure the HUD**; **inspector follows the selection**; **hand orbs use H**; **the rail follows the coarse-pointer query**; **the L sheet uses the shared history modal**; all version strings move together.
+See **[CONTINUATION.md](CONTINUATION.md) §3** and **[../AGENTS.md](../AGENTS.md) §4**. Short list: host authority; full-circle showdown; legal losing sets showable; redaction and viewer seat `-1`; PIN/token handling; `hostCurrentMatch()` must not call `beginMatch()`/`leaveRoom()`; queued guests are audience viewers until promotion; `seat === MY_SEAT` for the local fan; promotion clears the dock; 2D has no cast shadows; all version strings move together.
 
 ## Open items
 
-- **iPad checks are emulated.** Chrome matches CSS viewport, DPR, touch/coarse pointer and a Safari UA, but not Safari's toolbar, safe-area insets or real GPU timing. Keep a physical iPad pass for layout-critical releases.
-- iPad users can still be on a stale cached build. The Turn-history footer prints the running version; update via **Update** or reopen the page.
-- Viewers have no rejoin token, chat or voice, and are not promoted when a seat later becomes a bot.
-- A late-joined guest inherits the bot's current hand/score; the bot may have played in the current trick.
-- Join pause is a fixed global 30 minutes (not per-guest).
-- Host recovery is same-tab only; closing the tab or another device ends the room. Voice calls drop on host reload.
-- Android Chrome can still fail at `ice-checking`/`host-timeout` on some networks; no TURN is implemented (issue #1).
-- No service worker/offline mode; the home-screen app is a shortcut to the live site.
+- **iPad checks are emulated** (820×1180 / 1180×820); Safari toolbar, safe-area and GPU timing still need a physical pass.
+- Watchers are names only; they have no rejoin token and are not promoted when a seat becomes a bot.
+- A queued reservation is held for five minutes after a disconnect; the host can cancel it from the invite sheet.
+- Host recovery is **same-tab only**; closing the tab ends the room. Voice drops on reload.
+- Android Chrome can still fail at `ice-checking`/`host-timeout`; no TURN relay (issue #1).
+- No service worker/offline mode.
 
 ## Continuity
 
 - Deployed from `main` (repository root) by GitHub Pages.
-- Local master: `~/Projects/leab-tui-3d`
-- Permanent branches: `main` (production) and `develop` (feature train).
+- `develop` is the feature train; `feature/invite-friends` carries this release preview.
+- Local master: `~/Projects/leab-tui-3d`.
 - Build record: `STATE.md` and `state.json`.
 - Verification: `docs/TESTING.md`; release routine: `CONTINUATION.md` §7.

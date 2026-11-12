@@ -1,3 +1,5 @@
+> **Removed from the interface (1.10.13).** The draft picker was an experimental house variant, not part of the Navee source. The standard deal is eight random tiles face-down. This file remains as a design record only.
+
 # Draft deal (experimental)
 
 Draft is an **optional, experimental** way to deal a round. It is **off by
@@ -62,7 +64,7 @@ a different hand.
 - **No redraw (โละ) in draft mode.** The redraw rule exists to soften a bad
   random deal; a drafted hand is the player's own choice, so `canRedraw` returns
   false whenever draft mode is on.
-- **Chuan, bidding, scoring, captures and reveal/showdown are unchanged.** The
+- **Chuan, scoring, captures and reveal/showdown are unchanged.** The
   draft only replaces the deal.
 - **Lead** is the red-General holder rather than the previous trick's winner.
   This is the same idea as the first-round lead rule, applied to each drafted

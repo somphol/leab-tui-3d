@@ -6,7 +6,7 @@
   <title>Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio</title>
   <meta name="description" content="A bilingual, offline-friendly 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with 32 Chinese chess tiles. Vanilla HTML, CSS and Three.js." />
   <meta name="theme-color" content="#e8f0f2" />
-  <meta name="app-version" content="1.9.22" />
+  <meta name="app-version" content="1.10.17" />
   <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta property="og:type" content="website" />
@@ -55,7 +55,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Leab-Tui 3D" />
-  <link rel="stylesheet" href="style.css?v=1.9.22" />
+  <link rel="stylesheet" href="style.css?v=1.10.17" />
   <script type="importmap">
     {
       "imports": {
@@ -76,7 +76,7 @@
         <span class="brand-copy">
           <span class="brand-line">
             <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
-            <span id="brandVersion" class="brand-version">(v1.9.22)</span>
+            <span id="brandVersion" class="brand-version">(v1.10.17)</span>
           </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
@@ -93,6 +93,10 @@
         <button id="soundToggle" class="icon-btn" type="button" aria-pressed="true" aria-label="Sound on" title="Sound">
           <span id="soundIcon" aria-hidden="true">♪</span>
         </button>
+        <button id="inviteTopBtn" class="pill invite-top" type="button" hidden aria-label="Invite friends" title="Invite friends">
+          <span class="invite-icon" aria-hidden="true">＋</span>
+          <span class="invite-label" data-i18n="invite.top">Invite</span>
+        </button>
         <button id="voiceCallBtn" class="pill voice-call" type="button" hidden aria-label="Join audio chat">
           <span class="voice-call-icon" aria-hidden="true">🎙</span>
           <span class="voice-call-label" data-i18n="voice.joinAudio">Join audio</span>
@@ -101,6 +105,13 @@
           <span aria-hidden="true">⏏</span><span class="leave-top-label" data-i18n="net.leave">Leave room</span>
         </button>
         <button id="netChip" class="pill net-chip" type="button" hidden aria-label="Room code">—</button>
+        <button id="joinAlertBtn" class="pill join-alert" type="button" hidden aria-label="Join requests" data-i18n-aria="net.pendingTitle" title="Join requests">
+          <span class="join-alert-icon" aria-hidden="true">＋</span>
+          <span id="joinAlertText">1 waiting</span>
+        </button>
+        <button id="watcherChip" class="pill watcher-chip" type="button" hidden aria-label="Watchers" data-i18n-aria="watch.title" title="Watchers">
+          <span class="watcher-eye" aria-hidden="true">👁</span><span id="watcherCount">0</span>
+        </button>
         <button id="rulesBtn" class="icon-btn" type="button" aria-label="Rules" title="Rules">
           <span aria-hidden="true">?</span>
         </button>
@@ -135,12 +146,11 @@
           </div>
           <div class="hud-chips" role="status" aria-live="polite">
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.round">Round</span><strong id="roundChip">1</strong></span>
-            <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Trick</span><strong id="trickChip">0</strong></span>
+            <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Turn</span><strong id="trickChip">0</strong></span>
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.target">Target</span><strong id="targetChip">20</strong></span>
             <span class="hud-chip hud-turn"><span class="hud-label" data-i18n="hud.turn">Turn</span><strong id="turnChip">You</strong></span>
             <span class="hud-chip call-chip" id="callChip" hidden></span>
-            <button id="lastTrickBtn" class="hud-chip view-toggle" type="button" hidden data-i18n="lastTrick.button">Last trick</button>
-            <button id="draftChip" class="hud-chip view-toggle" type="button" hidden aria-pressed="false" title="Draft deal (experimental)">Draft: off</button>
+            <button id="lastTrickBtn" class="hud-chip view-toggle" type="button" hidden data-i18n="lastTrick.button">Last turn</button>
             <label class="hud-chip result-chip" title="Result announcement">
               <span data-i18n="hud.result">Result</span>
               <select id="resultSelect" aria-label="Result announcement seconds">
@@ -180,6 +190,7 @@
             <div id="bidRow" class="bid-row" role="group" aria-label="Bid piles" hidden></div>
             <button id="hintBtn" class="btn btn-ghost" type="button" data-i18n="actions.hint">Hint</button>
             <button id="clearBtn" class="btn btn-ghost" type="button" data-i18n="actions.clear">Clear</button>
+            <button id="autoplayBtn" class="btn btn-ghost dock-auto" type="button" aria-pressed="false" data-i18n="actions.autoplayShort">Auto</button>
             <button id="tidyHandBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.tidy">Tidy hand</button>
             <button id="leadBtn" class="btn btn-gold" type="button" disabled data-i18n="actions.lead">Lead</button>
             <button id="revealBtn" class="btn btn-jade" type="button" hidden data-i18n="actions.reveal">Reveal &amp; challenge</button>
@@ -214,18 +225,27 @@
         <section class="panel" id="actionsPanel">
           <div class="panel-head"><h2 data-i18n="actions.title">Actions</h2></div>
           <div class="action-grid">
+            <button id="inviteBtn" class="btn btn-gold invite-action" type="button" hidden data-i18n="invite.action">Invite friends</button>
             <button id="newMatchBtn" class="btn btn-ghost" type="button" data-i18n="actions.newMatch">New match</button>
             <button id="nextRoundBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.nextRound">Next round</button>
-            <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo trick</button>
+            <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo turn</button>
+            <button id="resyncBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.resync">Refresh table</button>
+            <button id="pushStateBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.pushState">Push table update</button>
             <button id="exportBtn" class="btn btn-ghost" type="button" data-i18n="actions.export">Export JSON</button>
             <button id="lobbyBtn" class="btn btn-ghost" type="button" data-i18n="net.openLobby">Multiplayer</button>
             <button id="copyRoomBtn" class="btn btn-ghost" type="button" hidden data-i18n="net.copyRoomInfo">Copy room info</button>
             <button id="leaveRoomBtn" class="btn btn-ghost btn-wine" type="button" hidden data-i18n="net.leave">Leave room</button>
           </div>
-          <label id="draftToggleWrap" class="lobby-check action-toggle">
-            <input type="checkbox" data-draft-toggle />
-            <span data-i18n="draft.toggle">Draft next deal (experimental)</span>
+          <label id="autoplayToggleWrap" class="lobby-check action-toggle">
+            <input type="checkbox" data-autoplay-toggle />
+            <span data-i18n="actions.autoplay">Autoplay my seat (AI)</span>
           </label>
+          <p class="display-note" data-i18n="actions.autoplayNote">The coach plays your legal moves after a short pause. Turn it off at any time to take over.</p>
+          <label id="blindPickWrap" class="lobby-check action-toggle">
+            <input type="checkbox" data-blind-pick />
+            <span data-i18n="actions.blindPick">Blind pick deal (house variant)</span>
+          </label>
+          <p class="display-note" data-i18n="actions.blindPickNote">Eight cards are drawn face-down from a crypto-shuffled deck. No open pool, no choosing.</p>
         </section>
 
         <section class="panel chat-panel" id="chatPanel" hidden>
@@ -272,7 +292,7 @@
 
         <section class="panel log-panel" id="logPanel">
           <div class="panel-head">
-            <h2 data-i18n="log.title">Trick log</h2>
+            <h2 data-i18n="log.title">Turn log</h2>
             <button id="logHistoryBtn" class="mini-btn" type="button" data-i18n="log.history">History</button>
             <span class="badge" data-i18n="log.live">live</span>
           </div>
@@ -282,7 +302,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.9.22</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.10.17</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -298,7 +318,7 @@
         <button class="panel-orb" type="button" data-panel="chatPanel" aria-label="Table chat" title="Table chat">💬</button>
         <button class="panel-orb" type="button" data-panel="inspectorCard" aria-label="Tile inspector" title="Tile inspector">i</button>
         <button class="panel-orb" type="button" data-panel="handPanel" aria-label="Your hand" title="Your hand">H</button>
-        <button class="panel-orb" type="button" data-panel="logPanel" aria-label="Trick log" title="Trick log">L</button>
+        <button class="panel-orb" type="button" data-panel="logPanel" aria-label="Turn log" title="Turn log">L</button>
       </div>
 
       <div id="panelSheet" class="panel-sheet" hidden>
@@ -362,12 +382,7 @@
 
           <p class="lobby-or"><span data-i18n="net.orFriends">or play with friends</span></p>
 
-          <div class="lobby-modes lobby-modes-two">
-            <button id="lobbyHost" class="lobby-mode" type="button">
-              <span class="lobby-mode-icon" aria-hidden="true">◉</span>
-              <b data-i18n="net.host">Host a game</b>
-              <span data-i18n="net.hostDesc">Keep this tab open. We make a code you can send.</span>
-            </button>
+          <div class="lobby-modes lobby-modes-one">
             <button id="lobbyJoin" class="lobby-mode" type="button">
               <span class="lobby-mode-icon" aria-hidden="true">◇</span>
               <b data-i18n="net.join">Join a game</b>
@@ -396,21 +411,11 @@
                 <option value="ccw" data-i18n="rules.ccw">Counter-clockwise</option>
               </select>
             </label>
-            <label class="rule-field"><span data-i18n="rules.scoring">Scoring</span>
-              <select id="modeSelect" data-rule="mode">
-                <option value="piles" data-i18n="rules.pilesMode">Most piles</option>
-                <option value="bid" data-i18n="rules.bidMode">Bid piles</option>
-              </select>
-            </label>
           </div>
 
           <label class="lobby-check auto-audio-check">
             <input type="checkbox" data-auto-audio checked />
             <span data-i18n="net.autoAudio">Join audio chat when the table starts</span>
-          </label>
-          <label class="lobby-check draft-check">
-            <input type="checkbox" data-draft-toggle />
-            <span data-i18n="draft.toggleHost">Draft mode: pick 2 tiles ×4 (experimental)</span>
           </label>
 
         </section>
@@ -466,10 +471,6 @@
             <input type="checkbox" data-auto-audio checked />
             <span data-i18n="net.autoAudio">Join audio chat when the table starts</span>
           </label>
-          <label class="lobby-check draft-check">
-            <input type="checkbox" data-draft-toggle />
-            <span data-i18n="draft.toggleHost">Draft mode: pick 2 tiles ×4 (experimental)</span>
-          </label>
           <div class="modal-actions">
             <button id="hostDiagBtn" class="btn btn-ghost" type="button" data-i18n="diag.open">Troubleshoot</button>
             <button class="btn btn-ghost" type="button" data-lobby-back data-i18n="net.back">Back</button>
@@ -517,6 +518,7 @@
           </div>
           <div id="lobbyWaitRoster" class="lobby-roster"></div>
           <div class="modal-actions">
+            <button id="lobbyRetryBtn" class="btn btn-ghost" type="button" hidden data-i18n="net.reconnect">Reconnect</button>
             <button id="lobbyWaitLeave" class="btn btn-ghost" type="button" data-i18n="net.leave">Leave room</button>
             <button id="lobbyResumeBtn" class="btn btn-gold" type="button" hidden data-i18n="net.resume">Back to table</button>
             <button id="lobbySoloFromLost" class="btn btn-gold" type="button" data-i18n="net.solo">Play solo</button>
@@ -526,11 +528,78 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.9.22</span>
+          <span class="version-chip version-label">v1.10.17</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
           </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="inviteModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="inviteTitle">
+      <div class="modal-card invite-card">
+        <button class="modal-close" type="button" data-close="inviteModal" aria-label="Close">×</button>
+        <h2 id="inviteTitle" data-i18n="invite.title">Invite friends</h2>
+        <p class="invite-lead" data-i18n="invite.lead">Turn this solo table into a hosted room. Friends join with the room number and PIN, then you approve them.</p>
+        <div id="inviteStarting" class="invite-starting" hidden>
+          <span class="invite-spinner" aria-hidden="true"></span>
+          <span id="inviteStartingText" data-i18n="invite.starting">Opening a room…</span>
+        </div>
+        <div id="inviteError" class="invite-error" role="status" aria-live="polite" hidden></div>
+        <div id="inviteNotice" class="invite-notice" role="status" aria-live="polite" hidden></div>
+        <button id="inviteRetry" class="btn btn-ghost invite-retry" type="button" hidden data-i18n="invite.retry">Try again</button>
+        <div id="inviteReady" hidden>
+          <div class="invite-code-row">
+            <div class="invite-code-cell">
+              <span data-i18n="invite.code">Room number</span>
+              <strong id="inviteCode">—</strong>
+            </div>
+            <div class="invite-code-cell">
+              <span data-i18n="invite.pin">PIN</span>
+              <strong id="invitePin">—</strong>
+            </div>
+          </div>
+          <div class="invite-actions">
+            <button id="inviteCopyInfo" class="btn btn-gold" type="button" data-i18n="invite.copyInfo">Copy room info</button>
+            <button id="inviteCopyLink" class="btn btn-ghost" type="button" data-i18n="invite.copyLink">Copy link</button>
+            <button id="inviteShare" class="btn btn-ghost" type="button" data-i18n="invite.share">Share</button>
+          </div>
+          <p class="invite-note" data-i18n="invite.keepOpen">Keep this tab open. Closing it ends the room; a reload in this tab recovers it.</p>
+          <h3 data-i18n="invite.pendingTitle">Join requests</h3>
+          <div id="invitePending" class="lobby-pending"></div>
+          <h3 data-i18n="invite.seats">Seats</h3>
+          <div id="inviteSeats" class="lobby-roster"></div>
+        </div>
+        <p class="invite-version"><span class="version-label">v1.10.17</span></p>
+      </div>
+    </div>
+
+    <div id="watcherPop" class="watcher-pop" hidden>
+      <h3 data-i18n="watch.title">Watching</h3>
+      <ul id="watcherList"></ul>
+    </div>
+
+    <div id="queuedBanner" class="queued-banner" hidden role="status" aria-live="polite">
+      <span class="queued-banner-dot" aria-hidden="true"></span>
+      <span id="queuedBannerText"></span>
+      <button id="queuedLeaveBtn" class="mini-btn queued-leave" type="button" data-i18n="net.leaveShort">Leave</button>
+    </div>
+
+    <div id="joinRequestPop" class="join-request-pop" hidden role="dialog" aria-live="assertive" aria-labelledby="joinRequestTitle">
+      <div class="join-request-card">
+        <div class="join-request-head">
+          <span class="join-request-icon" aria-hidden="true">＋</span>
+          <div>
+            <h2 id="joinRequestTitle">A friend wants to join</h2>
+            <p id="joinRequestBody"></p>
+          </div>
+        </div>
+        <div class="join-request-actions">
+          <button id="joinRequestApprove" class="btn btn-gold" type="button" data-i18n="joinRequest.approve">Allow</button>
+          <button id="joinRequestViewer" class="btn btn-ghost" type="button" data-i18n="joinRequest.viewer">Watch only</button>
+          <button id="joinRequestDeny" class="btn btn-wine" type="button" data-i18n="joinRequest.deny">Deny</button>
+          <button id="joinRequestLater" class="btn btn-ghost" type="button" data-i18n="joinRequest.later">Later</button>
         </div>
       </div>
     </div>
@@ -553,6 +622,15 @@
             <button type="button" data-font-size="md" data-i18n="display.default">Default</button>
             <button type="button" data-font-size="lg" data-i18n="display.large">Large</button>
             <button type="button" data-font-size="xl" data-i18n="display.xlarge">Extra large</button>
+          </div>
+        </div>
+        <div class="display-section">
+          <h3 data-i18n="display.cards">Tile size</h3>
+          <div class="segmented" id="cardSizeGroup" role="group" aria-label="Tile size">
+            <button type="button" data-card-size="sm" data-i18n="display.cardSmall">Small</button>
+            <button type="button" data-card-size="md" data-i18n="display.cardDefault">Default</button>
+            <button type="button" data-card-size="lg" data-i18n="display.cardLarge">Large</button>
+            <button type="button" data-card-size="xl" data-i18n="display.cardXlarge">Extra large</button>
           </div>
         </div>
         <div class="display-section">
@@ -585,7 +663,7 @@
           <button id="fullscreenBtn" class="btn btn-ghost display-wide" type="button" data-i18n="display.fullscreenBtn">Enter full screen</button>
           <p class="display-note" data-i18n="display.fullscreenNote">On iPad or iPhone, use Share → Add to Home Screen for a browser-free full-screen game.</p>
         </div>
-        <p class="display-note" data-i18n="display.note">Text size scales the interface, not the 3D table. Theme changes the panels and the felt / wood palette.</p>
+        <p class="display-note" data-i18n="display.note">Text size scales the interface. Tile size scales your own 3D hand and the card chips in the dock; theme changes the panels and the felt / wood palette.</p>
         <div class="modal-actions">
           <button id="soundTest" class="btn btn-ghost" type="button" data-i18n="display.testSound">Test sound</button>
           <button id="displayReset" class="btn btn-ghost" type="button" data-i18n="display.reset">Reset display</button>
@@ -623,10 +701,10 @@
     <div id="undoModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="undoTitle">
       <div class="modal-card">
         <button class="modal-close" type="button" data-close="undoModal" aria-label="Close">×</button>
-        <h2 id="undoTitle" data-i18n="undo.title">Why did that trick go wrong?</h2>
+        <h2 id="undoTitle" data-i18n="undo.title">Why did that turn go wrong?</h2>
         <div id="undoBody" class="undo-body"></div>
         <div class="modal-actions">
-          <button id="undoConfirm" class="btn btn-gold" type="button" data-i18n="actions.undo">Undo trick</button>
+          <button id="undoConfirm" class="btn btn-gold" type="button" data-i18n="actions.undo">Undo turn</button>
           <button id="undoCancel" class="btn btn-ghost" type="button" data-i18n="actions.keep">Keep playing</button>
         </div>
       </div>
@@ -660,10 +738,10 @@
     <div id="lastTrickModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="lastTrickTitle">
       <div class="modal-card modal-small log-browser">
         <button class="modal-close" type="button" data-close="lastTrickModal" aria-label="Close">×</button>
-        <h2 id="lastTrickTitle" data-i18n="log.browserTitle">Trick history</h2>
+        <h2 id="lastTrickTitle" data-i18n="log.browserTitle">Turn history</h2>
         <div class="log-filters">
           <label><span data-i18n="log.round">Round</span><select id="logRoundSelect"></select></label>
-          <label><span data-i18n="log.trick">Trick</span><select id="logTrickSelect"></select></label>
+          <label><span data-i18n="log.trick">Turn</span><select id="logTrickSelect"></select></label>
         </div>
         <p id="lastTrickMeta" class="lobby-note"></p>
         <div id="lastTrickList" class="last-trick-list"></div>
@@ -676,11 +754,11 @@
 
     <div id="draftModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="draftTitle">
       <div class="modal-card modal-wide">
-        <h2 id="draftTitle" data-i18n="draft.title">Draft — pick 2 tiles</h2>
+        <h2 id="draftTitle" data-i18n="draft.blindTitle">Blind pick — choose 2 cards</h2>
         <p id="draftMeta" class="lobby-note"></p>
         <div id="draftPool" class="draft-pool"></div>
         <div class="modal-actions">
-          <button id="draftConfirm" class="btn btn-gold" type="button" disabled data-i18n="draft.confirm">Pick 2 tiles</button>
+          <button id="draftConfirm" class="btn btn-gold" type="button" disabled data-i18n="draft.blindConfirm">Take 2 face-down cards</button>
         </div>
       </div>
     </div>
@@ -688,7 +766,7 @@
     <div id="trickResultModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="trickResultTitle">
       <div class="modal-card modal-small trick-result">
         <button class="modal-close" type="button" data-close="trickResultModal" aria-label="Close">×</button>
-        <h2 id="trickResultTitle" data-i18n="result.title">Trick result</h2>
+        <h2 id="trickResultTitle" data-i18n="result.title">Turn result</h2>
         <div id="trickResultBody" class="trick-result-body"></div>
         <div class="modal-actions">
           <button id="trickResultContinue" class="btn btn-gold" type="button" data-i18n="actions.continue">Continue</button>
@@ -738,6 +816,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.9.22"></script>
+  <script type="module" src="script.js?v=1.10.17"></script>
 </body>
 </html>

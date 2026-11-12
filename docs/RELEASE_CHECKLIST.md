@@ -5,7 +5,7 @@
 ```bash
 git switch develop
 git pull --ff-only
-git switch -c release/1.9.22
+git switch -c release/1.10.4
 ```
 
 - [ ] The branch is cut from `develop`, not `main`.
@@ -21,8 +21,9 @@ git switch -c release/1.9.22
 - [ ] `node --check script.js` and `node --check peer-manager.js` pass.
 - [ ] `node scripts/check.mjs` passes.
 - [ ] `?selftest=1` shows `SELFTEST PASS 38/38`.
-- [ ] `node scripts/verify.mjs` passes (boot, scene, full round, no exceptions).
+- [ ] `node scripts/verify.mjs` passes (boot, scene, full round, iPad Invite controls, no exceptions).
 - [ ] `node scripts/net-check.mjs` passes on a real network (PIN, approval, wrong PIN, host, join, redaction, chat, voice, mic mute, deafen, disconnect-to-bot).
+- [ ] `node scripts/invite-check.mjs` passes (solo → Invite → queued guest → promotion).
 - [ ] A full round, undo, next round and reload were exercised manually.
 - [ ] EN and TH screenshots regenerated if UI or copy changed.
 - [ ] Lobby screenshot regenerated if the multiplayer UI changed.
@@ -45,12 +46,12 @@ git switch -c release/1.9.22
 git status
 git diff --stat
 git add -A
-git commit -m "Release Leab-Tui 3D 1.9.22"
-git push origin release/1.9.22
+git commit -m "Release Leab-Tui 3D 1.10.4"
+git push origin release/1.10.4
 # open the release PR against main, then:
 git switch main
 git pull --ff-only
-git merge --no-ff release/1.9.22 -m "Release Leab-Tui 3D 1.9.22"
+git merge --no-ff release/1.10.4 -m "Release Leab-Tui 3D 1.10.4"
 git push origin main
 ```
 
@@ -63,9 +64,9 @@ Use one release commit if possible. Do not commit `node_modules`, local saves, s
 - [ ] Open the live URL and repeat the smoke test: boot, selftest, one trick, language toggle, export.
 - [ ] Check the live page over HTTPS and confirm there is no mixed content.
 - [ ] Confirm the repository is public and contains no secrets.
-- [ ] Tag the release: `git tag -a v1.9.22 -m "Leab-Tui 3D 1.9.22" && git push origin v1.9.22`.
+- [ ] Tag the release: `git tag -a v1.10.4 -m "Leab-Tui 3D 1.10.4" && git push origin v1.10.4`.
 - [ ] Back-merge production into the train: `git switch develop && git merge --no-ff main && git push origin develop`.
-- [ ] Delete the merged `release/1.9.22` branch.
+- [ ] Delete the merged `release/1.10.4` branch.
 - [ ] Create a GitHub release with the changelog and the hero screenshot.
 - [ ] Verify the Open Graph image path resolves on Pages.
 - [ ] Update the README “Live demo” link if the Pages URL changed.

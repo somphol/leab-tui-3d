@@ -123,24 +123,56 @@ Voice requires HTTPS or localhost. Symmetric NAT can block media just as it bloc
 
 The host may keep waiting for more humans; the button is disabled until the second human arrives. There is no separate "add bot" button — bots are the default for empty seats.
 
+## Invite from a solo table
+
+The top bar and Actions show **Invite** while a local solo match is running. It calls `hostCurrentMatch()`,
+which keeps the live `state` and opens a host room around it — no redeal, no score reset. The invite sheet shows
+the room number, the generated PIN, **Copy room info**, **Copy link**, **Share**, the seat roster and the
+approval queue. The solo game keeps playing normally while the room opens.
+
+- `net.started` becomes true, seat 0 stays the host and seats 1–3 become bots.
+- The match is now a network save: closing the tab ends the room, but a same-tab reload recovers it from the
+  host recovery blob.
+- Host approval and the PIN still gate every guest. Copy room info includes the PIN; Copy link never does.
+- Host **Leave room** ends the room and the match, as before.
+- The host joins the voice mesh automatically when the room opens (subject to microphone permission and the Auto audio preference). The guest joins after being seated; a queued guest waits.
+- A request that arrives while the host is on the table raises a persistent popup with **Allow / Watch only / Deny / Later**. Allow uses the same queue rules as the invite sheet; Later hides the popup but leaves the **n waiting** pill in the top bar. Clicking the room chip opens the same room-info sheet, so the host can read the number and PIN aloud instead of copying them.
+
 ## Joining a table in progress
 
 A started match no longer rejects every new guest. After the PIN, the host gets
 a pending request and can:
 
-- **Take a bot seat** — the bot's hand, captures and score are kept; the profile
-  becomes human and the guest receives a fresh rejoin token plus the current
-  state. The next guest replaces the next bot.
+- **Take a bot seat** — between tricks the bot's hand, captures and score are
+  kept; the profile becomes human and the guest receives a fresh rejoin token
+  plus the current state. Mid-trick, the host **queues** the guest: the bot
+  plays out the current trick, the seat is reserved, and the guest is promoted
+  at the next `beginTrick`. The guest immediately enters the table as an
+  **audience viewer** (`seat: -1`, all hands ghosted, no dock/chat/voice) with
+  a **“Approved — watching until this trick ends”** banner. At the boundary the
+  host sends a normal `welcome` for the reserved seat and the dock returns. The
+  host sheet shows **“joins after this trick”**.
 - **Watch only** — approved as a viewer even if a bot remains.
 - **Deny** or **Pause 30 min** — a pause rejects new requests with
   `suppressed`; existing rejoin tokens still bypass it. Resume from the host
   panel. If no bot remains, the only approval is viewer.
+
+Queued guests have a rejoin token and can reconnect while waiting. If they
+disconnect, the reservation is held for five minutes so a reload can reattach;
+the bot keeps playing, and the host can cancel the reservation from the invite
+sheet. A queued guest who is still waiting when the host reloads is restored
+from the host recovery blob and can reconnect with the same token.
 
 Viewers are not seats: they receive `seat: -1` and a state where every hand is
 ghosted, unrevealed centre plays are hidden, and the archive hides unrevealed
 sets. The viewer UI removes the hand dock, hand panel, chat and voice controls;
 viewers can watch the public table, captures, history and summaries but cannot
 act. There is no viewer rejoin token; a reload requires approval again.
+
+Every human sees a **watcher chip** (`👁 n`) in the top bar whenever anyone is
+watching. Tapping it lists the names; a queued audience member is marked
+`waiting for seat`. The same list is carried in `state.viewers` to every seat,
+so one guest lagging does not hide the audience from the others.
 
 ## Disconnection
 
@@ -170,20 +202,64 @@ update** by presenting the token:
    exactly where the bot left them.
 
 The token is a **bearer credential for that seat**, not a room password. Anyone
-who obtains it can claim the seat; it is kept in sessionStorage and in the
-host's memory only. An intentional **Leave room** clears the token, so a later
-connection cannot reclaim the seat. If the token is missing or stale, the guest
-falls back to the normal PIN + approval flow.
+who obtains it can claim the seat. The guest keeps it in `sessionStorage` and in
+a seven-day `leabtui.seat.v1` card in `localStorage`, so closing the tab and
+reopening the link on the same device still reclaims the seat without approval.
+The card is only used when the invite name matches (or no name is supplied);
+opening the link under a different name falls back to PIN + approval.
+An intentional **Leave room** or a denied/bad-PIN rejection clears both copies;
+the card expires after seven days. If the token is missing or stale, the guest
+falls back to the normal PIN + approval flow, and the host sees the request in
+the on-table popup. The waiting panel also has **Reconnect**, and a lost welcome
+resends `hello` up to three times.
 
 While the match has not started, a disconnected guest's seat is held with
 `connected: false`; starting the match turns it into a bot that keeps the token,
 so the guest can still return mid-match.
 
 If the **host** closes the tab, the data channels close and the room ends.
-Guests see a "Table closed" panel with **Play solo** and **Leave room**. There
+Guests see a "Table closed" panel with **Reconnect**, **Play solo** and **Leave room**. The
+`closed` message is terminal: the guest cancels its rejoin timer, watchdog and join watch, so the
+panel cannot flip between "host left" and "reconnecting". Reconnecting is manual - the guest keeps
+the room code and its seat token and retries only when the host is back in that room. There
 is still **no host migration**: the host's tokens and state are memory-only.
 Reload the page as the host and the room is gone; a guest update only survives
 because the host stayed open.
+
+## State, action and reconnect reliability
+
+The host is the only writer. Guests send intents; they never apply their own
+play locally. That makes a lost guest message harmless to the global game: the
+host either processed it or it never happened. The repair problem is therefore
+a stale **view**, not a divergent rule state.
+
+- Every host state carries a monotonic `seq`. During active play the host
+  re-sends a full redacted snapshot every 4 s; on the summary screens it sends
+  `pulse {seq}` instead. A guest whose `lastSeq` is behind requests `resync`;
+  the host rate-limits and returns a full redacted snapshot with
+  `"resync": true`.
+- An action carries an `actionId`. The host stores the last id per seat and
+  replies `action-ack {actionId, ok, reason, seq}`. A retry with the same id
+  gets the stored ack and is not executed twice. A guest with no ack after
+  about 3.5 s treats the action as unconfirmed and refreshes rather than
+  blindly playing a second time.
+- An illegal action clears the pending intent and triggers one silent resync.
+  The Actions **Refresh table** button and returning to the tab do the same.
+- The host tracks each guest's `lastSeen` from any message (the guest pings every
+  5 s). A roster entry older than 20 s shows as offline. If it is a human
+  guest's active turn (`lead`, `follow`, `showdown`, `draft`) and
+  `turnSince` is older than 30 s, the host converts the seat to a bot, sends
+  `seat-timeout`, and closes the old connection. The guest reconnects with the
+  seat card; the bot's hand, captures and score stay on the seat. This prevents
+  the table from waiting indefinitely on a stalled client.
+- The DataChannel is ordered and reliable (`reliable: true`, JSON serialization).
+  The real failure is a channel that stalls or closes before the final snapshot,
+  not packet loss inside a healthy channel. Full snapshots make catch-up
+  idempotent: the latest `seq` wins. A client watchdog pings the host every 5 s;
+  after 15 s with no state, pulse or pong it reconnects to the same seat with the
+  stored token instead of leaving the table frozen on “Bot is thinking”.
+
+See [PROTOCOL.md](PROTOCOL.md) for the envelopes.
 
 ## Privacy model
 
