@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.25] — 2026-11-11
+
+### Fixed
+
+- **The turn result now closes when its countdown reaches zero.** The countdown interval and a separate close timeout fired in the same millisecond; the interval cleared the timeout, leaving the sheet open at `0`. One interval now closes the sheet directly.
+
 ## [1.10.24] — 2026-11-11
 
 ### Fixed
