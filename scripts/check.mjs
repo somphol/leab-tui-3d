@@ -319,7 +319,7 @@ ok(index.includes('id="watcherChip"') && index.includes('id="watcherList"') && s
 ok(script.includes("seat === MY_SEAT") && script.includes("const step = 0.98"), "the owner's hand is one straight row");
 ok(script.includes('$("#handDock")?.removeAttribute("hidden")'), "promotion restores the hand dock");
 ok(css.includes("pointer: coarse) and (min-width: 641px") && script.includes("lastTouchEnd"), "tablet menus lock the viewport and suppress double-tap zoom");
-ok(css.includes("#leaveRoomTopBtn { display: none; }") && css.includes(".brand-sub { display: none; }"), "tablet top bar compacts for the room chip");
+ok(css.includes("#leaveRoomTopBtn .leave-top-label { display: none; }") && !css.includes("#leaveRoomTopBtn { display: none; }") && css.includes(".brand-sub { display: none; }"), "tablet top bar compacts for the room chip and keeps Leave");
 ok(script.includes("function hostCurrentMatch") && script.includes("function queueBotSeat") && script.includes("function promoteQueuedGuests"), "solo-to-host invite engine exists");
 const inviteBody = script.slice(script.indexOf("async function hostCurrentMatch"), script.indexOf("function openInviteSheet"));
 ok(inviteBody && !inviteBody.includes("beginMatch(") && !inviteBody.includes("leaveRoom("), "invite conversion does not redeal or drop the solo game");

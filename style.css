@@ -2894,7 +2894,10 @@ body.is-viewer #voiceCallBtn {
   .update-pill { padding: 0 10px; }
   .voice-call .voice-call-label { display: none; }
   .voice-call { padding: 0 10px; }
-  #leaveRoomTopBtn { display: none; }
+  /* Guests need the same escape hatch as the host. Keep the icon and drop the
+     label so the bar still fits on an iPad. */
+  #leaveRoomTopBtn { min-width: 40px; padding: 0 10px; }
+  #leaveRoomTopBtn .leave-top-label { display: none; }
   #aboutBtn { display: none; }
   .net-chip { padding: 0 9px; font-size: calc(10px * var(--fs-scale)); }
   .hud-strip {
