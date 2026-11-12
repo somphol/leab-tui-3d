@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.19";
-import { VoiceChat } from "./voice-chat.js?v=1.10.19";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.19";
+} from "./peer-manager.js?v=1.10.20";
+import { VoiceChat } from "./voice-chat.js?v=1.10.20";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.20";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.19",
+  version: "1.10.20",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -803,6 +803,8 @@ const I18N = {
     "net.deny": "Deny",
     "net.approveAll": "Approve all",
     "invite.top": "Invite",
+    "net.joinTop": "Join",
+    "net.joinTopTitle": "Join a table with a room code",
     "invite.action": "Invite friends",
     "invite.title": "Invite friends",
     "invite.roomInfo": "Room info",
@@ -1509,6 +1511,8 @@ const I18N = {
     "net.deny": "ปฏิเสธ",
     "net.approveAll": "อนุมัติทั้งหมด",
     "invite.top": "ชวน",
+    "net.joinTop": "เข้าร่วม",
+    "net.joinTopTitle": "เข้าห้องด้วยรหัสห้อง",
     "invite.action": "ชวนเพื่อน",
     "invite.title": "ชวนเพื่อน",
     "invite.roomInfo": "ข้อมูลห้อง",
@@ -3506,8 +3510,21 @@ function applyHint(options = {}) {
   coachTick();
 }
 
+/* Autoplay must never act behind a sheet the player is still reading. The turn
+   result and the round summary are decisions, not background notices: hold the
+   seat until they are closed, or the table jumps ahead while the player reads. */
+const AUTOPLAY_HOLD_MODALS = ["trickResultModal", "summaryModal"];
+
+function autoplayHeld() {
+  return AUTOPLAY_HOLD_MODALS.some((id) => {
+    const modal = $(`#${id}`);
+    return modal && !modal.hidden;
+  });
+}
+
 function autoplayEligible() {
   if (!prefs.autoplay || !state || MY_SEAT < 0) return false;
+  if (autoplayHeld()) return false;
   if (!["lead", "follow", "showdown", "bid", "draft"].includes(state.phase)) return false;
   if (state.turn !== MY_SEAT) return false;
   if (isClient() && pendingAction) return false;
@@ -3755,6 +3772,7 @@ function closeModal(id) {
   const modal = $(`#${id}`);
   if (modal) modal.hidden = true;
   if (id === "trickResultModal") clearResultAutoClose();
+  if (AUTOPLAY_HOLD_MODALS.includes(id)) scheduleAutoplay();
   if (id === "summaryModal") stopParty();
   if (id === "inviteModal") renderJoinRequestPopup();
 }
@@ -8294,6 +8312,12 @@ function renderNetChrome() {
   if (voiceCall) voiceCall.hidden = !isNetworked();
   const inviteTop = $("#inviteTopBtn");
   if (inviteTop) inviteTop.hidden = !canInviteFriends();
+  const joinTop = $("#joinTopBtn");
+  if (joinTop) {
+    joinTop.hidden = isClient() || $("#lobbyModal")?.hidden === false;
+    joinTop.title = t("net.joinTopTitle");
+    joinTop.setAttribute("aria-label", t("net.joinTopTitle"));
+  }
   const inviteAction = $("#inviteBtn");
   if (inviteAction) inviteAction.hidden = !canInviteFriends();
   const waiting = isHost() ? pendingRequests.size + queuedGuests.size : 0;
@@ -11010,6 +11034,13 @@ function bindEvents() {
   $("#hintBtn")?.addEventListener("click", applyHint);
   $("#clearBtn")?.addEventListener("click", clearSelection);
 
+  $("#joinTopBtn")?.addEventListener("click", () => {
+    if (isNetworked()) return;
+    lobbyState = { view: "join", players: [], status: "", roomCode: "", name: loadPlayerName() };
+    showLobby("join");
+    setTimeout(() => $("#lobbyCodeInput")?.focus(), 60);
+    audio?.play("click", 0);
+  });
   $("#lobbyBtn")?.addEventListener("click", () => {
     if (isHost() && net?.started) {
       openInviteSheet();
@@ -11284,7 +11315,6 @@ function bindEvents() {
     }
   }));
 
-  $("#newMatchBtn")?.addEventListener("click", () => { openModal("confirmModal"); });
   $("#nextRoundBtn")?.addEventListener("click", startNextRound);
   $("#undoBtn")?.addEventListener("click", () => {
     if (state?.lastTrick) showUndoExplanation();
@@ -11294,14 +11324,6 @@ function bindEvents() {
   $("#undoConfirm")?.addEventListener("click", () => undoLastTrick());
   $("#undoCancel")?.addEventListener("click", () => closeModal("undoModal"));
   $("#exportBtn")?.addEventListener("click", exportGame);
-
-  $("#confirmYes")?.addEventListener("click", () => {
-    closeModal("confirmModal");
-    if (isClient()) leaveRoom({ silent: true });
-    beginMatch();
-    toast(t("toast.newMatch"), "gold");
-  });
-  $("#confirmNo")?.addEventListener("click", () => closeModal("confirmModal"));
 
   $("#summaryPrimary")?.addEventListener("click", (event) => {
     clearInterval(summaryTimer);
