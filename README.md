@@ -62,7 +62,7 @@ The room is peer-to-peer: **no game server**, no account, no database. PeerJS's 
 | **Tie-break** | Red beats black at equal rank; equal rank + colour keeps the earlier play |
 | **Calls** | Leab ×1, Tui ×2, Sa Hoo ×3, See Hoo ×4, Ngoh Hoo ×5, Lak Hoo ×6, Soldier sets ×3–5 |
 | **Trick** | Everyone sends the called number of tiles. Only revealed sets compete. The winner takes all 4×N tiles and leads next |
-| **Scoring** | 2 piles = par (0). Each pile above or below is ±1. All 8 piles = Chuan, **16 points**. First to 20 wins |
+| **Scoring** | 8 tiles back = par (0). Each tile above or below par is ±1, so all 32 tiles = **+24**. No target score — play on until you leave |
 
 The **Display** panel also carries the text-size and theme controls. Full rules, including the source and the interpretation choices: **[docs/RULES.md](docs/RULES.md)**.
 
