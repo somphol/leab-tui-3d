@@ -1,12 +1,12 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-11 · release 1.10.17**
+**As of 2026-11-11 · release 1.10.18**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release: **1.10.17** — host-left is terminal with a manual Reconnect; tile size scales only your own hand
+- Last release: **1.10.18** — Thai turn results show the Chinese tile and meaning; optional 5–30 s auto-close
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
 - Feature train: `develop` — the 1.10.x train is merged; host-left recovery and own-hand tile sizing shipped in 1.10.17
 
@@ -76,6 +76,7 @@ Current table/network model:
 | 1.10.15 | Hand dock opens by default; H collapse is remembered |
 | 1.10.16 | Blind pick: choose two face-down cards by position |
 | 1.10.17 | Host-left is terminal with manual Reconnect; tile size scales only your hand |
+| 1.10.18 | Thai results name the Chinese tile and meaning; turn result auto-close (5–30 s, off by default) |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),

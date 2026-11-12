@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.17";
-import { VoiceChat } from "./voice-chat.js?v=1.10.17";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.17";
+} from "./peer-manager.js?v=1.10.18";
+import { VoiceChat } from "./voice-chat.js?v=1.10.18";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.18";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.17",
+  version: "1.10.18",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -345,6 +345,8 @@ const I18N = {
     "showdown.hidden": "face-down",
     "actions.showFirst": "Show first",
     "result.title": "Turn result",
+    "result.autoClose": "Close automatically",
+    "result.seconds": "seconds",
     "dock.waiting": "{seat} is thinking…",
     "dock.pick": "Select {n} tile(s) for this turn.",
     "dock.selected": "{n} selected.",
@@ -1045,6 +1047,8 @@ const I18N = {
     "showdown.hidden": "คว่ำ",
     "actions.showFirst": "เปิดก่อน",
     "result.title": "ผลของตา",
+    "result.autoClose": "ปิดอัตโนมัติ",
+    "result.seconds": "วินาที",
     "dock.waiting": "{seat} กำลังคิด…",
     "dock.pick": "เลือก {n} ตัวสำหรับตานี้",
     "dock.selected": "เลือกแล้ว {n} ตัว",
@@ -1764,6 +1768,23 @@ function comboName(type) {
 }
 
 function comboSummary(combo, lang = LANG) {
+  return comboSummaryBase(combo, lang);
+}
+
+/* Thai readers asked for the tile's Chinese character and meaning next to the
+   transliterated name. Used by the trick result and history comparison so
+   "แบ้" also reads "馬 · ม้า" without cluttering logs and the coach. */
+function comboSummaryGloss(combo, lang = LANG) {
+  const base = comboSummaryBase(combo, lang);
+  if (!base || lang !== "th") return base;
+  const power = combo?.dup?.[0] ?? combo?.score?.[0] ?? 1;
+  const rank = RANK_BY_POWER[power];
+  if (!rank) return base;
+  const glyph = rank.red === rank.black ? rank.red : `${rank.red}/${rank.black}`;
+  return `${base} (${glyph} · ${rank.thMeaning})`;
+}
+
+function comboSummaryBase(combo, lang = LANG) {
   if (!combo) return "";
   const color = colorName(combo.color, lang);
   const power = combo.score?.[0] ?? 1;
@@ -2062,7 +2083,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: false, dockChosen: false, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: false, dockChosen: false, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false, resultAuto: false, resultAutoSeconds: 10 });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -2238,6 +2259,8 @@ function makeState(seed) {  return {
     multiplier: 1,
     redraws: 0,
     resultSeconds: 2,
+    resultAuto: false,
+    resultAutoSeconds: 10,
     draftMode: false,
     draftPool: null,
     draftOrder: null,
@@ -2426,6 +2449,8 @@ function loadPrefs() {
   if (!["cw", "ccw"].includes(prefs.direction)) prefs.direction = "cw";
   prefs.mode = "piles";
   if (![0, 2, 4, 6].includes(Number(prefs.resultSeconds))) prefs.resultSeconds = 2;
+  prefs.resultAuto = prefs.resultAuto === true;
+  prefs.resultAutoSeconds = Math.min(30, Math.max(5, Math.round(Number(prefs.resultAutoSeconds) / 5) * 5 || 10));
   prefs.autoNext = prefs.autoNext !== false;
   /* Draft-pick was an experimental house deal; the standard game deals
      eight random tiles face-down. */
@@ -3076,7 +3101,7 @@ function trickCompareMarkup(entries, winnerSeat, showFor = null) {
   return `<div class="trick-compare">${(entries || []).map((entry) => {
     const isWinner = entry.seat === winnerSeat;
     const showTiles = entry.revealed || entry.seat === showFor;
-    const label = showTiles && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden");
+    const label = showTiles && entry.combo ? comboSummaryGloss(entry.combo) : t("showdown.hidden");
     return `<section class="trick-seat ${isWinner ? "win" : ""}" role="group" aria-label="${escapeHTML(seatName(entry.seat))}">
       <div class="trick-seat-head">
         <b>${isWinner ? `<span class="seat-tick" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>` : ""}${escapeHTML(seatName(entry.seat))}</b>
@@ -3101,16 +3126,18 @@ function showTrickResult(record) {
   if (body) {
     body.innerHTML = `${trickCompareMarkup(record.entries || [], record.winner)}
       <div class="pile-why">
-        <b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummary(record.combo), n: record.captured }))}</b>
+        <b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummaryGloss(record.combo), n: record.captured }))}</b>
         <p>${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</p>
       </div>`;
   }
   const modal = $("#trickResultModal");
   if (modal) modal.hidden = false;
+  armResultAutoClose();
   audio?.play(record.winner === MY_SEAT ? "win" : "lose", 0);
 }
 
 function closeTrickResult() {
+  clearResultAutoClose();
   closeModal("trickResultModal");
   const next = pendingTrickFinish;
   pendingTrickFinish = null;
@@ -3215,7 +3242,7 @@ function resolveTrick() {
   if (scene) scene.collect(state, winner, allTiles);
   audio?.play(winner === MY_SEAT ? "win" : "sweep", winner);
   const comparison = state.lastTrick.entries.map((entry) => (
-    `${seatName(entry.seat)}: ${entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden")}`
+    `${seatName(entry.seat)}: ${entry.revealed && entry.combo ? comboSummaryGloss(entry.combo) : t("showdown.hidden")}`
   )).join(" · ");
   showResult(t(chuan ? "toast.trickResultChuan" : "toast.trickResult", {
     winner: seatName(winner),
@@ -3738,6 +3765,7 @@ function openModal(id) {
 function closeModal(id) {
   const modal = $(`#${id}`);
   if (modal) modal.hidden = true;
+  if (id === "trickResultModal") clearResultAutoClose();
   if (id === "summaryModal") stopParty();
   if (id === "inviteModal") renderJoinRequestPopup();
 }
@@ -4368,6 +4396,45 @@ function hideTileTip() {
 }
 
 let resultTimer = null;
+let resultAutoTimer = null;
+let resultAutoTick = null;
+
+function clearResultAutoClose() {
+  if (resultAutoTimer) clearTimeout(resultAutoTimer);
+  if (resultAutoTick) clearInterval(resultAutoTick);
+  resultAutoTimer = null;
+  resultAutoTick = null;
+  const count = $("#trickResultAutoCount");
+  if (count) count.textContent = "";
+}
+
+function syncResultAutoControls() {
+  const box = $("#trickResultAuto");
+  const select = $("#trickResultAutoSeconds");
+  if (box) box.checked = prefs.resultAuto === true;
+  if (select) {
+    select.value = String(prefs.resultAutoSeconds || 10);
+    select.disabled = prefs.resultAuto !== true;
+  }
+}
+
+/* The turn result never closes itself unless the player opts in: a checkbox
+   plus a 5-30 s delay, both persisted. Default is off. */
+function armResultAutoClose() {
+  clearResultAutoClose();
+  syncResultAutoControls();
+  if (prefs.resultAuto !== true) return;
+  let left = Number(prefs.resultAutoSeconds) || 10;
+  const count = $("#trickResultAutoCount");
+  if (count) count.textContent = `${left}s`;
+  resultAutoTick = setInterval(() => {
+    left -= 1;
+    if (count) count.textContent = left > 0 ? `${left}s` : "";
+    if (left <= 0) clearResultAutoClose();
+  }, 1000);
+  resultAutoTimer = setTimeout(() => { closeTrickResult(); }, left * 1000);
+}
+
 function showResult(text) {
   const seconds = Number(state?.resultSeconds ?? prefs.resultSeconds ?? 2);
   const banner = $("#resultBanner");
@@ -4394,7 +4461,7 @@ function renderLogRecord(record) {
   if (list) {
     list.innerHTML = `${trickCompareMarkup(record.entries || [], record.winner)}
       <div class="pile-why">
-        <b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummary(record.combo), n: record.captured }))}</b>
+        <b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummaryGloss(record.combo), n: record.captured }))}</b>
         <p>${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</p>
       </div>`;
   }
@@ -4461,9 +4528,9 @@ function openPileModal(seat, pileIndex) {
       || records.slice().reverse().find((item) => item.trick === trickNumber);
     if (record) {
       const entries = (record.entries || []).map((entry) => (
-        `${seatName(entry.seat)}: ${entry.revealed && entry.combo ? comboSummary(entry.combo) : t("showdown.hidden")}`
+        `${seatName(entry.seat)}: ${entry.revealed && entry.combo ? comboSummaryGloss(entry.combo) : t("showdown.hidden")}`
       )).join(" · ");
-      why.innerHTML = `<b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummary(record.combo), n: record.captured }))}</b>
+      why.innerHTML = `<b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummaryGloss(record.combo), n: record.captured }))}</b>
         <p>${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</p>
         <small>${escapeHTML(entries)}</small>`;
       why.hidden = false;
@@ -10864,6 +10931,18 @@ function bindEvents() {
     renderLogBrowser($("#logRoundSelect")?.value, event.target.value);
   });
   $("#trickResultContinue")?.addEventListener("click", closeTrickResult);
+  $("#trickResultAuto")?.addEventListener("change", (event) => {
+    prefs.resultAuto = event.target.checked === true;
+    savePrefs();
+    if (prefs.resultAuto) armResultAutoClose();
+    else clearResultAutoClose();
+    syncResultAutoControls();
+  });
+  $("#trickResultAutoSeconds")?.addEventListener("change", (event) => {
+    prefs.resultAutoSeconds = Math.min(30, Math.max(5, Number(event.target.value) || 10));
+    savePrefs();
+    if (prefs.resultAuto) armResultAutoClose();
+  });
   $("#trickResultModal [data-close]")?.addEventListener("click", closeTrickResult);
   $("#draftPool")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-draft-id]");
