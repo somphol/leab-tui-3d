@@ -1,14 +1,14 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-10 · release 1.10.16**
+**As of 2026-11-11 · release 1.10.17**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release commit: `this release commit` — *Release Leab-Tui 3D 1.10.9: slow players keep their seat, host push-state and clear seat names*
+- Last release: **1.10.17** — host-left is terminal with a manual Reconnect; tile size scales only your own hand
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
-- Feature train: `feature/invite-friends` — Invite, audience queue, watchers and reliability; preview at `/preview/invite-friends/` (1.10.16)
+- Feature train: `develop` — the 1.10.x train is merged; host-left recovery and own-hand tile sizing shipped in 1.10.17
 
 This is the short handoff for a new agent or a later session. The durable
 project rules are in [`../AGENTS.md`](../AGENTS.md); release history is in
@@ -75,6 +75,7 @@ Current table/network model:
 | 1.10.14 | Optional Blind pick house variant: CSPRNG face-down deal |
 | 1.10.15 | Hand dock opens by default; H collapse is remembered |
 | 1.10.16 | Blind pick: choose two face-down cards by position |
+| 1.10.17 | Host-left is terminal with manual Reconnect; tile size scales only your hand |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),

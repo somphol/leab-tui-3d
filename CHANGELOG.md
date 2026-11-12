@@ -2,6 +2,16 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.17] — 2026-11-11
+
+### Fixed
+
+- **The guest panel no longer flickers when the host leaves.** An intentional host exit (`closed {reason:"host-left"}`) is terminal for the guest: the scheduled rejoin, the client watchdog and the join watch are cancelled, so the panel cannot alternate between "Table closed" and "Reconnecting". Re-entry is manual through a **Reconnect to the room** button that uses the stored seat token. A host reload (no `closed` message) still auto-rejoins.
+
+### Changed
+
+- **Tile size applies to your own hand only.** The display setting no longer scales opponents' hands, centre plays or captures, which had pushed those tiles into neighbouring seats and off the rim on tablets. The local row grows with the setting (capped at 1.18) and pulls inward to keep its outer edge on the felt.
+
 ## [1.10.16] — 2026-11-10
 
 ### Changed
