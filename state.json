@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.25",
-  "version": "1.10.25",
+  "projectVersion": "1.10.26",
+  "version": "1.10.26",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -486,9 +486,14 @@
       "version": "1.10.25",
       "date": "2026-11-11",
       "summary": "The turn result closes when its auto-close countdown reaches zero."
+    },
+    {
+      "version": "1.10.26",
+      "date": "2026-11-12",
+      "summary": "Trick becomes Turn in code and docs; guests can leave from the iPad top bar; Chuan copy shows +24."
     }
   ],
-  "releaseNotes": "1.10.25 fixes the turn-result auto-close: the countdown and the close timer were due at the same millisecond, so reaching zero did not close the sheet. One timer now owns the close, and the sheet dismisses exactly when the countdown ends.",
+  "releaseNotes": "1.10.26 renames the round phase from Trick to Turn everywhere: the counter is state.turnNo, the acting seat stays state.turn, and old saves are adopted on load. iPad guests now get the Leave room pill in the top bar, compacted to an icon. Chuan copy now states the par-eight value (+24).",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

@@ -666,12 +666,12 @@ async function main() {
   else fail("host invite sheet clears and confirms the approval", JSON.stringify(inviteSheet));
   const queuedRaw = await inviteHost.waitFor(
     "window.LeabTui?.net.getState?.().queued?.length >= 1 ? JSON.stringify(LeabTui.net.getState().queued) : ''",
-    "guest queued until turnNo end",
+    "guest queued until turn end",
     10000
   );
   const queued = JSON.parse(queuedRaw);
-  if (queued[0]?.seat > 0 && queued[0]?.joinAfter === "turnNo") pass("approved guest is queued until the turnNo ends", `seat ${queued[0].seat}`);
-  else fail("approved guest is queued until the turnNo ends", queuedRaw);
+  if (queued[0]?.seat > 0 && queued[0]?.joinAfter === "turn") pass("approved guest is queued until the turn ends", `seat ${queued[0].seat}`);
+  else fail("approved guest is queued until the turn ends", queuedRaw);
   const queuedGuest = JSON.parse(await lateGuest.waitFor(
     "LeabTui.net?.getState?.()?.queued && LeabTui.net.getState().viewer && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,reserved:LeabTui.net.getState().queuedSeat,viewer:LeabTui.net.getState().viewer,banner:!document.querySelector('#queuedBanner')?.hidden,dock:getComputedStyle(document.querySelector('#handDock')).display}) : ''",
     "invite guest audience",

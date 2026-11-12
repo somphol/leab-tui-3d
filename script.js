@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.25";
-import { VoiceChat } from "./voice-chat.js?v=1.10.25";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.25";
+} from "./peer-manager.js?v=1.10.26";
+import { VoiceChat } from "./voice-chat.js?v=1.10.26";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.26";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.25",
+  version: "1.10.26",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -7024,7 +7024,7 @@ function clientMessage({ message }) {
           name: lobbyState?.name || ""
         });
       }
-      const joinAfter = message.joinAfter === "round" ? "round" : message.joinAfter === "match" ? "match" : "turnNo";
+      const joinAfter = message.joinAfter === "round" ? "round" : message.joinAfter === "match" ? "match" : "turn";
       lobbyState = {
         view: "waiting",
         roomCode: message.roomCode,
