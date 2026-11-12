@@ -218,7 +218,10 @@ While the match has not started, a disconnected guest's seat is held with
 so the guest can still return mid-match.
 
 If the **host** closes the tab, the data channels close and the room ends.
-Guests see a "Table closed" panel with **Play solo** and **Leave room**. There
+Guests see a "Table closed" panel with **Reconnect**, **Play solo** and **Leave room**. The
+`closed` message is terminal: the guest cancels its rejoin timer, watchdog and join watch, so the
+panel cannot flip between "host left" and "reconnecting". Reconnecting is manual - the guest keeps
+the room code and its seat token and retries only when the host is back in that room. There
 is still **no host migration**: the host's tokens and state are memory-only.
 Reload the page as the host and the room is gone; a guest update only survives
 because the host stayed open.

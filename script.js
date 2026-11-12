@@ -909,7 +909,8 @@ const I18N = {
     "net.roomNotFound": "Room not found. Check the number and that the host page is open.",
     "net.badCode": "A room number is six digits.",
     "net.versionMismatch": "Protocol mismatch. Both pages must run protocol {version}.",
-    "net.hostLeft": "The host left the table. You can join another room or play solo.",
+    "net.hostLeft": "The host left the table. Press Reconnect when the host is back, or play solo.",
+    "net.reconnectHost": "Reconnect to the room",
     "net.hostResumeFailed": "Could not restore the hosted room ({error}). The room is closed.",
     "net.reconnecting": "Signalling connection lost. Reconnecting…",
     "net.hostOnly": "Only the host can undo a networked turn.",
@@ -1611,7 +1612,8 @@ const I18N = {
     "net.roomNotFound": "ไม่พบห้อง ตรวจเลขห้องและหน้าเจ้าบ้าน",
     "net.badCode": "เลขห้องต้องเป็นตัวเลขหกหลัก",
     "net.versionMismatch": "โปรโตคอลไม่ตรงกัน ต้องใช้รุ่น {version}",
-    "net.hostLeft": "เจ้าบ้านออกจากโต๊ะแล้ว คุณสามารถเข้าห้องอื่นหรือเล่นคนเดียว",
+    "net.hostLeft": "เจ้าบ้านออกจากโต๊ะแล้ว กดเชื่อมต่อใหม่เมื่อเจ้าบ้านกลับมา หรือเล่นคนเดียว",
+    "net.reconnectHost": "เชื่อมต่อห้องอีกครั้ง",
     "net.hostResumeFailed": "คืนห้องที่เปิดอยู่ไม่ได้ ({error}) ห้องถูกปิด",
     "net.reconnecting": "การเชื่อมต่อสัญญาณขาด กำลังเชื่อมใหม่…",
     "net.hostOnly": "เฉพาะเจ้าบ้านจึงจะย้อนตาในเกมออนไลน์ได้",
@@ -2125,7 +2127,7 @@ function resetHostRejoin() {
 }
 
 function scheduleHostRejoin(code, name, token) {
-  if (!code || !token || hostRejoinTimer) return;
+  if (!code || !token || hostRejoinTimer || lobbyState?.hostLeft) return;
   const first = hostRejoinAttempts === 0;
   hostRejoinTimer = setTimeout(() => {
     hostRejoinTimer = null;
@@ -4699,6 +4701,16 @@ function cardScale() {
   return entry.scale;
 }
 
+/* Tile size is a readability setting for the player's own hand only. Opponents,
+   centre plays and captures stay at the base size: scaling those pushed tiles
+   into the neighbouring seats and off the rim on a tablet. */
+const HAND_TILE_SCALE_MAX = 1.18;
+const BASE_TILE_SCALE = 1;
+
+function handTileScale() {
+  return Math.min(cardScale(), HAND_TILE_SCALE_MAX);
+}
+
 function applyCardSize(id, options = {}) {
   const entry = CARD_SIZES.find((item) => item.id === id) || CARD_SIZES[1];
   prefs.cardSize = entry.id;
@@ -5047,7 +5059,7 @@ function startJoinWatch() {
 }
 
 function recoverClientConnection() {
-  if (!isClient() || !net || net.recovering) return;
+  if (!isClient() || !net || net.recovering || lobbyState?.hostLeft) return;
   const code = net.code;
   const name = net.name;
   const pin = net.pin || "";
@@ -5060,7 +5072,7 @@ function recoverClientConnection() {
 function startClientWatchdog() {
   stopClientWatchdog();
   clientWatchTimer = setInterval(() => {
-    if (!isClient() || !net?.started || net.recovering || document.hidden) return;
+    if (!isClient() || !net?.started || net.recovering || lobbyState?.hostLeft || document.hidden) return;
     const active = state && ["dealing", "lead", "follow", "showdown", "bid", "draft"].includes(state.phase);
     if (active) {
       /* Pings keep the channel warm even when the host stopped publishing
@@ -6995,9 +7007,13 @@ function clientMessage({ message }) {
 
 function handleHostLost(options = {}) {
   if (!isClient()) return;
+  /* The host may announce `closed` and then drop the channel. Handle it once:
+     a second call would restart the rejoin loop the first call just stopped. */
+  if (lobbyState?.view === "lost" && lobbyState?.hostLeft) return;
   lastNetError = "host-left";
   const lostCode = net?.code || lobbyState?.roomCode || "";
   const lostName = net?.name || lobbyState?.name || "";
+  const lostPin = net?.pin || lobbyState?.pin || "";
   const rejoin = lostCode ? loadRejoinSeat(lostCode) : null;
   if (voice) {
     voice.leave();
@@ -7027,6 +7043,21 @@ function handleHostLost(options = {}) {
   } else {
     lobbyState = { view: "lost", roomCode: lostCode, status: t("net.hostLeft"), players: SEAT_PROFILES || [], started: true };
   }
+  /* An intentional host exit is terminal for this client. Stop every retry
+     path (scheduled rejoin, watchdog, join watch) so the panel cannot flip
+     between "host left" and "reconnecting". Re-entry is manual via Reconnect. */
+  resetHostRejoin();
+  stopClientWatchdog();
+  stopJoinWatch();
+  clearAllWelcomeRetries();
+  joinToken += 1;
+  net = null;
+  lobbyState.roomCode = lostCode;
+  lobbyState.name = lostName;
+  lobbyState.pin = lostPin;
+  lobbyState.hostLeft = true;
+  lobbyState.restarting = false;
+  lobbyState.status = t("net.hostLeft");
   showLobby("lost");
 }
 
@@ -7794,7 +7825,10 @@ function renderLobby() {
   const waitLeave = $("#lobbyWaitLeave");
   if (waitLeave) waitLeave.hidden = view === "lost";
   const retryJoin = $("#lobbyRetryBtn");
-  if (retryJoin) retryJoin.hidden = !(view === "waiting" && isClient() && !net?.started);
+  if (retryJoin) {
+    retryJoin.hidden = !((view === "waiting" && isClient() && !net?.started) || (view === "lost" && lobbyState?.hostLeft));
+    retryJoin.textContent = view === "lost" && lobbyState?.hostLeft ? t("net.reconnectHost") : t("net.reconnect");
+  }
   const copyInfo = $("#lobbyCopyInfo");
   if (copyInfo) {
     copyInfo.disabled = !code;
@@ -8316,7 +8350,14 @@ function retryGuestJoin() {
   const name = lobbyState?.name || net?.name || loadPlayerName();
   const pin = net?.pin || lobbyState?.pin || "";
   const token = loadRejoinSeat(code)?.token || "";
-  joinRoom(code, name, pin, token, { auto: true });
+  /* Manual retry after the host left: clear the terminal flag first, or the
+     fresh attempt is treated as already-closed. */
+  if (lobbyState) {
+    lobbyState.hostLeft = false;
+    lobbyState.restarting = false;
+    lobbyState.status = "";
+  }
+  joinRoom(code, name, pin, token, { auto: false });
 }
 
 async function probeRoom(code, pin = "") {
@@ -9383,7 +9424,7 @@ function handPosition(seat, index, count) {
      overlap, no second row, and no collision with the compact fan of the
      neighbouring seat. Opponents keep the smaller face-down fan. */
   if (seat === MY_SEAT) {
-    const scale = cardScale();
+    const scale = handTileScale();
     const step = 0.98 * scale;
     const offset = (index - (count - 1) / 2) * step;
     /* Larger cards pull the row slightly inward so the outer edge can never
@@ -9398,7 +9439,7 @@ function handPosition(seat, index, count) {
       angle: SEATS[seat].angle
     };
   }
-  const scale = cardScale();
+  const scale = BASE_TILE_SCALE;
   const total = Math.min(1.6, Math.max(0, count - 1) * 0.18 * scale);
   const offsetAngle = count > 1 ? (index - (count - 1) / 2) * (total / (count - 1)) : 0;
   const angle = SEATS[seat].angle + offsetAngle;
@@ -9416,7 +9457,7 @@ function centerPosition(seat, index, count) {
   const rows = Math.ceil(count / cols);
   const col = index % cols;
   const row = Math.floor(index / cols);
-  const spacing = CENTER_TILE_SPACING * cardScale();
+  const spacing = CENTER_TILE_SPACING * BASE_TILE_SCALE;
   const tangentOffset = (col - (cols - 1) / 2) * spacing;
   const radialOffset = (row - (rows - 1) / 2) * spacing;
   const base = seatVector(seat, CENTER_RADIUS);
@@ -9424,7 +9465,7 @@ function centerPosition(seat, index, count) {
   const radial = { x: Math.sin(SEATS[seat].angle), z: Math.cos(SEATS[seat].angle) };
   return {
     x: base.x + tangent.x * tangentOffset + radial.x * radialOffset,
-    y: TABLE_Y + (TILE_THICKNESS * cardScale()) / 2 + 0.012,
+    y: TABLE_Y + (TILE_THICKNESS * BASE_TILE_SCALE) / 2 + 0.012,
     z: base.z + tangent.z * tangentOffset + radial.z * radialOffset
   };
 }
@@ -9446,7 +9487,7 @@ function captureGroupsFor(game, seat) {
 }
 
 function capturePosition(seat, pileIndex = 0, within = 0, pileCount = 1) {
-  const scale = cardScale();
+  const scale = BASE_TILE_SCALE;
   const step = (CAPTURE_PILE_SPACING * scale) / CAPTURE_RADIUS;
   const angle = SEATS[seat].angle + (pileIndex - (pileCount - 1) / 2) * step;
   return {
@@ -10002,7 +10043,7 @@ async function createScene() {
     if (placement.kind === "hand") {
       const custom = handLayout.get(placement.id) || placement.custom;
       if (custom) {
-        const scale = cardScale();
+        const scale = handTileScale();
         return {
           x: custom.x,
           y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.012,
@@ -10033,7 +10074,6 @@ async function createScene() {
     currentState = gameState;
     const map = placementMap(gameState);
     const localSeat = Number.isInteger(gameState.mySeat) ? gameState.mySeat : (Number.isInteger(MY_SEAT) ? MY_SEAT : 0);
-    const scale = cardScale();
     const duration = options.duration ?? 620;
     const arc = options.arc ?? 0.26;
     for (const record of tileObjects.values()) {
@@ -10046,7 +10086,7 @@ async function createScene() {
       record.kind = placement.kind;
       record.index = placement.index;
       record.pileIndex = placement.pileIndex || 0;
-      record.root.scale.setScalar(scale);
+      record.root.scale.setScalar(placement.kind === "hand" && placement.seat === localSeat ? handTileScale() : BASE_TILE_SCALE);
       const target = positionFor(placement);
       orient(record, placement.seat, placement.angle);
       moveTile(record, target, options.deal ? 560 : duration, options.deal ? 0.75 : arc);
@@ -10074,12 +10114,11 @@ async function createScene() {
       }
       const entries = [...map.entries()];
       const localSeat = Number.isInteger(gameState.mySeat) ? gameState.mySeat : (Number.isInteger(MY_SEAT) ? MY_SEAT : 0);
-      const scale = cardScale();
       entries.forEach(([id, placement], index) => {
         const record = tileObjects.get(id);
         if (!record) return;
         const target = positionFor(placement);
-        record.root.scale.setScalar(scale);
+        record.root.scale.setScalar(placement.kind === "hand" && placement.seat === localSeat ? handTileScale() : BASE_TILE_SCALE);
         setTimeout(() => {
           orient(record, placement.seat, placement.angle);
           moveTile(record, target, 520, 0.9);
@@ -10245,7 +10284,7 @@ async function createScene() {
     handDrag.point = target;
     const record = handDrag.record;
     record.anim = null;
-    record.root.position.set(target.x, TABLE_Y + (TILE_THICKNESS * cardScale()) / 2 + 0.26, target.z);
+    record.root.position.set(target.x, TABLE_Y + (TILE_THICKNESS * handTileScale()) / 2 + 0.26, target.z);
     record.root.rotation.y = -target.angle;
     const hint = $("#playHint");
     if (hint) hint.hidden = Math.hypot(target.x, target.z) >= HAND_PLAY_RADIUS;
@@ -10318,7 +10357,7 @@ async function createScene() {
       }
       handLayout.set(record.id, { x: point.x, z: point.z, angle: point.angle });
       record.anim = null;
-      record.root.position.set(point.x, TABLE_Y + (TILE_THICKNESS * cardScale()) / 2 + 0.012, point.z);
+      record.root.position.set(point.x, TABLE_Y + (TILE_THICKNESS * handTileScale()) / 2 + 0.012, point.z);
       record.root.rotation.y = -point.angle;
       if (typeof onHandLayoutChange === "function") onHandLayoutChange();
       if (typeof renderSelection === "function") renderSelection();
