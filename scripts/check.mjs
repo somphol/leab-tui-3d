@@ -260,7 +260,7 @@ ok(script.includes("function scheduleHostRejoin") && script.includes("net.hostRe
 ok(script.includes("prefs.draftMode = false"), "draft picker is forced off");
 ok(script.includes("copy.draftPool") && script.includes("game.draftPool"), "draft pool survives save and hydrate");
 ok(script.includes("function trickCompareMarkup"), "one comparison renderer is shared");
-ok(/showTrickResult\(record\);\s*\n\s*trickResultGate = !isNetworked\(\);/.test(script), "every local seat sees the trick result");
+ok(/showTrickResult\(record\);/.test(script) && /trickResultGate = true;/.test(script), "every local seat sees the trick result and the authority waits for it");
 ok(/next\.phase === "resolving" && resultRecord/.test(script), "guests see the trick result when the host resolves");
 ok(/function showTrickResult/.test(script) && /trickCompareMarkup\(record\.entries/.test(script), "trick result and history share the comparison renderer");
 ok(css.includes(".trick-compare") && css.includes(".seat-tick"), "comparison layout CSS exists");

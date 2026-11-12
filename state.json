@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.23",
-  "version": "1.10.23",
+  "projectVersion": "1.10.24",
+  "version": "1.10.24",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -476,9 +476,14 @@
       "version": "1.10.23",
       "date": "2026-11-11",
       "summary": "Every player owns their turn-result pause; autoplay waits for their own sheet."
+    },
+    {
+      "version": "1.10.24",
+      "date": "2026-11-11",
+      "summary": "The host waits for its own turn-result sheet before the next trick starts."
     }
   ],
-  "releaseNotes": "1.10.23 makes the turn result local to each player. Guests see it as well as the host, each device keeps its own 5-30 second auto-close (or none), and autoplay waits only for the sheet on that device. The host no longer pauses the table for its own reading, so one person's result screen never stalls the others.",
+  "releaseNotes": "1.10.24 makes the host wait for its own turn-result sheet before the next trick, so the host's turn cannot start while its timer is still running. Guests keep their own local sheet and their own autoplay hold; they are not blocked by the host's timer, and the host is not blocked by theirs.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
