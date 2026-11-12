@@ -3258,10 +3258,12 @@ function resolveTrick() {
     entries: comparison
   }));
 
-  if (!isClient()) {
-    showTrickResult(record);
-    trickResultGate = !isNetworked();
-  }
+  /* Every local human sees the turn result, guests included: without it a
+     guest's next autoplay move fires under a sheet the host is still reading.
+     Only the authority blocks the next trick on it; a guest just gets the
+     same pause and the same auto-close setting. */
+  showTrickResult(record);
+  trickResultGate = !isNetworked();
 
   const finish = () => {
     if (!state || state.phase !== "resolving") return;
@@ -3904,6 +3906,10 @@ function startSummaryCountdown() {
 
 function showRoundSummary(matchEnded) {
   if (MY_SEAT < 0) return;
+  /* The round summary replaces any turn-result sheet left open on this device;
+     its timer must not fire later and close something else. */
+  clearResultAutoClose();
+  closeModal("trickResultModal");
   const modal = $("#summaryModal");
   if (!modal || !state) return;
   const isMatch = Boolean(matchEnded || state.phase === "matchEnd");
