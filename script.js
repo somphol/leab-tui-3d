@@ -3263,7 +3263,10 @@ function resolveTrick() {
      Only the authority blocks the next trick on it; a guest just gets the
      same pause and the same auto-close setting. */
   showTrickResult(record);
-  trickResultGate = !isNetworked();
+  /* The authority waits for its own result sheet before dealing the next
+     trick, so the host's turn never begins under a sheet it is still reading.
+     Guests' sheets stay local: they only hold their own autoplay. */
+  trickResultGate = true;
 
   const finish = () => {
     if (!state || state.phase !== "resolving") return;
