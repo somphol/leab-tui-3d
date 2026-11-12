@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.9.22-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.10.16-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -18,7 +18,8 @@ A bilingual, interactive 3D studio for **เลี๊ยบตุ่ย (Leab-Tu
 
 - **A real trick-taking engine, not a toy.** Leab (single), Tui (pair), Sa Hoo, See Hoo, Ngoh Hoo, Lak Hoo, and the Soldier sets; red-beats-black tie-breaking; face-down submissions; revealed-only comparison; the eight-pile Chuan bonus.
 - **Experimental draft deal.** A host-only, off-by-default variant replaces the automatic deal: each seat picks 2 tiles from a public pool, four times, to build an 8-tile hand. Bots pick automatically; a human always picks their own. It applies to the next deal, is switchable from the table HUD or Actions, works in solo and P2P, logs every bot pick, and resumes mid-draft. See **[docs/DRAFT.md](docs/DRAFT.md)**.
-- **Late joiners and viewers.** A guest can request a started table; the host replaces a bot (keeping its hand and score), allows a viewer, denies, or pauses joins for 30 minutes. Copy room info from Actions or the room chip.
+- **Invite from a solo game.** A gold **Invite** button in the top bar and Actions turns the current solo table into a hosted room without redealing: room number, PIN, copy/share, automatic host audio and host approval. A friend approved mid-trick is queued, told to wait for the trick, and takes the reserved bot seat at the next trick. Requests pop up on the host table with Allow / Watch only / Deny / Later, and the room chip opens the number + PIN so the host can read them aloud.
+- **Late joiners and viewers.** A guest can request a started table; the host replaces a bot (keeping its hand and score), allows a viewer, denies, or pauses joins for 30 minutes. Approved mid-trick guests watch immediately as audience, then take the reserved seat. Everyone sees a top-bar **👁 watcher chip** with the names. Copy room info from Actions or the room chip.
 - **Serverless P2P multiplayer.** Host a room, share a six-digit code or invite link, and play with up to three guests over a WebRTC data channel. The host browser is authoritative; each guest receives only their own hand. Two humans are enough to start — empty seats become bots, and a guest who leaves mid-game is replaced by a bot without stopping the table. A guest who reloads or updates rejoins the same seat automatically while the host stays open. See **[docs/MULTIPLAYER.md](docs/MULTIPLAYER.md)**.
 - **Host approval and an optional strong PIN.** Guests request a seat; the host approves or denies each one. A 5-digit PIN is generated automatically; **New PIN** rotates it is checked against an in-memory SHA-256 digest and never appears in the invite link or saved game. One-click **Copy room info** includes the code, link and PIN; **Copy invite link** never includes the PIN.
 - **Version and troubleshooting built in.** The footer and every launch dialog show the running version with a large **Reload version** button. The app checks once on open (at most once every 5 minutes), updates itself from the launch menu when a new build is live, and otherwise shows an update banner. A **Troubleshoot** panel probes the host with or without the PIN and reports reachability, PIN state, approval, started state and free seats.
@@ -151,6 +152,7 @@ node scripts/verify.mjs
 
 # two-client WebRTC test (needs Chrome + outbound access to 0.peerjs.com)
 node scripts/net-check.mjs
+node scripts/invite-check.mjs   # solo → Invite → queued guest
 
 # interactive CDP harness
 node scripts/browser-check.mjs --url "http://127.0.0.1:8123/?selftest=1"
@@ -218,7 +220,7 @@ git switch -c feature/<slug>
 
 ## Credits
 
-Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.9.22**; the original table was 1.0.0.
+Designed, written, verified and documented in a single session with **OpenCode 2.2.5** and **DeepSeek V4.1 Flash** (`opencode-go/deepseek-v4.1-flash`). The build time, token counts and session ID are recorded in **[STATE.md](STATE.md)** and **[state.json](state.json)**. The chat/voice build is release **1.10.4**; the original table was 1.0.0.
 
 Rules reference: Navee Angsuputiphant, “กฏกติกาการเล่น เลี๊ยบตุ่ย” (2016), linked in [docs/RULES.md](docs/RULES.md). Three.js and PeerJS are MIT-licensed; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

@@ -21,6 +21,7 @@ const base = `http://127.0.0.1:${port}/`;
 const soloBase = `${base}?mode=solo`;
 const failures = [];
 let server = null;
+let harnessPort = 9500;
 
 function pass(label) { console.log(`PASS ${label}`); }
 function fail(label, detail = "") { failures.push(`${label}${detail ? ` — ${detail}` : ""}`); console.error(`FAIL ${label}${detail ? ` — ${detail}` : ""}`); }
@@ -45,7 +46,8 @@ async function ensureServer() {
 }
 
 function runHarness(args) {
-  const output = execFileSync(process.execPath, ["scripts/browser-check.mjs", ...args], {
+  harnessPort += 1;
+  const output = execFileSync(process.execPath, ["scripts/browser-check.mjs", "--port", String(harnessPort), ...args], {
     cwd: root,
     encoding: "utf8",
     timeout: 120000,
@@ -158,7 +160,14 @@ async function main() {
   else fail("rank reference opens with 7 cards and toggles closed", JSON.stringify(rankValue));
 
   const display = runHarness(["--url", soloBase, "--wait", "2500", "--eval", `(async () => {
+    LeabTui.newMatch({ seed: 12 });
+    await new Promise((r) => setTimeout(r, 900));
     LeabTui.applyFontSize('xl');
+    LeabTui.applyCardSize('xl');
+    const handId = LeabTui.getState()?.hands?.[0]?.[0] || null;
+    const otherId = LeabTui.getState()?.hands?.[1]?.[0] || null;
+    const tileScale = handId ? LeabTui.getTileScale(handId) : null;
+    const otherScale = otherId ? LeabTui.getTileScale(otherId) : null;
     LeabTui.applyTheme('jade');
     const jadeScene = LeabTui.getCamera()?.theme;
     LeabTui.applyTheme('parchment');
@@ -168,6 +177,10 @@ async function main() {
     return JSON.stringify({
       font: document.documentElement.dataset.fontSize,
       scale: style.getPropertyValue('--fs-scale').trim(),
+      card: document.documentElement.dataset.cardSize,
+      cardScale: style.getPropertyValue('--card-scale').trim(),
+      tileScale,
+      otherScale,
       theme: document.documentElement.dataset.theme,
       scene: LeabTui.getCamera()?.theme,
       background: LeabTui.getCamera()?.background,
@@ -175,35 +188,117 @@ async function main() {
       prefs: LeabTui.getPrefs(),
       modal: !document.querySelector('#displayModal').hidden,
       fontButtons: document.querySelectorAll('button[data-font-size]').length,
+      cardButtons: document.querySelectorAll('button[data-card-size]').length,
       themeButtons: document.querySelectorAll('button[data-theme-choice]').length
     });
   })()`]);
   const displayValue = display.evalValue || {};
   if (displayValue.font === "xl" && displayValue.scale === "1.24") pass("text size XL applies a 1.24 scale");
   else fail("text size XL applies a 1.24 scale", JSON.stringify(displayValue));
+  if (displayValue.card === "xl" && displayValue.cardScale === "1.3") pass("tile size XL applies a 1.3 scale");
+  else fail("tile size XL applies a 1.3 scale", JSON.stringify(displayValue));
+  if (Math.abs(Number(displayValue.tileScale) - 1.3) < 0.001 && Math.abs(Number(displayValue.otherScale) - 1.3) < 0.001) pass("tile size XL scales every 3D tile on this screen");
+  else fail("tile size XL scales every 3D tile on this screen", JSON.stringify({ local: displayValue.tileScale, other: displayValue.otherScale }));
   if (displayValue.jadeScene === "jade" && displayValue.theme === "parchment" && displayValue.scene === "parchment" && displayValue.background === "d9cdb8") pass("bright Parchment theme reaches the UI and 3D scene");
   else fail("bright Parchment theme reaches the UI and 3D scene", JSON.stringify(displayValue));
   if (displayValue.prefs?.fontSize === "xl" && displayValue.prefs?.theme === "parchment") pass("display preferences persist");
   else fail("display preferences persist", JSON.stringify(displayValue.prefs));
-  if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.themeButtons === 5) pass("display panel exposes four sizes and five themes");
-  else fail("display panel exposes four sizes and five themes", JSON.stringify(displayValue));
+  if (displayValue.modal && displayValue.fontButtons === 4 && displayValue.cardButtons === 4 && displayValue.themeButtons === 5) pass("display panel exposes four text sizes, four tile sizes and five themes");
+  else fail("display panel exposes four text sizes, four tile sizes and five themes", JSON.stringify(displayValue));
+
+  const autoplay = runHarness(["--url", `${soloBase}&seed=777`, "--wait", "2500", "--eval", `(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    LeabTui.setFast(true);
+    LeabTui.newMatch({ seed: 777 });
+    const before = LeabTui.getState().hands[0].length;
+    LeabTui.setAutoplay(true);
+    let played = false;
+    for (let step = 0; step < 160; step += 1) {
+      await wait(100);
+      const current = LeabTui.getState();
+      if (current.phase === "roundEnd" || current.phase === "matchEnd") break;
+      if (current.hands[0].length < before) { played = true; break; }
+    }
+    const after = LeabTui.getState();
+    return JSON.stringify({
+      enabled: LeabTui.getPrefs().autoplay,
+      checkbox: document.querySelector('[data-autoplay-toggle]')?.checked === true,
+      played,
+      before,
+      after: after.hands[0].length,
+      phase: after.phase,
+      trick: after.trick
+    });
+  })()`]);
+  const autoplayValue = autoplay.evalValue || {};
+  if (autoplayValue.enabled && autoplayValue.checkbox) pass("autoplay toggle persists and updates the panel");
+  else fail("autoplay toggle persists and updates the panel", JSON.stringify(autoplayValue));
+  if (autoplayValue.played) pass("autoplay plays the local seat without a click", `hand ${autoplayValue.before} → ${autoplayValue.after}, trick ${autoplayValue.trick}`);
+  else fail("autoplay plays the local seat without a click", JSON.stringify(autoplayValue));
+
+  const dealHand = runHarness(["--url", `${soloBase}&seed=42`, "--device", "ipad", "--orientation", "landscape", "--wait", "3000", "--eval", `(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    LeabTui.newMatch({ seed: 42 });
+    await wait(1600);
+    const ids = LeabTui.getState().hands[0];
+    return JSON.stringify({ total: ids.length, visible: ids.map((id) => LeabTui.getTileScreen(id)).filter(Boolean).length });
+  })()`]);
+  const dealValue = dealHand.evalValue || {};
+  if (dealValue.total === 8 && dealValue.visible === 8) pass("iPad landscape shows all eight dealt tiles without Tidy hand");
+  else fail("iPad landscape shows all eight dealt tiles without Tidy hand", JSON.stringify(dealValue));
 
   const draftExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-    const chip = document.querySelector('#draftChip');
-    const before = { hidden: chip.hidden, text: chip.textContent, pressed: chip.getAttribute('aria-pressed') };
-    chip.click();
-    await sleep(150);
-    const on = { text: chip.textContent, pressed: chip.getAttribute('aria-pressed'), state: LeabTui.getState().draftMode };
-    chip.click();
-    await sleep(150);
-    const off = { text: chip.textContent, pressed: chip.getAttribute('aria-pressed'), state: LeabTui.getState().draftMode };
-    return JSON.stringify({ before, on, off });
+    LeabTui.newMatch({ seed: 5 });
+    await sleep(1400);
+    const state = LeabTui.getState();
+    return JSON.stringify({
+      chip: Boolean(document.querySelector('#draftChip')),
+      modalOpen: document.querySelector('#draftModal') ? !document.querySelector('#draftModal').hidden : false,
+      toggles: document.querySelectorAll('[data-draft-toggle]').length,
+      phase: state.phase,
+      hand: state.hands[0].length
+    });
   })()`;
   const draft = runHarness(["--url", soloBase, "--wait", "2500", "--eval", draftExpr]);
   const draftValue = draft.evalValue || {};
-  if (draftValue.before?.hidden === false && draftValue.on?.pressed === "true" && draftValue.off?.pressed === "false" && draftValue.off?.state === false) pass("draft switch toggles from the table HUD");
-  else fail("draft switch toggles from the table HUD", JSON.stringify(draftValue));
+  if (!draftValue.chip && !draftValue.modalOpen && draftValue.toggles === 0 && draftValue.hand === 8) pass("standard deal stays automatic and ignores the blind picker");
+  else fail("standard deal stays automatic and ignores the blind picker", JSON.stringify(draftValue));
+
+  const blind = runHarness(["--url", soloBase, "--wait", "2500", "--eval", `(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    LeabTui.setBlindPick(true);
+    LeabTui.newMatch({ seed: 1 });
+    for (let step = 0; step < 90; step += 1) {
+      await wait(100);
+      const s = LeabTui.getState();
+      if (s.phase === "draft" && s.turn === 0) break;
+    }
+    const before = LeabTui.getState().hands[0].length;
+    const modal = !document.querySelector("#draftModal")?.hidden;
+    const title = document.querySelector("#draftTitle")?.textContent || "";
+    const pool = [...document.querySelectorAll("#draftPool .draft-tile")];
+    const backs = pool.map((node) => node.textContent.trim());
+    if (pool[0]) pool[0].click();
+    await wait(80);
+    const second = document.querySelectorAll("#draftPool .draft-tile")[1];
+    if (second) second.click();
+    await wait(80);
+    document.querySelector("#draftConfirm")?.click();
+    await wait(400);
+    return JSON.stringify({
+      modal,
+      title,
+      pool: pool.length,
+      backs,
+      before,
+      after: LeabTui.getState().hands[0].length,
+      phase: LeabTui.getState().phase
+    });
+  })()`]);
+  const blindValue = blind.evalValue || {};
+  if (blindValue.modal && /Blind/i.test(blindValue.title) && blindValue.pool >= 8 && blindValue.backs.every((text) => text === "◈") && blindValue.after >= blindValue.before + 2) pass("blind pick shows face-down cards and takes two");
+  else fail("blind pick shows face-down cards and takes two", JSON.stringify(blindValue));
 
   const compareExpr = `(async () => {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -294,6 +389,10 @@ async function main() {
       ? [...rail.querySelectorAll('.panel-orb')].filter((node) => !node.hidden && getComputedStyle(node).display !== 'none').map((node) => node.textContent.trim())
       : [];
     const railState = { hidden: Boolean(rail?.hidden), display: rail ? getComputedStyle(rail).display : 'missing', orbs: railOrbs };
+    const inviteState = {
+      top: Boolean(document.querySelector('#inviteTopBtn') && !document.querySelector('#inviteTopBtn').hidden),
+      action: Boolean(document.querySelector('#inviteBtn') && !document.querySelector('#inviteBtn').hidden)
+    };
     document.querySelector('.panel-orb[data-panel="logPanel"]')?.click();
     await sleep(350);
     const logAction = document.querySelector('#panelSheetAction');
@@ -321,6 +420,7 @@ async function main() {
       toasts,
       toastClear,
       rail: railState,
+      invite: inviteState,
       logAction: logActionState,
       three: { topView: three?.topView, shadows: three?.shadows },
       two: { topView: two.cam?.topView, shadows: two.cam?.shadows, frame: two.frame },
@@ -348,8 +448,10 @@ async function main() {
     const expectedOrbs = ["C", "M", "A", "i", "H", "L"];
     if (value.rail?.hidden === false && value.rail?.display === "flex" && expectedOrbs.every((label) => value.rail?.orbs?.includes(label))) pass(`iPad ${orientation} keeps the C/M/A/i/H/L panel rail visible`);
     else fail(`iPad ${orientation} keeps the C/M/A/i/H/L panel rail visible`, JSON.stringify(value.rail));
-    if (value.logAction?.hidden === false && value.logAction?.text === "View trick log" && value.logAction?.title === "Turn log") pass(`iPad ${orientation} turn-log sheet exposes the play-history link`);
+    if (value.logAction?.hidden === false && value.logAction?.text === "View turn log" && value.logAction?.title === "Turn log") pass(`iPad ${orientation} turn-log sheet exposes the play-history link`);
     else fail(`iPad ${orientation} turn-log sheet exposes the play-history link`, JSON.stringify(value.logAction));
+    if (value.invite?.top && value.invite?.action) pass(`iPad ${orientation} shows Invite in the top bar and Actions`);
+    else fail(`iPad ${orientation} shows Invite in the top bar and Actions`, JSON.stringify(value.invite));
     if (value.three?.topView === false && value.three?.shadows === true) pass(`iPad ${orientation} 3D enables shadows`);
     else fail(`iPad ${orientation} 3D enables shadows`, JSON.stringify(value.three));
     if (value.two?.topView === true && value.two?.shadows === false && value.two?.frame?.fits && value.two?.frame?.clearOfDock) pass(`iPad ${orientation} returns to a fitted, shadow-free 2D view`);

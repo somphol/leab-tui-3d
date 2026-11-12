@@ -124,17 +124,31 @@ This is an independent, open-source teaching implementation. It is not affiliate
 
 - **Target:** 20, 50 or 100 points (the source suggests 100 or a fixed number of rounds).
 - **Direction:** clockwise (default) or counter-clockwise, by agreement.
-- **Scoring:** most piles (default) or **bid piles**. In bid piles each seat bids 0–8; the last bidder may not make the total exactly 8. A hit scores bid + 5 (zero bid + 3); a miss scores minus the difference.
+- **Scoring:** most piles, as in the source. Bid-piles was an experimental house variant and is not offered in the interface.
 - **Redraw (โละ):** before the first play, a seat with no tile from the red Elephant up may redeal. The requester leads; the round scores ×2, ×3 … per redraw.
 - **Chuan special:** with seven piles and the last Soldier, the final follower may reveal it and take the last trick, reaching eight piles for 16.
 
-## Experimental draft deal (not standard)
+## Removed house variant: bid piles (not standard)
 
-An optional deal variant lets each seat pick **2 tiles at a time from a public
-pool, four times**, for an 8-tile hand. It is **off by default**, host-only, and
-is not part of the Navee source. It changes only the deal; Chuan, bidding,
-scoring and showdown are unchanged. The red-General holder leads. See
-**[DRAFT.md](DRAFT.md)** for the full behaviour and the bot heuristic.
+An earlier build offered a **bid-piles** scoring variant (each seat bid 0–8,
+last bidder could not make the total exactly 8, a hit scored +5). It is **not
+in the Navee source** and has been removed from the interface; the engine path
+stays dormant only so an old saved match can be migrated to standard scoring.
+
+## Optional house variant: Blind pick (not standard)
+
+The host may enable **Blind pick** in Actions. Each seat chooses two cards by
+position from a pool of card backs, four times; the pool is shuffled with the
+platform CSPRNG, values stay hidden until the cards join the hand, and bots
+pick randomly. It changes only the deal and is **off by default**.
+It is not part of the Navee source.
+
+## Removed house variant: draft pick (not standard)
+
+An earlier build let each seat pick **2 tiles at a time from a public pool,
+four times**. That is not how the game is dealt: the source deals eight random
+tiles face-down. The picker has been removed from the interface; the engine
+path is dormant so an old save cannot reopen it.
 
 ## Chuan and “Soldier beats General”
 

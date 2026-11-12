@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.9.22",
-  "version": "1.9.22",
+  "projectVersion": "1.10.16",
+  "version": "1.10.16",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -9,13 +9,13 @@
   "build": {
     "sessionStartedAt": "2026-11-06T10:05:33-08:00",
     "startedAt": "2026-11-06T10:05:33-08:00",
-    "packagedAt": "2026-11-09T00:57:28.520Z",
-    "durationSeconds": 197516,
-    "durationHuman": "54h 51m 56s",
+    "packagedAt": "2026-11-10T03:12:20.409Z",
+    "durationSeconds": 292007,
+    "durationHuman": "81h 6m 47s",
     "timezone": "-08:00",
     "note": "Wall clock from the OpenCode session record (time_created to the last measured token update), including the review gap between requests. The final state commit and push add a small amount.",
-    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link.",
-    "publishedAt": "2026-11-09T00:57:28.520Z"
+    "includes": "1.4.x–1.6.0 P2P, chat, voice, approval, PIN and caps; 1.7–1.8 table zones, drag, showdown, piles, bid/redraw; 1.9.0–1.9.6 reveal/history comparisons, Chuan explanations, winner badges; 1.9.7–1.9.18 draft, random/seeded bots, full-circle results, guest rejoin, tablet reset/2D, update-safe tables, PWA full-screen, host reload recovery, late join, viewers, join pause, room-info copy and showdown legality; 1.9.19 2D shadows off, stage-fitted camera and iPad emulation. 1.9.20 HUD-safe hint toasts, selected-tile inspector and H hand controls. 1.9.21 iPad landscape panel rail restored. 1.9.22 turn-log sheet play-history link. 1.10.4 Invite, audience mode, watchers, action ACK, heartbeats, keepalive/turn timeout, seat-card reconnect, iPad hand fan and dock restore. 1.10.5 approval receipts, welcome ack/retry, join-status recovery. 1.10.6 tile size, autoplay, seat reclaim and state freshness. 1.10.7 binary transport, epoch/seq, state ACKs, action retries, four-human and lossy soak, fixed iPad viewport. 1.10.8 liveness-based seat takeover and host push-state.",
+    "publishedAt": "2026-11-10T03:12:20.409Z"
   },
   "tokens": {
     "input": 6615671,
@@ -71,9 +71,9 @@
   },
   "verification": {
     "selfTest": "38/38",
-    "staticCheck": "scripts/check.mjs (420 checks)",
-    "browserCheck": "scripts/verify.mjs — 44 checks incl. iPad framing, shadows, hints, inspector, rail and the turn-log history link",
-    "multiplayer": "scripts/net-check.mjs — 37/37 (local and live)",
+    "staticCheck": "scripts/check.mjs (445 checks)",
+    "browserCheck": "scripts/verify.mjs — 51 checks incl. iPad dealt-hand completeness, blind pick, tile size and autoplay",
+    "multiplayer": "scripts/net-check.mjs — ≈58 checks including a 4-human full-round soak, 10% loss/duplicate/100 ms delay soak, host push-state, host reload and seat reclaim",
     "fullRound": "roundEnd, 32 tiles conserved, points sum 0",
     "privacy": "guest own 8 real ids; other 24 ghost ids",
     "disconnect": "guest tab closed → seat 1 became a bot, hand/score preserved",
@@ -86,7 +86,23 @@
     "copyRoomInfo": "host Actions button + host chip title",
     "hostReload": "same room code, trick preserved, guest reconnected",
     "showdownLegality": "illegal pair explained; legal losing sets remain showable",
-    "ipad": "portrait and landscape: rim on-screen, clear of dock, 2D shadow-free, 3D shadows on, hint toast below HUD, inspector on selection, C/M/A/i/H/L rail, L sheet opens shared turn history after a trick"
+    "ipad": "portrait and landscape: whole rim, no 2D shadows, Invite controls, C/M/A/i/H/L rail, hand fan without overlap",
+    "invite": "scripts/invite-check.mjs — 16 checks: solo → host, audio, popup, audience mode, promotion, resync, seat-card reconnect",
+    "joinRecovery": "welcome retried until welcome-ack; waiting guest polls status every 4 s; queued/viewer resync answered; invite sheet clears with a receipt",
+    "displayTiles": "four tile sizes (0.9 / 1.0 / 1.12 / 1.3) scale the local 3D hand and dock chips; hand row reflows inward at XL",
+    "autoplay": "toggle plays only the local seat in solo, host and guest roles; lead/follow/showdown/bid/draft covered",
+    "seatReclaim": "a same-name viewer is returned to an offline human seat; recovered seats free to bots after a 30 s grace",
+    "autoRejoin": "auto reconnect now retries every 1.2 s after a host reload instead of stopping at one attempt",
+    "stateFreshness": "client watchdog resyncs after 9 s without a snapshot and reconnects after 24 s",
+    "transport": "PeerJS binary serialisation (chunked) so late-round four-human snapshots stay under the JSON 16 KB ceiling",
+    "ordering": "host epoch + monotonic seq on every state/welcome; guests ignore stale, duplicate or previous-incarnation messages",
+    "antiEntropy": "per-seat state ACKs with targeted resend; 4 s full snapshot heartbeat; 9 s resync and 24 s reconnect watchdogs",
+    "actions": "actionId dedupe plus same-ID retry every 1.5 s (4 attempts) and a stale-snapshot gate",
+    "silentSeats": "closed or quiet human connections are swept to bots after 20–30 s; a seat and a viewer entry can no longer mask each other",
+    "networkImpairment": "?netem=drop/dup/delay/jitter runs only in tests; 4 humans stay live at 10% loss",
+    "touch": "iOS fixed visual viewport, second-touchstart guard and pinch/gesture cancellation",
+    "slowPlayers": "a connected player is never bot-replaced for taking >30 s; only a closed or silent connection loses the seat",
+    "blindPick": "CSPRNG Fisher-Yates deal; 8 face-down tiles per seat, 32 unique, same seed produces different hands"
   },
   "credits": {
     "design": "OpenCode + DeepSeek V4.1 Flash",
@@ -360,9 +376,74 @@
       "version": "1.9.22",
       "date": "2026-11-08",
       "summary": "Turn-log sheet exposes the shared play-history browser on iPad."
+    },
+    {
+      "version": "1.10.4",
+      "date": "2026-11-09",
+      "summary": "Invite from solo, audience queue, watchers, keepalive, resync and iPad hand fixes."
+    },
+    {
+      "version": "1.10.5",
+      "date": "2026-11-09",
+      "summary": "Approval receipts, welcome acknowledgement/retry and join-status recovery so approved guests never stall on the waiting screen."
+    },
+    {
+      "version": "1.10.6",
+      "date": "2026-11-09",
+      "summary": "Adjustable tile size, autoplay for the local seat, seat reclaim after a lost rejoin token and a state-freshness watchdog."
+    },
+    {
+      "version": "1.10.7",
+      "date": "2026-11-09",
+      "summary": "Launch menu simplification, tile size, dock autoplay, turn wording, binary transport, epoch/seq ordering, state ACKs, silent-seat sweep and a 4-human lossy soak."
+    },
+    {
+      "version": "1.10.8",
+      "date": "2026-11-10",
+      "summary": "Slow but connected players keep their seat; the host can push the latest snapshot to everyone."
+    },
+    {
+      "version": "1.10.9",
+      "date": "2026-11-10",
+      "summary": "Unique bot names and a You badge on the scoreboard so a human seat is never confused with a bot."
+    },
+    {
+      "version": "1.10.10",
+      "date": "2026-11-10",
+      "summary": "Clearer bid wording: what a pile is, how exact and missed bids score, and the last-bidder rule."
+    },
+    {
+      "version": "1.10.11",
+      "date": "2026-11-10",
+      "summary": "Remove the non-standard bid-piles scoring variant from the interface and docs; standard pile scoring only."
+    },
+    {
+      "version": "1.10.12",
+      "date": "2026-11-10",
+      "summary": "iPad deal reflows the local hand automatically so all eight tiles appear without pressing Tidy hand."
+    },
+    {
+      "version": "1.10.13",
+      "date": "2026-11-10",
+      "summary": "Remove the experimental draft picker; standard random face-down deal only."
+    },
+    {
+      "version": "1.10.14",
+      "date": "2026-11-10",
+      "summary": "Optional Blind pick house variant: crypto-shuffled eight-card deal, face-down, no open pool."
+    },
+    {
+      "version": "1.10.15",
+      "date": "2026-11-10",
+      "summary": "The hand dock opens by default; a player's H choice is remembered separately."
+    },
+    {
+      "version": "1.10.16",
+      "date": "2026-11-10",
+      "summary": "Blind pick is a face-down pool choice: pick two by position, values hidden until they join the hand."
     }
   ],
-  "releaseNotes": "1.9.22 adds the View trick log action to the iPad turn-log sheet; it opens the same history modal as the round summary.",
+  "releaseNotes": "1.10.16 turns Blind pick into a real face-down choice: the pool shows card backs, each seat picks two by position, and values appear only after the cards join the hand. It remains an off-by-default house variant.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

@@ -120,6 +120,31 @@ git push origin develop
 
 A hotfix must be merged back to `develop` in the same session, or the next release will reintroduce the bug.
 
+## Preview deployments
+
+A feature branch does not replace production. `.github/workflows/pages.yml` builds one Pages artifact:
+
+```text
+/                                  main (production)
+/preview/invite-friends/           feature/invite-friends
+```
+
+A push to `feature/invite-friends` publishes the preview at
+`https://somphol.github.io/leab-tui-3d/preview/invite-friends/` while the root keeps serving `main`. A push to
+`main` (or a manual run on `main`) rebuilds only the root, so the preview disappears when the feature is
+promoted. The preview copy gets `<meta name="robots" content="noindex">`.
+
+This needs **Settings → Pages → Source: GitHub Actions** and the `github-pages` environment must allow the
+preview branch (or any branch). Test the preview with the same commands, changing `BASE_URL`:
+
+```bash
+BASE_URL="https://somphol.github.io/leab-tui-3d/preview/invite-friends/" node scripts/net-check.mjs
+BASE_URL="https://somphol.github.io/leab-tui-3d/preview/invite-friends/" node scripts/invite-check.mjs
+```
+
+The preview carries the release-candidate version (`1.10.4`) so testers can see which build they are on; the release branch still owns the final tag. Label it as a
+preview of the next release in the PR.
+
 ## Verification by branch
 
 | Branch | Minimum gate |

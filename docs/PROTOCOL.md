@@ -1,6 +1,6 @@
 # Wire protocol
 
-Version **1**. Every message is a JSON object with `__leab: 1` and `type`. PeerJS serialises with its JSON serialisation; the data channel is reliable and ordered.
+Version **1**. Every message is a JSON-compatible object with `__leab: 1` and `type`. PeerJS uses **binary** serialisation (BinaryPack): it chunks payloads above ~16 KB, whereas JSON serialisation refuses them. The data channel is reliable and ordered per connection; reconnects can still duplicate or delay messages, so the protocol is idempotent and epoch/seq ordered.
 
 `peer-manager.js` stamps `__leab` on send and ignores messages without it. `script.js` ignores messages whose `type` it does not know, so additive fields are safe.
 
@@ -43,6 +43,22 @@ true` and the state. A **viewer** receives `"seat": -1`, `"viewer": true`,
 `"started": true` and `sanitizeForSeat(state, -1)` (all hands and unrevealed
 sets hidden). Viewer state publications use the same `seat: -1` envelope.
 
+The host treats a `welcome` as delivered only when the guest answers
+`welcome-ack`; otherwise it repeats the same welcome (same seat/state) up to
+eight times at roughly one-second spacing. A queued guest's welcome carries
+`"seat": -1`, `"viewer": true`, `"queued": true`, `"queuedSeat": n`,
+`"joinAfter": "trick" | "round" | "match"`, `"rejoinToken"` and a hidden-state
+snapshot.
+
+### `welcome-ack` (guest → host)
+
+```json
+{ "type": "welcome-ack" }
+```
+
+Stops host retries for that connection. Sent immediately on receiving any
+`welcome`, before the guest applies the snapshot.
+
 ### `lobby`
 
 Roster update while the room is open.
@@ -73,14 +89,41 @@ Sent immediately before the first `state` of a match.
 }
 ```
 
+### `pending`
+
+Sent when a request needs approval, and again with `"queued": true` when an approved guest is waiting for the
+current trick to end. Older clients ignore the extra fields and keep waiting; the later `welcome` still promotes
+them.
+
+```json
+{
+  "type": "pending",
+  "roomCode": "482173",
+  "hostName": "Ana",
+  "queued": true,
+  "seat": 2,
+  "joinAfter": "trick",
+  "rejoinToken": "…",
+  "players": [ ... ]
+}
+```
+
+`joinAfter` is `trick`, `round` or `match`. The host reserves the seat, keeps the bot active, and immediately sends
+a **viewer welcome** so the guest can watch the table: `seat: -1`, `viewer: true`, `queued: true`,
+`queuedSeat`, `joinAfter` and `sanitizeForSeat(state, -1)`. The bot stays in the seat. At the next `beginTrick`
+(or next deal for `round`/`match`) the host promotes the guest with a normal `welcome` carrying
+`"joinedSeat": true` and `sanitizeForSeat(state, seat)`. A queued guest reconnects with the same `rejoinToken`;
+the host matches it before the PIN/approval gate. Protocol version stays 1 because the message shape is additive.
+
 ### `state`
 
-The authoritative game snapshot, redacted for the recipient. `seq` increases monotonically for the lifetime of the room.
+The authoritative game snapshot, redacted for the recipient. `epoch` increases once per host page incarnation (including reload recovery); `seq` increases monotonically for the lifetime of that incarnation. A client applies a frame only when `epoch` matches and `seq` is newer than the last applied sequence (or the frame is an explicit resync). Older, duplicate or previous-epoch frames are ignored, never applied backwards. Every applied state is acknowledged with `state-ack`; the host resends to a seat that acknowledges an older seq.
 
 ```json
 {
   "type": "state",
   "roomCode": "482173",
+  "epoch": 4,
   "seq": 17,
   "seat": 1,
   "players": [ ... ],
@@ -168,18 +211,74 @@ even while the match is running. Otherwise the host verifies the optional PIN
 against an in-memory SHA-256 digest, then either queues the request (`pending`)
 or rejects it. The host assigns the lowest free seat 1–3 only after approval. Names are trimmed to 18 characters; control characters and angle brackets are stripped. Empty names become `Guest n`.
 
-`bad-pin`, `denied`, `busy`, `timeout`, `full`, `in-progress` and `suppressed` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s. A started room queues a valid PIN request instead of rejecting `in-progress`; the host decides bot seat, viewer, deny or a 30-minute pause.
+`bad-pin`, `denied`, `busy`, `timeout`, `full`, `in-progress` and `suppressed` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s. A started room queues a valid PIN request instead of rejecting `in-progress`; the host decides bot seat, viewer, deny or a 30-minute pause. An approved bot-seat request is still queued when the trick has started; see `pending`.
+
+### `status`
+
+Sent by a guest that is connected but still on the waiting screen. The host
+answers with whatever the connection's current role is: the pending notice,
+the queued welcome (with a fresh hidden snapshot), the viewer welcome, or a
+seated welcome. A client sends it every four seconds until a welcome lands, so
+a dropped approval cannot strand it. Safe to ignore; rate-limited by the same
+host message window.
+
+### `state-ack`
+
+```json
+{ "type": "state-ack", "epoch": 4, "seq": 17 }
+```
+
+Sent by a seated guest after a state snapshot is applied. The host records it
+per seat and, when the ack is behind `net.seq`, sends a fresh targeted snapshot
+without waiting for the 4 s heartbeat. Acks are small and safe to drop.
 
 ### `action`
 
 The guest's intent. The host validates it with the same engine that validates local play.
 
 ```json
-{ "type": "action", "kind": "lead", "tiles": ["r-advisor-0"], "reveal": false }
-{ "type": "action", "kind": "follow", "tiles": ["b-soldier-2"], "reveal": true }
+{ "type": "action", "actionId": "1-lx3k-7", "kind": "lead", "tiles": ["r-advisor-0"], "reveal": false }
+{ "type": "action", "actionId": "1-lx3k-8", "kind": "follow", "tiles": ["b-soldier-2"], "reveal": true }
 ```
 
 `tiles` must be ids that exist in **that seat's** hand. `reveal` is only consulted for `follow`. The host never trusts the guest's combo or score.
+
+`actionId` is a guest-generated token for exactly one intent. The host stores the last id per seat; a retry with the same id gets the stored ack and is **not executed twice**. The host replies:
+
+```json
+{ "type": "action-ack", "actionId": "1-lx3k-7", "ok": true, "reason": null, "seq": 12 }
+```
+
+A false ack means the action was rejected as illegal; the guest shows the reason, clears the pending intent and asks for a resync. A guest with no ack after ~3.5 s assumes the action was unconfirmed, refreshes the table, and does not blindly replay a new intent.
+
+### `pulse` / `resync`
+
+The host sends a heartbeat to seated humans every 4 s. During active play
+(`dealing`, `lead`, `follow`, `showdown`, `draft`) the heartbeat is a
+full redacted `state` snapshot, so a missed publish repairs itself even when no
+new action occurred. On the summary screens it is the cheaper:
+
+```json
+{ "type": "pulse", "seq": 12 }
+```
+
+A guest whose `lastSeq` is behind sends:
+
+```json
+{ "type": "resync" }
+```
+
+The host rate-limits resync (800 ms per seat) and replies with a normal `state` carrying `"resync": true`, the current `seq` and the seat's redacted snapshot.
+
+If a human guest's active turn exceeds 30 seconds, the host converts the seat to a bot and sends:
+
+```json
+{ "type": "seat-timeout", "roomCode": "482173", "seat": 1 }
+```
+
+The guest shows the timeout, reconnects with the stored seat token, and `reattachGuest` stops the bot and restores the seat. The old connection is closed after this message. A host roster entry with no message for 20 seconds is shown as offline; it is not converted unless it is their turn. An illegal action ack, returning to the tab, or the Actions **Refresh table** button also requests a resync. The guest clears any pending action when the resync state arrives.
+
+PeerJS is configured with `reliable: true` and `serialization: "json"`, so an open data channel is ordered and reliable. The failure mode is not packet loss inside a healthy channel; it is a channel that stalls or closes without delivering the final state. Full snapshots make the repair idempotent: the latest `seq` wins, and a stale guest recovers by requesting a new snapshot rather than replaying events.
 
 ### `ping`
 

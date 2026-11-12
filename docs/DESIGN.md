@@ -62,6 +62,7 @@ The title is 20–27 px serif, the brand eyebrow 11.5 px uppercase with 0.16em t
 - The sidebar is a vertical stack of panels: coach, match, actions, inspector, hand, log. It scrolls independently.
 - At 1180 px the sidebar narrows to 340 px and the dock stacks.
 - At 960 px the layout becomes one column; the stage is 64vh; the sidebar follows.
+- On tablets (coarse pointer, ≥641 px) the app is a fixed `100dvh` viewport: body scrolling is disabled, the stage fills the space below the top bar, the HUD wraps before the right rail, and the panel sheet is the navigation. App, stage and canvas are `touch-action: none`; the second `touchend` and Safari gesture events are cancelled, so a double-tap on a tile cannot zoom the page or leave a white visual-viewport gap. In a room the tablet top bar hides About/Leave (Actions has Leave), uses icon-only Update/Join audio and a compact brand, so the room chip cannot widen the layout and crop the table.
 - At 640 px the stage is `calc(100dvh - 86px)`; the dock loses the kicker and clamps the detail to one line; buttons stay on one scrollable row. The 2D camera fits the rim to the stage aspect between the HUD and dock, so the hand is not cropped; 3D moves back and widens to the narrow FOV.
 
 ## The tile

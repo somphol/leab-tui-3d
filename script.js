@@ -16,15 +16,16 @@ import {
   openHostWithRetry,
   PeerClient,
   createLoopbackPair,
-  isProtocolMessage
-} from "./peer-manager.js?v=1.9.22";
-import { VoiceChat } from "./voice-chat.js?v=1.9.22";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.9.22";
+  isProtocolMessage,
+  configureNetem
+} from "./peer-manager.js?v=1.10.16";
+import { VoiceChat } from "./voice-chat.js?v=1.10.16";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.16";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.9.22",
+  version: "1.10.16",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -86,6 +87,16 @@ const FONT_SIZES = Object.freeze([
   { id: "md", scale: 1.0, labelKey: "display.default" },
   { id: "lg", scale: 1.12, labelKey: "display.large" },
   { id: "xl", scale: 1.24, labelKey: "display.xlarge" }
+]);
+
+/* Display-only scale for the local player's tiles: the 3D hand and the
+   accessible chips in the dock. It never changes the rules or the shared
+   hand layout of the other seats. */
+const CARD_SIZES = Object.freeze([
+  { id: "sm", scale: 0.9, labelKey: "display.cardSmall" },
+  { id: "md", scale: 1.0, labelKey: "display.cardDefault" },
+  { id: "lg", scale: 1.12, labelKey: "display.cardLarge" },
+  { id: "xl", scale: 1.3, labelKey: "display.cardXlarge" }
 ]);
 
 const THEMES = Object.freeze([
@@ -253,6 +264,25 @@ function shuffle(list) {
   return out;
 }
 
+function cryptoShuffle(list) {
+  /* House "blind pick" deal: Fisher-Yates with the platform CSPRNG so the
+     order is not derived from the match seed. */
+  const out = list.slice();
+  const draw = () => {
+    if (globalThis.crypto?.getRandomValues) {
+      const buffer = new Uint32Array(1);
+      crypto.getRandomValues(buffer);
+      return buffer[0] / 4294967296;
+    }
+    return Math.random();
+  };
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(draw() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 function clone(value) {
   if (typeof structuredClone === "function") {
     try { return structuredClone(value); } catch { /* fall through */ }
@@ -299,7 +329,7 @@ const I18N = {
     "dock.followHidden": "Send these {n} tiles face-down. The leader reveals first once all four have sent.",
     "dock.showdown": "Showdown",
     "dock.showdownTitle": "Show or keep hidden?",
-    "dock.showdownCan": "Your {combo} beats {best}. Show it to take the trick.",
+    "dock.showdownCan": "Your {combo} beats {best}. Show it to take the turn.",
     "dock.showdownWait": "Only a revealed set can win. You may show yours even if it loses.",
     "dock.showdownLose": "Your {combo} does not beat {best}, but you may still show it.",
     "dock.showdownDouble": "Double-click your tile on the table to show it.",
@@ -310,13 +340,13 @@ const I18N = {
     "dock.showdownNoSet": "Your submitted tiles are not a {type}",
     "dock.showdownNoSetHelp": "Only a legal {type} can be shown; with this set, Keep hidden is the only option.",
     "dock.showdownWrongType": "Your {combo} is not a {type}",
-    "dock.showdownWrongTypeHelp": "The call was {type}. You can keep this set hidden, but it cannot be shown for this trick.",
+    "dock.showdownWrongTypeHelp": "The call was {type}. You can keep this set hidden, but it cannot be shown for this turn.",
     "dock.followInvalid": "These tiles do not form a {type}. You can send them face-down, but only a legal set can be shown.",
     "showdown.hidden": "face-down",
     "actions.showFirst": "Show first",
-    "result.title": "Trick result",
+    "result.title": "Turn result",
     "dock.waiting": "{seat} is thinking…",
-    "dock.pick": "Select {n} tile(s) for this trick.",
+    "dock.pick": "Select {n} tile(s) for this turn.",
     "dock.selected": "{n} selected.",
     "actions.hint": "Hint",
     "actions.clear": "Clear",
@@ -332,6 +362,9 @@ const I18N = {
     "actions.revealLog": "showed",
     "actions.facedown": "Play face-down",
     "draft.title": "Draft — pick 2 tiles",
+    "draft.blindTitle": "Blind pick — choose 2 cards",
+    "draft.blindMeta": "The cards are face-down. Pick 2 by position; you will see them after they join your hand. Round {step}/4 · {pool} left.",
+    "draft.blindConfirm": "Take 2 face-down cards",
     "draft.metaYou": "You have {n} tiles · pick 2 from the pool ({step}/4). {pool} left.",
     "draft.waiting": "{seat} is picking 2 tiles…",
     "draft.waitingShort": "Waiting…",
@@ -348,10 +381,17 @@ const I18N = {
     "actions.newMatch": "New match",
     "actions.nextRound": "Next round",
     "actions.undo": "Cancel turn",
+    "actions.resync": "Refresh table",
+    "actions.pushState": "Push table update",
     "actions.export": "Export JSON",
     "actions.continue": "Continue",
     "actions.keep": "Keep playing",
     "actions.sound": "Sound",
+    "actions.autoplay": "Autoplay my seat (AI)",
+    "actions.autoplayShort": "Auto",
+    "actions.blindPick": "Blind pick deal (house variant)",
+    "actions.blindPickNote": "Eight cards are drawn face-down from a crypto-shuffled deck. No open pool, no choosing. Not part of the Navee source.",
+    "actions.autoplayNote": "The coach plays your legal moves after a short pause. Turn it off at any time to take over.",
     "display.title": "Display",
     "display.language": "Language",
     "display.font": "Text size",
@@ -359,8 +399,13 @@ const I18N = {
     "display.default": "Default",
     "display.large": "Large",
     "display.xlarge": "Extra large",
+    "display.cards": "Tile size",
+    "display.cardSmall": "Small",
+    "display.cardDefault": "Default",
+    "display.cardLarge": "Large",
+    "display.cardXlarge": "Extra large",
     "display.theme": "Theme",
-    "display.note": "Text size scales the interface, not the 3D table. Theme changes the panels and the felt / wood palette.",
+    "display.note": "Text size scales the interface. Tile size scales your own 3D hand and the card chips in the dock; theme changes the panels and the felt / wood palette.",
     "display.fullscreen": "Full screen",
     "display.fullscreenBtn": "Enter full screen",
     "display.fullscreenExit": "Exit full screen",
@@ -379,6 +424,13 @@ const I18N = {
     "theme.daybreak": "Daybreak",
     "theme.daybreakDesc": "Pale blue-white panels, navy ink and a teal table.",
     "toast.fontSize": "Text size set to {size}.",
+    "toast.cardSize": "Tile size set to {size}.",
+    "toast.autoplayOn": "Autoplay is on — the coach plays your seat.",
+    "toast.autoplayOff": "Autoplay is off — your seat is yours.",
+    "toast.blindDeal": "Blind pick — eight random cards face-down.",
+    "toast.blindPickOn": "Blind pick on — each deal lets you choose 2 face-down cards.",
+    "toast.blindPickOff": "Blind pick off — standard seeded deal.",
+    "toast.blindPickHostOnly": "Only the host chooses the deal.",
     "toast.theme": "Theme set to {theme}.",
     "toast.displayReset": "Display settings reset.",
     "toast.soundTest": "Sound test — a wooden clack.",
@@ -411,12 +463,12 @@ const I18N = {
     "log.trick": "Turn",
     "log.call": "Call",
     "log.winner": "Winner",
-    "log.why": "Only revealed sets compete; the highest revealed set takes the trick. Face-down tiles stay hidden.",
+    "log.why": "Only revealed sets compete; the highest revealed set takes the turn. Face-down tiles stay hidden.",
     "log.chuan": "Chuan",
     "log.draftPick": "picked 2 tiles",
-    "log.chuanWhy": "Chuan claim: seven piles plus the last Soldier. The Soldier takes the final trick by the special rule, not by rank.",
-    "log.empty": "No tricks recorded yet.",
-    "summary.viewLog": "View trick log",
+    "log.chuanWhy": "Chuan claim: seven piles plus the last Soldier. The Soldier takes the final turn by the special rule, not by rank.",
+    "log.empty": "No turns recorded yet.",
+    "summary.viewLog": "View turn log",
     "summary.autoNext": "Auto-start next round (30s)",
     "lastTrick.winner": "{seat} won {n} tiles with {combo}",
     "pile.title": "{seat} · pile {n}",
@@ -432,7 +484,7 @@ const I18N = {
     "inspector.copies": "Copies",
     "inspector.color": "Colour",
     "inspector.hidden": "Face-down tile",
-    "inspector.hiddenNote": "The carved face is hidden. In Leab-Tui, unrevealed tiles never win a trick — even if they could have.",
+    "inspector.hiddenNote": "The carved face is hidden. In Leab-Tui, unrevealed tiles never win a turn — even if they could have.",
     "inspector.selected": "Selected for play",
     "inspector.note": "Hierarchy: General > Advisor > Elephant > Chariot > Horse > Cannon > Soldier. Red beats black at equal rank; equal rank and colour keeps the earlier play ahead.",
     "handList.title": "Your hand",
@@ -441,7 +493,7 @@ const I18N = {
     "handList.empty": "No tiles left this round.",
     "log.title": "Turn log",
     "log.live": "live",
-    "log.empty": "The table is quiet. Lead the first trick.",
+    "log.empty": "The table is quiet. Lead the first turn.",
     "footer.credit": "Built with OpenCode + DeepSeek V4.1 Flash",
     "error.webglTitle": "The 3D table could not start",
     "error.webglBody": "Three.js needs WebGL 2 and a network connection to the CDN. The rules, score and coaching panels still work.",
@@ -484,10 +536,10 @@ const I18N = {
     "phase.lead": "Lead",
     "phase.follow": "Follow",
     "phase.bid": "Bid",
-    "bid.kicker": "Auction",
-    "bid.title": "How many piles will you take?",
+    "bid.kicker": "Bid your piles",
+    "bid.title": "How many piles will you capture this round?",
     "bid.waiting": "{seat} is bidding…",
-    "bid.help": "Bids so far total {total}. The last bidder may not make the total exactly 8.",
+    "bid.help": "A pile is four captured tiles; a round has eight. Declared so far: {total}. Exact bid scores +5 (0 = +3); a miss loses the difference. The last bidder cannot make the total exactly 8.",
     "phase.resolving": "Resolving",
     "phase.roundEnd": "Round over",
     "phase.matchEnd": "Match over",
@@ -502,32 +554,32 @@ const I18N = {
     "coach.yourLead": "Your lead. {n} tiles in hand. Choose a single, a pair, a straight or a Soldier set.",
     "coach.aiLead": "{seat} is choosing a lead…",
     "coach.follow": "{seat} led {combo}. Select exactly {n} tile(s).",
-    "coach.followBeat": "{seat} played {combo}. You can beat it with {yours}. Show it to win the trick.",
+    "coach.followBeat": "{seat} played {combo}. You can beat it with {yours}. Show it to win the turn.",
     "coach.followNoBeat": "Your best {type} is {yours}, but {best} still wins. Send {n} tiles face-down and keep your strength.",
     "coach.followNoCombo": "You have no legal {type}. Send {n} tiles face-down — hidden tiles cannot win.",
     "coach.followHidden": "Send these {n} tiles face-down. Everyone sends hidden; the leader reveals first.",
     "coach.showdownYou": "The leader has revealed. Show your set or keep it hidden — showing a losing set is allowed.",
     "coach.showdownWait": "Showdown: {seat} is deciding whether to reveal.",
     "coach.allHidden": "all hidden",
-    "coach.followReady": "Your {combo} beats {best}. Show it to win the trick and take the {tiles} tiles — or play face-down and keep them hidden.",
+    "coach.followReady": "Your {combo} beats {best}. Show it to win the turn and take the {tiles} tiles — or play face-down and keep them hidden.",
     "coach.followLose": "Your {combo} does not beat {best}. Play it face-down and save the tiles for a later lead.",
     "coach.invalidLead": "That mix is not a legal combination. A lead is 1 tile, 2 identical tiles, a 3–6 tile straight, or 3–5 identical Soldiers.",
     "coach.invalidFollow": "That selection is not a legal {type}. You may still send {n} tiles face-down.",
-    "coach.selectMore": "Select {n} tile(s) for this trick. You have {m} selected.",
+    "coach.selectMore": "Select {n} tile(s) for this turn. You have {m} selected.",
     "coach.hintLead": "Suggested lead: {combo}. {why}",
     "coach.hintFollow": "Suggested: {combo}. {why}",
     "coach.hintDiscard": "No beating {type} is available. Discard {n} low tiles face-down.",
-    "coach.trickWon": "You took the trick with {combo}. {piles} pile(s) captured so far.",
-    "coach.trickLost": "{seat} took the trick with {combo}. {why}",
-    "coach.hiddenLost": "{seat} took the trick with {combo}. You played face-down, so your tiles could not compete.",
+    "coach.trickWon": "You took the turn with {combo}. {piles} pile(s) captured so far.",
+    "coach.trickLost": "{seat} took the turn with {combo}. {why}",
+    "coach.hiddenLost": "{seat} took the turn with {combo}. You played face-down, so your tiles could not compete.",
     "coach.roundEnd": "Round complete. You scored {points} point(s) and now hold {score}.",
     "coach.matchEnd": "Match complete. {winner}",
     "coach.chuan": "ช้วน! All eight piles captured — worth 16 points.",
     "coach.redTie": "Equal rank and colour: the earlier play stays ahead.",
     "coach.tilesLeft": "{n} tiles left in each hand.",
-    "coach.youLead": "You lead the next trick.",
-    "coach.otherLead": "{seat} leads the next trick.",
-    "coach.lastTrick": "Last trick of the round.",
+    "coach.youLead": "You lead the next turn.",
+    "coach.otherLead": "{seat} leads the next turn.",
+    "coach.lastTrick": "Last turn of the round.",
     "coach.rematch": "Press New match to play again.",
     "coach.whyPair": "Only a higher pair of the same colour can beat it.",
     "coach.whyStraight": "Only a stronger {type} can beat it; the set size and pair ranks matter.",
@@ -538,7 +590,7 @@ const I18N = {
     "toast.dealt": "Eight tiles each. {seat} leads.",
     "toast.saved": "Match saved locally.",
     "toast.exported": "Game JSON downloaded.",
-    "toast.undone": "Trick undone. Learn, then try again.",
+    "toast.undone": "Turn undone. Learn, then try again.",
     "toast.newMatch": "New match started.",
     "toast.nextRound": "Round {n} dealt.",
     "toast.soundOff": "Sound muted.",
@@ -580,24 +632,24 @@ const I18N = {
     "summary.targetReached": "First to {target} points.",
     "summary.streak": "Round streak ×{n}",
     "summary.note": "Scoring follows the traditional pile table: 2 piles is par (0), each pile above or below is one point, and all 8 piles is a 16-point Chuan.",
-    "undo.intro": "The trick is stored. Step back, read the comparison, then replay it with a better plan.",
+    "undo.intro": "The turn is stored. Step back, read the comparison, then replay it with a better plan.",
     "undo.youPlayed": "You played",
     "undo.winnerPlayed": "{seat} won with",
     "undo.faceDown": "face-down",
     "undo.rankOrder": "Rank order, strongest to weakest",
     "undo.why": "Why it lost",
-    "undo.whyChuan": "The winner completed Chuan: seven piles plus the last Soldier. The Soldier takes the final trick by the special rule, not by rank.",
+    "undo.whyChuan": "The winner completed Chuan: seven piles plus the last Soldier. The Soldier takes the final turn by the special rule, not by rank.",
     "undo.whyHidden": "You kept your tiles face-down, so they never entered the comparison. Revealing is optional — but only a revealed set can win.",
     "undo.whyRank": "{losing} is below {winning} in the hierarchy. Rank is checked before colour.",
     "undo.whyColor": "Both sets share a rank, but {winning} is red and red beats black at equal rank.",
-    "undo.whyTie": "The sets are equal in rank and colour, so the earlier play keeps the trick.",
+    "undo.whyTie": "The sets are equal in rank and colour, so the earlier play keeps the turn.",
     "undo.whyType": "Only the called type can win. Your set did not match the call.",
     "undo.whyPair": "The duplicated pair decides a See Hoo: {winning} has the higher pair.",
     "undo.whySet": "The set value decides: {winning} is the stronger straight or same-rank set.",
     "undo.whyUnknown": "The winner's revealed combination outranks your entry for this call.",
-    "undo.noTrick": "No completed trick is stored yet.",
+    "undo.noTrick": "No completed turn is stored yet.",
     "about.intro": "A bilingual, single-page studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. It plays solo against three bots or hosts a serverless WebRTC table for up to four humans. It is a teaching table, not a gambling app, tournament server or complete historical rulebook.",
-    "about.how": "Thirty-two carved tiles, four seats, eight tiles each. The holder of the red General leads. Each trick calls a shape — Leab, Tui, Sa Hoo, See Hoo, Ngoh Hoo or Lak Hoo — and everyone sends that many tiles. Revealed sets compete; face-down sets never do. The winner takes 4×N tiles and leads next.",
+    "about.how": "Thirty-two carved tiles, four seats, eight tiles each. The holder of the red General leads. Each turn calls a shape — Leab, Tui, Sa Hoo, See Hoo, Ngoh Hoo or Lak Hoo — and everyone sends that many tiles. Revealed sets compete; face-down sets never do. The winner takes 4×N tiles and leads next.",
     "about.credits": "Credits",
     "about.harness": "Harness",
     "about.model": "Model",
@@ -613,7 +665,7 @@ const I18N = {
     "rules.source": "Rule reference",
     "rules.sourceBody": "The rules are modelled on the traditional Thai description compiled by Navee Angsuputiphant (2016), with the five-tile Ngoh Hoo included and the two- and three-player variants left out. Where the source is ambiguous, this studio documents its interpretation in docs/RULES.md.",
     "rules.digital": "Digital table conventions",
-    "rules.digitalBody": "You may always send tiles face-down, even when you hold a legal set. A set must be revealed to compete. The leader must be able to form the called combination. The holder of the red General leads the opening trick; the winner of a trick leads the next.",
+    "rules.digitalBody": "You may always send tiles face-down, even when you hold a legal set. A set must be revealed to compete. The leader must be able to form the called combination. The holder of the red General leads the opening turn; the winner of a turn leads the next.",
     "rules.target": "Play to",
     "rules.direction": "Turn order",
     "rules.cw": "Clockwise",
@@ -636,32 +688,32 @@ const I18N = {
     "rules.ex.soldier": "Soldier sets",
     "rules.ex.soldierBody": "A straight and a same-rank Soldier set are different categories; neither can beat the other.",
     "rules.ex.chuan": "Chuan",
-    "rules.ex.chuanBody": "With seven piles and the last Soldier in hand, reveal it to take the final trick and reach eight piles (16 points).",
+    "rules.ex.chuanBody": "With seven piles and the last Soldier in hand, reveal it to take the final turn and reach eight piles (16 points).",
     "rules.goal": "Goal",
-    "rules.goalBody": "Capture piles of four tiles. Two piles at the end of a round is par (0 points). Every pile above or below par is one point; capturing all eight piles is a 16-point Chuan. A player with seven piles and the last Soldier in hand may reveal it to take the final trick and complete the Chuan. The first player to the match target (20 points by default) wins.",
+    "rules.goalBody": "Capture piles of four tiles. Two piles at the end of a round is par (0 points). Every pile above or below par is one point; capturing all eight piles is a 16-point Chuan. A player with seven piles and the last Soldier in hand may reveal it to take the final turn and complete the Chuan. The first player to the match target (20 points by default) wins.",
     "rules.equipment": "Equipment",
     "rules.equipmentBody": "The 32 tiles of a Chinese chess set: 16 red and 16 black. Each colour has one General, two Advisors, two Elephants, two Chariots, two Horses, two Cannons and five Soldiers. Four players take eight tiles each.",
     "rules.hierarchy": "Hierarchy",
     "rules.color": "Colour and ties",
-    "rules.colorBody": "At equal rank, red beats black. If rank and colour are both equal, the earlier play keeps the trick — a later identical set cannot overtake it.",
+    "rules.colorBody": "At equal rank, red beats black. If rank and colour are both equal, the earlier play keeps the turn — a later identical set cannot overtake it.",
     "rules.calls": "Calls and combinations",
-    "rules.flow": "How a trick runs",
-    "rules.flowBody": "The leader chooses a call, plays the matching tiles face-up, and names the shape. Every other player sends exactly the same number of tiles, face-down. The leader's set is revealed first. In turn, each player may reveal a legal set of the called type that beats the current best; if they cannot or choose not to, their tiles stay hidden. The highest revealed set wins all 4×N tiles and leads the next trick.",
+    "rules.flow": "How a turn runs",
+    "rules.flowBody": "The leader chooses a call, plays the matching tiles face-up, and names the shape. Every other player sends exactly the same number of tiles, face-down. The leader's set is revealed first. In turn, each player may reveal a legal set of the called type that beats the current best; if they cannot or choose not to, their tiles stay hidden. The highest revealed set wins all 4×N tiles and leads the next turn.",
     "rules.scoring": "Scoring",
     "rules.piles": "Piles at the end",
     "rules.points": "Points",
     "rules.beginner": "Beginner guard",
-    "rules.beginnerBody": "Undo trick restores the position before the last trick and explains the comparison. The coach panel names the best lead or challenge in your hand, but never plays for you.",
+    "rules.beginnerBody": "Undo turn restores the position before the last turn and explains the comparison. The coach panel names the best lead or challenge in your hand, but never plays for you.",
     "rules.footnote": "This is an independent, open-source teaching implementation. It is not affiliated with any publisher or standards body.",
     "net.menuKicker": "Leab-Tui 3D",
     "net.launchTitle": "How do you want to play?",
-    "net.launchBody": "Start a game on this device, or invite friends with one link.",
-    "net.pickMode": "Start playing in one tap, or invite friends with a single link.",
+    "net.launchBody": "Start a game on this device, or join a friend's table.",
+    "net.pickMode": "Play right now, or join a friend's table with a room number.",
     "net.menuNote": "No account and no game server. The two browsers talk directly.",
-    "net.orFriends": "or play with friends",
+    "net.orFriends": "or join a friend's table",
     "net.orType": "or type it",
-    "net.solo": "Play now",
-    "net.soloDesc": "Start immediately. Three bots take the other seats.",
+    "net.solo": "Play now (invite friends later)",
+    "net.soloDesc": "Start immediately. Three bots take the other seats; use Invite when friends arrive.",
     "net.host": "Host a game",
     "net.hostDesc": "Keep this tab open. We make a room number you can send.",
     "net.join": "Join a game",
@@ -747,6 +799,72 @@ const I18N = {
     "net.pauseShort": "Pause 30m",
     "net.deny": "Deny",
     "net.approveAll": "Approve all",
+    "invite.top": "Invite",
+    "invite.action": "Invite friends",
+    "invite.title": "Invite friends",
+    "invite.roomInfo": "Room info",
+    "invite.lead": "Turn this solo table into a hosted room. Friends join with the room number and PIN, then you approve them.",
+    "invite.starting": "Opening a room…",
+    "invite.failed": "Could not open the room: {error}. Your solo game is still running.",
+    "invite.retry": "Try again",
+    "invite.ready": "Room open. Keep this tab awake.",
+    "invite.code": "Room number",
+    "invite.pin": "PIN",
+    "invite.pinHidden": "No PIN",
+    "invite.copyInfo": "Copy room info",
+    "invite.copyLink": "Copy link",
+    "invite.share": "Share",
+    "invite.keepOpen": "Keep this tab open. Closing it ends the room; a reload in this tab recovers it.",
+    "invite.pendingTitle": "Join requests",
+    "invite.queuedTitle": "Waiting for the turn to end",
+    "invite.queuedBadge": "Approved · joins after this turn",
+    "invite.queuedRound": "Approved · joins next round",
+    "invite.queuedMatch": "Approved · joins next match",
+    "invite.cancelQueue": "Cancel",
+    "invite.approved": "{name} approved — joins after this turn.",
+    "invite.seats": "Seats",
+    "invite.noPending": "No one is waiting.",
+    "invite.joined": "{name} joined seat {seat}.",
+    "invite.noticeQueued": "Approved {name} — they watch now and take {seat} after this turn.",
+    "invite.noticeViewer": "Approved {name} to watch this table.",
+    "invite.noticeSeated": "Approved {name} — joining {seat} now.",
+    "invite.noticeJoined": "Approved {name} — they are joining the room.",
+    "invite.noticeReclaimed": "Approved {name} — reclaimed seat {seat}.",
+    "invite.reclaimed": "{name} reclaimed seat {seat}.",
+    "invite.noticeFailed": "Approval did not complete. Try again.",
+    "queued.banner": "Approved — watching until this turn ends. You will take {seat}.",
+    "queued.bannerRound": "Approved — watching until the next round. You will take {seat}.",
+    "queued.bannerMatch": "Approved — watching until the next match. You will take {seat}.",
+    "watch.title": "Watching",
+    "watch.count": "{n} watching",
+    "watch.you": "{name} (you)",
+    "watch.empty": "No one is watching.",
+    "watch.queued": "waiting for seat",
+    "net.joinQueuedTitle": "Approved — waiting for the turn",
+    "net.joinQueuedStatus": "The host approved you. You will join automatically after this turn ends.",
+    "net.joinQueuedRound": "The host approved you. You will join at the next round.",
+    "net.joinQueuedMatch": "The host approved you. You will join at the next match.",
+    "toast.netQueued": "{name} approved — joins after this turn.",
+    "toast.resyncRequested": "Asking the host for the current table…",
+    "toast.resynced": "Table refreshed from the host — try again.",
+    "toast.resyncFailed": "Still not in sync. Ask the host to push the table again.",
+    "toast.statePushed": "Latest table state sent to everyone.",
+    "toast.actionPending": "Waiting for the host to confirm…",
+    "toast.actionUnconfirmed": "That action was not confirmed. Refreshing the table — try again.",
+    "toast.connectionStalled": "Connection stalled — reconnecting to your seat…",
+    "net.seatTimeout": "Your turn timed out. Reconnecting to reclaim your seat…",
+    "invite.turnTimeout": "{name} did not act within 30 seconds — the bot took the seat.",
+    "joinRequest.title": "{name} wants to join",
+    "joinRequest.titleMany": "{n} people want to join",
+    "joinRequest.bodyNow": "Give them {seat}'s seat now? Their name replaces the bot on the table.",
+    "joinRequest.bodyTrick": "Give them {seat}'s seat after this turn? The bot keeps playing until then.",
+    "joinRequest.bodyRound": "Give them {seat}'s seat at the next round? The bot keeps playing until then.",
+    "joinRequest.bodyMatch": "Give them {seat}'s seat in the next match? The bot keeps playing until then.",
+    "joinRequest.bodyFull": "No bot seat is free. They can watch only, or you can deny them.",
+    "joinRequest.approve": "Allow",
+    "joinRequest.viewer": "Watch only",
+    "joinRequest.deny": "Deny",
+    "joinRequest.later": "Later",
     "net.waitingApproval": "Waiting for the host to approve you…",
     "net.rejected.denied": "The host declined your request.",
     "net.rejected.bad-pin": "Wrong room PIN.",
@@ -765,6 +883,8 @@ const I18N = {
     "net.connectedWaiting": "Connected. The host will start when ready.",
     "net.reconnected": "Reconnected — restoring your seat…",
     "net.reconnecting": "Reconnecting to your seat…",
+    "net.reconnect": "Reconnect",
+    "net.stillWaiting": "Still waiting for the host. Try Reconnect.",
     "net.hostRestarting": "The host is restarting — reconnecting…",
     "net.resumingHost": "Restoring the hosted room…",
     "net.lobbyOpen": "Room open. Share the code or invite link.",
@@ -777,6 +897,7 @@ const I18N = {
     "net.hostBadge": "Host",
     "net.guestBadge": "Guest",
     "net.botBadge": "Bot",
+    "net.youTag": "You",
     "net.emptySeat": "Empty",
     "net.botPreview": "Bot seat {n}",
     "net.startingHost": "Opening the room…",
@@ -791,13 +912,14 @@ const I18N = {
     "net.hostLeft": "The host left the table. You can join another room or play solo.",
     "net.hostResumeFailed": "Could not restore the hosted room ({error}). The room is closed.",
     "net.reconnecting": "Signalling connection lost. Reconnecting…",
-    "net.hostOnly": "Only the host can undo a networked trick.",
+    "net.hostOnly": "Only the host can undo a networked turn.",
     "net.chipHint": "Your room. Click to copy the invite link.",
     "net.modeSolo": "Solo",
     "net.modeHost": "Host",
     "net.modeClient": "Guest",
     "net.modeViewer": "Viewer",
     "net.leave": "Leave room",
+    "net.leaveShort": "Leave",
     "net.back": "Back",
     "net.resume": "Back to table",
     "net.lostTitle": "Table closed",
@@ -809,7 +931,7 @@ const I18N = {
     "net.rejected.illegal": "That play was not legal.",
     "net.openLobby": "Multiplayer",
     "net.resumeMatch": "Resume match",
-    "net.resumeMeta": "Round {round} · trick {trick} · {score} points",
+    "net.resumeMeta": "Round {round} · turn {trick} · {score} points",
     "net.leaveTitle": "Leave the room?",
     "net.leaveBodyHost": "This closes the room for every guest. Their seats become bots and the room code stops working.",
     "net.leaveBodyGuest": "You will leave the table. A bot will take over your seat and the match will continue.",
@@ -939,6 +1061,9 @@ const I18N = {
     "actions.revealLog": "เปิด",
     "actions.facedown": "ลงคว่ำ",
     "draft.title": "เลือกไพ่ — หยิบ 2 ใบ",
+    "draft.blindTitle": "Blind pick — เลือก 2 ใบคว่ำหน้า",
+    "draft.blindMeta": "ไพ่ทุกใบคว่ำหน้า เลือกตามตำแหน่ง 2 ใบ แล้วจะเห็นหน้าหลังจากเข้ามือ รอบ {step}/4 · เหลือ {pool} ใบ",
+    "draft.blindConfirm": "หยิบ 2 ใบคว่ำนี้",
     "draft.metaYou": "คุณมี {n} ใบ · เลือก 2 ใบจากกองกลาง (รอบ {step}/4) เหลือ {pool} ใบ",
     "draft.waiting": "{seat} กำลังเลือก 2 ใบ…",
     "draft.waitingShort": "รอ…",
@@ -955,10 +1080,17 @@ const I18N = {
     "actions.newMatch": "แมตช์ใหม่",
     "actions.nextRound": "รอบถัดไป",
     "actions.undo": "ยกเลิกตานี้",
+    "actions.resync": "ซิงก์โต๊ะ",
+    "actions.pushState": "ส่งสถานะล่าสุดให้ทุกคน",
     "actions.export": "ส่งออก JSON",
     "actions.continue": "เล่นต่อ",
     "actions.keep": "เล่นต่อ",
     "actions.sound": "เสียง",
+    "actions.autoplay": "เล่นอัตโนมัติเฉพาะที่นั่งฉัน (AI)",
+    "actions.autoplayShort": "ออโต้",
+    "actions.blindPick": "แจกแบบ Blind pick (กฎเสริม)",
+    "actions.blindPickNote": "แจก 8 ใบคว่ำหน้าจากกองที่สลับด้วย crypto ไม่มีกองกลางให้เลือก และไม่อยู่ในแหล่ง Navee",
+    "actions.autoplayNote": "โค้ชจะเล่นตาที่ถูกกติกาให้หลังหยุดสั้น ๆ ปิดได้ทุกเมื่อเพื่อกลับมาเล่นเอง",
     "display.title": "การแสดงผล",
     "display.language": "ภาษา",
     "display.font": "ขนาดตัวอักษร",
@@ -966,8 +1098,13 @@ const I18N = {
     "display.default": "ปกติ",
     "display.large": "ใหญ่",
     "display.xlarge": "ใหญ่พิเศษ",
+    "display.cards": "ขนาดเบี้ย",
+    "display.cardSmall": "เล็ก",
+    "display.cardDefault": "ปกติ",
+    "display.cardLarge": "ใหญ่",
+    "display.cardXlarge": "ใหญ่พิเศษ",
     "display.theme": "ธีม",
-    "display.note": "ขนาดตัวอักษรปรับเฉพาะหน้าจอ ไม่กระทบโต๊ะ 3 มิติ ส่วนธีมเปลี่ยนสีแผงและโทนโต๊ะ",
+    "display.note": "ขนาดตัวอักษรปรับเฉพาะหน้าจอ ส่วนขนาดเบี้ยปรับมือ 3 มิติของเราและการ์ดใน dock; ธีมเปลี่ยนสีแผงและโทนโต๊ะ",
     "display.fullscreen": "เต็มจอ",
     "display.fullscreenBtn": "เข้าสู่โหมดเต็มจอ",
     "display.fullscreenExit": "ออกจากโหมดเต็มจอ",
@@ -986,6 +1123,13 @@ const I18N = {
     "theme.daybreak": "อรุณรุ่ง",
     "theme.daybreakDesc": "แผงขาวฟ้าอ่อน หมึกน้ำเงิน และโต๊ะสีเขียวน้ำทะเล",
     "toast.fontSize": "ตั้งขนาดตัวอักษรเป็น {size}",
+    "toast.cardSize": "ตั้งขนาดเบี้ยเป็น {size}",
+    "toast.autoplayOn": "เปิดเล่นอัตโนมัติ — โค้ชเล่นแทนที่นั่งของคุณ",
+    "toast.autoplayOff": "ปิดเล่นอัตโนมัติ — กลับมาเล่นเอง",
+    "toast.blindDeal": "Blind pick — สุ่มแจก 8 ใบคว่ำหน้า",
+    "toast.blindPickOn": "เปิด Blind pick — แต่ละรอบจะให้เลือก 2 ใบคว่ำหน้า",
+    "toast.blindPickOff": "ปิด Blind pick — กลับไปแจกแบบมาตรฐาน",
+    "toast.blindPickHostOnly": "เจ้าบ้านเป็นคนเลือกวิธีแจกเท่านั้น",
     "toast.theme": "ตั้งธีมเป็น {theme}",
     "toast.displayReset": "รีเซ็ตการแสดงผลแล้ว",
     "toast.soundTest": "ทดสอบเสียง — เสียงไม้กระทบ",
@@ -1091,10 +1235,10 @@ const I18N = {
     "phase.lead": "นำ",
     "phase.follow": "ตาม",
     "phase.bid": "ประเมิน",
-    "bid.kicker": "ประเมินกอง",
-    "bid.title": "คุณจะได้กี่กอง?",
-    "bid.waiting": "{seat} กำลังประเมิน…",
-    "bid.help": "ประเมินรวมแล้ว {total} คนสุดท้ายห้ามทำให้รวมเป็น 8 พอดี",
+    "bid.kicker": "ทายกอง",
+    "bid.title": "รอบนี้คุณจะกินได้กี่กอง?",
+    "bid.waiting": "{seat} กำลังทายกอง…",
+    "bid.help": "1 กอง = ไพ่ 4 ใบ · ทั้งรอบมี 8 กอง · ทายแล้วรวม {total} กอง · ทายถูก +5 (ทาย 0 ได้ +3) ทายผิดหักตามส่วนต่าง · คนสุดท้ายห้ามทำให้รวมเป็น 8 พอดี",
     "phase.resolving": "ตัดสิน",
     "phase.roundEnd": "จบรอบ",
     "phase.matchEnd": "จบแมตช์",
@@ -1265,13 +1409,13 @@ const I18N = {
     "rules.footnote": "นี่คือimplementation สอนเล่นโอเพนซอร์สอิสระ ไม่ได้เกี่ยวข้องกับสำนักพิมพ์หรือองค์กรมาตรฐานใด",
     "net.menuKicker": "ละบตุ้ย 3D",
     "net.launchTitle": "จะเล่นแบบไหน?",
-    "net.launchBody": "เริ่มเกมบนเครื่องนี้ หรือชวนเพื่อนด้วยลิงก์เดียว",
-    "net.pickMode": "เริ่มเล่นได้ในแตะเดียว หรือชวนเพื่อนด้วยลิงก์เดียว",
+    "net.launchBody": "เริ่มเกมบนเครื่องนี้ หรือเข้าร่วมโต๊ะของเพื่อน",
+    "net.pickMode": "เริ่มเล่นเลย หรือเข้าร่วมโต๊ะด้วยเลขห้อง",
     "net.menuNote": "ไม่มีบัญชี ไม่มีเซิร์ฟเวอร์เกม สองเบราว์เซอร์คุยกันโดยตรง",
-    "net.orFriends": "หรือเล่นกับเพื่อน",
+    "net.orFriends": "หรือเข้าร่วมโต๊ะเพื่อน",
     "net.orType": "หรือพิมพ์เอง",
-    "net.solo": "เล่นเลย",
-    "net.soloDesc": "เริ่มทันที บอทสามตัวนั่งแทนที่เหลือ",
+    "net.solo": "เล่นเลย (แล้วชวนเพื่อนเข้ามาทีหลัง)",
+    "net.soloDesc": "เริ่มทันที บอทสามตัวนั่งแทนที่เหลือ แล้วกด Invite เมื่อเพื่อนมา",
     "net.host": "เปิดโต๊ะ",
     "net.hostDesc": "เปิดแท็บนี้ไว้ ระบบจะสร้างเลขห้องให้ส่งต่อ",
     "net.join": "เข้าร่วมโต๊ะ",
@@ -1357,6 +1501,72 @@ const I18N = {
     "net.pauseShort": "หยุด 30 นาที",
     "net.deny": "ปฏิเสธ",
     "net.approveAll": "อนุมัติทั้งหมด",
+    "invite.top": "ชวน",
+    "invite.action": "ชวนเพื่อน",
+    "invite.title": "ชวนเพื่อน",
+    "invite.roomInfo": "ข้อมูลห้อง",
+    "invite.lead": "เปลี่ยนโต๊ะเล่นคนเดียวนี้เป็นห้อง host เพื่อนเข้าด้วยเลขห้องและ PIN แล้วคุณอนุมัติ",
+    "invite.starting": "กำลังเปิดห้อง…",
+    "invite.failed": "เปิดห้องไม่สำเร็จ: {error} เกม solo ยังเล่นต่อได้",
+    "invite.retry": "ลองอีกครั้ง",
+    "invite.ready": "ห้องเปิดแล้ว เปิดแท็บนี้ค้างไว้",
+    "invite.code": "เลขห้อง",
+    "invite.pin": "PIN",
+    "invite.pinHidden": "ไม่มี PIN",
+    "invite.copyInfo": "คัดลอกข้อมูลห้อง",
+    "invite.copyLink": "คัดลอกลิงก์",
+    "invite.share": "แชร์",
+    "invite.keepOpen": "เปิดแท็บนี้ค้างไว้ ปิดแท็บ = จบห้อง; รีโหลดในแท็บเดิมกู้คืนได้",
+    "invite.pendingTitle": "คำขอเข้าร่วม",
+    "invite.queuedTitle": "รอจบตา",
+    "invite.queuedBadge": "อนุมัติแล้ว · จะเข้าหลังจบตา",
+    "invite.queuedRound": "อนุมัติแล้ว · จะเข้ารอบถัดไป",
+    "invite.queuedMatch": "อนุมัติแล้ว · จะเข้าแมตช์ถัดไป",
+    "invite.cancelQueue": "ยกเลิก",
+    "invite.approved": "อนุมัติ {name} แล้ว — จะเข้าถึงหลังจบตา",
+    "invite.seats": "ที่นั่ง",
+    "invite.noPending": "ยังไม่มีใครรอ",
+    "invite.joined": "{name} เข้านั่ง seat {seat} แล้ว",
+    "invite.noticeQueued": "อนุมัติ {name} แล้ว — ตอนนี้ดูโต๊ะอยู่ จะได้นั่ง {seat} หลังจบตา",
+    "invite.noticeViewer": "อนุมัติ {name} เป็นผู้ชมแล้ว",
+    "invite.noticeSeated": "อนุมัติ {name} แล้ว — เข้านั่ง {seat} ทันที",
+    "invite.noticeJoined": "อนุมัติ {name} แล้ว — กำลังเข้าห้อง",
+    "invite.noticeReclaimed": "อนุมัติ {name} แล้ว — กลับมานั่ง {seat}",
+    "invite.reclaimed": "{name} กลับมานั่ง {seat} แล้ว",
+    "invite.noticeFailed": "อนุมัติไม่สำเร็จ ลองอีกครั้ง",
+    "queued.banner": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบตา จะได้นั่ง {seat}",
+    "queued.bannerRound": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบรอบ จะได้นั่ง {seat}",
+    "queued.bannerMatch": "อนุมัติแล้ว — กำลังดูโต๊ะจนจบแมตช์ จะได้นั่ง {seat}",
+    "watch.title": "ผู้ชม",
+    "watch.count": "ผู้ชม {n} คน",
+    "watch.you": "{name} (คุณ)",
+    "watch.empty": "ยังไม่มีผู้ชม",
+    "watch.queued": "รอที่นั่ง",
+    "net.joinQueuedTitle": "อนุมัติแล้ว — รอจบตา",
+    "net.joinQueuedStatus": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้าหลังจบตานี้",
+    "net.joinQueuedRound": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้ารอบถัดไป",
+    "net.joinQueuedMatch": "เจ้าบ้านอนุมัติแล้ว ระบบจะให้คุณเข้าแมตช์ถัดไป",
+    "toast.netQueued": "อนุมัติ {name} แล้ว — จะเข้าหลังจบตา",
+    "toast.resyncRequested": "กำลังขอสถานะล่าสุดจากเจ้าบ้าน…",
+    "toast.resynced": "ซิงก์โต๊ะล่าสุดแล้ว — ลองอีกครั้ง",
+    "toast.resyncFailed": "ยังไม่ตรงกัน ลองขอเจ้าบ้านส่งสถานะอีกครั้ง",
+    "toast.statePushed": "ส่งสถานะโต๊ะล่าสุดให้ทุกคนแล้ว",
+    "toast.actionPending": "กำลังรอเจ้าบ้านยืนยัน…",
+    "toast.actionUnconfirmed": "ยังไม่ได้รับการยืนยัน กำลังซิงก์โต๊ะใหม่ ลองอีกครั้ง",
+    "toast.connectionStalled": "การเชื่อมต่อสะดุด กำลังกลับเข้าที่นั่งเดิม…",
+    "net.seatTimeout": "หมดเวลาตาของคุณ กำลังกลับเข้าที่นั่งเดิม…",
+    "invite.turnTimeout": "{name} ไม่ได้เล่นภายใน 30 วินาที — บอทรับที่นั่งแทน",
+    "joinRequest.title": "{name} ขอเข้าร่วม",
+    "joinRequest.titleMany": "มี {n} คนขอเข้าร่วม",
+    "joinRequest.bodyNow": "ให้ {name} นั่งแทน {seat} เลยไหม ชื่อจะแทนบอทบนโต๊ะทันที",
+    "joinRequest.bodyTrick": "ให้ {name} นั่งแทน {seat} หลังจบตานี้ไหม บอทจะเล่นต่อจนจบตา",
+    "joinRequest.bodyRound": "ให้ {name} นั่งแทน {seat} ในรอบถัดไปไหม บอทจะเล่นต่อจนจบรอบ",
+    "joinRequest.bodyMatch": "ให้ {name} นั่งแทน {seat} ในแมตช์ถัดไปไหม บอทจะเล่นต่อจนจบแมตช์",
+    "joinRequest.bodyFull": "ไม่มีที่นั่งบอทว่าง ให้ดูอย่างเดียวหรือปฏิเสธได้",
+    "joinRequest.approve": "อนุญาต",
+    "joinRequest.viewer": "ดูอย่างเดียว",
+    "joinRequest.deny": "ปฏิเสธ",
+    "joinRequest.later": "ไว้ก่อน",
     "net.waitingApproval": "กำลังรอเจ้าบ้านอนุมัติ…",
     "net.rejected.denied": "เจ้าบ้านปฏิเสธคำขอของคุณ",
     "net.rejected.bad-pin": "PIN ห้องไม่ถูกต้อง",
@@ -1375,6 +1585,8 @@ const I18N = {
     "net.connectedWaiting": "เชื่อมต่อแล้ว เจ้าบ้านจะเริ่มเมื่อพร้อม",
     "net.reconnected": "กลับเข้าห้องแล้ว — กำลังคืนที่นั่ง…",
     "net.reconnecting": "กำลังกลับเข้าที่นั่งเดิม…",
+    "net.reconnect": "เชื่อมต่อใหม่",
+    "net.stillWaiting": "ยังรอเจ้าบ้านอยู่ ลองเชื่อมต่อใหม่",
     "net.hostRestarting": "เจ้าบ้านกำลังรีสตาร์ท — กำลังเชื่อมต่อใหม่…",
     "net.resumingHost": "กำลังคืนห้องที่เปิดอยู่…",
     "net.lobbyOpen": "ห้องเปิดอยู่ แชร์รหัสหรือลิงก์เชิญ",
@@ -1387,6 +1599,7 @@ const I18N = {
     "net.hostBadge": "เจ้าบ้าน",
     "net.guestBadge": "แขก",
     "net.botBadge": "บอท",
+    "net.youTag": "คุณ",
     "net.emptySeat": "ว่าง",
     "net.botPreview": "ที่นั่งบอท {n}",
     "net.startingHost": "กำลังเปิดห้อง…",
@@ -1408,6 +1621,7 @@ const I18N = {
     "net.modeClient": "แขก",
     "net.modeViewer": "ผู้ชม",
     "net.leave": "ออกจากห้อง",
+    "net.leaveShort": "ออก",
     "net.back": "กลับ",
     "net.resume": "กลับโต๊ะ",
     "net.lostTitle": "โต๊ะปิดแล้ว",
@@ -1846,7 +2060,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", chatOpen: true, dockCollapsed: true, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: false, dockChosen: false, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -1856,6 +2070,8 @@ let scene = null;
 let audio = null;
 let inspectedTileId = null;
 let actionTimer = null;
+let autoPlayTimer = null;
+let autoPlayKey = "";
 let actionToken = 0;
 let newMatchGuard = false;
 
@@ -1879,8 +2095,26 @@ let chatOpen = true;
 let chatUnread = 0;
 let pendingRequests = new Map();
 const pendingTimers = new Map();
+let queuedGuests = new Map();
+let inviteStarting = false;
+let inviteError = "";
+let inviteNotice = "";
+let dismissedJoinRequests = new Set();
+let resyncPending = false;
+let resyncTimer = null;
+let welcomeSeq = 0;
+const welcomeRetries = new Map();
+let joinWatchTimer = null;
+let statePulseTimer = null;
+let actionSeq = 0;
+let pendingAction = null;
+let actionAckTimer = null;
+let lastResyncToastAt = 0;
+let clientWatchTimer = null;
+let clientPingTimer = null;
 let roomPinPlain = "";
 let joinToken = 0;
+let joinStage = "idle";
 let hostRejoinTimer = null;
 let hostRejoinAttempts = 0;
 
@@ -1896,8 +2130,12 @@ function scheduleHostRejoin(code, name, token) {
   hostRejoinTimer = setTimeout(() => {
     hostRejoinTimer = null;
     hostRejoinAttempts += 1;
-    joinRoom(code, name, "", token, { auto: true });
-  }, first ? 1200 : 2500);
+    joinRoom(code, name, "", token, { auto: true }).catch((error) => {
+      try { console.warn("auto rejoin failed", error); } catch { /* ignore */ }
+      lastNetError = error?.message || "rejoin-failed";
+      if (hostRejoinAttempts < 12) scheduleHostRejoin(code, name, token);
+    });
+  }, (first ? 700 : 1200) + Math.floor(Math.random() * 600));
 }
 let availableVersion = "";
 let lastNetError = "";
@@ -1915,8 +2153,21 @@ const VERSION_CHECK_MS = 5 * 60 * 1000;
 const PLAYER_NAME_KEY = "leabtui.name.v1";
 const ROOM_INTENT_KEY = "leabtui.room.v1";
 const REJOIN_KEY = "leabtui.rejoin.v1";
+const REJOIN_CARD_KEY = "leabtui.seat.v1";
+const REJOIN_CARD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const HOST_RECOVERY_KEY = "leabtui.host.v1";
+const HOST_EPOCH_KEY = "leabtui.host.epoch.v1";
 const LAUNCH_KEY = "leabtui.launch.v1";
+
+/* Lamport-style incarnation number. A host reload starts a new epoch so a
+   client can reject delayed state from the previous host page. */
+function nextHostEpoch() {
+  let value = 0;
+  try { value = Number(sessionStorage.getItem(HOST_EPOCH_KEY)) || 0; } catch { value = 0; }
+  value += 1;
+  try { sessionStorage.setItem(HOST_EPOCH_KEY, String(value)); } catch { /* storage may be denied */ }
+  return value;
+}
 
 function isNetworked() {
   return Boolean(net && (net.role === "host" || net.role === "client") && SEAT_PROFILES);
@@ -1981,6 +2232,7 @@ function makeState(seed) {  return {
     target: 20,
     direction: "cw",
     mode: "piles",
+    blindPick: false,
     multiplier: 1,
     redraws: 0,
     resultSeconds: 2,
@@ -2083,6 +2335,15 @@ function saveStats() {
   try { localStorage.setItem(APP.statsKey, JSON.stringify(stats)); } catch { /* ignore */ }
 }
 
+function markTurnClock(force = false) {
+  if (!net || !state) return;
+  const key = `${state.round}:${state.trick}:${state.phase}:${state.turn}`;
+  if (force || net.turnKey !== key) {
+    net.turnKey = key;
+    net.turnSince = Date.now();
+  }
+}
+
 function saveMatch() {
   if (!state) return;
   if (isClient()) return; // a guest view is not a resumable game
@@ -2097,6 +2358,7 @@ function saveMatch() {
     }));
   } catch { /* ignore */ }
   if (isHost()) {
+    markTurnClock();
     saveHostRecovery(game);
     queuePublish();
   }
@@ -2114,6 +2376,7 @@ function saveHostRecovery(game = null) {
       suppressUntil: net.security?.suppressUntil || 0,
       stats: clone(stats),
       chat: chatHistory.slice(-30),
+      queued: queuedList().map(({ name, seat, token, joinAfter, at }) => ({ name, seat, token, joinAfter, at })),
       state: game || (state ? serializableState() : null),
       profiles: SEAT_PROFILES.map((profile) => (profile ? {
         seat: profile.seat,
@@ -2149,13 +2412,22 @@ function loadPrefs() {
   } catch { prefs = { ...DEFAULT_PREFS }; }
   LANG = prefs.lang === "th" ? "th" : "en";
   if (!FONT_SIZES.some((entry) => entry.id === prefs.fontSize)) prefs.fontSize = "md";
+  if (!CARD_SIZES.some((entry) => entry.id === prefs.cardSize)) prefs.cardSize = "md";
+  prefs.autoplay = prefs.autoplay === true;
+  prefs.blindPick = prefs.blindPick === true;
+  prefs.dockChosen = prefs.dockChosen === true;
+  /* The dock starts open. A legacy saved `dockCollapsed: true` is ignored
+     once; after the player taps H the choice is remembered. */
+  if (!prefs.dockChosen) prefs.dockCollapsed = false;
   if (!THEMES.some((entry) => entry.id === prefs.theme)) prefs.theme = "daybreak";
   if (![20, 50, 100].includes(Number(prefs.target))) prefs.target = 20;
   if (!["cw", "ccw"].includes(prefs.direction)) prefs.direction = "cw";
-  if (!["piles", "bid"].includes(prefs.mode)) prefs.mode = "piles";
+  prefs.mode = "piles";
   if (![0, 2, 4, 6].includes(Number(prefs.resultSeconds))) prefs.resultSeconds = 2;
   prefs.autoNext = prefs.autoNext !== false;
-  prefs.draftMode = prefs.draftMode === true;
+  /* Draft-pick was an experimental house deal; the standard game deals
+     eight random tiles face-down. */
+  prefs.draftMode = false;
 }
 
 function loadStats() {
@@ -2178,7 +2450,8 @@ function loadMatch() {
     const game = parsed.game;
     if (!Array.isArray(game.hands) || game.hands.length !== 4) return false;
     if (!Array.isArray(game.scores) || game.scores.length !== 4) return false;
-    if (!["lead", "follow", "showdown", "roundEnd", "matchEnd", "draft"].includes(game.phase)) return false;
+    if (!["lead", "follow", "showdown", "roundEnd", "matchEnd"].includes(game.phase)) return false;
+    if (game.draftMode) return false;
     const tileIds = new Set(DECK.map((tile) => tile.id));
     for (const hand of game.hands) {
       if (!Array.isArray(hand) || hand.length > 8) return false;
@@ -2186,6 +2459,8 @@ function loadMatch() {
     }
     const savedPhase = game.phase;
     state = { ...makeState(game.seed), ...game, fast: false };
+    state.mode = "piles";
+    state.bids = null;
     state.hands = state.hands.map((hand) => hand.map((id) => TILE_BY_ID[id]).filter(Boolean));
     state.captures = (state.captures || [[], [], [], []]).map((pile) => pile.map((id) => TILE_BY_ID[id]).filter(Boolean));
     state.captureHidden = [0, 1, 2, 3].map((seat) => (
@@ -2380,7 +2655,7 @@ function aiBid(seat) {
 function startDraft() {
   clearTimeout(actionTimer);
   actionToken += 1;
-  const deck = shuffle(buildDeck());
+  const deck = state.blindPick ? cryptoShuffle(buildDeck()) : shuffle(buildDeck());
   state.hands = [[], [], [], []];
   state.hiddenTags = [{}, {}, {}, {}];
   state.captures = [[], [], [], []];
@@ -2488,6 +2763,7 @@ function beginTrick() {
   state.turn = state.leader;
   state.phase = "lead";
   state.handCounts = handCounts();
+  if (queuedGuests.size) promoteQueuedGuests("trick");
   updateUndoButton();
   renderAll();
   saveMatch();
@@ -2525,7 +2801,7 @@ function dealRound(leaderHint = null) {
   random = Number.isFinite(state.seed)
     ? mulberry32(state.seed + state.round * 7919 + (state.redraws || 0) * 104729)
     : Math.random;
-  if (state.draftMode) { startDraft(); return; }
+  if (state.draftMode || state.blindPick) { startDraft(); return; }
   clearTimeout(actionTimer);
   actionToken += 1;
   const deck = shuffle(buildDeck());
@@ -2569,19 +2845,36 @@ function dealRound(leaderHint = null) {
   saveMatch();
   audio?.play("shuffle", 0);
 
+  const settleDeal = () => {
+    if (!state || !scene) return;
+    /* Reflow the local row once the deal animation is over. iPad Safari can
+       throttle the staged tile timeouts during boot, leaving a tile behind
+       until the player presses Tidy hand; this makes that automatic. */
+    scene.tidyHand();
+    scene.refreshFraming?.();
+  };
+
   const finishDeal = () => {
     if (!state || state.phase !== "dealing") return;
-    if (scene) scene.flipHumanHand(state);
+    if (scene) {
+      scene.tidyHand();
+      scene.flipHumanHand(state);
+      scene.refreshFraming?.();
+    }
     setTimeout(() => {
       if (!state || state.phase !== "dealing") return;
       if (state.mode === "bid") beginBidPhase();
       else beginTrick();
-      toast(t("toast.dealt", { seat: seatName(state.leader) }));
+      toast(t(state.blindPick ? "toast.blindDeal" : "toast.dealt", { seat: seatName(state.leader) }));
     }, state.fast ? 10 : 380);
   };
 
   if (scene) {
     scene.deal(state).then(finishDeal).catch(finishDeal);
+    setTimeout(() => {
+      if (!state || state.phase !== "dealing") return;
+      settleDeal();
+    }, state.fast ? 400 : 1400);
   } else {
     setTimeout(finishDeal, state.fast ? 0 : 30);
   }
@@ -2608,10 +2901,11 @@ function beginMatch(options = {}) {
   state.target = options.target ?? prefs.target ?? 20;
   state.direction = prefs.direction || "cw";
   state.mode = prefs.mode || "piles";
+  state.blindPick = prefs.blindPick === true;
   state.multiplier = 1;
   state.redraws = 0;
   state.resultSeconds = prefs.resultSeconds;
-  state.draftMode = prefs.draftMode === true;
+  state.draftMode = false;
   state.bids = null;
   state.bidOrder = null;
   state.bidTurn = 0;
@@ -3172,26 +3466,140 @@ function clearSelection() {
   audio?.play("click", 0);
 }
 
-function applyHint() {
+function applyHint(options = {}) {
   if (!state || !["lead", "follow"].includes(state.phase) || state.turn !== MY_SEAT) return;
   if (state.phase === "lead") {
     const combo = chooseLead(state.hands[MY_SEAT], { jitter: false });
     if (!combo) return;
     state.selected = combo.tiles.map((tile) => tile.id);
-    toast(t("toast.hintCombo", { combo: comboSummary(combo) }), "jade");
+    if (!options.silent) toast(t("toast.hintCombo", { combo: comboSummary(combo) }), "jade");
   } else {
     const recommendation = recommendedFollow(state.hands[MY_SEAT], state.lead.combo, state.lead.combo);
     if (recommendation.kind === "beat") {
       state.selected = recommendation.combo.tiles.map((tile) => tile.id);
-      toast(t("toast.hintCombo", { combo: comboSummary(recommendation.combo) }), "jade");
+      if (!options.silent) toast(t("toast.hintCombo", { combo: comboSummary(recommendation.combo) }), "jade");
     } else {
       state.selected = recommendation.tiles.map((tile) => tile.id);
-      toast(t("toast.hintDiscard", { n: recommendation.tiles.length }), "jade");
+      if (!options.silent) toast(t("toast.hintDiscard", { n: recommendation.tiles.length }), "jade");
     }
   }
   renderAll();
   if (scene) scene.setSelected(state.selected);
   coachTick();
+}
+
+function autoplayEligible() {
+  if (!prefs.autoplay || !state || MY_SEAT < 0) return false;
+  if (!["lead", "follow", "showdown", "bid", "draft"].includes(state.phase)) return false;
+  if (state.turn !== MY_SEAT) return false;
+  if (isClient() && pendingAction) return false;
+  return true;
+}
+
+function scheduleAutoplay() {
+  if (!autoplayEligible()) {
+    clearTimeout(autoPlayTimer);
+    autoPlayTimer = null;
+    autoPlayKey = "";
+    return;
+  }
+  const key = `${state.round}:${state.trick}:${state.phase}:${state.turn}:${state.bidTurn ?? "-"}:${state.draftIndex ?? "-"}`;
+  if (key === autoPlayKey) return;
+  autoPlayKey = key;
+  clearTimeout(autoPlayTimer);
+  autoPlayTimer = setTimeout(() => {
+    autoPlayTimer = null;
+    runAutoplay();
+  }, 700);
+}
+
+function runAutoplay() {
+  if (!autoplayEligible()) return;
+  if (state.phase === "bid") {
+    if (isClient()) {
+      const hand = state.hands[MY_SEAT] || [];
+      const strength = hand.reduce((sum, tile) => sum + (tile.power >= 5 ? 2 : tile.power >= 4 ? 1 : 0), 0);
+      let value = Math.max(0, Math.min(8, Math.round(strength / 2)));
+      if (state.bidTurn === 3) {
+        const forbidden = bidForbidden();
+        if (value === forbidden) value = value >= 8 ? 7 : value + 1;
+      }
+      sendNetAction("bid", [], false, value);
+    } else {
+      aiBid(MY_SEAT);
+    }
+    return;
+  }
+  if (state.phase === "draft") {
+    const picks = randomDraftPair(state.draftPool).map((tile) => tile.id);
+    if (picks.length !== 2) return;
+    if (isClient()) sendNetAction("draft", picks, false);
+    else draftPick(MY_SEAT, picks);
+    return;
+  }
+  if (state.phase === "showdown") {
+    /* Show when the seat can beat the table or is first; otherwise keep the
+       set hidden (fold). */
+    humanFollow(!state.best || showdownCanBeat(MY_SEAT));
+    return;
+  }
+  applyHint({ silent: true });
+  if (state.phase === "lead") humanLead();
+  else if (state.phase === "follow") humanFollow(false);
+}
+
+function setAutoplay(enabled, options = {}) {
+  prefs.autoplay = Boolean(enabled);
+  clearTimeout(autoPlayTimer);
+  autoPlayTimer = null;
+  autoPlayKey = "";
+  savePrefs();
+  renderAutoplay();
+  renderBlindPick();
+  if (!options.silent) {
+    toast(t(prefs.autoplay ? "toast.autoplayOn" : "toast.autoplayOff"), "jade");
+    audio?.play("click", 0);
+  }
+  scheduleAutoplay();
+}
+
+function setBlindPick(enabled, options = {}) {
+  if (isClient()) {
+    toast(t("toast.blindPickHostOnly"), "wine");
+    return false;
+  }
+  prefs.blindPick = Boolean(enabled);
+  if (state) {
+    state.blindPick = prefs.blindPick;
+    saveMatch();
+  }
+  savePrefs();
+  renderBlindPick();
+  if (!options.silent) {
+    toast(t(prefs.blindPick ? "toast.blindPickOn" : "toast.blindPickOff"), "jade");
+    audio?.play("click", 0);
+  }
+  return true;
+}
+
+function renderBlindPick() {
+  const box = document.querySelector("[data-blind-pick]");
+  if (box) box.checked = Boolean(prefs.blindPick);
+  const wrap = $("#blindPickWrap");
+  if (wrap) wrap.hidden = isClient();
+}
+
+function renderAutoplay() {
+  const box = document.querySelector("[data-autoplay-toggle]");
+  if (box) box.checked = Boolean(prefs.autoplay);
+  const button = $("#autoplayBtn");
+  if (button) {
+    button.classList.toggle("active", Boolean(prefs.autoplay));
+    button.setAttribute("aria-pressed", String(Boolean(prefs.autoplay)));
+    button.setAttribute("aria-label", t("actions.autoplay"));
+    button.title = t("actions.autoplay");
+  }
+  document.body.classList.toggle("autoplay-on", Boolean(prefs.autoplay));
 }
 
 function coachTick() {
@@ -3329,6 +3737,7 @@ function closeModal(id) {
   const modal = $(`#${id}`);
   if (modal) modal.hidden = true;
   if (id === "summaryModal") stopParty();
+  if (id === "inviteModal") renderJoinRequestPopup();
 }
 
 let threeLib = null;
@@ -3584,6 +3993,7 @@ function renderAll() {
   renderDraft();
   focusTurnIfNeeded();
   refreshHistoryModal();
+  scheduleAutoplay();
 }
 
 let historyFollowLatest = true;
@@ -3683,9 +4093,10 @@ function renderScoreboard() {
     const tag = isBotSeat(seat.id) ? `<span class="seat-tag bot">${escapeHTML(t("net.botBadge"))}</span>`
       : profile?.kind === "host" ? `<span class="seat-tag host">${escapeHTML(t("net.hostBadge"))}</span>`
       : profile?.kind === "human" ? `<span class="seat-tag guest">${escapeHTML(t("net.guestBadge"))}</span>` : "";
+    const youTag = seat.id === MY_SEAT ? `<span class="seat-tag you">${escapeHTML(t("net.youTag"))}</span>` : "";
     return `<div class="score-row ${active ? "active" : ""} ${seat.id === MY_SEAT ? "you" : ""} ${profile?.connected === false ? "offline" : ""} ${speakingSeats.has(seat.id) ? "speaking" : ""}" data-seat="${seat.id}">
       <span class="score-seat">${seat.wind}</span>
-      <span class="score-name">${escapeHTML(seatName(seat.id))}${tag}</span>
+      <span class="score-name">${escapeHTML(seatName(seat.id))}${tag}${youTag}</span>
       <span class="score-piles">${piles} ${escapeHTML(piles === 1 ? t("score.pile") : t("score.piles"))}</span>
       <span class="score-points">${state.scores[seat.id]}</span>
     </div>`;
@@ -3722,6 +4133,9 @@ function renderSelection() {
     $("#handDock")?.setAttribute("hidden", "");
     return;
   }
+  /* Audience mode sets the hidden attribute. Promotion must clear it or the
+     dock stays invisible after the queued guest receives the seat. */
+  $("#handDock")?.removeAttribute("hidden");
   const kicker = $("#selectionKicker");
   const title = $("#selectionTitle");
   const detail = $("#selectionDetail");
@@ -4280,6 +4694,30 @@ function setRankReference(open) {
   button.classList.toggle("active", open);
 }
 
+function cardScale() {
+  const entry = CARD_SIZES.find((item) => item.id === prefs.cardSize) || CARD_SIZES[1];
+  return entry.scale;
+}
+
+function applyCardSize(id, options = {}) {
+  const entry = CARD_SIZES.find((item) => item.id === id) || CARD_SIZES[1];
+  prefs.cardSize = entry.id;
+  document.documentElement.dataset.cardSize = entry.id;
+  document.documentElement.style.setProperty("--card-scale", String(entry.scale));
+  /* Reflow the free hand layout: keeping old absolute slots would make larger
+     tiles overlap. Tidy restores the scaled row and also re-publishes it. */
+  if (scene?.tidyHand) {
+    scene.tidyHand();
+    if (isNetworked() && MY_SEAT >= 0) publishHandLayout(null);
+  } else scene?.refreshFraming?.();
+  if (!options.silent) {
+    savePrefs();
+    audio?.play("click", 0);
+    toast(t("toast.cardSize", { size: t(entry.labelKey) }));
+  }
+  renderDisplay();
+}
+
 function applyFontSize(id, options = {}) {
   const entry = FONT_SIZES.find((item) => item.id === id) || FONT_SIZES[1];
   prefs.fontSize = entry.id;
@@ -4312,6 +4750,11 @@ function renderDisplay() {
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
+  $$("button[data-card-size]").forEach((button) => {
+    const active = button.dataset.cardSize === prefs.cardSize;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
   $$("button[data-theme-choice]").forEach((button) => {
     const active = button.dataset.themeChoice === prefs.theme;
     button.classList.toggle("active", active);
@@ -4321,6 +4764,7 @@ function renderDisplay() {
 
 function resetDisplay() {
   applyFontSize("md", { silent: true });
+  applyCardSize("md", { silent: true });
   applyTheme("daybreak", { silent: true });
   savePrefs();
   toast(t("toast.displayReset"), "jade");
@@ -4500,9 +4944,147 @@ function maybePublishHandLayout() {
   publishHandLayout(scene.exportHandSlots());
 }
 
+function clearPendingAction() {
+  pendingAction = null;
+  clearTimeout(actionAckTimer);
+  actionAckTimer = null;
+}
+
+function armActionRetry() {
+  clearTimeout(actionAckTimer);
+  actionAckTimer = setTimeout(() => {
+    if (!pendingAction) return;
+    if (pendingAction.attempts < 4) {
+      pendingAction.attempts += 1;
+      net.client?.send?.({
+        type: "action",
+        actionId: pendingAction.id,
+        kind: pendingAction.kind,
+        tiles: pendingAction.tiles,
+        reveal: pendingAction.reveal,
+        value: pendingAction.value
+      });
+      armActionRetry();
+      return;
+    }
+    clearPendingAction();
+    toast(t("toast.actionUnconfirmed"), "wine");
+    requestResync({ silent: true });
+  }, 1500);
+}
+
 function sendNetAction(kind, tileIds, reveal = false, value = null) {
   if (!isClient() || !net?.client) return false;
-  return net.client.send({ type: "action", kind, tiles: tileIds, reveal: Boolean(reveal), value });
+  if (net.lastStateAt && Date.now() - net.lastStateAt > 6000) {
+    /* A stale snapshot must not produce an out-of-turn action. Ask for a
+       fresh one; autoplay will be rescheduled by the next render. */
+    requestResync({ silent: true });
+    return false;
+  }
+  if (pendingAction) {
+    toast(t("toast.actionPending"), "gold");
+    return false;
+  }
+  actionSeq += 1;
+  const actionId = `${MY_SEAT}-${Date.now().toString(36)}-${actionSeq}`;
+  const sent = net.client.send({ type: "action", actionId, kind, tiles: tileIds, reveal: Boolean(reveal), value });
+  if (!sent) return false;
+  pendingAction = {
+    id: actionId,
+    kind,
+    tiles: tileIds,
+    reveal: Boolean(reveal),
+    value,
+    attempts: 1,
+    at: Date.now()
+  };
+  /* The host deduplicates by actionId, so replaying the same intent is safe;
+     a lost data-channel frame must not cost the player their turn. */
+  armActionRetry();
+  return true;
+}
+
+function requestResync(options = {}) {
+  if (!isClient() || !net?.client || !net.started) return false;
+  if (resyncPending) return false;
+  resyncPending = true;
+  clearTimeout(resyncTimer);
+  const sent = net.client.send({ type: "resync" });
+  if (!sent) {
+    resyncPending = false;
+    return false;
+  }
+  resyncTimer = setTimeout(() => {
+    resyncPending = false;
+    if (!options.silent) toast(t("toast.resyncFailed"), "wine");
+  }, 5000);
+  if (!options.silent) toast(t("toast.resyncRequested"), "gold");
+  return true;
+}
+
+function stopClientWatchdog() {
+  clearInterval(clientWatchTimer);
+  clearInterval(clientPingTimer);
+  clientWatchTimer = null;
+  clientPingTimer = null;
+}
+
+function stopJoinWatch() {
+  clearInterval(joinWatchTimer);
+  joinWatchTimer = null;
+}
+
+function startJoinWatch() {
+  /* Before the first welcome the client watchdog is dormant (`net.started`
+     is false), so a lost approval would leave the guest waiting silently.
+     Ask the host for the join status until a welcome lands. */
+  stopJoinWatch();
+  joinWatchTimer = setInterval(() => {
+    if (lobbyState?.view === "table") return stopJoinWatch();
+    if (!isClient() || !net?.client) return;
+    if (!net.client.send({ type: "status" })) stopJoinWatch();
+  }, 4000);
+}
+
+function recoverClientConnection() {
+  if (!isClient() || !net || net.recovering) return;
+  const code = net.code;
+  const name = net.name;
+  const pin = net.pin || "";
+  const token = loadRejoinSeat(code)?.token || "";
+  net.recovering = true;
+  toast(t("toast.connectionStalled"), "wine");
+  joinRoom(code, name, pin, token, { auto: true });
+}
+
+function startClientWatchdog() {
+  stopClientWatchdog();
+  clientWatchTimer = setInterval(() => {
+    if (!isClient() || !net?.started || net.recovering || document.hidden) return;
+    const active = state && ["dealing", "lead", "follow", "showdown", "bid", "draft"].includes(state.phase);
+    if (active) {
+      /* Pings keep the channel warm even when the host stopped publishing
+         state. Track the snapshot separately so a frozen table re-syncs, then
+         reconnects, instead of waiting forever on a fresh pong. */
+      const stateAge = Date.now() - (net.lastStateAt || 0);
+      if (stateAge > 24000) return recoverClientConnection();
+      if (stateAge > 9000) requestResync({ silent: true });
+    }
+    if (Date.now() - (net.lastMessageAt || 0) < 15000) return;
+    recoverClientConnection();
+  }, 2500);
+  clientPingTimer = setInterval(() => {
+    if (!isClient() || !net?.started || document.hidden) return;
+    net.client?.send?.({ type: "ping" });
+  }, 5000);
+}
+
+function finishResync() {
+  if (!resyncPending) return false;
+  resyncPending = false;
+  clearTimeout(resyncTimer);
+  resyncTimer = null;
+  return true;
 }
 
 function makeGhostTile(id) {
@@ -4596,6 +5178,11 @@ function sanitizeForSeat(source, seat) {
 function hydrateRemoteState(raw) {
   if (!raw) return null;
   const game = { ...raw };
+  /* Bid-piles was an experimental house variant, not part of the Navee
+     rules. Force the standard pile scoring even for an old saved state. */
+  game.mode = "piles";
+  game.bids = null;
+  game.draftMode = false;
   game.hands = (raw.hands || []).map((hand) => hand.map(tileFromWire));
   game.captures = (raw.captures || [[], [], [], []]).map((pile) => pile.map(tileFromWire));
   game.captureHidden = [0, 1, 2, 3].map((seat) => (
@@ -4673,7 +5260,7 @@ function serialiseRoster() {
     seat,
     name: profile?.name || t("net.emptySeat"),
     kind: profile?.kind || "bot",
-    connected: profile?.connected !== false,
+    connected: profile?.connected !== false && (!profile?.lastSeen || Date.now() - profile.lastSeen < 20000),
     bot: profile?.kind === "bot" || !profile,
     peerId: profile?.peerId || null,
     voice: Boolean(profile?.voice)
@@ -4686,37 +5273,138 @@ function queuePublish() {
   publishTimer = setTimeout(publishState, NET_TICK_MS);
 }
 
+function checkGuestTurnTimeout() {
+  /* Slow thinking is not a failure. A seat is only taken over when its
+     connection is closed or silent (see sweepSilentGuests). State ACKs and
+     pings are keepalive: a player who takes five minutes but stays connected
+     keeps the seat. */
+  return false;
+}
+
+function pushLatestState() {
+  if (!isHost() || !net?.started || !state || !net.host) return false;
+  publishState();
+  toast(t("toast.statePushed"), "jade");
+  audio?.play("click", 0);
+  return true;
+}
+
+function sweepSilentGuests() {
+  if (!isHost() || !net?.started || !net.host) return;
+  const now = Date.now();
+  for (const profile of SEAT_PROFILES || []) {
+    if (!profile || profile.kind !== "human" || !profile.connId) continue;
+    const open = Boolean(net.host.connections?.has?.(profile.connId));
+    const age = now - (profile.lastSeen || 0);
+    if (open && age < 30000) continue;
+    const connId = profile.connId;
+    convertSeatToBot(profile.seat, "disconnected");
+    if (connId) {
+      net.host.send(connId, { type: "seat-timeout", roomCode: net.code, seat: profile.seat });
+      setTimeout(() => net?.host?.closeConnection?.(connId), 350);
+    }
+  }
+}
+
+function startStatePulse() {
+  clearInterval(statePulseTimer);
+  statePulseTimer = setInterval(() => {
+    if (!isHost() || !net?.started || !net.host || !state) return;
+    sweepSilentGuests();
+    /* A full snapshot is the repair mechanism: it fixes a guest that missed
+       the last publish even if no new action occurred. Pulses are cheaper for
+       the summary screens, where a full re-apply could re-open a modal. */
+    const active = ["dealing", "lead", "follow", "showdown", "bid", "draft"].includes(state.phase);
+    if (active) {
+      checkGuestTurnTimeout();
+      publishState();
+      /* Targeted anti-entropy: a guest that acknowledged an older sequence
+         gets a fresh snapshot without waiting for the next 4 s beat. */
+      const now = Date.now();
+      for (const profile of SEAT_PROFILES || []) {
+        if (profile?.kind === "human" && profile.connId
+          && (profile.stateAck || 0) < (net.seq || 0)
+          && now - (profile.stateSentAt || 0) > 1500) {
+          sendStateToSeat(profile);
+        }
+      }
+      return;
+    }
+    const seq = net.seq || 0;
+    for (const profile of SEAT_PROFILES || []) {
+      if (profile?.kind === "human" && profile.connId) {
+        net.host.send(profile.connId, { type: "pulse", seq });
+      }
+    }
+  }, 4000);
+}
+
+function stopStatePulse() {
+  clearInterval(statePulseTimer);
+  statePulseTimer = null;
+}
+
+let reconcilingViewers = false;
+
+function reconcileViewers() {
+  if (!isHost() || !net?.viewers || reconcilingViewers) return;
+  reconcilingViewers = true;
+  try {
+    for (const [connId, viewer] of [...net.viewers.entries()]) {
+      const seat = findReclaimSeat(viewer.name);
+      if (seat > 0) reclaimSeat(connId, { name: viewer.name }, seat);
+    }
+  } finally {
+    reconcilingViewers = false;
+  }
+}
+
+function statePayloadFor(seat, roster = serialiseRoster()) {
+  return {
+    type: "state",
+    roomCode: net.code,
+    epoch: net.epoch,
+    seq: net.seq || 0,
+    seat,
+    players: roster,
+    viewers: serialiseViewers(),
+    hostName: net.name,
+    state: sanitizeForSeat(state, seat)
+  };
+}
+
+function sendStateToSeat(profile, roster = serialiseRoster()) {
+  if (!profile?.connId || !net?.host) return false;
+  const sent = net.host.send(profile.connId, statePayloadFor(profile.seat, roster));
+  if (sent) {
+    profile.stateSentAt = Date.now();
+    profile.stateSentSeq = net.seq || 0;
+  }
+  return sent;
+}
+
+function sendStateToViewer(viewer, roster = serialiseRoster()) {
+  if (!viewer?.connId || !net?.host) return false;
+  const sent = net.host.send(viewer.connId, {
+    ...statePayloadFor(-1, roster),
+    viewer: true,
+    state: sanitizeForSeat(state, -1)
+  });
+  if (sent) viewer.stateSentAt = Date.now();
+  return sent;
+}
+
 function publishState() {
   if (!isHost() || !state || !net?.host) return;
   if (!net.started) return;
+  reconcileViewers();
   const roster = serialiseRoster();
   net.seq = (net.seq || 0) + 1;
   for (const profile of SEAT_PROFILES) {
     if (!profile || profile.kind !== "human" || !profile.connId) continue;
-    const payload = sanitizeForSeat(state, profile.seat);
-    net.host.send(profile.connId, {
-      type: "state",
-      roomCode: net.code,
-      seq: net.seq,
-      seat: profile.seat,
-      players: roster,
-      hostName: net.name,
-      state: payload
-    });
+    sendStateToSeat(profile, roster);
   }
-  for (const viewer of net.viewers?.values() || []) {
-    net.host.send(viewer.connId, {
-      type: "state",
-      roomCode: net.code,
-      seq: net.seq,
-      seat: -1,
-      viewer: true,
-      players: roster,
-      viewers: serialiseViewers(),
-      hostName: net.name,
-      state: sanitizeForSeat(state, -1)
-    });
-  }
+  for (const viewer of net.viewers?.values() || []) sendStateToViewer(viewer, roster);
   lastPublished = Date.now();
 }
 
@@ -4739,8 +5427,12 @@ function sendLobbyToGuests() {
 }
 
 function nextBotName() {
-  const used = SEAT_PROFILES ? SEAT_PROFILES.filter((profile) => profile?.kind === "bot").length : 0;
-  return `Bot ${used + 1}`;
+  const used = new Set((SEAT_PROFILES || [])
+    .filter((profile) => profile)
+    .map((profile) => String(profile.name || "").trim()));
+  let index = 1;
+  while (used.has(`Bot ${index}`)) index += 1;
+  return `Bot ${index}`;
 }
 
 function convertSeatToBot(seat, reason = "left") {
@@ -4807,15 +5499,18 @@ function acceptGuest(connId, name) {
     voice: false,
     clientId: `guest-${net.seatSeq}`,
     rejoinToken: makeRejoinToken(),
-    rejoinName: clean
+    rejoinName: clean,
+    lastSeen: Date.now()
   };
-  net.host.send(connId, {
+  markTurnClock(true);
+  sendWelcomeWithRetry(connId, {
     type: "welcome",
     roomCode: net.code,
     protocol: PROTOCOL_VERSION,
     seat,
     hostName: net.name,
     players: serialiseRoster(),
+    viewers: serialiseViewers(),
     chat: chatHistory.slice(-30),
     canStart: SEAT_PROFILES.filter((profile) => profile && profile.connected).length >= 2,
     rejoinToken: SEAT_PROFILES[seat].rejoinToken,
@@ -4857,6 +5552,51 @@ function expirePending(connId) {
   clearPending(connId);
   rejectConnection(connId, "timeout");
   renderLobby();
+  renderInviteSheet();
+}
+
+function stopWelcomeRetry(connId) {
+  const entry = welcomeRetries.get(connId);
+  if (!entry) return false;
+  clearTimeout(entry.timer);
+  welcomeRetries.delete(connId);
+  return true;
+}
+
+function sendWelcomeWithRetry(connId, payload) {
+  /* A welcome carries the seat, the roster and the first full snapshot. Losing
+     it leaves a guest on "waiting" forever, so keep resending the same message
+     until the guest acknowledges it (or the retry budget runs out). */
+  if (!net?.host || !connId) return false;
+  if (payload && typeof payload === "object") {
+    payload.epoch = net.epoch || 0;
+    payload.seq = net.seq || 0;
+  }
+  stopWelcomeRetry(connId);
+  const id = ++welcomeSeq;
+  const entry = { id, payload, tries: 0, timer: null };
+  welcomeRetries.set(connId, entry);
+  const attempt = () => {
+    const current = welcomeRetries.get(connId);
+    if (!current || current.id !== id) return;
+    if (!net?.host?.connections?.has(connId)) {
+      welcomeRetries.delete(connId);
+      return;
+    }
+    current.tries += 1;
+    net.host.send(connId, payload);
+    if (current.tries >= 8) {
+      welcomeRetries.delete(connId);
+      return;
+    }
+    current.timer = setTimeout(attempt, 700 + current.tries * 350);
+  };
+  attempt();
+  return true;
+}
+
+function clearAllWelcomeRetries() {
+  for (const connId of [...welcomeRetries.keys()]) stopWelcomeRetry(connId);
 }
 
 function reattachGuest(connId, seat, token) {
@@ -4875,9 +5615,11 @@ function reattachGuest(connId, seat, token) {
     voice: false,
     clientId: current.clientId || `guest-${seat}`,
     rejoinToken: token,
-    rejoinName: name
+    rejoinName: name,
+    lastSeen: Date.now()
   };
   const started = Boolean(net.started && state);
+  markTurnClock(true);
   net.host.send(connId, {
     type: "welcome",
     roomCode: net.code,
@@ -4885,6 +5627,7 @@ function reattachGuest(connId, seat, token) {
     seat,
     hostName: net.name,
     players: serialiseRoster(),
+    viewers: serialiseViewers(),
     chat: chatHistory.slice(-30),
     canStart: SEAT_PROFILES.filter((profile) => profile && profile.connected).length >= 2,
     rejoinToken: token,
@@ -4909,6 +5652,8 @@ async function requestGuest(connId, message) {
   if (!isHost() || !net?.host) return;
   const rejoinToken = typeof message.rejoinToken === "string" ? message.rejoinToken.trim() : "";
   if (rejoinToken) {
+    const queued = queuedList().find((entry) => entry.token === rejoinToken);
+    if (queued && reattachQueuedGuest(connId, queued)) return;
     const seat = SEAT_PROFILES?.findIndex((profile) => profile && profile.rejoinToken === rejoinToken) ?? -1;
     if (seat > 0 && reattachGuest(connId, seat, rejoinToken)) return;
   }
@@ -4955,11 +5700,263 @@ async function requestGuest(connId, message) {
 }
 
 function findBotSeat() {
-  return SEAT_PROFILES?.findIndex((profile, seat) => seat > 0 && profile?.kind === "bot") ?? -1;
+  return SEAT_PROFILES?.findIndex((profile, seat) => seat > 0 && profile?.kind === "bot" && !profile.queuedFor) ?? -1;
+}
+
+/* A returning guest whose stored token was lost should reclaim the seat that
+   already carries their name, instead of being approved as a viewer while the
+   stale seat freezes the table. The host still taps Allow for this. */
+function findReclaimSeat(name) {
+  const clean = cleanGuestName(name, "").trim().toLowerCase();
+  if (!clean) return -1;
+  return SEAT_PROFILES?.findIndex((profile, seat) => (
+    seat > 0
+    && profile
+    && profile.kind === "human"
+    && !profile.connId
+    && String(profile.name || "").trim().toLowerCase() === clean
+  )) ?? -1;
+}
+
+function reclaimSeat(connId, request, seat) {
+  const profile = SEAT_PROFILES?.[seat];
+  if (!profile || !net?.host) return false;
+  const name = cleanGuestName(request.name || profile.name, profile.name || `Guest ${seat}`);
+  if (profile.queuedFor && queuedGuests.has(profile.queuedFor)) queuedGuests.delete(profile.queuedFor);
+  delete profile.queuedFor;
+  queuedGuests.delete(connId);
+  net.viewers?.delete(connId);
+  SEAT_PROFILES[seat] = {
+    ...profile,
+    seat,
+    name,
+    kind: "human",
+    connected: true,
+    connId,
+    peerId: connId,
+    rejoinToken: profile.rejoinToken || makeRejoinToken(),
+    rejoinName: name,
+    lastSeen: Date.now()
+  };
+  markTurnClock(true);
+  sendWelcomeWithRetry(connId, {
+    type: "welcome",
+    roomCode: net.code,
+    protocol: PROTOCOL_VERSION,
+    seat,
+    hostName: net.name,
+    players: serialiseRoster(),
+    viewers: serialiseViewers(),
+    chat: chatHistory.slice(-30),
+    canStart: true,
+    rejoinToken: SEAT_PROFILES[seat].rejoinToken,
+    started: Boolean(net.started && state),
+    joinedSeat: true,
+    state: net.started && state ? sanitizeForSeat(state, seat) : null
+  });
+  toast(t("invite.reclaimed", { name, seat: seatName(seat) }), "jade");
+  renderAll();
+  renderLobby();
+  renderPending();
+  renderInviteSheet();
+  sendLobbyToGuests();
+  syncVoicePeers();
+  queuePublish();
+  saveHostRecovery();
+  return true;
+}
+
+function joinBoundary() {
+  if (!state) return "now";
+  if (state.phase === "matchEnd") return "match";
+  if (state.phase === "roundEnd") return "round";
+  if (state.phase === "lead" && (state.center?.length || 0) === 0) return "now";
+  return "trick";
+}
+
+function queuedBadge(entry) {
+  if (entry?.joinAfter === "match") return t("invite.queuedMatch");
+  if (entry?.joinAfter === "round") return t("invite.queuedRound");
+  return t("invite.queuedBadge");
+}
+
+function queuedList() {
+  return [...queuedGuests.values()];
+}
+
+function scheduleQueueExpiry(entry, key) {
+  clearTimeout(entry.expiryTimer);
+  entry.expiryTimer = setTimeout(() => {
+    if (!queuedGuests.has(key) || entry.connId) return;
+    queuedGuests.delete(key);
+    const profile = SEAT_PROFILES?.[entry.seat];
+    if (profile?.kind === "bot") delete profile.queuedFor;
+    renderPending();
+    renderInviteSheet();
+    saveHostRecovery();
+  }, 5 * 60 * 1000);
+}
+
+function clearQueued(connId, reason = "denied") {
+  let key = connId;
+  let entry = queuedGuests.get(key);
+  if (!entry) {
+    const found = queuedList().find((item) => item.token === connId);
+    if (found) {
+      entry = found;
+      key = [...queuedGuests.entries()].find(([, item]) => item === found)?.[0];
+    }
+  }
+  if (!entry || !key) return false;
+  clearTimeout(entry.expiryTimer);
+  queuedGuests.delete(key);
+  if (entry.connId) net?.viewers?.delete(entry.connId);
+  const profile = SEAT_PROFILES?.[entry.seat];
+  if (profile?.kind === "bot") delete profile.queuedFor;
+  if (reason && entry.connId) rejectConnection(entry.connId, reason);
+  renderPending();
+  renderInviteSheet();
+  queuePublish();
+  saveHostRecovery();
+  return true;
+}
+
+function sendQueuedStatus(connId, entry) {
+  if (net?.viewers) net.viewers.set(connId, { name: entry.name, connId, at: Date.now(), queued: true });
+  sendWelcomeWithRetry(connId, {
+    type: "welcome",
+    roomCode: net.code,
+    protocol: PROTOCOL_VERSION,
+    seat: -1,
+    viewer: true,
+    queued: true,
+    queuedSeat: entry.seat,
+    joinAfter: entry.joinAfter,
+    hostName: net.name,
+    players: serialiseRoster(),
+    viewers: serialiseViewers(),
+    chat: chatHistory.slice(-30),
+    canStart: false,
+    rejoinToken: entry.token,
+    started: true,
+    state: sanitizeForSeat(state, -1)
+  });
+}
+
+function queueBotSeat(connId, request, seat) {
+  if (!isHost() || !net?.host || !state || seat < 0) return false;
+  const name = cleanGuestName(request.name, `Guest ${seat}`);
+  const entry = {
+    connId,
+    name,
+    seat,
+    token: makeRejoinToken(),
+    at: Date.now(),
+    joinAfter: joinBoundary()
+  };
+  net.seatSeq += 1;
+  queuedGuests.set(connId, entry);
+  if (SEAT_PROFILES[seat]) SEAT_PROFILES[seat].queuedFor = connId;
+  sendQueuedStatus(connId, entry);
+  toast(t("invite.approved", { name }), "jade");
+  renderPending();
+  renderInviteSheet();
+  renderNetChrome();
+  queuePublish();
+  saveHostRecovery();
+  return true;
+}
+
+function reattachQueuedGuest(connId, entry) {
+  if (!isHost() || !net?.host || !entry) return false;
+  const oldKey = [...queuedGuests.entries()].find(([, item]) => item === entry)?.[0];
+  if (oldKey) queuedGuests.delete(oldKey);
+  entry.connId = connId;
+  entry.at = Date.now();
+  queuedGuests.set(connId, entry);
+  clearTimeout(entry.expiryTimer);
+  sendQueuedStatus(connId, entry);
+  renderPending();
+  renderInviteSheet();
+  queuePublish();
+  saveHostRecovery();
+  return true;
+}
+
+function promoteQueuedGuests(reason = "trick") {
+  if (!isHost() || !net?.started || !state || !queuedGuests.size) return false;
+  let changed = false;
+  for (const entry of queuedList()) {
+    const { connId, seat } = entry;
+    if (!connId) continue;
+    if (!net.host?.connections?.has(connId)) {
+      queuedGuests.delete(connId);
+      const stale = SEAT_PROFILES?.[seat];
+      if (stale?.queuedFor === connId) delete stale.queuedFor;
+      changed = true;
+      continue;
+    }
+    const profile = SEAT_PROFILES?.[seat];
+    if (!profile || profile.kind !== "bot") {
+      queuedGuests.delete(connId);
+      changed = true;
+      continue;
+    }
+    const name = entry.name || `Guest ${seat}`;
+    SEAT_PROFILES[seat] = {
+      seat,
+      name,
+      kind: "human",
+      connected: true,
+      connId,
+      peerId: connId,
+      voice: false,
+      clientId: `guest-${net.seatSeq + 1}`,
+      rejoinToken: entry.token || makeRejoinToken(),
+      rejoinName: name,
+      lastSeen: Date.now()
+    };
+    net.seatSeq += 1;
+    clearTimeout(entry.expiryTimer);
+    queuedGuests.delete(connId);
+    net.viewers?.delete(connId);
+    sendWelcomeWithRetry(connId, {
+      type: "welcome",
+      roomCode: net.code,
+      protocol: PROTOCOL_VERSION,
+      seat,
+      hostName: net.name,
+      players: serialiseRoster(),
+      viewers: serialiseViewers(),
+      chat: chatHistory.slice(-30),
+      canStart: true,
+      rejoinToken: SEAT_PROFILES[seat].rejoinToken,
+      started: true,
+      joinedSeat: true,
+      state: sanitizeForSeat(state, seat)
+    });
+    markTurnClock(true);
+    toast(t("invite.joined", { name, seat: seatName(seat) }), "jade");
+    changed = true;
+  }
+  if (!changed) return false;
+  renderAll();
+  renderPending();
+  renderInviteSheet();
+  sendLobbyToGuests();
+  syncVoicePeers();
+  queuePublish();
+  saveHostRecovery();
+  if (reason === "match") audio?.play("win", 0);
+  return true;
 }
 
 function approveBotSeat(connId, request, seat) {
   const clean = cleanGuestName(request.name, `Guest ${seat}`);
+  const queued = queuedGuests.get(connId);
+  if (queued) queuedGuests.delete(connId);
+  net.viewers?.delete(connId);
+  if (SEAT_PROFILES[seat]?.queuedFor === connId) delete SEAT_PROFILES[seat].queuedFor;
   net.seatSeq += 1;
   SEAT_PROFILES[seat] = {
     seat,
@@ -4971,15 +5968,18 @@ function approveBotSeat(connId, request, seat) {
     voice: false,
     clientId: `guest-${net.seatSeq}`,
     rejoinToken: makeRejoinToken(),
-    rejoinName: clean
+    rejoinName: clean,
+    lastSeen: Date.now()
   };
-  net.host.send(connId, {
+  markTurnClock(true);
+  sendWelcomeWithRetry(connId, {
     type: "welcome",
     roomCode: net.code,
     protocol: PROTOCOL_VERSION,
     seat,
     hostName: net.name,
     players: serialiseRoster(),
+    viewers: serialiseViewers(),
     chat: chatHistory.slice(-30),
     canStart: true,
     rejoinToken: SEAT_PROFILES[seat].rejoinToken,
@@ -5000,30 +6000,72 @@ function approveBotSeat(connId, request, seat) {
 
 function approvePending(connId, mode = "auto") {
   const request = pendingRequests.get(connId);
-  if (!request) return false;
+  if (!request) {
+    /* A stale row can outlive its request (timeout, second device, reload).
+       Refresh the sheet instead of leaving the host on a dead button. */
+    inviteNotice = "";
+    renderPending();
+    renderInviteSheet();
+    renderNetChrome();
+    return false;
+  }
   clearPending(connId);
-  if (!net?.started) {
-    acceptGuest(connId, request.name);
-    renderLobby();
-    return true;
+  const name = request.name || `Guest ${net?.seatSeq || ""}`;
+  try {
+    if (!net?.started) {
+      acceptGuest(connId, request.name);
+      inviteNotice = t("invite.noticeJoined", { name });
+      renderLobby();
+      return true;
+    }
+    const reclaim = findReclaimSeat(request.name);
+    if (reclaim > 0 && reclaimSeat(connId, request, reclaim)) {
+      inviteNotice = t("invite.noticeReclaimed", { name, seat: seatName(reclaim) });
+      return true;
+    }
+    const seat = findBotSeat();
+    if (mode === "viewer" || seat < 0) {
+      approveViewer(connId, request);
+      inviteNotice = t("invite.noticeViewer", { name });
+      return true;
+    }
+    if (joinBoundary() !== "now") {
+      if (queueBotSeat(connId, request, seat)) {
+        inviteNotice = t("invite.noticeQueued", { name, seat: seatName(seat) });
+        return true;
+      }
+      approveViewer(connId, request);
+      inviteNotice = t("invite.noticeViewer", { name });
+      return true;
+    }
+    const seated = approveBotSeat(connId, request, seat);
+    if (seated) inviteNotice = t("invite.noticeSeated", { name, seat: seatName(seat) });
+    return seated;
+  } catch (error) {
+    inviteNotice = "";
+    inviteError = t("invite.noticeFailed");
+    try { console.error("approvePending failed", error); } catch { /* ignore */ }
+    return false;
+  } finally {
+    renderPending();
+    renderInviteSheet();
+    renderNetChrome();
   }
-  const seat = findBotSeat();
-  if (mode === "viewer" || seat < 0) {
-    approveViewer(connId, request);
-    return true;
-  }
-  return approveBotSeat(connId, request, seat);
 }
 
 function serialiseViewers() {
-  return [...(net?.viewers?.values() || [])].map((viewer) => ({ name: viewer.name }));
+  return [...(net?.viewers?.values() || [])].map((viewer) => ({ name: viewer.name, queued: Boolean(viewer.queued) }));
 }
 
-function approveViewer(connId, request) {
+function currentViewers() {
+  if (isHost()) return serialiseViewers();
+  return Array.isArray(net?.viewers) ? net.viewers : [];
+}
+
+function sendViewerWelcome(connId, name) {
   if (!isHost() || !net?.host || !net.viewers) return false;
-  const name = cleanGuestName(request.name, "Viewer");
   net.viewers.set(connId, { name, connId, at: Date.now() });
-  net.host.send(connId, {
+  sendWelcomeWithRetry(connId, {
     type: "welcome",
     roomCode: net.code,
     protocol: PROTOCOL_VERSION,
@@ -5037,12 +6079,67 @@ function approveViewer(connId, request) {
     started: Boolean(net.started && state),
     state: net.started && state ? sanitizeForSeat(state, -1) : null
   });
+  return true;
+}
+
+function approveViewer(connId, request) {
+  if (!isHost() || !net?.host || !net.viewers) return false;
+  const name = cleanGuestName(request.name, "Viewer");
+  sendViewerWelcome(connId, name);
   toast(t("toast.netViewer", { name }), "jade");
   renderLobby();
+  renderInviteSheet();
   sendLobbyToGuests();
   queuePublish();
   saveHostRecovery();
   return true;
+}
+
+function resendPending(connId) {
+  const request = pendingRequests.get(connId);
+  if (!request || !net?.host) return false;
+  net.host.send(connId, {
+    type: "pending",
+    roomCode: net.code,
+    hostName: net.name,
+    players: serialiseRoster(),
+    queued: false
+  });
+  return true;
+}
+
+function resendSeatedState(connId, profile) {
+  if (!profile || !net?.host || !net.started || !state) return false;
+  sendWelcomeWithRetry(connId, {
+    type: "welcome",
+    roomCode: net.code,
+    protocol: PROTOCOL_VERSION,
+    seat: profile.seat,
+    hostName: net.name,
+    players: serialiseRoster(),
+    viewers: serialiseViewers(),
+    chat: chatHistory.slice(-30),
+    canStart: true,
+    rejoinToken: profile.rejoinToken,
+    started: true,
+    joinedSeat: true,
+    state: sanitizeForSeat(state, profile.seat)
+  });
+  return true;
+}
+
+function resendJoinStatus(connId) {
+  if (!isHost() || !net?.host) return false;
+  const queued = queuedGuests.get(connId);
+  if (queued) {
+    sendQueuedStatus(connId, queued);
+    return true;
+  }
+  const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+  if (profile && resendSeatedState(connId, profile)) return true;
+  const viewer = net.viewers?.get(connId);
+  if (viewer) return sendViewerWelcome(connId, viewer.name);
+  return resendPending(connId);
 }
 
 function denyPending(connId, reason = "denied") {
@@ -5050,6 +6147,9 @@ function denyPending(connId, reason = "denied") {
   clearPending(connId);
   rejectConnection(connId, reason);
   renderLobby();
+  renderPending();
+  renderInviteSheet();
+  renderNetChrome();
   return true;
 }
 
@@ -5143,13 +6243,37 @@ async function probeHost(connId, message) {
 
 function hostMessage({ connId, message }) {
   if (!isProtocolMessage(message)) return;
+  const sender = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+  if (sender) sender.lastSeen = Date.now();
   switch (message.type) {
     case "hello":
       requestGuest(connId, message).catch(() => rejectConnection(connId, "busy"));
       break;
+    case "welcome-ack":
+      stopWelcomeRetry(connId);
+      break;
+    case "state-ack": {
+      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      if (!profile) break;
+      const acked = Number(message.seq) || 0;
+      profile.stateAck = Math.max(profile.stateAck || 0, acked);
+      profile.lastSeen = Date.now();
+      if (profile.stateAck < (net.seq || 0) && Date.now() - (profile.stateSentAt || 0) > 500) {
+        sendStateToSeat(profile);
+      }
+      break;
+    }
+    case "status":
+      resendJoinStatus(connId);
+      break;
     case "action": {
       const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
       if (!profile) return;
+      const actionId = typeof message.actionId === "string" ? message.actionId.slice(0, 80) : "";
+      if (actionId && profile.lastActionId === actionId) {
+        if (profile.lastActionAck) net.host.send(connId, profile.lastActionAck);
+        return;
+      }
       const tiles = Array.isArray(message.tiles) ? message.tiles.filter((id) => typeof id === "string").slice(0, 6) : [];
       const ok = message.kind === "lead"
         ? leadTrick(profile.seat, tiles)
@@ -5166,7 +6290,10 @@ function hostMessage({ connId, message }) {
                   : message.kind === "draft"
                     ? draftPick(profile.seat, message.tiles)
                     : false;
-      if (!ok) net.host.send(connId, { type: "rejected", reason: "illegal" });
+      const ack = { type: "action-ack", actionId, ok: Boolean(ok), reason: ok ? null : "illegal", seq: net.seq || 0 };
+      profile.lastActionId = actionId || null;
+      profile.lastActionAck = ack;
+      net.host.send(connId, ack);
       break;
     }
     case "chat": {
@@ -5204,7 +6331,36 @@ function hostMessage({ connId, message }) {
     case "ping":
       net.host.send(connId, { type: "pong", at: Date.now() });
       break;
+    case "resync": {
+      const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+      if (!profile) {
+        /* Queued guests and viewers have no seat profile yet. Answering their
+           resync is what recovers them if a welcome snapshot was lost. */
+        resendJoinStatus(connId);
+        break;
+      }
+      if (!net?.started || !state) return;
+      const now = Date.now();
+      if (profile.resyncAt && now - profile.resyncAt < 800) return;
+      profile.resyncAt = now;
+      net.host.send(connId, {
+        type: "state",
+        roomCode: net.code,
+        epoch: net.epoch,
+        seq: net.seq || 0,
+        seat: profile.seat,
+        players: serialiseRoster(),
+        hostName: net.name,
+        resync: true,
+        state: sanitizeForSeat(state, profile.seat)
+      });
+      break;
+    }
     case "leave": {
+      if (queuedGuests.has(connId)) {
+        clearQueued(connId, "");
+        return;
+      }
       if (net?.viewers?.has(connId)) {
         net.viewers.delete(connId);
         renderLobby();
@@ -5237,9 +6393,54 @@ function hostMessage({ connId, message }) {
 
 function hostConnectionLost({ connId } = {}) {
   if (!connId) return;
+  stopWelcomeRetry(connId);
+  if (queuedGuests.has(connId)) {
+    const entry = queuedGuests.get(connId);
+    if (entry) {
+      const key = `queued-${entry.seat}-${entry.token.slice(0, 8)}`;
+      queuedGuests.delete(connId);
+      net?.viewers?.delete(connId);
+      entry.connId = null;
+      entry.at = Date.now();
+      queuedGuests.set(key, entry);
+      scheduleQueueExpiry(entry, key);
+    }
+    renderPending();
+    renderInviteSheet();
+    queuePublish();
+    saveHostRecovery();
+    return;
+  }
+  const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
+  if (profile) {
+    /* A connection can be in the viewer map as well as a seat (older
+       approval paths). The seat must win: otherwise the viewer branch below
+       returns early and leaves a dead human seat blocking the table. */
+    net?.viewers?.delete(connId);
+    if (net?.started && state) {
+      convertSeatToBot(profile.seat, "disconnected");
+    } else {
+      SEAT_PROFILES[profile.seat] = {
+        ...profile,
+        connected: false,
+        connId: null,
+        peerId: null,
+        voice: false,
+        rejoinToken: profile.rejoinToken || null,
+        rejoinName: profile.rejoinName || profile.name
+      };
+      sendLobbyToGuests();
+      renderLobby();
+      syncVoicePeers();
+      toast(t("toast.netGuestHeld", { name: profile.name }), "wine");
+      saveHostRecovery();
+    }
+    return;
+  }
   if (net?.viewers?.has(connId)) {
     net.viewers.delete(connId);
     renderLobby();
+    renderInviteSheet();
     queuePublish();
     saveHostRecovery();
     return;
@@ -5247,27 +6448,8 @@ function hostConnectionLost({ connId } = {}) {
   if (pendingRequests.has(connId)) {
     clearPending(connId);
     renderLobby();
+    renderInviteSheet();
     return;
-  }
-  const profile = SEAT_PROFILES?.find((entry) => entry?.connId === connId);
-  if (!profile) return;
-  if (net?.started && state) {
-    convertSeatToBot(profile.seat, "disconnected");
-  } else {
-    SEAT_PROFILES[profile.seat] = {
-      ...profile,
-      connected: false,
-      connId: null,
-      peerId: null,
-      voice: false,
-      rejoinToken: profile.rejoinToken || null,
-      rejoinName: profile.rejoinName || profile.name
-    };
-    sendLobbyToGuests();
-    renderLobby();
-    syncVoicePeers();
-    toast(t("toast.netGuestHeld", { name: profile.name }), "wine");
-    saveHostRecovery();
   }
 }
 
@@ -5317,6 +6499,7 @@ async function createHostRoom(name) {
       host,
       code: host.code,
       name: handle,
+      epoch: nextHostEpoch(),
       seq: 0,
       started: false,
       seatSeq: 0,
@@ -5409,6 +6592,7 @@ async function resumeHostRoom(recovery) {
       host,
       code: host.code,
       name: handle,
+      epoch: nextHostEpoch(),
       seq: 0,
       started: Boolean(recovery.started),
       seatSeq: Number(recovery.seatSeq) || 0,
@@ -5429,13 +6613,37 @@ async function resumeHostRoom(recovery) {
         voice: false,
         rejoinToken: saved.rejoinToken || null,
         rejoinName: saved.rejoinName || saved.name || "",
-        clientId: saved.clientId || null
+        clientId: saved.clientId || null,
+        lastSeen: isHost || saved.kind === "bot" ? null : Date.now()
       };
     });
     if (!SEAT_PROFILES[0]) {
       SEAT_PROFILES[0] = { seat: 0, name: handle, kind: "host", connected: true, host: true, connId: null, peerId: host.id, voice: false };
     }
     SEAT_PROFILES[0].name = handle;
+    queuedGuests = new Map();
+    /* Recovered human seats have no live connection yet. Give the guests a
+       grace window to dial back in; after that, free every seat so an absent
+       device cannot freeze the table. Their rejoin token is preserved. */
+    setTimeout(() => {
+      if (!isHost() || !net?.started || !SEAT_PROFILES) return;
+      for (let seat = 1; seat < TABLE_SEATS; seat += 1) {
+        const profile = SEAT_PROFILES[seat];
+        if (profile?.kind === "human" && !profile.connId) convertSeatToBot(seat, "disconnected");
+      }
+    }, 30000);
+    (Array.isArray(recovery.queued) ? recovery.queued : []).forEach((entry, index) => {
+      if (!entry || !Number.isInteger(entry.seat) || entry.seat < 1 || entry.seat >= TABLE_SEATS) return;
+      queuedGuests.set(`recovered-${entry.seat}-${index}`, {
+        connId: null,
+        name: entry.name || `Guest ${entry.seat}`,
+        seat: entry.seat,
+        token: entry.token || makeRejoinToken(),
+        at: Number(entry.at) || Date.now(),
+        joinAfter: ["trick", "round", "match"].includes(entry.joinAfter) ? entry.joinAfter : "trick"
+      });
+      if (SEAT_PROFILES[entry.seat]?.kind === "bot") SEAT_PROFILES[entry.seat].queuedFor = "recovered";
+    });
     MY_SEAT = 0;
     await setRoomPin(generatePin(), { silent: true });
     if (recovery.stats) stats = { ...stats, ...recovery.stats };
@@ -5446,6 +6654,7 @@ async function resumeHostRoom(recovery) {
       state.language = LANG;
       ensureHiddenTags(state);
       net.started = true;
+      markTurnClock(true);
       closeLobby();
       renderAll();
       if (scene) {
@@ -5465,6 +6674,7 @@ async function resumeHostRoom(recovery) {
     renderNetChrome();
     syncVoicePeers();
     acquireHostWakeLock();
+    startStatePulse();
     queuePublish();
     saveHostRecovery();
     const url = new URL(location.href);
@@ -5518,11 +6728,13 @@ function startHostedMatch() {
       roomCode: net.code,
       seat: profile.seat,
       players: roster,
+      viewers: serialiseViewers(),
       hostName: net.name
     });
   }
   closeLobby();
   beginMatch();
+  startStatePulse();
   toast(t("toast.netStarted", { code: formatRoomCode(net.code) }), "gold");
   sendLobbyToGuests();
   publishState();
@@ -5531,11 +6743,43 @@ function startHostedMatch() {
 
 function clientMessage({ message }) {
   if (!isProtocolMessage(message)) return;
+  if (net && isClient()) net.lastMessageAt = Date.now();
   switch (message.type) {
     case "welcome": {
+      const wasWelcomed = Boolean(net?.welcomed);
+      net?.client?.send?.({ type: "welcome-ack" });
+      const incomingEpoch = Number(message.epoch) || 0;
+      if (net) {
+        if (incomingEpoch && net.epoch && incomingEpoch < net.epoch) break;
+        if (incomingEpoch > (net.epoch || 0)) {
+          net.epoch = incomingEpoch;
+          net.lastSeq = 0;
+        }
+        if (wasWelcomed && incomingEpoch === (net.epoch || 0) && Number(message.seq) < (net.lastSeq || 0)) break;
+        net.lastSeq = Math.max(net.lastSeq || 0, Number(message.seq) || 0);
+      }
+      if (net) {
+        net.welcomed = Boolean(message.state) || !message.started;
+        net.handshakeAck = true;
+      }
+      stopJoinWatch();
+      const incomingSeat = Number(message.seat);
+      const incomingViewer = Boolean(message.viewer) || incomingSeat < 0;
+      /* A queued/viewer welcome arriving after the real seat was granted (for
+         example from a retry on an older connection) must not demote this
+         guest. Seat changes only happen through a fresh join handshake. */
+      if (wasWelcomed && MY_SEAT >= 0 && (incomingViewer || (Number.isInteger(incomingSeat) && incomingSeat !== MY_SEAT))) {
+        try { console.warn("ignored stale welcome", { incomingSeat, mySeat: MY_SEAT }); } catch { /* ignore */ }
+        break;
+      }
+      clearPendingAction();
       const welcomeSeat = Number(message.seat);
       MY_SEAT = Number.isInteger(welcomeSeat) && welcomeSeat >= -1 ? welcomeSeat : 1;
       net.viewer = Boolean(message.viewer) || MY_SEAT < 0;
+      net.queued = Boolean(message.queued);
+      net.queuedSeat = Number.isInteger(message.queuedSeat) ? message.queuedSeat : null;
+      net.joinAfter = message.joinAfter || null;
+      net.viewers = Array.isArray(message.viewers) ? message.viewers : [];
       SEAT_PROFILES = (message.players || []).map((player) => ({ ...player }));
       net.seat = MY_SEAT;
       net.name = message.players?.[MY_SEAT]?.name || net.name;
@@ -5543,12 +6787,13 @@ function clientMessage({ message }) {
       if (rejoinToken) {
         saveRejoinSeat({
           code: message.roomCode,
-          seat: MY_SEAT,
+          seat: net.queuedSeat || MY_SEAT,
           token: rejoinToken,
           name: net.name
         });
       }
       net.started = Boolean(message.started) || Boolean(message.rejoin && message.state);
+      if (message.state && net) net.lastStateAt = Date.now();
       resetHostRejoin();
       lobbyState = {
         view: "waiting",
@@ -5557,11 +6802,25 @@ function clientMessage({ message }) {
         players: message.players,
         status: message.rejoin ? t("net.reconnected") : t("net.connectedWaiting"),
         started: net.started,
-        pending: false
+        pending: false,
+        pin: net?.pin || lobbyState?.pin
       };
       chatHistory = Array.isArray(message.chat) ? message.chat.slice(-30) : [];
       if (message.state) {
-        applyRemoteState(message.state);
+        try {
+          applyRemoteState(message.state);
+          net?.client?.send?.({ type: "state-ack", seq: net.lastSeq, epoch: net.epoch });
+        } catch (error) {
+          toast(t("toast.connectionStalled"), "wine");
+          requestResync({ silent: true });
+        }
+      } else if (net.started) {
+        /* The host says the match is live but the welcome lost its snapshot.
+           Ask again and keep the handshake retry alive. */
+        if (lobbyState) lobbyState.status = t("net.reconnecting");
+        showLobby("waiting");
+        renderLobby();
+        requestResync({ silent: true });
       } else {
         showLobby("waiting");
         renderLobby();
@@ -5569,17 +6828,21 @@ function clientMessage({ message }) {
       renderNetChrome();
       renderChat();
       syncVoicePeers();
+      maybeJoinAutoAudio();
       audio?.play("win", 0);
       break;
     }
     case "lobby":
       if (SEAT_PROFILES && message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
+      if (net && Array.isArray(message.viewers)) net.viewers = message.viewers;
       if (lobbyState) {
         lobbyState.players = message.players || lobbyState.players;
+        lobbyState.viewers = Array.isArray(message.viewers) ? message.viewers : lobbyState.viewers;
         lobbyState.started = Boolean(message.started);
         lobbyState.canStart = Boolean(message.canStart);
       }
       if (lobbyState?.view !== "table") renderLobby();
+      renderNetChrome();
       syncVoicePeers();
       break;
     case "start":
@@ -5591,12 +6854,45 @@ function clientMessage({ message }) {
         renderLobby();
       }
       syncVoicePeers();
+      maybeJoinAutoAudio();
       break;
-    case "state":
+    case "state": {
+      const incomingEpoch = Number(message.epoch) || 0;
+      const incomingSeq = Number(message.seq) || 0;
+      if (net) {
+        if (incomingEpoch && net.epoch && incomingEpoch !== net.epoch) break;
+        if (!message.resync && net.welcomed && incomingSeq && incomingSeq <= (net.lastSeq || 0)) break;
+        net.epoch = incomingEpoch || net.epoch || 0;
+        net.lastSeq = Math.max(net.lastSeq || 0, incomingSeq);
+        net.welcomed = true;
+      }
+      finishResync();
       if (message.players) SEAT_PROFILES = message.players.map((player) => ({ ...player }));
-      applyRemoteState(message.state);
+      if (Array.isArray(message.viewers)) net.viewers = message.viewers;
+      try {
+        applyRemoteState(message.state);
+        if (net) {
+          net.lastStateAt = Date.now();
+          net.client?.send?.({ type: "state-ack", seq: net.lastSeq, epoch: net.epoch });
+        }
+      } catch (error) {
+        try { console.error("state apply failed", error); } catch { /* ignore */ }
+        toast(t("toast.connectionStalled"), "wine");
+        requestResync({ silent: true });
+        break;
+      }
       syncVoicePeers();
+      maybeJoinAutoAudio();
+      if (message.resync) {
+        clearPendingAction();
+        const now = Date.now();
+        if (now - lastResyncToastAt > 1200) {
+          lastResyncToastAt = now;
+          toast(t("toast.resynced"), "jade");
+        }
+      }
       break;
+    }
     case "hand-layout":
       if (Number.isInteger(message.seat) && message.seat !== MY_SEAT) {
         const slots = sanitizeHandSlots(message.slots);
@@ -5606,23 +6902,58 @@ function clientMessage({ message }) {
     case "chat":
       if (message.entry) appendChat(message.entry);
       break;
-    case "pending":
+    case "pending": {
+      if (net) net.handshakeAck = true;
+      const queued = Boolean(message.queued);
+      if (queued && message.rejoinToken) {
+        saveRejoinSeat({
+          code: message.roomCode,
+          seat: Number(message.seat),
+          token: message.rejoinToken,
+          name: lobbyState?.name || ""
+        });
+      }
+      const joinAfter = message.joinAfter === "round" ? "round" : message.joinAfter === "match" ? "match" : "trick";
       lobbyState = {
         view: "waiting",
         roomCode: message.roomCode,
         hostName: message.hostName,
-        players: [],
-        status: t("net.waitingApproval"),
+        players: message.players || [],
+        status: queued
+          ? t(joinAfter === "round" ? "net.joinQueuedRound" : joinAfter === "match" ? "net.joinQueuedMatch" : "net.joinQueuedStatus")
+          : t("net.waitingApproval"),
         started: false,
-        pending: true
+        pending: !queued,
+        queued,
+        joinAfter,
+        seat: queued ? Number(message.seat) : null,
+        pin: lobbyState?.pin || net?.pin
       };
       showLobby("waiting");
+      renderLobby();
+      startJoinWatch();
       break;
+    }
+    case "action-ack": {
+      if (!pendingAction || message.actionId !== pendingAction.id) break;
+      clearPendingAction();
+      if (!message.ok) {
+        toast(t("net.rejected.illegal"), "wine");
+        requestResync({ silent: true });
+      }
+      break;
+    }
     case "rejected": {
-      if (net) net.rejected = true;
+      if (net) {
+        net.rejected = true;
+        net.handshakeAck = true;
+      }
+      stopJoinWatch();
       lastNetError = message.reason || "rejected";
       if (message.reason === "illegal") {
+        clearPendingAction();
         toast(t("net.rejected.illegal"), "wine");
+        requestResync({ silent: true });
         break;
       }
       if (["bad-pin", "in-progress", "denied"].includes(message.reason)) clearRejoinSeat();
@@ -5639,8 +6970,20 @@ function clientMessage({ message }) {
       setLobbyStatus(t(`net.rejected.${message.reason}`), "wine");
       break;
     }
+    case "seat-timeout": {
+      const code = message.roomCode || net?.code || "";
+      const name = net?.name || lobbyState?.name || loadPlayerName();
+      const pin = net?.pin || lobbyState?.pin || "";
+      const token = loadRejoinSeat(code)?.token || "";
+      toast(t("net.seatTimeout"), "wine");
+      setTimeout(() => { if (code) joinRoom(code, name, pin, token, { auto: true }); }, 900);
+      break;
+    }
     case "closed":
       handleHostLost({ intentional: true });
+      break;
+    case "pulse":
+      if (isClient() && net?.started && Number(message.seq) > (net.lastSeq || 0)) requestResync({ silent: true });
       break;
     case "pong":
       remoteClock = Date.now() - Number(message.at || Date.now());
@@ -5689,16 +7032,21 @@ function handleHostLost(options = {}) {
 
 async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
   const auto = Boolean(options.auto);
+  joinStage = auto ? "auto-enter" : "manual-enter";
   if (!auto) resetHostRejoin();
   if (net) leaveRoom({ silent: true, keepRejoin: auto });
   const normalized = normalizeRoomCode(code);
   if (!normalized) {
+    joinStage = "bad-code";
     setLobbyStatus(t("net.badCode"), "wine");
     return;
   }
   const handle = cleanGuestName(name, t("net.guestDefault"));
   const roomPin = normalisePin(pin);
-  const storedRejoin = rejoinToken || loadRejoinSeat(normalized)?.token || "";
+  const storedCard = loadRejoinSeat(normalized);
+  const explicitHandle = cleanGuestName(name || "", "");
+  const cardNameMatches = Boolean(storedCard && (!explicitHandle || !storedCard.name || explicitHandle === storedCard.name));
+  const storedRejoin = rejoinToken || (cardNameMatches ? storedCard.token : "");
   const reconnecting = Boolean(storedRejoin);
   saveRoomIntent({ role: "guest", code: normalized, name: handle });
   const token = ++joinToken;
@@ -5713,23 +7061,32 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
     hostName: "",
     started: false,
     name: handle,
+    pin: roomPin,
     reconnecting
   };
   showLobby(reconnecting ? "waiting" : "join");
+  startJoinWatch();
   const connectButton = $("#lobbyConnectBtn");
   if (connectButton) {
     connectButton.disabled = true;
     connectButton.textContent = t("net.connecting");
   }
   let client = null;
+  const sendHello = () => client?.send({
+    type: "hello",
+    name: handle,
+    pin: roomPin,
+    protocol: PROTOCOL_VERSION,
+    rejoinToken: storedRejoin
+  });
   const makeClient = () => {
     client = new PeerClient({
       code: normalized,
       name: handle,
-      connectTimeoutMs: auto ? 4500 : 11000,
+      connectTimeoutMs: auto ? 3500 : 11000,
       onMessage: clientMessage,
       onOpen: () => {
-        client.send({ type: "hello", name: handle, pin: roomPin, protocol: PROTOCOL_VERSION, rejoinToken: storedRejoin });
+        sendHello();
         setLobbyStatus(t("net.handshake"), "jade");
       },
       onClose: () => {
@@ -5743,7 +7100,8 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
         if (status === "dialing" && token === joinToken) setLobbyStatus(t("net.connecting"), "wine");
       }
     });
-    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, seq: 0, started: false, rejected: false };
+    net = { role: "client", client, code: normalized, name: handle, pin: roomPin, epoch: 0, seq: 0, started: false, rejected: false, welcomed: false, handshakeAck: false, lastSeq: 0, lastMessageAt: Date.now(), lastStateAt: 0, recovering: false, queued: false, queuedSeat: null, joinAfter: null };
+    startClientWatchdog();
     return client;
   };
   const autoMic = prefs.autoAudio ? preloadAudio() : null;
@@ -5754,10 +7112,12 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
       try {
         await client.connect();
         if (token !== joinToken) return;
+        joinStage = "connected";
         if (autoMic) {
           autoMic.then((stream) => {
-            if (stream && token === joinToken && isClient()) joinAudioWithStream(stream);
-            else if (stream && !voice?.joined) releaseAutoAudio();
+            if (!stream) return;
+            if (isClient()) maybeJoinAutoAudio();
+            else if (!voice?.joined) releaseAutoAudio();
           });
         }
         savePlayerName(handle);
@@ -5765,18 +7125,31 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
           connectButton.disabled = false;
           connectButton.textContent = t("net.connect");
         }
+        const handshakeStart = Date.now();
+        const retryHandshake = () => {
+          if (token !== joinToken || !isClient()) return;
+          if (net?.welcomed || net?.handshakeAck) return;
+          if (Date.now() - handshakeStart > 24000) {
+            setLobbyStatus(t("net.stillWaiting"), "wine");
+            return;
+          }
+          if (lobbyState?.view === "waiting") sendHello();
+          setTimeout(retryHandshake, 6000);
+        };
+        setTimeout(retryHandshake, 5000);
         return;
       } catch (error) {
         const failedClient = client;
         try { failedClient?.close(); } catch { /* ignore */ }
         if (net?.client === failedClient) net = null;
-        if (attempt === 1) {
+        if (!auto && attempt === 1) {
           if (token !== joinToken) return;
           setLobbyStatus(t("net.retrying", { n: 2 }), "");
           await new Promise((resolve) => setTimeout(resolve, 800));
           continue;
         }
         const type = error?.code || error?.type || error?.message || "unknown";
+        joinStage = `failed:${type}`;
         lastNetError = type;
         lastNetStage = error?.stage || "";
         if (auto && reconnecting && hostRejoinAttempts < 12) {
@@ -5791,6 +7164,7 @@ async function joinRoom(code, name, pin = "", rejoinToken = "", options = {}) {
           };
           showLobby("lost");
           setLobbyStatus(t("net.hostRestarting"), "");
+          joinStage = "retry-scheduled";
           scheduleHostRejoin(normalized, handle, storedRejoin);
           return;
         }
@@ -5824,6 +7198,10 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
   releaseAutoAudio();
   lastHandLayoutSig = "";
   clearTimeout(publishTimer);
+  stopStatePulse();
+  stopClientWatchdog();
+  stopJoinWatch();
+  clearAllWelcomeRetries();
   actionToken += 1;
   joinToken += 1;
   const role = net?.role;
@@ -5837,6 +7215,9 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
       if (profile?.kind === "human" && profile.connId) {
         host.send(profile.connId, { type: "closed", reason: "host-left" });
       }
+    }
+    for (const entry of queuedList()) {
+      if (entry.connId) host.send(entry.connId, { type: "closed", reason: "host-left" });
     }
     host.close();
   }
@@ -5861,6 +7242,13 @@ function leaveRoom({ silent = false, keepState = false, keepRejoin = false } = {
   pendingTimers.clear();
   net = null;
   SEAT_PROFILES = null;
+  const queuedBanner = $("#queuedBanner");
+  if (queuedBanner) queuedBanner.hidden = true;
+  queuedGuests = new Map();
+  dismissedJoinRequests = new Set();
+  clearPendingAction();
+  inviteStarting = false;
+  inviteError = "";
   MY_SEAT = 0;
   lobbyState = null;
   resumeAvailable = false;
@@ -5961,19 +7349,32 @@ function saveRejoinSeat(info) {
     if (!info?.token) return;
     const code = normalizeRoomCode(info.code || "");
     if (!code) return;
-    sessionStorage.setItem(REJOIN_KEY, JSON.stringify({
+    const card = {
       code,
       seat: Number(info.seat) || 0,
       token: String(info.token),
-      name: cleanGuestName(info.name || "", "")
-    }));
+      name: cleanGuestName(info.name || "", ""),
+      expiresAt: Date.now() + REJOIN_CARD_TTL_MS
+    };
+    sessionStorage.setItem(REJOIN_KEY, JSON.stringify(card));
+    localStorage.setItem(REJOIN_CARD_KEY, JSON.stringify(card));
   } catch { /* storage may be denied */ }
 }
 
 function loadRejoinSeat(code) {
   try {
     const normalized = normalizeRoomCode(code || "");
-    const parsed = JSON.parse(sessionStorage.getItem(REJOIN_KEY) || "null");
+    let parsed = null;
+    try { parsed = JSON.parse(sessionStorage.getItem(REJOIN_KEY) || "null"); } catch { parsed = null; }
+    if (!parsed || parsed.code !== normalized || !parsed.token) {
+      try {
+        const card = JSON.parse(localStorage.getItem(REJOIN_CARD_KEY) || "null");
+        if (card && card.code === normalized && card.token && Number(card.expiresAt) > Date.now()) {
+          parsed = card;
+          sessionStorage.setItem(REJOIN_KEY, JSON.stringify(card));
+        }
+      } catch { /* storage may be denied */ }
+    }
     if (!parsed || parsed.code !== normalized || !parsed.token) return null;
     return { code: normalized, seat: Number(parsed.seat) || 0, token: String(parsed.token), name: cleanGuestName(parsed.name || "", "") };
   } catch { return null; }
@@ -5981,6 +7382,7 @@ function loadRejoinSeat(code) {
 
 function clearRejoinSeat() {
   try { sessionStorage.removeItem(REJOIN_KEY); } catch { /* ignore */ }
+  try { localStorage.removeItem(REJOIN_CARD_KEY); } catch { /* ignore */ }
 }
 
 function renderRuleSelects() {
@@ -6095,7 +7497,15 @@ function forceReload() {
   try {
     const url = new URL(location.href);
     url.searchParams.set("v", String(Date.now()));
-    if (!isNetworked() && state && ["lead", "follow", "showdown", "draft", "bid", "resolving", "roundEnd", "matchEnd"].includes(state.phase)) {
+    if (isHost()) {
+      /* The recovery blob is the host's resume path; mode=solo would hide it. */
+      url.searchParams.delete("mode");
+      url.searchParams.delete("resume");
+      url.searchParams.delete("demo");
+      url.searchParams.delete("selftest");
+    } else if (isClient() && net?.code) {
+      url.searchParams.set("room", net.code);
+    } else if (state && ["lead", "follow", "showdown", "draft", "bid", "resolving", "roundEnd", "matchEnd"].includes(state.phase)) {
       url.searchParams.set("resume", "1");
     }
     url.searchParams.delete("pin");
@@ -6226,14 +7636,13 @@ function lobbyRosterHTML(players, options = {}) {
   }).join("");
 }
 
-function renderPending() {
-  const list = $("#lobbyPending");
-  if (!list) return;
+function pendingRowsMarkup() {
   const entries = pendingList();
+  const queued = queuedList();
   const started = Boolean(net?.started);
   const botSeat = findBotSeat();
-  list.innerHTML = entries.length
-    ? entries.map((request) => `
+  const rows = [
+    ...entries.map((request) => `
       <div class="pending-row" data-conn="${escapeHTML(request.connId)}">
         <span class="pending-name">${escapeHTML(request.name)}</span>
         <time>${escapeHTML(chatClock(request.at))}</time>
@@ -6241,12 +7650,27 @@ function renderPending() {
         ${started && botSeat >= 0 ? `<button class="mini-btn" type="button" data-viewer data-i18n="net.watchOnly">${escapeHTML(t("net.watchOnly"))}</button>` : ""}
         <button class="mini-btn deny" type="button" data-deny data-i18n="net.deny">${escapeHTML(t("net.deny"))}</button>
         <button class="mini-btn" type="button" data-pause data-i18n="net.pauseShort">${escapeHTML(t("net.pauseShort"))}</button>
-      </div>`).join("")
-    : `<span class="pending-empty">${escapeHTML(t("net.pendingEmpty"))}</span>`;
+      </div>`),
+    ...queued.map((entry) => `
+      <div class="pending-row queued" data-queue="${escapeHTML(entry.connId || entry.token || "")}">
+        <span class="pending-name">${escapeHTML(entry.name)}</span>
+        <span class="pending-queued">${escapeHTML(queuedBadge(entry))}</span>
+        <button class="mini-btn deny" type="button" data-unqueue data-i18n="invite.cancelQueue">${escapeHTML(t("invite.cancelQueue"))}</button>
+      </div>`)
+  ];
+  return rows.length ? rows.join("") : `<span class="pending-empty">${escapeHTML(t("net.pendingEmpty"))}</span>`;
+}
+
+function renderPending() {
+  const list = $("#lobbyPending");
+  if (!list) return;
+  const entries = pendingList();
+  const queued = queuedList();
+  list.innerHTML = pendingRowsMarkup();
   const approveAll = $("#lobbyApproveAll");
-  if (approveAll) approveAll.hidden = entries.length === 0 || started;
+  if (approveAll) approveAll.hidden = entries.length === 0 || Boolean(net?.started);
   const pendingBlock = $("#hostPendingBlock");
-  if (pendingBlock) pendingBlock.hidden = entries.length === 0;
+  if (pendingBlock) pendingBlock.hidden = entries.length === 0 && queued.length === 0;
   const status = $("#hostSecurityStatus");
   if (status && isHost() && net?.security) {
     status.textContent = net.security.pinSet ? t("net.pinAuto") : t("net.pinApprovalOnly");
@@ -6329,6 +7753,7 @@ function renderLobby() {
   if ($("#lobbyWaitRoster")) $("#lobbyWaitRoster").innerHTML = lobbyRosterHTML(SEAT_PROFILES || players);
   if ($("#lobbyWaitTitle")) {
     $("#lobbyWaitTitle").textContent = view === "lost" ? t("net.lostTitle")
+      : view === "waiting" && lobbyState?.queued ? t("net.joinQueuedTitle")
       : view === "waiting" && lobbyState?.pending ? t("net.waitingApproval")
       : view === "waiting" ? t("net.waitingHost")
       : t("net.joinTitle");
@@ -6350,7 +7775,7 @@ function renderLobby() {
   const hostListening = $("#hostListening");
   if (hostListening) {
     if (started) hostListening.textContent = t("net.matchInProgress");
-    else if (pendingRequests.size) hostListening.textContent = t("net.pendingCount", { n: pendingRequests.size });
+    else if (pendingRequests.size + queuedGuests.size) hostListening.textContent = t("net.pendingCount", { n: pendingRequests.size + queuedGuests.size });
     else if (humans >= 2) hostListening.textContent = t("net.readyToStart", { n: humans });
     else if (net?.host?.connectionCount?.() > 0) hostListening.textContent = t("net.guestConnecting");
     else hostListening.textContent = t("net.listening");
@@ -6368,6 +7793,8 @@ function renderLobby() {
   if (soloFromLost) soloFromLost.hidden = !(view === "lost" || view === "join");
   const waitLeave = $("#lobbyWaitLeave");
   if (waitLeave) waitLeave.hidden = view === "lost";
+  const retryJoin = $("#lobbyRetryBtn");
+  if (retryJoin) retryJoin.hidden = !(view === "waiting" && isClient() && !net?.started);
   const copyInfo = $("#lobbyCopyInfo");
   if (copyInfo) {
     copyInfo.disabled = !code;
@@ -6377,6 +7804,8 @@ function renderLobby() {
   if (share) share.hidden = !(code && roomPinPlain && typeof navigator.share === "function");
   renderPending();
   renderPinReveal();
+  renderInviteSheet();
+  renderNetChrome();
 }
 
 function showLobby(view = "menu") {
@@ -6392,11 +7821,244 @@ function showLobby(view = "menu") {
     if (field && !field.value) field.value = storedName;
   }
   renderLobby();
+  renderNetChrome();
 }
 
 function closeLobby() {
   const modal = $("#lobbyModal");
   if (modal) modal.hidden = true;
+  renderNetChrome();
+}
+
+function canInviteFriends() {
+  return Boolean(state && !isNetworked() && $("#lobbyModal")?.hidden !== false);
+}
+
+function renderWatcherChip() {
+  const chip = $("#watcherChip");
+  if (!chip) return;
+  const list = currentViewers();
+  chip.hidden = !isNetworked() || list.length === 0;
+  const pop = $("#watcherPop");
+  if (chip.hidden) {
+    if (pop) pop.hidden = true;
+    return;
+  }
+  if ($("#watcherCount")) $("#watcherCount").textContent = String(list.length);
+  chip.title = t("watch.count", { n: list.length });
+  chip.setAttribute("aria-label", t("watch.title"));
+  const node = $("#watcherList");
+  if (node) {
+    node.innerHTML = list.length
+      ? list.map((viewer) => {
+        const self = Boolean(net?.viewer) && viewer.name === net?.name;
+        const label = viewer.queued ? `${viewer.name} · ${t("watch.queued")}` : viewer.name;
+        return `<li class="${self ? "self" : ""}">${escapeHTML(self ? t("watch.you", { name: label }) : label)}</li>`;
+      }).join("")
+      : `<li class="watcher-empty">${escapeHTML(t("watch.empty"))}</li>`;
+  }
+}
+
+function renderQueuedBanner() {
+  const banner = $("#queuedBanner");
+  if (!banner) return;
+  const active = isClient() && net?.queued && Number.isInteger(net.queuedSeat);
+  banner.hidden = !active;
+  if (!active) return;
+  const key = net.joinAfter === "round" ? "queued.bannerRound" : net.joinAfter === "match" ? "queued.bannerMatch" : "queued.banner";
+  const text = $("#queuedBannerText");
+  if (text) text.textContent = t(key, { seat: seatName(net.queuedSeat) });
+}
+
+let joinPopupConnId = null;
+
+function hideJoinRequestPopup() {
+  const pop = $("#joinRequestPop");
+  if (pop) pop.hidden = true;
+  joinPopupConnId = null;
+}
+
+function renderJoinRequestPopup() {
+  const pop = $("#joinRequestPop");
+  if (!pop) return;
+  const requests = pendingList().filter((request) => !dismissedJoinRequests.has(request.connId));
+  const eligible = isHost()
+    && net?.started
+    && requests.length > 0
+    && $("#lobbyModal")?.hidden !== false
+    && $("#inviteModal")?.hidden !== false;
+  if (!eligible) {
+    pop.hidden = true;
+    joinPopupConnId = null;
+    return;
+  }
+  const request = requests[0];
+  const reclaim = findReclaimSeat(request.name);
+  const seat = reclaim > 0 ? reclaim : findBotSeat();
+  const boundary = joinBoundary();
+  const many = requests.length > 1;
+  joinPopupConnId = request.connId;
+  pop.hidden = false;
+  pop.dataset.conn = request.connId;
+  if ($("#joinRequestTitle")) {
+    $("#joinRequestTitle").textContent = many
+      ? t("joinRequest.titleMany", { n: requests.length })
+      : t("joinRequest.title", { name: request.name });
+  }
+  if ($("#joinRequestBody")) {
+    const bodyKey = seat < 0 ? "joinRequest.bodyFull"
+      : boundary === "round" ? "joinRequest.bodyRound"
+      : boundary === "match" ? "joinRequest.bodyMatch"
+      : boundary === "trick" ? "joinRequest.bodyTrick"
+      : "joinRequest.bodyNow";
+    $("#joinRequestBody").textContent = t(bodyKey, {
+      name: request.name,
+      seat: seat >= 0 ? seatName(seat) : ""
+    });
+  }
+  const approve = $("#joinRequestApprove");
+  if (approve) approve.hidden = seat < 0;
+}
+
+function renderInviteSheet() {
+  const modal = $("#inviteModal");
+  if (!modal) return;
+  const starting = Boolean(inviteStarting);
+  const ready = Boolean(isHost() && net?.code && !starting);
+  const startingBlock = $("#inviteStarting");
+  if (startingBlock) startingBlock.hidden = !starting;
+  const errorBlock = $("#inviteError");
+  if (errorBlock) {
+    errorBlock.hidden = !inviteError;
+    errorBlock.textContent = inviteError;
+  }
+  const noticeBlock = $("#inviteNotice");
+  if (noticeBlock) {
+    noticeBlock.hidden = !inviteNotice;
+    noticeBlock.textContent = inviteNotice;
+  }
+  const retry = $("#inviteRetry");
+  if (retry) retry.hidden = !inviteError || starting;
+  const readyBlock = $("#inviteReady");
+  if (readyBlock) readyBlock.hidden = !ready;
+  if (!ready) return;
+  const code = formatRoomCode(net.code);
+  if ($("#inviteCode")) $("#inviteCode").textContent = code;
+  if ($("#invitePin")) $("#invitePin").textContent = roomPinPlain || t("invite.pinHidden");
+  const copyInfo = $("#inviteCopyInfo");
+  if (copyInfo) copyInfo.textContent = t("invite.copyInfo");
+  const pending = $("#invitePending");
+  if (pending) {
+    pending.innerHTML = pendingList().length || queuedList().length
+      ? pendingRowsMarkup()
+      : `<span class="pending-empty">${escapeHTML(t("invite.noPending"))}</span>`;
+  }
+  const seats = $("#inviteSeats");
+  if (seats) seats.innerHTML = lobbyRosterHTML(SEAT_PROFILES || []);
+  const pinCell = $("#invitePin");
+  if (pinCell) pinCell.dataset.pinSet = roomPinPlain ? "true" : "false";
+}
+
+async function hostCurrentMatch() {
+  if (!state || isNetworked() || isClient()) return false;
+  if (inviteStarting) return false;
+  inviteStarting = true;
+  inviteError = "";
+  inviteNotice = "";
+  renderInviteSheet();
+  const autoMic = prefs.autoAudio ? preloadAudio() : null;
+  const handle = preferredPlayerName() || loadPlayerName() || t("net.hostDefault");
+  let host = null;
+  try {
+    host = await openHostWithRetry({ name: handle, attempts: 4, ...hostPeerHandlers() });
+    net = {
+      role: "host",
+      host,
+      code: host.code,
+      name: handle,
+      epoch: nextHostEpoch(),
+      seq: 0,
+      started: true,
+      seatSeq: 0,
+      viewers: new Map(),
+      security: { approval: true, pinHash: null, pinSet: false, pinFails: 0, lockUntil: 0, suppressUntil: 0 }
+    };
+    MY_SEAT = 0;
+    queuedGuests = new Map();
+    dismissedJoinRequests = new Set();
+    let botIndex = 1;
+    SEAT_PROFILES = [0, 1, 2, 3].map((seat) => seat === 0
+      ? { seat, name: handle, kind: "host", connected: true, host: true, peerId: host.id, voice: false }
+      : { seat, name: `Bot ${botIndex++}`, kind: "bot", connected: true });
+    lobbyState = {
+      view: "host",
+      roomCode: host.code,
+      status: t("invite.ready"),
+      error: "",
+      players: SEAT_PROFILES,
+      hostName: handle,
+      started: true
+    };
+    await setRoomPin(generatePin(), { silent: true });
+    savePlayerName(handle);
+    saveMatch();
+    saveHostRecovery();
+    renderNetChrome();
+    renderAll();
+    renderInviteSheet();
+    publishState();
+    startStatePulse();
+    acquireHostWakeLock();
+    if (autoMic) autoMic.then((stream) => {
+      if (stream && isHost() && net?.started) maybeJoinAutoAudio();
+      else if (stream && !voice?.joined) releaseAutoAudio();
+    });
+    else maybeJoinAutoAudio();
+    audio?.play("win", 0);
+    try {
+      /* `?mode=solo` would suppress host recovery on the next boot. The room
+         is now decisive; strip solo/resume/demo markers from the same tab. */
+      const url = new URL(location.href);
+      url.searchParams.delete("mode");
+      url.searchParams.delete("resume");
+      url.searchParams.delete("demo");
+      url.searchParams.delete("selftest");
+      history.replaceState(null, "", url.toString());
+    } catch { /* URL may be unavailable */ }
+    return true;
+  } catch (error) {
+    try { host?.close(); } catch { /* ignore */ }
+    if (net) {
+      net = null;
+      SEAT_PROFILES = null;
+      MY_SEAT = 0;
+      lobbyState = null;
+    }
+    inviteError = t("invite.failed", { error: error?.type || error?.message || "host-timeout" });
+    audio?.play("click", 0);
+    return false;
+  } finally {
+    inviteStarting = false;
+    renderInviteSheet();
+    renderNetChrome();
+  }
+}
+
+function openInviteSheet() {
+  hideJoinRequestPopup();
+  if (!state) {
+    showLobby("menu");
+    return;
+  }
+  hideAllModals();
+  const modal = $("#inviteModal");
+  if (!modal) return;
+  modal.hidden = false;
+  inviteError = "";
+  inviteNotice = "";
+  renderInviteSheet();
+  audio?.play("click", 0);
+  if (!isHost()) hostCurrentMatch();
 }
 
 function isPanelRailMode() {
@@ -6412,6 +8074,7 @@ function setDockCollapsed(collapsed, options = {}) {
   if (!dock) return;
   dock.classList.toggle("dock-collapsed", Boolean(collapsed));
   prefs.dockCollapsed = Boolean(collapsed);
+  if (!options.silent) prefs.dockChosen = true;
   if (button) {
     button.textContent = collapsed ? "H" : "⌄";
     button.setAttribute("aria-expanded", String(!collapsed));
@@ -6498,6 +8161,7 @@ function closePanelSheet() {
 }
 
 function renderNetChrome() {
+  document.body.classList.toggle("is-queued", Boolean(isClient() && net?.queued));
   const chip = $("#netChip");
   if (chip) {
     if (isNetworked()) {
@@ -6506,7 +8170,7 @@ function renderNetChrome() {
       const compact = window.matchMedia("(max-width: 520px)").matches;
       const code = compact ? `${net.code.slice(0, 3)}-${net.code.slice(3)}` : formatRoomCode(net.code);
       chip.textContent = `${isHost() ? "◉" : "◇"} ${code}`;
-      chip.title = isHost() ? t("net.copyRoomInfo") : t("net.copyLink");
+      chip.title = isHost() ? t("invite.roomInfo") : t("net.copyLink");
     } else {
       chip.hidden = true;
       chip.textContent = "";
@@ -6522,6 +8186,10 @@ function renderNetChrome() {
   }
   const undo = $("#undoBtn");
   if (undo && isClient()) undo.disabled = true;
+  const resync = $("#resyncBtn");
+  if (resync) resync.hidden = !(isClient() && net?.started);
+  const pushState = $("#pushStateBtn");
+  if (pushState) pushState.hidden = !(isHost() && net?.started);
   const leave = $("#leaveRoomBtn");
   if (leave) leave.hidden = !isNetworked();
   const leaveTop = $("#leaveRoomTopBtn");
@@ -6532,8 +8200,25 @@ function renderNetChrome() {
   if (chatTool) chatTool.hidden = !isNetworked();
   const voiceCall = $("#voiceCallBtn");
   if (voiceCall) voiceCall.hidden = !isNetworked();
+  const inviteTop = $("#inviteTopBtn");
+  if (inviteTop) inviteTop.hidden = !canInviteFriends();
+  const inviteAction = $("#inviteBtn");
+  if (inviteAction) inviteAction.hidden = !canInviteFriends();
+  const waiting = isHost() ? pendingRequests.size + queuedGuests.size : 0;
+  const joinAlert = $("#joinAlertBtn");
+  if (joinAlert) {
+    joinAlert.hidden = waiting === 0;
+    const label = $("#joinAlertText");
+    if (label) label.textContent = t("net.pendingCount", { n: waiting });
+    joinAlert.title = t("net.pendingTitle");
+    joinAlert.setAttribute("aria-label", t("net.pendingTitle"));
+  }
   renderChatBadge();
+  renderBlindPick();
   renderPanelRail();
+  renderQueuedBanner();
+  renderWatcherChip();
+  renderJoinRequestPopup();
 }
 
 async function copyText(text, message) {
@@ -6623,6 +8308,15 @@ async function shareRoomInfo() {
     }
   }
   await copyRoomInfo();
+}
+
+function retryGuestJoin() {
+  const code = lobbyState?.roomCode || net?.code || "";
+  if (!code) return;
+  const name = lobbyState?.name || net?.name || loadPlayerName();
+  const pin = net?.pin || lobbyState?.pin || "";
+  const token = loadRejoinSeat(code)?.token || "";
+  joinRoom(code, name, pin, token, { auto: true });
 }
 
 async function probeRoom(code, pin = "") {
@@ -6774,7 +8468,7 @@ function renderDraft() {
     modal.hidden = true;
     return;
   }
-  const mode = state ? state.draftMode === true : prefs.draftMode === true;
+  const mode = state ? state.blindPick === true : prefs.blindPick === true;
   $$("[data-draft-toggle]").forEach((input) => { input.checked = mode; });
   const wrap = $("#draftToggleWrap");
   if (wrap) wrap.hidden = isClient();
@@ -6799,10 +8493,12 @@ function renderDraft() {
     draftSent = false;
   }
   modal.hidden = false;
+  const title = $("#draftTitle");
+  if (title) title.textContent = t(state.blindPick ? "draft.blindTitle" : "draft.title");
   const meta = $("#draftMeta");
   if (meta) {
     meta.textContent = humanTurn
-      ? t("draft.metaYou", {
+      ? t(state.blindPick ? "draft.blindMeta" : "draft.metaYou", {
         n: state.hands[MY_SEAT]?.length ?? 0,
         step: Math.min(state.draftCycle + 1, 4),
         pool: state.draftPool?.length ?? 0
@@ -6812,14 +8508,16 @@ function renderDraft() {
   const pool = $("#draftPool");
   if (pool) {
     pool.innerHTML = (state.draftPool || []).map((tile) => (
-      `<button type="button" class="draft-tile ${tile.color === "r" ? "red" : "black"} ${draftSelection.includes(tile.id) ? "selected" : ""}" data-draft-id="${tile.id}" ${humanTurn ? "" : "disabled"}>${tile.hanzi}</button>`
+      state.blindPick
+        ? `<button type="button" class="draft-tile blind ${draftSelection.includes(tile.id) ? "selected" : ""}" data-draft-id="${tile.id}" aria-label="Face-down card" ${humanTurn ? "" : "disabled"}><span class="draft-back" aria-hidden="true">◈</span></button>`
+        : `<button type="button" class="draft-tile ${tile.color === "r" ? "red" : "black"} ${draftSelection.includes(tile.id) ? "selected" : ""}" data-draft-id="${tile.id}" ${humanTurn ? "" : "disabled"}>${tile.hanzi}</button>`
     )).join("");
   }
   const confirm = $("#draftConfirm");
   if (confirm) {
     confirm.disabled = !humanTurn || draftSelection.length !== 2;
     confirm.textContent = state.turn === MY_SEAT
-      ? (draftSent ? t("draft.waitingShort") : t("draft.confirm"))
+      ? (draftSent ? t("draft.waitingShort") : t(state.blindPick ? "draft.blindConfirm" : "draft.confirm"))
       : t("draft.waitingShort");
   }
 }
@@ -6994,6 +8692,8 @@ function preloadAudio() {
 
 function joinAudioWithStream(stream) {
   if (!stream || voice?.joined || !isNetworked()) return false;
+  /* A queued guest is not seated yet; wait for welcome/promotion. */
+  if (isClient() && (!net?.started || MY_SEAT < 1 || !SEAT_PROFILES)) return false;
   const engine = ensureVoice();
   engine.attach({
     peer: currentVoicePeer(),
@@ -7004,6 +8704,12 @@ function joinAudioWithStream(stream) {
   const joined = engine.joinWithStream(stream);
   if (joined) autoAudioStream = stream;
   return joined;
+}
+
+function maybeJoinAutoAudio() {
+  if (!prefs.autoAudio || voice?.joined || !isNetworked()) return false;
+  if (isClient() && (!net?.started || MY_SEAT < 1 || !SEAT_PROFILES)) return false;
+  return autoAudioStream ? joinAudioWithStream(autoAudioStream) : false;
 }
 
 function releaseAutoAudio() {
@@ -7673,15 +9379,33 @@ function seatTangent(seat) {
 }
 
 function handPosition(seat, index, count) {
-  const total = seat === 0
-    ? Math.min(1.56, Math.max(0, count - 1) * 0.225)
-    : Math.min(1.08, Math.max(0, count - 1) * 0.15);
+  /* The owner's hand is one straight row along the seat tangent: no fan
+     overlap, no second row, and no collision with the compact fan of the
+     neighbouring seat. Opponents keep the smaller face-down fan. */
+  if (seat === MY_SEAT) {
+    const scale = cardScale();
+    const step = 0.98 * scale;
+    const offset = (index - (count - 1) / 2) * step;
+    /* Larger cards pull the row slightly inward so the outer edge can never
+       hang off the rim. */
+    const radius = HAND_RADIUS - Math.max(0, scale - 1) * 2.5;
+    const base = seatVector(seat, radius);
+    const tangent = seatTangent(seat);
+    return {
+      x: base.x + tangent.x * offset,
+      y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.012,
+      z: base.z + tangent.z * offset,
+      angle: SEATS[seat].angle
+    };
+  }
+  const scale = cardScale();
+  const total = Math.min(1.6, Math.max(0, count - 1) * 0.18 * scale);
   const offsetAngle = count > 1 ? (index - (count - 1) / 2) * (total / (count - 1)) : 0;
   const angle = SEATS[seat].angle + offsetAngle;
-  const radius = HAND_RADIUS + Math.abs(offsetAngle) * 0.24;
+  const radius = HAND_RADIUS + Math.abs(offsetAngle) * 0.24 + Math.max(0, scale - 1) * 0.3;
   return {
     x: Math.sin(angle) * radius,
-    y: TABLE_Y + TILE_THICKNESS / 2 + 0.012,
+    y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.012,
     z: Math.cos(angle) * radius,
     angle
   };
@@ -7692,14 +9416,15 @@ function centerPosition(seat, index, count) {
   const rows = Math.ceil(count / cols);
   const col = index % cols;
   const row = Math.floor(index / cols);
-  const tangentOffset = (col - (cols - 1) / 2) * CENTER_TILE_SPACING;
-  const radialOffset = (row - (rows - 1) / 2) * CENTER_TILE_SPACING;
+  const spacing = CENTER_TILE_SPACING * cardScale();
+  const tangentOffset = (col - (cols - 1) / 2) * spacing;
+  const radialOffset = (row - (rows - 1) / 2) * spacing;
   const base = seatVector(seat, CENTER_RADIUS);
   const tangent = seatTangent(seat);
   const radial = { x: Math.sin(SEATS[seat].angle), z: Math.cos(SEATS[seat].angle) };
   return {
     x: base.x + tangent.x * tangentOffset + radial.x * radialOffset,
-    y: TABLE_Y + TILE_THICKNESS / 2 + 0.012,
+    y: TABLE_Y + (TILE_THICKNESS * cardScale()) / 2 + 0.012,
     z: base.z + tangent.z * tangentOffset + radial.z * radialOffset
   };
 }
@@ -7721,11 +9446,12 @@ function captureGroupsFor(game, seat) {
 }
 
 function capturePosition(seat, pileIndex = 0, within = 0, pileCount = 1) {
-  const step = CAPTURE_PILE_SPACING / CAPTURE_RADIUS;
+  const scale = cardScale();
+  const step = (CAPTURE_PILE_SPACING * scale) / CAPTURE_RADIUS;
   const angle = SEATS[seat].angle + (pileIndex - (pileCount - 1) / 2) * step;
   return {
     x: Math.sin(angle) * CAPTURE_RADIUS,
-    y: TABLE_Y + TILE_THICKNESS / 2 + 0.014 + within * 0.036,
+    y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.014 + within * 0.036 * scale,
     z: Math.cos(angle) * CAPTURE_RADIUS
   };
 }
@@ -8276,9 +10002,10 @@ async function createScene() {
     if (placement.kind === "hand") {
       const custom = handLayout.get(placement.id) || placement.custom;
       if (custom) {
+        const scale = cardScale();
         return {
           x: custom.x,
-          y: TABLE_Y + TILE_THICKNESS / 2 + 0.012,
+          y: TABLE_Y + (TILE_THICKNESS * scale) / 2 + 0.012,
           z: custom.z,
           angle: custom.a ?? custom.angle
         };
@@ -8305,6 +10032,8 @@ async function createScene() {
   function applyState(gameState, options = {}) {
     currentState = gameState;
     const map = placementMap(gameState);
+    const localSeat = Number.isInteger(gameState.mySeat) ? gameState.mySeat : (Number.isInteger(MY_SEAT) ? MY_SEAT : 0);
+    const scale = cardScale();
     const duration = options.duration ?? 620;
     const arc = options.arc ?? 0.26;
     for (const record of tileObjects.values()) {
@@ -8317,6 +10046,7 @@ async function createScene() {
       record.kind = placement.kind;
       record.index = placement.index;
       record.pileIndex = placement.pileIndex || 0;
+      record.root.scale.setScalar(scale);
       const target = positionFor(placement);
       orient(record, placement.seat, placement.angle);
       moveTile(record, target, options.deal ? 560 : duration, options.deal ? 0.75 : arc);
@@ -8343,10 +10073,13 @@ async function createScene() {
         record.faceAnim = null;
       }
       const entries = [...map.entries()];
+      const localSeat = Number.isInteger(gameState.mySeat) ? gameState.mySeat : (Number.isInteger(MY_SEAT) ? MY_SEAT : 0);
+      const scale = cardScale();
       entries.forEach(([id, placement], index) => {
         const record = tileObjects.get(id);
         if (!record) return;
         const target = positionFor(placement);
+        record.root.scale.setScalar(scale);
         setTimeout(() => {
           orient(record, placement.seat, placement.angle);
           moveTile(record, target, 520, 0.9);
@@ -8393,6 +10126,11 @@ async function createScene() {
       x: rect.left + ((point.x + 1) / 2) * rect.width,
       y: rect.top + ((1 - point.y) / 2) * rect.height
     };
+  }
+
+  function tileScale(id) {
+    const record = tileObjects.get(id);
+    return record ? record.root.scale.x : null;
   }
 
   function pick(event) {
@@ -8507,7 +10245,7 @@ async function createScene() {
     handDrag.point = target;
     const record = handDrag.record;
     record.anim = null;
-    record.root.position.set(target.x, TABLE_Y + TILE_THICKNESS / 2 + 0.26, target.z);
+    record.root.position.set(target.x, TABLE_Y + (TILE_THICKNESS * cardScale()) / 2 + 0.26, target.z);
     record.root.rotation.y = -target.angle;
     const hint = $("#playHint");
     if (hint) hint.hidden = Math.hypot(target.x, target.z) >= HAND_PLAY_RADIUS;
@@ -8580,7 +10318,7 @@ async function createScene() {
       }
       handLayout.set(record.id, { x: point.x, z: point.z, angle: point.angle });
       record.anim = null;
-      record.root.position.set(point.x, TABLE_Y + TILE_THICKNESS / 2 + 0.012, point.z);
+      record.root.position.set(point.x, TABLE_Y + (TILE_THICKNESS * cardScale()) / 2 + 0.012, point.z);
       record.root.rotation.y = -point.angle;
       if (typeof onHandLayoutChange === "function") onHandLayoutChange();
       if (typeof renderSelection === "function") renderSelection();
@@ -8962,6 +10700,7 @@ async function createScene() {
     setSeatLayout,
     getSeatLayout(seat) { return seatLayouts.get(Number(seat)) || null; },
     tileScreen,
+    tileScale,
     refreshFraming() { return fitTopFraming(false); },
     framing() {
       const rect = canvas.getBoundingClientRect();
@@ -9046,11 +10785,15 @@ function bindEvents() {
     const panel = $("#rankReference");
     const button = $("#rankReferenceBtn");
     if (panel && !panel.hidden && !panel.contains(event.target) && !button?.contains(event.target)) setRankReference(false);
+    const watcherPop = $("#watcherPop");
+    const watcherChip = $("#watcherChip");
+    if (watcherPop && !watcherPop.hidden && !watcherPop.contains(event.target) && !watcherChip?.contains(event.target)) watcherPop.hidden = true;
     const pinPanel = $("#pinInfoPanel");
     const pinButton = $("#hostPinInfo");
     if (pinPanel && !pinPanel.hidden && !pinPanel.contains(event.target) && !pinButton?.contains(event.target)) setPinInfo(false);
   });
   $$("button[data-font-size]").forEach((button) => button.addEventListener("click", () => applyFontSize(button.dataset.fontSize)));
+  $$("button[data-card-size]").forEach((button) => button.addEventListener("click", () => applyCardSize(button.dataset.cardSize)));
   $$("button[data-theme-choice]").forEach((button) => button.addEventListener("click", () => applyTheme(button.dataset.themeChoice)));
   $("#displayReset")?.addEventListener("click", resetDisplay);
   $("#soundTest")?.addEventListener("click", () => {
@@ -9106,6 +10849,15 @@ function bindEvents() {
   $$("[data-draft-toggle]").forEach((input) => input.addEventListener("change", () => {
     setDraftMode(input.checked);
   }));
+  $$("[data-autoplay-toggle]").forEach((input) => input.addEventListener("change", () => {
+    setAutoplay(input.checked);
+  }));
+  $$("[data-blind-pick]").forEach((input) => input.addEventListener("change", () => {
+    setBlindPick(input.checked);
+  }));
+  $("#autoplayBtn")?.addEventListener("click", () => {
+    setAutoplay(!prefs.autoplay);
+  });
   $("#draftChip")?.addEventListener("click", () => {
     const current = state ? state.draftMode === true : prefs.draftMode === true;
     setDraftMode(!current);
@@ -9143,6 +10895,11 @@ function bindEvents() {
   $("#clearBtn")?.addEventListener("click", clearSelection);
 
   $("#lobbyBtn")?.addEventListener("click", () => {
+    if (isHost() && net?.started) {
+      openInviteSheet();
+      audio?.play("click", 0);
+      return;
+    }
     if (isNetworked()) {
       if (lobbyState) showLobby(lobbyState.view === "table" ? "waiting" : lobbyState.view);
       else showLobby(isHost() ? "host" : "waiting");
@@ -9152,9 +10909,45 @@ function bindEvents() {
     audio?.play("click", 0);
   });
   $("#netChip")?.addEventListener("click", () => {
-    if (isHost()) copyRoomInfo();
+    if (isHost() && net?.started) openInviteSheet();
+    else if (isHost()) copyRoomInfo();
     else copyInvite();
   });
+  $("#joinAlertBtn")?.addEventListener("click", openInviteSheet);
+  $("#watcherChip")?.addEventListener("click", () => {
+    const pop = $("#watcherPop");
+    if (pop) pop.hidden = !pop.hidden;
+  });
+  $("#joinRequestApprove")?.addEventListener("click", () => {
+    const connId = joinPopupConnId;
+    hideJoinRequestPopup();
+    if (connId) approvePending(connId);
+    renderJoinRequestPopup();
+  });
+  $("#joinRequestViewer")?.addEventListener("click", () => {
+    const connId = joinPopupConnId;
+    hideJoinRequestPopup();
+    if (connId) approvePending(connId, "viewer");
+    renderJoinRequestPopup();
+  });
+  $("#joinRequestDeny")?.addEventListener("click", () => {
+    const connId = joinPopupConnId;
+    hideJoinRequestPopup();
+    if (connId) denyPending(connId);
+    renderJoinRequestPopup();
+  });
+  $("#joinRequestLater")?.addEventListener("click", () => {
+    if (joinPopupConnId) dismissedJoinRequests.add(joinPopupConnId);
+    hideJoinRequestPopup();
+  });
+  $("#inviteTopBtn")?.addEventListener("click", openInviteSheet);
+  $("#inviteBtn")?.addEventListener("click", openInviteSheet);
+  $("#resyncBtn")?.addEventListener("click", () => requestResync());
+  $("#pushStateBtn")?.addEventListener("click", () => pushLatestState());
+  $("#inviteCopyInfo")?.addEventListener("click", copyRoomInfo);
+  $("#inviteCopyLink")?.addEventListener("click", copyInvite);
+  $("#inviteShare")?.addEventListener("click", shareRoomInfo);
+  $("#inviteRetry")?.addEventListener("click", () => hostCurrentMatch());
   $("#copyRoomBtn")?.addEventListener("click", copyRoomInfo);
   $("#lobbySolo")?.addEventListener("click", backToSolo);
   $("#lobbyResumeSaved")?.addEventListener("click", resumeSavedMatch);
@@ -9236,7 +11029,7 @@ function bindEvents() {
   $("#dockFold")?.addEventListener("click", () => {
     const dock = $("#handDock");
     if (!dock) return;
-    setDockCollapsed(!dock.classList.contains("dock-collapsed"));
+    setDockCollapsed(!dock.classList.contains("dock-collapsed"), { user: true });
   });
   window.matchMedia("(max-width: 1024px), (pointer: coarse)").addEventListener("change", renderPanelRail);
   window.matchMedia("(max-width: 520px)").addEventListener("change", renderNetChrome);
@@ -9286,17 +11079,33 @@ function bindEvents() {
   });
   $("#lobbyApproveAll")?.addEventListener("click", approveAllPending);
   $("#lobbyPending")?.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-approve], [data-viewer], [data-deny], [data-pause]");
+    const button = event.target.closest("[data-approve], [data-viewer], [data-deny], [data-pause], [data-unqueue]");
     if (!button) return;
-    const row = button.closest("[data-conn]");
+    const row = button.closest("[data-conn], [data-queue]");
     if (!row) return;
-    const connId = row.dataset.conn;
+    const connId = row.dataset.conn || row.dataset.queue;
     if (button.hasAttribute("data-approve")) approvePending(connId);
     else if (button.hasAttribute("data-viewer")) approvePending(connId, "viewer");
     else if (button.hasAttribute("data-pause")) {
       pauseJoinRequests();
       if (pendingRequests.has(connId)) denyPending(connId, "suppressed");
-    } else denyPending(connId);
+    } else if (button.hasAttribute("data-unqueue")) clearQueued(connId, "denied");
+    else denyPending(connId);
+  });
+  $("#invitePending")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-approve], [data-viewer], [data-deny], [data-pause], [data-unqueue]");
+    if (!button) return;
+    const row = button.closest("[data-conn], [data-queue]");
+    if (!row) return;
+    const connId = row.dataset.conn || row.dataset.queue;
+    if (!connId) return;
+    if (button.hasAttribute("data-approve")) approvePending(connId);
+    else if (button.hasAttribute("data-viewer")) approvePending(connId, "viewer");
+    else if (button.hasAttribute("data-pause")) {
+      pauseJoinRequests();
+      if (pendingRequests.has(connId)) denyPending(connId, "suppressed");
+    } else if (button.hasAttribute("data-unqueue")) clearQueued(connId, "denied");
+    else denyPending(connId);
   });
   $("#lobbyStartBtn")?.addEventListener("click", () => {
     startHostedMatch();
@@ -9309,11 +11118,13 @@ function bindEvents() {
       });
     }
   });
+  $("#lobbyRetryBtn")?.addEventListener("click", retryGuestJoin);
   $("#lobbyWaitLeave")?.addEventListener("click", requestLeaveRoom);
   $("#lobbyResumeBtn")?.addEventListener("click", closeLobby);
   $("#lobbySoloFromLost")?.addEventListener("click", backToSolo);
   $("#leaveRoomBtn")?.addEventListener("click", requestLeaveRoom);
   $("#leaveRoomTopBtn")?.addEventListener("click", requestLeaveRoom);
+  $("#queuedLeaveBtn")?.addEventListener("click", requestLeaveRoom);
   $("#leaveCancel")?.addEventListener("click", () => closeModal("leaveModal"));
   $("#leaveConfirm")?.addEventListener("click", () => {
     closeModal("leaveModal");
@@ -9422,6 +11233,35 @@ function bindEvents() {
     savePrefs();
   });
 
+  let lastTouchEnd = 0;
+  let lastTouchStart = 0;
+  document.addEventListener("touchstart", (event) => {
+    const now = Date.now();
+    const guarded = event.target.closest?.("input, textarea, select");
+    /* Cancel the second tap at touchstart, not just touchend. iPadOS ignores
+       user-scalable=no and may scroll the visual viewport before the end
+       event, which is what leaves the white band under the table. */
+    if (!guarded && now - lastTouchStart < 320) event.preventDefault();
+    lastTouchStart = now;
+  }, { passive: false });
+  document.addEventListener("touchmove", (event) => {
+    if (event.touches.length > 1) event.preventDefault();
+  }, { passive: false });
+  document.addEventListener("touchend", (event) => {
+    const now = Date.now();
+    const guarded = event.target.closest?.("input, textarea, select");
+    /* Safari ignores user-scalable=no; cancelling the second touchend also on
+       the canvas is what stops the double-tap page zoom/white viewport. The
+       table's own double-tap is detected from pointerup before this. */
+    if (!guarded && now - lastTouchEnd < 320) event.preventDefault();
+    lastTouchEnd = now;
+  }, { passive: false });
+  ["gesturestart", "gesturechange"].forEach((type) => {
+    document.addEventListener(type, (event) => event.preventDefault(), { passive: false });
+  });
+  window.visualViewport?.addEventListener("resize", () => {
+    if (window.scrollY || document.documentElement.scrollTop) window.scrollTo(0, 0);
+  });
   window.addEventListener("pointerdown", () => { audio?.resume(); audio?.play("click", 0); }, { once: true });
   window.addEventListener("keydown", () => audio?.resume(), { once: true });
   window.addEventListener("beforeunload", saveMatch);
@@ -9435,6 +11275,7 @@ function bindEvents() {
       showLobby(lobbyState.view);
     }
     if (isHost()) acquireHostWakeLock();
+    if (isClient() && net?.started) requestResync({ silent: true });
     checkForUpdate();
   });
   window.addEventListener("pagehide", (event) => {
@@ -9454,10 +11295,23 @@ function bindEvents() {
 }
 
 async function boot() {
+  const netemSpec = new URLSearchParams(location.search).get("netem");
+  if (netemSpec) {
+    const netemConfig = {};
+    for (const part of netemSpec.split(",")) {
+      const [key, value] = part.split(":");
+      if (key) netemConfig[key.trim()] = Number(value);
+    }
+    configureNetem(netemConfig);
+    console.info("network impairment enabled", netemConfig);
+  }
   loadPrefs();
   loadStats();
   applyFontSize(prefs.fontSize, { silent: true });
+  applyCardSize(prefs.cardSize, { silent: true });
   applyTheme(prefs.theme, { silent: true });
+  renderAutoplay();
+  renderBlindPick();
   audio = new StudioAudio();
   applyLanguage(LANG);
   bindEvents();
@@ -9466,7 +11320,7 @@ async function boot() {
   renderRuleSelects();
   chatOpen = prefs.chatOpen !== false;
   setChatOpen(chatOpen);
-  setDockCollapsed(prefs.dockCollapsed !== false, { silent: true });
+  setDockCollapsed(prefs.dockCollapsed === true, { silent: true });
   renderChat();
 
   const params = new URLSearchParams(location.search);
@@ -9575,7 +11429,8 @@ async function boot() {
       const explicitName = cleanGuestName(params.get("name") || "", "");
       const explicitPin = normalisePin(params.get("pin") || "");
       const rejoin = loadRejoinSeat(autoRoom);
-      if (rejoin) {
+      const rejoinMatchesName = Boolean(rejoin && (!explicitName || !rejoin.name || explicitName === rejoin.name));
+      if (rejoin && rejoinMatchesName) {
         const rejoinName = restoreName || rejoin.name || explicitName || loadPlayerName();
         joinRoom(autoRoom, rejoinName, "", rejoin.token);
         return;
@@ -9628,13 +11483,17 @@ window.LeabTui = {
   getCamera: () => scene?.getState?.() || null,
   getFraming: () => scene?.framing?.() || null,
   applyFontSize,
+  applyCardSize,
   applyTheme,
-  getDisplay: () => ({ fontSize: prefs.fontSize, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),
+  setAutoplay,
+  setBlindPick,
+  getDisplay: () => ({ fontSize: prefs.fontSize, cardSize: prefs.cardSize, autoplay: prefs.autoplay, theme: prefs.theme, fontSizes: FONT_SIZES.map((entry) => entry.id), cardSizes: CARD_SIZES.map((entry) => entry.id), themes: THEMES.map((entry) => entry.id) }),
   checkUpdate: (force = false) => checkForUpdate({ force }),
   exportHandSlots: () => scene?.exportHandSlots?.() || [],
   publishHandLayout: (slots) => publishHandLayout(slots),
   getSeatLayout: (seat) => scene?.getSeatLayout?.(seat) || null,
   getTileScreen: (id) => scene?.tileScreen?.(id) || null,
+  getTileScale: (id) => scene?.tileScale?.(id) ?? null,
   getVersionState: () => ({ current: APP.version, available: availableVersion, checkedAt: (() => { try { return JSON.parse(localStorage.getItem(VERSION_CHECK_KEY) || "null")?.at || 0; } catch { return 0; } })() }),
   openRanks: () => setRankReference(true),
   closeRanks: () => setRankReference(false),
@@ -9654,10 +11513,19 @@ window.LeabTui = {
       mySeat: MY_SEAT,
       started: Boolean(net.started),
       viewer: Boolean(net.viewer) || MY_SEAT < 0,
+      queuedSeat: net.queuedSeat ?? null,
       players: serialiseRoster(),
-      viewers: isHost() ? serialiseViewers() : [],
+      viewers: isHost() ? serialiseViewers() : (Array.isArray(net.viewers) ? net.viewers : []),
       peerId: isHost() ? net.host?.id : net.client?.hostId,
       pending: isHost() ? pendingList() : [],
+      queued: isHost() ? queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })) : Boolean(net.queued),
+      lastSeq: isClient() ? (net.lastSeq || 0) : null,
+      epoch: net.epoch || 0,
+      seq: isHost() ? (net.seq || 0) : null,
+      lastStateAt: isClient() ? (net.lastStateAt || 0) : null,
+      lastMessageAt: isClient() ? (net.lastMessageAt || 0) : null,
+      connections: isHost() && net.host?.connectionCount ? net.host.connectionCount() : null,
+      seats: isHost() ? (SEAT_PROFILES || []).map((profile) => (profile ? { seat: profile.seat, kind: profile.kind, connId: profile.connId || null, open: Boolean(profile.connId && net.host?.connections?.has?.(profile.connId)) } : null)) : null,
       approval: isHost() ? Boolean(net.security?.approval) : null,
       pinSet: isHost() ? Boolean(net.security?.pinSet) : null,
       lastPublished
@@ -9665,9 +11533,15 @@ window.LeabTui = {
     openLobby: () => showLobby(isNetworked() ? (isHost() ? "host" : "waiting") : "menu"),
     closeLobby,
     host: (name) => createHostRoom(name),
+    hostCurrentMatch: () => hostCurrentMatch(),
+    openInvite: openInviteSheet,
     join: (code, name, pin = "") => joinRoom(code, name, pin),
     start: () => startHostedMatch(),
     pending: () => pendingList().map((request) => ({ connId: request.connId, name: request.name, at: request.at })),
+    queued: () => queuedList().map((entry) => ({ name: entry.name, seat: entry.seat, joinAfter: entry.joinAfter })),
+    resync: () => requestResync(),
+    pushState: () => pushLatestState(),
+    setNetem: (config) => configureNetem(config),
     approve: approvePending,
     deny: denyPending,
     pauseJoins: () => pauseJoinRequests(),
@@ -9683,6 +11557,21 @@ window.LeabTui = {
     copyInvite,
     roomInfo: roomInfoText,
     probe: (code, pin = "") => probeRoom(code, pin),
+    debug: () => ({
+      netRole: net?.role || null,
+      lobbyView: lobbyState?.view || null,
+      status: lobbyState?.status || "",
+      lastNetError,
+      lastNetStage,
+      joinStage,
+      hostRejoinAttempts,
+      joinToken,
+      mySeat: MY_SEAT,
+      phase: state?.phase || null,
+      turn: state?.turn ?? null,
+      welcomed: Boolean(net?.welcomed),
+      recovering: Boolean(net?.recovering)
+    }),
     diagnostics: diagnosticsText
   },
   chat: {
