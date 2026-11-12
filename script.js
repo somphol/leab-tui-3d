@@ -8314,7 +8314,11 @@ function renderNetChrome() {
   if (inviteTop) inviteTop.hidden = !canInviteFriends();
   const joinTop = $("#joinTopBtn");
   if (joinTop) {
-    joinTop.hidden = isClient() || $("#lobbyModal")?.hidden === false;
+    /* Once you are in a room - host or guest - joining another one is not a
+       thing you can do; leave first. Hide the pill instead of silently
+       ignoring the click. */
+    joinTop.hidden = isNetworked() || $("#lobbyModal")?.hidden === false;
+    joinTop.disabled = isNetworked();
     joinTop.title = t("net.joinTopTitle");
     joinTop.setAttribute("aria-label", t("net.joinTopTitle"));
   }
