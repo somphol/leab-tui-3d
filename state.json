@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.18",
-  "version": "1.10.18",
+  "projectVersion": "1.10.19",
+  "version": "1.10.19",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -451,9 +451,14 @@
       "version": "1.10.18",
       "date": "2026-11-11",
       "summary": "Thai turn results name the Chinese tile and its Thai meaning; the turn-result dialog can auto-close in 5-30 s."
+    },
+    {
+      "version": "1.10.19",
+      "date": "2026-11-11",
+      "summary": "Rounds score by captured tiles against par eight, with no target and no match end."
     }
   ],
-  "releaseNotes": "1.10.18 makes the Thai turn result bilingual: each compared set and the winner line now carry the tile's Chinese character and Thai meaning, e.g. \"คู่แบ้ดำ (馬 · ม้า)\", and the turn-result dialog gains an opt-in auto-close - a checkbox (off by default) with a 5-30 second dropdown and a visible countdown.",
+  "releaseNotes": "1.10.19 replaces the match target with tile scoring: every seat starts a round with eight tiles, eight back is even, and each tile above or below is one point, so 16 tiles is +8 and a 32-tile Chuan is +24. Play no longer ends at 20/50/100 - scores accumulate until players leave the room. The round-summary auto-start delay is also adjustable from 5 to 30 seconds instead of a fixed 30.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
