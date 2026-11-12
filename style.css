@@ -450,6 +450,9 @@ a:hover { text-decoration: underline; }
   font-weight: 700;
 }
 .invite-top .invite-icon { font-size: calc(16px * var(--fs-scale)); line-height: 1; }
+/* Joining a room is the everyday path; the invite pill is the loud one. */
+.join-top { border-color: rgba(120, 170, 190, 0.55); color: var(--ink); font-weight: 600; }
+.join-top .invite-icon { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(120, 170, 190, 0.16); font-family: var(--serif); font-size: calc(13px * var(--fs-scale)); color: var(--ink); }
 .voice-call {
   border-color: rgba(216, 178, 107, 0.8);
   background: linear-gradient(180deg, rgba(216, 178, 107, 0.3), rgba(216, 178, 107, 0.12));
@@ -1646,6 +1649,8 @@ body.is-queued #actionsPanel { display: none !important; }
 @media (max-width: 640px) {
   .invite-top .invite-label { display: none; }
   .invite-top { padding: 0 10px; }
+  .join-top .join-label { display: none; }
+  .join-top { padding: 0 10px; }
   .invite-code-row { grid-template-columns: 1fr; }
   .invite-actions .btn { flex: 1 1 100%; }
 }
