@@ -2,6 +2,17 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.26] — 2026-11-12
+
+### Changed
+
+- **Trick is now Turn across code, UI and docs.** The phase counter is `state.turnNo` (the acting seat keeps `state.turn`): `beginTurn`, `leadTurn`, `resolveTurn`, `lastTurn`, `turnArchive`, `captureTurn`, `#turnResultModal` and every `turn-*` class. Saves written before the rename are adopted on load; the genre phrase "trick-taking" is unchanged.
+- **Chuan copy states +24**, matching par-eight scoring (32 tiles − 8).
+
+### Fixed
+
+- **iPad guests can leave the room again.** The tablet media query hid the Leave room pill; it now compacts to a 40 px icon with its label hidden, matching Invite.
+
 ## [1.10.25] — 2026-11-11
 
 ### Fixed

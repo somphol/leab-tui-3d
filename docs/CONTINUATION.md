@@ -1,12 +1,12 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-11 · release 1.10.25**
+**As of 2026-11-12 · release 1.10.26**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release: **1.10.25** — result auto-close fires at zero
+- Last release: **1.10.26** — Turn terminology, guest Leave on iPad, Chuan +24 copy
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
 - Feature train: `develop` — the 1.10.x train is merged; host-left recovery and own-hand tile sizing shipped in 1.10.17
 
@@ -84,6 +84,7 @@ Current table/network model:
 | 1.10.23 | Turn result is per player; autoplay waits only on the local sheet |
 | 1.10.24 | Host gates the next turn on its own result sheet |
 | 1.10.25 | Result auto-close closes at zero |
+| 1.10.26 | Trick→Turn rename; guest Leave pill on iPad; Chuan +24 |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),
