@@ -1,7 +1,7 @@
 # Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio
 
 [![Live demo](https://img.shields.io/badge/live-demo-d8b26b)](https://somphol.github.io/leab-tui-3d/)
-[![Release](https://img.shields.io/badge/release-v1.10.18-7b2434)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v1.10.19-7b2434)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
 [![No build](https://img.shields.io/badge/build-none-lightgrey)](docs/ARCHITECTURE.md)
 [![Three.js r160](https://img.shields.io/badge/three.js-r160-79c3a3)](https://threejs.org/)
@@ -62,7 +62,7 @@ The room is peer-to-peer: **no game server**, no account, no database. PeerJS's 
 | **Tie-break** | Red beats black at equal rank; equal rank + colour keeps the earlier play |
 | **Calls** | Leab ×1, Tui ×2, Sa Hoo ×3, See Hoo ×4, Ngoh Hoo ×5, Lak Hoo ×6, Soldier sets ×3–5 |
 | **Trick** | Everyone sends the called number of tiles. Only revealed sets compete. The winner takes all 4×N tiles and leads next |
-| **Scoring** | 2 piles = par (0). Each pile above or below is ±1. All 8 piles = Chuan, **16 points**. First to 20 wins |
+| **Scoring** | 8 tiles back = par (0). Each tile above or below par is ±1, so all 32 tiles = **+24**. No target score — play on until you leave |
 
 The **Display** panel also carries the text-size and theme controls. Full rules, including the source and the interpretation choices: **[docs/RULES.md](docs/RULES.md)**.
 

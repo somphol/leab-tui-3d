@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.18";
-import { VoiceChat } from "./voice-chat.js?v=1.10.18";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.18";
+} from "./peer-manager.js?v=1.10.19";
+import { VoiceChat } from "./voice-chat.js?v=1.10.19";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.19";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.18",
+  version: "1.10.19",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -453,6 +453,7 @@ const I18N = {
     "coach.live": "live",
     "score.title": "Match",
     "score.target": "First to",
+    "score.note": "Par is 8 tiles — every tile above 8 scores a point.",
     "score.points": "points",
     "score.pile": "pile",
     "score.piles": "piles",
@@ -471,7 +472,7 @@ const I18N = {
     "log.chuanWhy": "Chuan claim: seven piles plus the last Soldier. The Soldier takes the final turn by the special rule, not by rank.",
     "log.empty": "No turns recorded yet.",
     "summary.viewLog": "View turn log",
-    "summary.autoNext": "Auto-start next round (30s)",
+    "summary.autoNext": "Auto-start next round",
     "lastTrick.winner": "{seat} won {n} tiles with {combo}",
     "pile.title": "{seat} · pile {n}",
     "pile.meta": "{n} tiles · {up} face-up",
@@ -631,7 +632,7 @@ const I18N = {
     "summary.win": "You win the match.",
     "summary.lose": "{seat} wins the match.",
     "summary.draw": "The match is drawn.",
-    "summary.targetReached": "First to {target} points.",
+    "summary.targetReached": "Play continues until players leave; par is 8 tiles.",
     "summary.streak": "Round streak ×{n}",
     "summary.note": "Scoring follows the traditional pile table: 2 piles is par (0), each pile above or below is one point, and all 8 piles is a 16-point Chuan.",
     "undo.intro": "The turn is stored. Step back, read the comparison, then replay it with a better plan.",
@@ -1155,6 +1156,7 @@ const I18N = {
     "coach.live": "สด",
     "score.title": "คะแนน",
     "score.target": "ถึง",
+    "score.note": "เสมอตัวที่ 8 ใบ ใบที่เกินมาได้ใบละ 1 แต้ม",
     "score.points": "แต้ม",
     "score.pile": "กอง",
     "score.piles": "กอง",
@@ -1173,7 +1175,7 @@ const I18N = {
     "log.chuanWhy": "ช้วน: เจ็ดกองกับจุกตัวสุดท้าย จุกกินตาสุดท้ายได้ด้วยกติกาพิเศษ ไม่ใช่เพราะศักดิ์ใหญ่กว่า",
     "log.empty": "ยังไม่มีประวัติตา",
     "summary.viewLog": "ดูประวัติการเล่น",
-    "summary.autoNext": "เริ่มรอบถัดไปอัตโนมัติ (30 วิ)",
+    "summary.autoNext": "เริ่มรอบถัดไปอัตโนมัติ",
     "lastTrick.winner": "{seat} กิน {n} ตัว ด้วย {combo}",
     "pile.title": "{seat} · กอง {n}",
     "pile.meta": "{n} ตัว · เปิด {up} ตัว",
@@ -1336,7 +1338,7 @@ const I18N = {
     "summary.win": "คุณชนะแมตช์",
     "summary.lose": "{seat} ชนะแมตช์",
     "summary.draw": "แมตช์เสมอ",
-    "summary.targetReached": "ถึง {target} แต้มก่อน",
+    "summary.targetReached": "เล่นไปเรื่อย ๆ จนกว่าจะเลิก เสมอตัวที่ 8 ใบ",
     "summary.streak": "ชนะติดกัน ×{n}",
     "summary.note": "คิดคะแนนตามกอง: สองกองคือทุน (0) เกินหรือขาดกองละหนึ่งแต้ม และแปดกองคือช้วน 16 แต้ม",
     "undo.intro": "เก็บตานี้ไว้แล้ว ย้อนกลับไปอ่านการเปรียบเทียบ แล้วลองใหม่ด้วยแผนที่ดีกว่า",
@@ -2083,7 +2085,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: false, dockChosen: false, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false, resultAuto: false, resultAutoSeconds: 10 });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: false, dockChosen: false, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, autoNextSeconds: 30, draftMode: false, resultAuto: false, resultAutoSeconds: 10 });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -2261,6 +2263,7 @@ function makeState(seed) {  return {
     resultSeconds: 2,
     resultAuto: false,
     resultAutoSeconds: 10,
+    autoNextSeconds: 30,
     draftMode: false,
     draftPool: null,
     draftOrder: null,
@@ -2451,6 +2454,7 @@ function loadPrefs() {
   if (![0, 2, 4, 6].includes(Number(prefs.resultSeconds))) prefs.resultSeconds = 2;
   prefs.resultAuto = prefs.resultAuto === true;
   prefs.resultAutoSeconds = Math.min(30, Math.max(5, Math.round(Number(prefs.resultAutoSeconds) / 5) * 5 || 10));
+  prefs.autoNextSeconds = Math.min(30, Math.max(5, Math.round(Number(prefs.autoNextSeconds) / 5) * 5 || 30));
   prefs.autoNext = prefs.autoNext !== false;
   /* Draft-pick was an experimental house deal; the standard game deals
      eight random tiles face-down. */
@@ -3276,13 +3280,11 @@ function endRound() {
   clearTimeout(actionTimer);
   const piles = state.captures.map((pile) => scoredPilesFromTiles(pile));
   const multiplier = state.multiplier || 1;
-  const points = state.mode === "bid" && state.bids?.every((value) => Number.isInteger(value))
-    ? piles.map((count, seat) => {
-      const bid = state.bids[seat];
-      const base = count === bid ? bid + (bid === 0 ? 3 : 5) : -(Math.abs(count - bid));
-      return base * multiplier;
-    })
-    : piles.map((count) => scorePiles(count) * multiplier);
+  /* Tiles are the currency: a seat starts with eight and returns eight at par.
+     Each captured tile above eight is one point, each tile short is one point
+     lost, so the round always sums to zero and play can run indefinitely. */
+  const tiles = state.captures.map((pile) => pile.length);
+  const points = tiles.map((count) => (count - 8) * multiplier);
   state.roundPoints = points;
   state.scores = state.scores.map((score, index) => score + points[index]);
   state.phase = "roundEnd";
@@ -3314,26 +3316,13 @@ function endRound() {
 
   state.lastRound = { piles, points, scores: state.scores.slice(), chuan: piles.some((count) => count >= 8) };
 
-  const finished = state.scores.some((score) => score >= state.target);
-  if (finished) {
-    const top = Math.max(...state.scores);
-    const leaders = state.scores.map((score, index) => score === top ? index : -1).filter((index) => index >= 0);
-    state.winner = leaders.length === 1 ? leaders[0] : -1;
-    state.phase = "matchEnd";
-    stats.matches += 1;
-    if (state.winner === MY_SEAT) stats.wins += 1;
-    else if (state.winner === -1) stats.draws += 1;
-    else stats.losses += 1;
-  }
-
   saveStats();
   saveMatch();
   renderAll();
   updateUndoButton();
   if (scene) scene.sync(state);
   audio?.play(state.winner === MY_SEAT || (state.phase === "roundEnd" && localPoints > 0) ? "win" : "lose", 0);
-  showRoundSummary(finished);
-  if (state.phase === "matchEnd") toast(t("summary.match"), "gold");
+  showRoundSummary(false);
 }
 
 function undoLastTrick() {
@@ -3879,7 +3868,7 @@ function startSummaryCountdown() {
     primary.textContent = t("summary.next");
     return;
   }
-  let left = 30;
+  let left = Number(prefs.autoNextSeconds) || 30;
   const tick = () => {
     if (!state || state.phase !== "roundEnd") { clearInterval(summaryTimer); return; }
     primary.textContent = t("summary.nextIn", { n: left });
@@ -3922,7 +3911,7 @@ function showRoundSummary(matchEnded) {
     ${winnerLine}
     ${isClient() ? `<div class="summary-note">${escapeHTML(t("summary.waitingHost"))}</div>` : ""}
     <div class="summary-note">${escapeHTML(t("summary.note"))}</div>
-    <div class="summary-note">${escapeHTML(t("summary.streak", { n: stats.currentStreak }))} · ${escapeHTML(t("summary.targetReached", { target: state.target }))}</div>
+    <div class="summary-note">${escapeHTML(t("summary.streak", { n: stats.currentStreak }))} · ${escapeHTML(t("score.note"))}</div>
     <div class="summary-log-row"><button id="summaryLogBtn" class="btn btn-ghost btn-small" type="button">${escapeHTML(t("summary.viewLog"))}</button></div>`;
   const primary = $("#summaryPrimary");
   const secondary = $("#summarySecondary");
@@ -3937,6 +3926,11 @@ function showRoundSummary(matchEnded) {
   if (autoWrap) autoWrap.hidden = isClient() || isMatch;
   const autoCheck = $("#summaryAutoNext");
   if (autoCheck) autoCheck.checked = prefs.autoNext !== false;
+  const autoSeconds = $("#summaryAutoSeconds");
+  if (autoSeconds) {
+    autoSeconds.value = String(prefs.autoNextSeconds || 30);
+    autoSeconds.disabled = prefs.autoNext === false;
+  }
   modal.hidden = false;
   requestAnimationFrame(startParty);
   audio?.play("celebrate", 0);
@@ -4014,8 +4008,6 @@ function renderAll() {
   if (nextRound) nextRound.hidden = state.phase !== "roundEnd" || isClient();
   const streak = $("#streakChip");
   if (streak) streak.textContent = `×${stats.currentStreak}`;
-  const target = $("#scoreTarget");
-  if (target) target.textContent = state.target;
   const dock = $("#handDock");
   if (dock) dock.classList.toggle("is-turn", state.turn === MY_SEAT && ["lead", "follow"].includes(state.phase));
   renderNetChrome();
@@ -4086,7 +4078,6 @@ function focusTurnIfNeeded() {
 function renderHUD() {
   $("#roundChip").textContent = state.round;
   $("#trickChip").textContent = `${state.trick}`;
-  $("#targetChip").textContent = state.target;
   const turn = $("#turnChip");
   if (state.phase === "dealing") turn.textContent = t("phase.dealing");
   else if (state.phase === "roundEnd") turn.textContent = t("phase.roundEnd");
@@ -9054,7 +9045,7 @@ function selfTest() {
     return hands.every((hand) => hand.length === 8) && new Set(hands.flat().map((item) => item.id)).size === 32;
   });
 
-  check("scoring table is -2..5 and Chuan 16", () => [0, 1, 2, 3, 4, 5, 6, 7, 8].map(scorePiles).join(",") === "-2,-1,0,1,2,3,4,5,16");
+  check("round score is captured tiles minus par 8", () => [0, 4, 8, 12, 16, 32].map((tiles) => tiles - 8).join(",") === "-8,-4,0,4,8,24");
 
   check("a full simulated round conserves 32 tiles", () => {
     const sim = simulateRound(12345);
@@ -10982,6 +10973,13 @@ function bindEvents() {
   });
   $("#summaryAutoNext")?.addEventListener("change", (event) => {
     prefs.autoNext = event.target.checked;
+    savePrefs();
+    const autoSeconds = $("#summaryAutoSeconds");
+    if (autoSeconds) autoSeconds.disabled = prefs.autoNext === false;
+    startSummaryCountdown();
+  });
+  $("#summaryAutoSeconds")?.addEventListener("change", (event) => {
+    prefs.autoNextSeconds = Math.min(30, Math.max(5, Number(event.target.value) || 30));
     savePrefs();
     startSummaryCountdown();
   });

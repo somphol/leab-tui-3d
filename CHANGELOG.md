@@ -2,6 +2,13 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.19] — 2026-11-11
+
+### Changed
+
+- **Scoring is tiles against par eight.** Every seat starts a round with eight tiles, so the round score is `capturedTiles − 8` (times the redraw multiplier): eight back is even, sixteen is **+8**, all 32 is **+24**. The "first to 20/50/100" target and the match-end screen are gone; scores accumulate for as long as the table plays and players leave when they choose. The Target chip, the scoreboard target line and the "Play to" rule select were removed.
+- **Round-summary auto-start is adjustable.** The summary checkbox now has a 5/10/15/20/25/30-second dropdown instead of a fixed 30 s, disabled while unticked and remembered between sessions.
+
 ## [1.10.18] — 2026-11-11
 
 ### Added

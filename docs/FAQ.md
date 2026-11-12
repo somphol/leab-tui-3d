@@ -22,7 +22,7 @@ Equal rank and colour do not overtake. The earlier play keeps the trick. Red bea
 Capturing all eight piles (all 32 tiles) in a round. It scores 16 points instead of the normal pile table.
 
 **How long is a match?**  
-First to 20 points by default. A round ends when all hands are empty; scores are added and a new round is dealt.
+There is no target score: play continues round after round until players leave. A round ends when all hands are empty; each seat starts with eight tiles, returning eight is par, and every tile above or below par is ±1 point.
 
 **Why does the coach say I have no legal Tui?**  
 You selected two tiles that are not an identical pair, or you have no pair in hand. You can still send two tiles face-down.
