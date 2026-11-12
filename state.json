@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.16",
-  "version": "1.10.16",
+  "projectVersion": "1.10.17",
+  "version": "1.10.17",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -441,9 +441,14 @@
       "version": "1.10.16",
       "date": "2026-11-10",
       "summary": "Blind pick is a face-down pool choice: pick two by position, values hidden until they join the hand."
+    },
+    {
+      "version": "1.10.17",
+      "date": "2026-11-11",
+      "summary": "Host-left is terminal with a manual Reconnect; tile size scales only the local hand."
     }
   ],
-  "releaseNotes": "1.10.16 turns Blind pick into a real face-down choice: the pool shows card backs, each seat picks two by position, and values appear only after the cards join the hand. It remains an off-by-default house variant.",
+  "releaseNotes": "1.10.17 stops the guest panel from flickering when the host leaves: an intentional host exit is terminal, cancels the rejoin timer, watchdog and join watch, and offers a manual Reconnect that uses the stored seat token. Tile size is now a readability setting for your own hand only - opponents, centre plays and captures return to base size, and the local row pulls inward so it stays on the felt.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
