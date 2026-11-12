@@ -471,7 +471,7 @@ const I18N = {
     "log.chuanWhy": "Chuan claim: seven piles plus the last Soldier. The Soldier takes the final turn by the special rule, not by rank.",
     "log.empty": "No turns recorded yet.",
     "summary.viewLog": "View turn log",
-    "summary.autoNext": "Auto-start next round (30s)",
+    "summary.autoNext": "Auto-start next round",
     "lastTrick.winner": "{seat} won {n} tiles with {combo}",
     "pile.title": "{seat} · pile {n}",
     "pile.meta": "{n} tiles · {up} face-up",
@@ -1173,7 +1173,7 @@ const I18N = {
     "log.chuanWhy": "ช้วน: เจ็ดกองกับจุกตัวสุดท้าย จุกกินตาสุดท้ายได้ด้วยกติกาพิเศษ ไม่ใช่เพราะศักดิ์ใหญ่กว่า",
     "log.empty": "ยังไม่มีประวัติตา",
     "summary.viewLog": "ดูประวัติการเล่น",
-    "summary.autoNext": "เริ่มรอบถัดไปอัตโนมัติ (30 วิ)",
+    "summary.autoNext": "เริ่มรอบถัดไปอัตโนมัติ",
     "lastTrick.winner": "{seat} กิน {n} ตัว ด้วย {combo}",
     "pile.title": "{seat} · กอง {n}",
     "pile.meta": "{n} ตัว · เปิด {up} ตัว",
@@ -2083,7 +2083,7 @@ function recommendedFollow(hand, lead, bestCombo) {
    6. Match state
    -------------------------------------------------------------------------- */
 
-const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: false, dockChosen: false, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, draftMode: false, resultAuto: false, resultAutoSeconds: 10 });
+const DEFAULT_PREFS = Object.freeze({ lang: "en", sound: true, coach: true, cinema: false, tileList: true, theme: "daybreak", fontSize: "md", cardSize: "md", autoplay: false, blindPick: false, chatOpen: true, dockCollapsed: false, dockChosen: false, autoAudio: true, target: 20, direction: "cw", mode: "piles", resultSeconds: 2, autoNext: true, autoNextSeconds: 30, draftMode: false, resultAuto: false, resultAutoSeconds: 10 });
 const DEFAULT_STATS = Object.freeze({ matches: 0, wins: 0, losses: 0, draws: 0, rounds: 0, bestStreak: 0, currentStreak: 0, history: [], lastPlayed: null });
 
 let prefs = { ...DEFAULT_PREFS };
@@ -2261,6 +2261,7 @@ function makeState(seed) {  return {
     resultSeconds: 2,
     resultAuto: false,
     resultAutoSeconds: 10,
+    autoNextSeconds: 30,
     draftMode: false,
     draftPool: null,
     draftOrder: null,
@@ -2451,6 +2452,7 @@ function loadPrefs() {
   if (![0, 2, 4, 6].includes(Number(prefs.resultSeconds))) prefs.resultSeconds = 2;
   prefs.resultAuto = prefs.resultAuto === true;
   prefs.resultAutoSeconds = Math.min(30, Math.max(5, Math.round(Number(prefs.resultAutoSeconds) / 5) * 5 || 10));
+  prefs.autoNextSeconds = Math.min(30, Math.max(5, Math.round(Number(prefs.autoNextSeconds) / 5) * 5 || 30));
   prefs.autoNext = prefs.autoNext !== false;
   /* Draft-pick was an experimental house deal; the standard game deals
      eight random tiles face-down. */
@@ -3879,7 +3881,7 @@ function startSummaryCountdown() {
     primary.textContent = t("summary.next");
     return;
   }
-  let left = 30;
+  let left = Number(prefs.autoNextSeconds) || 30;
   const tick = () => {
     if (!state || state.phase !== "roundEnd") { clearInterval(summaryTimer); return; }
     primary.textContent = t("summary.nextIn", { n: left });
@@ -3937,6 +3939,11 @@ function showRoundSummary(matchEnded) {
   if (autoWrap) autoWrap.hidden = isClient() || isMatch;
   const autoCheck = $("#summaryAutoNext");
   if (autoCheck) autoCheck.checked = prefs.autoNext !== false;
+  const autoSeconds = $("#summaryAutoSeconds");
+  if (autoSeconds) {
+    autoSeconds.value = String(prefs.autoNextSeconds || 30);
+    autoSeconds.disabled = prefs.autoNext === false;
+  }
   modal.hidden = false;
   requestAnimationFrame(startParty);
   audio?.play("celebrate", 0);
@@ -10982,6 +10989,13 @@ function bindEvents() {
   });
   $("#summaryAutoNext")?.addEventListener("change", (event) => {
     prefs.autoNext = event.target.checked;
+    savePrefs();
+    const autoSeconds = $("#summaryAutoSeconds");
+    if (autoSeconds) autoSeconds.disabled = prefs.autoNext === false;
+    startSummaryCountdown();
+  });
+  $("#summaryAutoSeconds")?.addEventListener("change", (event) => {
+    prefs.autoNextSeconds = Math.min(30, Math.max(5, Number(event.target.value) || 30));
     savePrefs();
     startSummaryCountdown();
   });

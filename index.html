@@ -689,7 +689,16 @@
         <div id="summaryBody" class="summary-body"></div>
         <label id="summaryAutoWrap" class="lobby-check summary-auto" hidden>
           <input id="summaryAutoNext" type="checkbox" checked />
-          <span data-i18n="summary.autoNext">Auto-start next round (30s)</span>
+          <span data-i18n="summary.autoNext">Auto-start next round</span>
+          <select id="summaryAutoSeconds" aria-label="Auto-start delay">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
+            <option value="30" selected>30</option>
+          </select>
+          <span data-i18n="result.seconds">seconds</span>
         </label>
         <div class="modal-actions">
           <button id="summaryPrimary" class="btn btn-gold" type="button">Next round</button>
