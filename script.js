@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.21";
-import { VoiceChat } from "./voice-chat.js?v=1.10.21";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.21";
+} from "./peer-manager.js?v=1.10.22";
+import { VoiceChat } from "./voice-chat.js?v=1.10.22";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.22";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.21",
+  version: "1.10.22",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -4109,11 +4109,6 @@ function renderHUD() {
     const showCall = Boolean(state.lead && ["follow", "showdown"].includes(state.phase));
     call.hidden = !showCall;
     if (showCall) call.textContent = `${t("hud.call")}: ${comboName(state.lead.combo.type)} ×${state.lead.combo.count}`;
-  }
-  const resultSelect = $("#resultSelect");
-  if (resultSelect) {
-    resultSelect.value = String(state.resultSeconds ?? prefs.resultSeconds ?? 2);
-    resultSelect.disabled = isClient();
   }
   const lastTrick = $("#lastTrickBtn");
   if (lastTrick) {
@@ -11010,13 +11005,6 @@ function bindEvents() {
     prefs.autoNextSeconds = Math.min(30, Math.max(5, Number(event.target.value) || 30));
     savePrefs();
     startSummaryCountdown();
-  });
-  $("#resultSelect")?.addEventListener("change", (event) => {
-    const value = Number(event.target.value);
-    prefs.resultSeconds = value;
-    if (state) state.resultSeconds = value;
-    savePrefs();
-    if (isHost()) saveMatch();
   });
   $("#bidRow")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-bid]");
