@@ -97,7 +97,7 @@ Every seat starts a round with eight tiles, so **eight tiles back is par**. A ro
 
 Par is 8, every tile above par is +1, every tile below is −1. Two piles (eight tiles) is the familiar even round; a **Chuan (ช้วน)** captures all 32 tiles and therefore scores +24. Redraws multiply the round points (×2, ×3 …).
 
-There is **no match target and no match end**: scores accumulate for as long as the table keeps playing, and players leave when they choose (**Leave room** in a network room, or a new match in solo). The studio deliberately drops the "first to 20/50/100" rule from earlier versions.
+There is **no match target and no match end**: scores accumulate for as long as the table keeps playing, and players leave when they choose (**Leave room** in a network room, or reload in solo). The studio deliberately drops the "first to 20/50/100" rule from earlier versions.
 
 Because every trick awards `4 × N` tiles, the four players' round points always sum to zero. The self-test asserts 32-tile conservation and the par-eight scoring table.
 
