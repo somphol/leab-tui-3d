@@ -4110,11 +4110,6 @@ function renderHUD() {
     call.hidden = !showCall;
     if (showCall) call.textContent = `${t("hud.call")}: ${comboName(state.lead.combo.type)} ×${state.lead.combo.count}`;
   }
-  const resultSelect = $("#resultSelect");
-  if (resultSelect) {
-    resultSelect.value = String(state.resultSeconds ?? prefs.resultSeconds ?? 2);
-    resultSelect.disabled = isClient();
-  }
   const lastTrick = $("#lastTrickBtn");
   if (lastTrick) {
     lastTrick.hidden = !state.lastTrick;
@@ -11010,13 +11005,6 @@ function bindEvents() {
     prefs.autoNextSeconds = Math.min(30, Math.max(5, Number(event.target.value) || 30));
     savePrefs();
     startSummaryCountdown();
-  });
-  $("#resultSelect")?.addEventListener("change", (event) => {
-    const value = Number(event.target.value);
-    prefs.resultSeconds = value;
-    if (state) state.resultSeconds = value;
-    savePrefs();
-    if (isHost()) saveMatch();
   });
   $("#bidRow")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-bid]");
