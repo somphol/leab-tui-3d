@@ -803,6 +803,8 @@ const I18N = {
     "net.deny": "Deny",
     "net.approveAll": "Approve all",
     "invite.top": "Invite",
+    "net.joinTop": "Join",
+    "net.joinTopTitle": "Join a table with a room code",
     "invite.action": "Invite friends",
     "invite.title": "Invite friends",
     "invite.roomInfo": "Room info",
@@ -1509,6 +1511,8 @@ const I18N = {
     "net.deny": "ปฏิเสธ",
     "net.approveAll": "อนุมัติทั้งหมด",
     "invite.top": "ชวน",
+    "net.joinTop": "เข้าร่วม",
+    "net.joinTopTitle": "เข้าห้องด้วยรหัสห้อง",
     "invite.action": "ชวนเพื่อน",
     "invite.title": "ชวนเพื่อน",
     "invite.roomInfo": "ข้อมูลห้อง",
@@ -8294,6 +8298,12 @@ function renderNetChrome() {
   if (voiceCall) voiceCall.hidden = !isNetworked();
   const inviteTop = $("#inviteTopBtn");
   if (inviteTop) inviteTop.hidden = !canInviteFriends();
+  const joinTop = $("#joinTopBtn");
+  if (joinTop) {
+    joinTop.hidden = isClient() || $("#lobbyModal")?.hidden === false;
+    joinTop.title = t("net.joinTopTitle");
+    joinTop.setAttribute("aria-label", t("net.joinTopTitle"));
+  }
   const inviteAction = $("#inviteBtn");
   if (inviteAction) inviteAction.hidden = !canInviteFriends();
   const waiting = isHost() ? pendingRequests.size + queuedGuests.size : 0;
@@ -11010,6 +11020,13 @@ function bindEvents() {
   $("#hintBtn")?.addEventListener("click", applyHint);
   $("#clearBtn")?.addEventListener("click", clearSelection);
 
+  $("#joinTopBtn")?.addEventListener("click", () => {
+    if (isNetworked()) return;
+    lobbyState = { view: "join", players: [], status: "", roomCode: "", name: loadPlayerName() };
+    showLobby("join");
+    setTimeout(() => $("#lobbyCodeInput")?.focus(), 60);
+    audio?.play("click", 0);
+  });
   $("#lobbyBtn")?.addEventListener("click", () => {
     if (isHost() && net?.started) {
       openInviteSheet();
