@@ -879,7 +879,9 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
   font-style: normal;
   vertical-align: 1px;
 }
-.summary-auto { margin-top: 10px; }
+.summary-auto { margin-top: 10px; flex-wrap: wrap; }
+.summary-auto select { min-height: 32px; padding: 4px 8px; border: 1px solid var(--line-soft); border-radius: 9px; background: var(--card-bg); color: var(--ink); font: inherit; }
+.summary-auto select:disabled { opacity: 0.55; }
 .summary-log-row { margin-top: 10px; }
 .last-trick-list { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 6px; }
 .last-trick-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 10px; border: 1px solid var(--line-soft); border-radius: 8px; background: var(--card-bg); font-size: calc(12px * var(--fs-scale)); }
