@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.21] — 2026-11-11
+
+### Fixed
+
+- **Join is hidden once you are in a room.** The top-bar Join pill now disappears (and is disabled) for hosts as well as guests, instead of staying visible and ignoring the click. Leave the room to join another table.
+
 ## [1.10.20] — 2026-11-11
 
 ### Added
