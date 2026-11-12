@@ -2,6 +2,12 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.22] — 2026-11-11
+
+### Removed
+
+- **The HUD result-duration control.** The `RESULT 0s/2s/4s/6s` selector is gone; the banner keeps its 2 s default and the turn-result dialog owns auto-close. The HUD now reads Round, Turn, Now, Call, Last turn.
+
 ## [1.10.21] — 2026-11-11
 
 ### Fixed
