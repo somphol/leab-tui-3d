@@ -4443,9 +4443,10 @@ function armResultAutoClose() {
   resultAutoTick = setInterval(() => {
     left -= 1;
     if (count) count.textContent = left > 0 ? `${left}s` : "";
-    if (left <= 0) clearResultAutoClose();
+    /* One timer owns the close. Clearing it at zero (with a second timeout
+       also due) raced, so the countdown reached 0 without closing. */
+    if (left <= 0) closeTrickResult();
   }, 1000);
-  resultAutoTimer = setTimeout(() => { closeTrickResult(); }, left * 1000);
 }
 
 function showResult(text) {
