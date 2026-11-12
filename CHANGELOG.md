@@ -2,6 +2,20 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.20] — 2026-11-11
+
+### Added
+
+- **Join from the top bar.** A `入 Join / เข้าร่วม` pill sits beside Invite, opening the room-code form with your saved name and the code field focused. It hides for guests and while the lobby is open.
+
+### Fixed
+
+- **Autoplay no longer acts behind a result sheet.** While the turn-result or round-summary dialog is visible for your seat, the coach waits; closing the sheet reschedules it. A two-player table no longer jumps ahead while someone reads.
+
+### Removed
+
+- **New match.** With endless play there is no match to restart; the Actions button and its confirmation dialog are gone. Reload for a fresh solo table.
+
 ## [1.10.19] — 2026-11-11
 
 ### Changed
