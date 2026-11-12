@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.22",
-  "version": "1.10.22",
+  "projectVersion": "1.10.23",
+  "version": "1.10.23",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -471,9 +471,14 @@
       "version": "1.10.22",
       "date": "2026-11-11",
       "summary": "The result-announcement seconds control is gone from the HUD."
+    },
+    {
+      "version": "1.10.23",
+      "date": "2026-11-11",
+      "summary": "Every player owns their turn-result pause; autoplay waits for their own sheet."
     }
   ],
-  "releaseNotes": "1.10.22 removes the HUD control that set how many seconds the result banner stayed up. The banner keeps a 2 s default, and the turn-result dialog owns the opt-in auto-close, so there is only one place to change how long a result stays on screen.",
+  "releaseNotes": "1.10.23 makes the turn result local to each player. Guests see it as well as the host, each device keeps its own 5-30 second auto-close (or none), and autoplay waits only for the sheet on that device. The host no longer pauses the table for its own reading, so one person's result screen never stalls the others.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",
