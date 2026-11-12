@@ -47,7 +47,7 @@ The host treats a `welcome` as delivered only when the guest answers
 `welcome-ack`; otherwise it repeats the same welcome (same seat/state) up to
 eight times at roughly one-second spacing. A queued guest's welcome carries
 `"seat": -1`, `"viewer": true`, `"queued": true`, `"queuedSeat": n`,
-`"joinAfter": "trick" | "round" | "match"`, `"rejoinToken"` and a hidden-state
+`"joinAfter": "turn" | "round" | "match"`, `"rejoinToken"` and a hidden-state
 snapshot.
 
 ### `welcome-ack` (guest → host)
@@ -92,7 +92,7 @@ Sent immediately before the first `state` of a match.
 ### `pending`
 
 Sent when a request needs approval, and again with `"queued": true` when an approved guest is waiting for the
-current trick to end. Older clients ignore the extra fields and keep waiting; the later `welcome` still promotes
+current turn to end. Older clients ignore the extra fields and keep waiting; the later `welcome` still promotes
 them.
 
 ```json
@@ -102,15 +102,15 @@ them.
   "hostName": "Ana",
   "queued": true,
   "seat": 2,
-  "joinAfter": "trick",
+  "joinAfter": "turn",
   "rejoinToken": "…",
   "players": [ ... ]
 }
 ```
 
-`joinAfter` is `trick`, `round` or `match`. The host reserves the seat, keeps the bot active, and immediately sends
+`joinAfter` is `turn`, `round` or `match`. The host reserves the seat, keeps the bot active, and immediately sends
 a **viewer welcome** so the guest can watch the table: `seat: -1`, `viewer: true`, `queued: true`,
-`queuedSeat`, `joinAfter` and `sanitizeForSeat(state, -1)`. The bot stays in the seat. At the next `beginTrick`
+`queuedSeat`, `joinAfter` and `sanitizeForSeat(state, -1)`. The bot stays in the seat. At the next `beginTurn`
 (or next deal for `round`/`match`) the host promotes the guest with a normal `welcome` carrying
 `"joinedSeat": true` and `sanitizeForSeat(state, seat)`. A queued guest reconnects with the same `rejoinToken`;
 the host matches it before the PIN/approval gate. Protocol version stays 1 because the message shape is additive.
@@ -131,7 +131,7 @@ The authoritative game snapshot, redacted for the recipient. `epoch` increases o
   "state": {
     "phase": "follow",
     "round": 1,
-    "trick": 3,
+    "turn": 3,
     "dealer": 3,
     "leader": 0,
     "turn": 1,
@@ -153,7 +153,7 @@ The authoritative game snapshot, redacted for the recipient. `epoch` increases o
     "target": 20,
     "history": [],
     "log": [ ... ],
-    "lastTrick": null,
+    "lastTurn": null,
     "lastRound": null,
     "winner": null,
     "handCounts": [2, 2, 2, 2],
@@ -211,7 +211,7 @@ even while the match is running. Otherwise the host verifies the optional PIN
 against an in-memory SHA-256 digest, then either queues the request (`pending`)
 or rejects it. The host assigns the lowest free seat 1–3 only after approval. Names are trimmed to 18 characters; control characters and angle brackets are stripped. Empty names become `Guest n`.
 
-`bad-pin`, `denied`, `busy`, `timeout`, `full`, `in-progress` and `suppressed` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s. A started room queues a valid PIN request instead of rejecting `in-progress`; the host decides bot seat, viewer, deny or a 30-minute pause. An approved bot-seat request is still queued when the trick has started; see `pending`.
+`bad-pin`, `denied`, `busy`, `timeout`, `full`, `in-progress` and `suppressed` are `rejected` reasons; the host closes the connection after sending. Pending requests expire after 120 s. A started room queues a valid PIN request instead of rejecting `in-progress`; the host decides bot seat, viewer, deny or a 30-minute pause. An approved bot-seat request is still queued when the turn has started; see `pending`.
 
 ### `status`
 
@@ -315,13 +315,13 @@ A roster entry:
 1. A guest's own hand is real. Every other hand is `ghost-<seat>-<index>`.
 2. A face-down centre entry from another seat is ghosted and has `combo: null`.
 3. A hidden `log` entry from another seat has `combo: null`.
-4. A hidden `lastTrick` entry from another seat has `combo: null`.
+4. A hidden `lastTurn` entry from another seat has `combo: null`.
 5. `hiddenTags`, `snapshot`, `selected` and `fast` are removed.
 6. Captures are public and keep real ids.
-7. `lastTrick.humanSeat` is rewritten to the recipient; `humanWon`, `humanRevealed`, `humanCombo` are recomputed for the recipient.
+7. `lastTurn.humanSeat` is rewritten to the recipient; `humanWon`, `humanRevealed`, `humanCombo` are recomputed for the recipient.
 8. The host never sends the same payload object to two guests; `sanitizeForSeat` runs per recipient.
 
-The mapping from real tile to ghost mesh is stable for the round. It is assigned in `dealRound` (`state.hiddenTags`) and restored by `undoLastTrick` from the snapshot.
+The mapping from real tile to ghost mesh is stable for the round. It is assigned in `dealRound` (`state.hiddenTags`) and restored by `undoLastTurn` from the snapshot.
 
 ## Client hydration
 
@@ -338,7 +338,7 @@ The mapping from real tile to ghost mesh is stable for the round. It is assigned
 ## Authority invariants
 
 - The host is the only writer of `state.hands`, `state.captures`, `state.center`, `state.scores` and `state.phase`.
-- Guests never call `dealRound`, `leadTrick`, `submitPlay`, `resolveTrick`, `endRound` or `scheduleAI`.
+- Guests never call `dealRound`, `leadTurn`, `submitPlay`, `resolveTurn`, `endRound` or `scheduleAI`.
 - `saveMatch` is a no-op on a guest; a guest view is not resumable.
 - `publishState` returns immediately unless `net.started` is true.
 - A disconnected seat becomes a bot; the seat index never changes during a match.

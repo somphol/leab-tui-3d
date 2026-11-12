@@ -5,7 +5,7 @@ This is the order that worked. It assumes a blank folder and no framework. The g
 ## 0. Write the rules contract before the code
 
 1. Research the traditional game in its own language. For Leab-Tui the usable source is Navee Angsuputiphant's 2016 Thai article (linked in [RULES.md](RULES.md)).
-2. Extract the equipment, hierarchy, call names, combination shapes, comparison order, trick flow and scoring table.
+2. Extract the equipment, hierarchy, call names, combination shapes, comparison order, turn flow and scoring table.
 3. Mark every ambiguity. For this project: Ngoh Hoo construction, Lak Hoo colour, mixed-colour straights, pair definition. Decide, document, and make the code and self-test agree.
 4. Write `docs/RULES.md` as the contract. Do not start the engine until it exists.
 
@@ -66,20 +66,20 @@ Use one `state` object. The minimum shape:
 
 ```js
 {
-  phase, round, trick, dealer, leader, turn,
+  phase, round, turn, dealer, leader, turn,
   hands: [[], [], [], []],
   captures: [[], [], [], []],
   center: [], lead: null, best: null, selected: [],
   scores: [0,0,0,0], roundPoints: [0,0,0,0],
-  history: [], log: [], snapshot: null, lastTrick: null
+  history: [], log: [], snapshot: null, lastTurn: null
 }
 ```
 
 Flow:
 
 ```text
-deal → beginTrick → leadTrick → submitPlay ×3 → resolveTrick
-     → beginTrick (or endRound → nextRound / matchEnd)
+deal → beginTurn → leadTurn → submitPlay ×3 → resolveTurn
+     → beginTurn (or endRound → nextRound / matchEnd)
 ```
 
 - Snapshot **before** the leader acts. The snapshot includes the game and the stats.
@@ -87,11 +87,11 @@ deal → beginTrick → leadTrick → submitPlay ×3 → resolveTrick
 - A follower always sends exactly `lead.count` tiles; `revealed` only when the set matches the call and beats the best.
 - The winner takes all centre tiles and leads next.
 - `endRound` computes piles → points, updates history/stats, and opens the summary.
-- `undo` restores the snapshot, maps IDs back to tiles, and restarts the trick.
+- `undo` restores the snapshot, maps IDs back to tiles, and restarts the turn.
 
 ### The serialization trap
 
-Snapshots, `localStorage` and exports must contain **IDs**, not live tile objects. Write one `serializableState(state)` that converts hands, captures, centre, lead/best, lastTrick and log combos. `loadMatch` rebuilds objects and recomputes combos with `detectCombo`. During this build, a snapshot with live objects silently emptied every hand on undo, and a save with live objects failed validation on reload. The self-test now covers both.
+Snapshots, `localStorage` and exports must contain **IDs**, not live tile objects. Write one `serializableState(state)` that converts hands, captures, centre, lead/best, lastTurn and log combos. `loadMatch` rebuilds objects and recomputes combos with `detectCombo`. During this build, a snapshot with live objects silently emptied every hand on undo, and a save with live objects failed validation on reload. The self-test now covers both.
 
 ## 4. 3D scene
 
@@ -130,9 +130,9 @@ Do this **after** the solo game is correct. Network code magnifies an unstable e
 1. **Generalise the local seat first.** Replace every hard-coded `seat === 0` in UI, coach, hand list, pointer picking and AI scheduling with `MY_SEAT`. In solo `MY_SEAT = 0`; add `SEAT_PROFILES = null` and make `isBotSeat(seat)` fall back to `seat !== 0`. This one refactor is the difference between a reskin and a real guest seat.
 2. **Create `peer-manager.js`.** Room codes, lazy PeerJS loading, `PeerHost`, `PeerClient`, and an in-memory loopback pair. Keep game rules out of it.
 3. **Lobby before game.** A modal with three modes: solo, host, join. Host shows the code and a four-seat roster; Start is disabled until two humans are connected. Fill empty seats with bot profiles before `beginMatch`.
-4. **Host authority.** The host runs the existing engine unchanged. Guests call `sendNetAction(kind, ids, reveal)` instead of `leadTrick`/`submitPlay`. The host re-validates through the same functions.
+4. **Host authority.** The host runs the existing engine unchanged. Guests call `sendNetAction(kind, ids, reveal)` instead of `leadTurn`/`submitPlay`. The host re-validates through the same functions.
 5. **Publish from `saveMatch`.** Host-only, throttled (~40 ms), guarded by `net.started`. Build a separate payload per guest.
-6. **Redact per recipient.** `sanitizeForSeat(state, seat)` is the only privacy boundary. Replace other hands and unrevealed centre/log/last-trick entries with stable `ghost-<seat>-<index>` ids; null their combos; strip `hiddenTags`, `snapshot`, `selected`, `fast`.
+6. **Redact per recipient.** `sanitizeForSeat(state, seat)` is the only privacy boundary. Replace other hands and unrevealed centre/log/last-turn entries with stable `ghost-<seat>-<index>` ids; null their combos; strip `hiddenTags`, `snapshot`, `selected`, `fast`.
 7. **Hydrate.** `hydrateRemoteState` maps real ids through `TILE_BY_ID`, ghost ids to back-only proxy tiles, and clears selection.
 8. **Ghost meshes.** Create 32 back-only meshes (`ghost-0-0` … `ghost-3-7`) sharing the side/back/edge materials. A face-down card then moves as the same mesh from hand to centre.
 9. **Rotate the view.** Put the table, tiles, rings and labels in a `world` group. `setViewSeat(MY_SEAT)` rotates it by `-SEATS[seat].angle` so the guest's seat is at the bottom.
@@ -148,7 +148,7 @@ Do this **after** the solo game is correct. Network code magnifies an unstable e
 | Reusing hand index as ghost id | cards visibly reshuffle when one is played | assign stable tags at deal and restore them on undo |
 | Publishing during the lobby | guest receives the host's solo game | `if (!net.started) return;` |
 | AI scheduling remote humans | guest's turn is auto-played | `isBotSeat` is the only predicate |
-| Guest calls `leadTrick` locally | silent desync | route the public API through `sendNetAction` |
+| Guest calls `leadTurn` locally | silent desync | route the public API through `sendNetAction` |
 | Rotating the camera instead of the world | lighting/controls break | rotate a world group; keep lights and camera fixed |
 | Expecting six seats | rules no longer Leab-Tui | four winds, 32 tiles, eight each |
 | Using a public broker in CI | flaky offline tests | keep `net-check.mjs` separate from `verify.mjs` |

@@ -24,15 +24,15 @@
 | **Soldier** | จุก / พลทหาร, 兵 / 卒, rank 1, five per colour. |
 | **Face-down** | Tiles sent without revealing. They cannot win. |
 | **Reveal / challenge** | Show a legal set of the called type that beats the current best. |
-| **Leader** | The player who calls the type and starts the trick. |
-| **Trick** | One call, four submissions, one winner. |
-| **Round** | Eight deals' worth of tricks (or fewer with multi-tile calls) until all hands are empty. |
+| **Leader** | The player who calls the type and starts the turn. |
+| **Turn** | One call, four submissions, one winner. |
+| **Round** | Eight deals' worth of turns (or fewer with multi-tile calls) until all hands are empty. |
 | **Match** | Rounds played until a player reaches the target score. |
 | **Coach** | The rule-aware advice panel. |
 | **Inspector** | The tile detail card (Thai name, English name, rank, copies, colour). |
-| **Step guard / Undo & Learn** | Rewind the last trick and compare the sets. |
+| **Step guard / Undo & Learn** | Rewind the last turn and compare the sets. |
 | **CDP** | Chrome DevTools Protocol, used by the headless verification harness. |
-| **Snapshot** | The ID-based pre-trick copy used by Undo. |
+| **Snapshot** | The ID-based pre-turn copy used by Undo. |
 | **`serializableState`** | The only function that converts live tiles to IDs for snapshots, saves and exports. |
 | **Three.js** | The pinned 3D library (`three@0.160.0`). |
 | **OrbitControls** | The camera controller from `three/addons/`. |

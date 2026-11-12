@@ -315,7 +315,7 @@ const I18N = {
     "app.title": "Leab-Tui 3D",
     "app.subtitle": "Traditional Xiangqi Trick-Taking Studio",
     "hud.round": "Round",
-    "hud.trick": "Turn",
+    "hud.turnNo": "Turn",
     "hud.target": "Target",
     "hud.turn": "Now",
     "hud.call": "Call",
@@ -457,13 +457,13 @@ const I18N = {
     "score.points": "points",
     "score.pile": "pile",
     "score.piles": "piles",
-    "lastTrick.button": "Last turn",
-    "lastTrick.title": "Last turn",
+    "lastTurn.button": "Last turn",
+    "lastTurn.title": "Last turn",
     "log.history": "History",
     "log.browserTitle": "Turn history",
     "log.noHistory": "No completed turns yet.",
     "log.round": "Round",
-    "log.trick": "Turn",
+    "log.turnNo": "Turn",
     "log.call": "Call",
     "log.winner": "Winner",
     "log.why": "Only revealed sets compete; the highest revealed set takes the turn. Face-down tiles stay hidden.",
@@ -473,7 +473,7 @@ const I18N = {
     "log.empty": "No turns recorded yet.",
     "summary.viewLog": "View turn log",
     "summary.autoNext": "Auto-start next round",
-    "lastTrick.winner": "{seat} won {n} tiles with {combo}",
+    "lastTurn.winner": "{seat} won {n} tiles with {combo}",
     "pile.title": "{seat} · pile {n}",
     "pile.meta": "{n} tiles · {up} face-up",
     "pile.hidden": "Face-down tile",
@@ -572,17 +572,17 @@ const I18N = {
     "coach.hintLead": "Suggested lead: {combo}. {why}",
     "coach.hintFollow": "Suggested: {combo}. {why}",
     "coach.hintDiscard": "No beating {type} is available. Discard {n} low tiles face-down.",
-    "coach.trickWon": "You took the turn with {combo}. {piles} pile(s) captured so far.",
-    "coach.trickLost": "{seat} took the turn with {combo}. {why}",
+    "coach.turnWon": "You took the turn with {combo}. {piles} pile(s) captured so far.",
+    "coach.turnLost": "{seat} took the turn with {combo}. {why}",
     "coach.hiddenLost": "{seat} took the turn with {combo}. You played face-down, so your tiles could not compete.",
     "coach.roundEnd": "Round complete. You scored {points} point(s) and now hold {score}.",
     "coach.matchEnd": "Match complete. {winner}",
-    "coach.chuan": "ช้วน! All eight piles captured — worth 16 points.",
+    "coach.chuan": "ช้วน! All eight piles captured — 24 points (32 tiles − 8).",
     "coach.redTie": "Equal rank and colour: the earlier play stays ahead.",
     "coach.tilesLeft": "{n} tiles left in each hand.",
     "coach.youLead": "You lead the next turn.",
     "coach.otherLead": "{seat} leads the next turn.",
-    "coach.lastTrick": "Last turn of the round.",
+    "coach.lastTurn": "Last turn of the round.",
     "coach.rematch": "Press New match to play again.",
     "coach.whyPair": "Only a higher pair of the same colour can beat it.",
     "coach.whyStraight": "Only a stronger {type} can beat it; the set size and pair ranks matter.",
@@ -608,8 +608,8 @@ const I18N = {
     "toast.handTidied": "Hand tidied back into an arc.",
     "toast.modeNext": "Scoring changes apply to the next match.",
     "toast.redraw": "Redraw {n}: this round scores ×{n}.",
-    "toast.trickResult": "{winner} wins with {combo} — {entries}",
-    "toast.trickResultChuan": "{winner} completes Chuan with the last Soldier — {entries}",
+    "toast.turnResult": "{winner} wins with {combo} — {entries}",
+    "toast.turnResultChuan": "{winner} completes Chuan with the last Soldier — {entries}",
     "toast.chuan": "Chuan! Seven piles plus the last Soldier.",
     "toast.draftDone": "Draft complete. The red General holder leads.",
     "toast.stayZone": "Keep your tiles inside your own area.",
@@ -650,7 +650,7 @@ const I18N = {
     "undo.whyPair": "The duplicated pair decides a See Hoo: {winning} has the higher pair.",
     "undo.whySet": "The set value decides: {winning} is the stronger straight or same-rank set.",
     "undo.whyUnknown": "The winner's revealed combination outranks your entry for this call.",
-    "undo.noTrick": "No completed turn is stored yet.",
+    "undo.noTurn": "No completed turn is stored yet.",
     "about.intro": "A bilingual, single-page studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. It plays solo against three bots or hosts a serverless WebRTC table for up to four humans. It is a teaching table, not a gambling app, tournament server or complete historical rulebook.",
     "about.how": "Thirty-two carved tiles, four seats, eight tiles each. The holder of the red General leads. Each turn calls a shape — Leab, Tui, Sa Hoo, See Hoo, Ngoh Hoo or Lak Hoo — and everyone sends that many tiles. Revealed sets compete; face-down sets never do. The winner takes 4×N tiles and leads next.",
     "about.credits": "Credits",
@@ -691,7 +691,7 @@ const I18N = {
     "rules.ex.soldier": "Soldier sets",
     "rules.ex.soldierBody": "A straight and a same-rank Soldier set are different categories; neither can beat the other.",
     "rules.ex.chuan": "Chuan",
-    "rules.ex.chuanBody": "With seven piles and the last Soldier in hand, reveal it to take the final turn and reach eight piles (16 points).",
+    "rules.ex.chuanBody": "With seven piles and the last Soldier in hand, reveal it to take the final turn and reach eight piles (24 points: 32 tiles − 8).",
     "rules.goal": "Goal",
     "rules.goalBody": "Capture piles of four tiles. Two piles at the end of a round is par (0 points). Every pile above or below par is one point; capturing all eight piles is a 16-point Chuan. A player with seven piles and the last Soldier in hand may reveal it to take the final turn and complete the Chuan. The first player to the match target (20 points by default) wins.",
     "rules.equipment": "Equipment",
@@ -862,7 +862,7 @@ const I18N = {
     "joinRequest.title": "{name} wants to join",
     "joinRequest.titleMany": "{n} people want to join",
     "joinRequest.bodyNow": "Give them {seat}'s seat now? Their name replaces the bot on the table.",
-    "joinRequest.bodyTrick": "Give them {seat}'s seat after this turn? The bot keeps playing until then.",
+    "joinRequest.bodyTurn": "Give them {seat}'s seat after this turn? The bot keeps playing until then.",
     "joinRequest.bodyRound": "Give them {seat}'s seat at the next round? The bot keeps playing until then.",
     "joinRequest.bodyMatch": "Give them {seat}'s seat in the next match? The bot keeps playing until then.",
     "joinRequest.bodyFull": "No bot seat is free. They can watch only, or you can deny them.",
@@ -937,7 +937,7 @@ const I18N = {
     "net.rejected.illegal": "That play was not legal.",
     "net.openLobby": "Multiplayer",
     "net.resumeMatch": "Resume match",
-    "net.resumeMeta": "Round {round} · turn {trick} · {score} points",
+    "net.resumeMeta": "Round {round} · turn {turnNo} · {score} points",
     "net.leaveTitle": "Leave the room?",
     "net.leaveBodyHost": "This closes the room for every guest. Their seats become bots and the room code stops working.",
     "net.leaveBodyGuest": "You will leave the table. A bot will take over your seat and the match will continue.",
@@ -1020,7 +1020,7 @@ const I18N = {
     "app.title": "เลี๊ยบตุ่ย 3 มิติ",
     "app.subtitle": "สตูดิโอเกมกินกองด้วยหมากรุกจีน",
     "hud.round": "รอบ",
-    "hud.trick": "ตา",
+    "hud.turnNo": "ตา",
     "hud.target": "เป้า",
     "hud.turn": "ตอนนี้",
     "hud.call": "เรียก",
@@ -1162,13 +1162,13 @@ const I18N = {
     "score.points": "แต้ม",
     "score.pile": "กอง",
     "score.piles": "กอง",
-    "lastTrick.button": "ตาล่าสุด",
-    "lastTrick.title": "ตาล่าสุด",
+    "lastTurn.button": "ตาล่าสุด",
+    "lastTurn.title": "ตาล่าสุด",
     "log.history": "ประวัติ",
     "log.browserTitle": "ประวัติการเล่น",
     "log.noHistory": "ยังไม่มีตาที่จบ",
     "log.round": "รอบ",
-    "log.trick": "ตา",
+    "log.turnNo": "ตา",
     "log.call": "เรียก",
     "log.winner": "ผู้ชนะ",
     "log.why": "เฉพาะชุดที่เปิดเท่านั้นที่แข่งกัน ชุดที่เปิดสูงสุดกินกอง ไพ่ที่คว่ำจะถูกซ่อนไว้",
@@ -1178,7 +1178,7 @@ const I18N = {
     "log.empty": "ยังไม่มีประวัติตา",
     "summary.viewLog": "ดูประวัติการเล่น",
     "summary.autoNext": "เริ่มรอบถัดไปอัตโนมัติ",
-    "lastTrick.winner": "{seat} กิน {n} ตัว ด้วย {combo}",
+    "lastTurn.winner": "{seat} กิน {n} ตัว ด้วย {combo}",
     "pile.title": "{seat} · กอง {n}",
     "pile.meta": "{n} ตัว · เปิด {up} ตัว",
     "pile.hidden": "ไพ่คว่ำ",
@@ -1277,17 +1277,17 @@ const I18N = {
     "coach.hintLead": "แนะนำให้นำ {combo} {why}",
     "coach.hintFollow": "แนะนำ: {combo} {why}",
     "coach.hintDiscard": "ไม่มี {type} ที่สู้ได้ ทิ้ง {n} ตัวล่างสุดลงคว่ำ",
-    "coach.trickWon": "คุณกินกองนี้ด้วย {combo} ตอนนี้ได้ {piles} กอง",
-    "coach.trickLost": "{seat} กินกองนี้ด้วย {combo} {why}",
+    "coach.turnWon": "คุณกินกองนี้ด้วย {combo} ตอนนี้ได้ {piles} กอง",
+    "coach.turnLost": "{seat} กินกองนี้ด้วย {combo} {why}",
     "coach.hiddenLost": "{seat} กินกองนี้ด้วย {combo} คุณลงคว่ำ หมากจึงไม่ได้แข่งขัน",
     "coach.roundEnd": "จบรอบ คุณได้ {points} แต้ม รวมเป็น {score}",
     "coach.matchEnd": "จบแมตช์ {winner}",
-    "coach.chuan": "ช้วน! กินครบแปดกอง ได้ 16 แต้ม",
+    "coach.chuan": "ช้วน! กินครบแปดกอง ได้ 24 แต้ม (32 ตัว − 8)",
     "coach.redTie": "ศักดิ์และสีเท่ากัน คนที่ลงก่อนยังนำอยู่",
     "coach.tilesLeft": "เหลือคนละ {n} ตัว",
     "coach.youLead": "คุณนำตาถัดไป",
     "coach.otherLead": "{seat} นำตาถัดไป",
-    "coach.lastTrick": "ตาสุดท้ายของรอบ",
+    "coach.lastTurn": "ตาสุดท้ายของรอบ",
     "coach.rematch": "กดแมตช์ใหม่เพื่อเล่นอีกครั้ง",
     "coach.whyPair": "มีเพียงคู่ที่ใหญ่กว่าและสีเดียวกันเท่านั้นที่ชนะได้",
     "coach.whyStraight": "มีเพียง {type} ที่แข็งกว่าซึ่งชนะได้ ขนาดชุดและคู่ที่ซ้ำมีผล",
@@ -1313,8 +1313,8 @@ const I18N = {
     "toast.handTidied": "จัดมือกลับเป็นพัดแล้ว",
     "toast.modeNext": "การคิดแต้มใหม่จะมีผลในแมตช์ถัดไป",
     "toast.redraw": "โละครั้งที่ {n}: รอบนี้คิดแต้มคูณ {n}",
-    "toast.trickResult": "{winner} กินกองด้วย {combo} — {entries}",
-    "toast.trickResultChuan": "{winner} ปิดช้วนด้วยจุกตัวสุดท้าย — {entries}",
+    "toast.turnResult": "{winner} กินกองด้วย {combo} — {entries}",
+    "toast.turnResultChuan": "{winner} ปิดช้วนด้วยจุกตัวสุดท้าย — {entries}",
     "toast.chuan": "ช้วน! เจ็ดกองกับจุกตัวสุดท้าย",
     "toast.draftDone": "เลือกครบแล้ว คนถือตี่แดงเริ่มก่อน",
     "toast.stayZone": "วางไพ่ไว้ในโซนของคุณเท่านั้น",
@@ -1358,7 +1358,7 @@ const I18N = {
     "undo.whyPair": "คู่ที่ซ้ำตัดสินสี่ฮู้: {winning} มีคู่ที่ใหญ่กว่า",
     "undo.whySet": "ค่าของชุดตัดสิน: {winning} เป็นชุดเรียงหรือชุดเดียวกันที่แข็งกว่า",
     "undo.whyUnknown": "ชุดที่ผู้ชนะเปิดมีศักดิ์ใหญ่กว่าชุดของคุณสำหรับตานี้",
-    "undo.noTrick": "ยังไม่มีตาที่จบให้ย้อน",
+    "undo.noTurn": "ยังไม่มีตาที่จบให้ย้อน",
     "about.intro": "สตูดิโอหน้าเดียวสองภาษาสำหรับเลี๊ยบตุ่ย เกมกินกองไทยที่เล่นด้วยหมากรุกจีน 32 ตัว เล่นคนเดียวกับบอทสามตัว หรือเปิดโต๊ะ WebRTC แบบไม่มีเซิร์ฟเวอร์สำหรับมนุษย์ไม่เกินสี่คน เป็นโต๊ะสอนเล่น ไม่ใช่แอพพนัน เซิร์ฟเวอร์ทัวร์นาเมนต์ หรือกติกาประวัติศาสตร์ฉบับสมบูรณ์",
     "about.how": "หมากแกะสลัก 32 ตัว สี่ที่นั่ง คนละแปดตัว คนถือตี่แดงนำก่อน แต่ละตาเรียกชุด เลี๊ยบ ตุ่ย ซาฮู้ สี่ฮู้ ห้าฮู้ หรือหลักฮู้ แล้วทุกคนส่งจำนวนเท่ากัน ชุดที่เปิดเท่านั้นแข่งขัน ชุดคว่ำไม่แข่งขัน ผู้ชนะกิน 4×N ตัวและนำตาถัดไป",
     "about.credits": "เครดิต",
@@ -1399,7 +1399,7 @@ const I18N = {
     "rules.ex.soldier": "ชุดจุก",
     "rules.ex.soldierBody": "ชุดเรียงกับชุดจุกเป็นคนละประเภท ชนะกันไม่ได้",
     "rules.ex.chuan": "ช้วน",
-    "rules.ex.chuanBody": "เหลือ 7 กองและตัวสุดท้ายเป็นจุก เปิดโชว์เพื่อกินตาสุดท้ายและครบ 8 กอง (16 แต้ม)",
+    "rules.ex.chuanBody": "เหลือ 7 กองและตัวสุดท้ายเป็นจุก เปิดโชว์เพื่อกินตาสุดท้ายและครบ 8 กอง (24 แต้ม: 32 ตัว − 8)",
     "rules.goal": "เป้าหมาย",
     "rules.goalBody": "เก็บกองละสี่ตัว สองกองเมื่อจบรอบคือทุน (0 แต้ม) เกินหรือขาดกองละหนึ่งแต้ม และแปดกองคือช้วน 16 แต้ม ถ้าเหลือ 7 กองและตัวสุดท้ายในมือเป็นจุก เปิดโชว์เพื่อกินตาสุดท้ายและปิดช้วนได้ ผู้ที่ถึงเป้าแมตช์ก่อน (ค่าเริ่มต้น 20 แต้ม) ชนะ",
     "rules.equipment": "อุปกรณ์",
@@ -1570,7 +1570,7 @@ const I18N = {
     "joinRequest.title": "{name} ขอเข้าร่วม",
     "joinRequest.titleMany": "มี {n} คนขอเข้าร่วม",
     "joinRequest.bodyNow": "ให้ {name} นั่งแทน {seat} เลยไหม ชื่อจะแทนบอทบนโต๊ะทันที",
-    "joinRequest.bodyTrick": "ให้ {name} นั่งแทน {seat} หลังจบตานี้ไหม บอทจะเล่นต่อจนจบตา",
+    "joinRequest.bodyTurn": "ให้ {name} นั่งแทน {seat} หลังจบตานี้ไหม บอทจะเล่นต่อจนจบตา",
     "joinRequest.bodyRound": "ให้ {name} นั่งแทน {seat} ในรอบถัดไปไหม บอทจะเล่นต่อจนจบรอบ",
     "joinRequest.bodyMatch": "ให้ {name} นั่งแทน {seat} ในแมตช์ถัดไปไหม บอทจะเล่นต่อจนจบแมตช์",
     "joinRequest.bodyFull": "ไม่มีที่นั่งบอทว่าง ให้ดูอย่างเดียวหรือปฏิเสธได้",
@@ -1645,7 +1645,7 @@ const I18N = {
     "net.rejected.illegal": "ชุดนั้นไม่ถูกกติกา",
     "net.openLobby": "ผู้เล่นหลายคน",
     "net.resumeMatch": "เล่นต่อ",
-    "net.resumeMeta": "รอบ {round} · ตา {trick} · {score} แต้ม",
+    "net.resumeMeta": "รอบ {round} · ตา {turnNo} · {score} แต้ม",
     "net.leaveTitle": "ออกจากห้องหรือไม่?",
     "net.leaveBodyHost": "การออกจะปิดห้องสำหรับแขกทุกคน ที่นั่งของแขกทุกคนจะกลายเป็นบอท และรหัสห้องจะใช้ไม่ได้อีก",
     "net.leaveBodyGuest": "คุณจะออกจากโต๊ะ บอทจะรับที่นั่งของคุณและแมตช์จะดำเนินต่อ",
@@ -1778,7 +1778,7 @@ function comboSummary(combo, lang = LANG) {
 }
 
 /* Thai readers asked for the tile's Chinese character and meaning next to the
-   transliterated name. Used by the trick result and history comparison so
+   transliterated name. Used by the turn result and history comparison so
    "แบ้" also reads "馬 · ม้า" without cluttering logs and the coach. */
 function comboSummaryGloss(combo, lang = LANG) {
   const base = comboSummaryBase(combo, lang);
@@ -2049,9 +2049,9 @@ function chooseLead(hand, options = {}) {
     const winChance = Math.pow(power, 2.1);
     const cost = comboCost(combo) / (combo.count * 7);
     const generalTax = combo.type === "single" && combo.score[0] === 7 ? 1.6 : 0;
-    const lastTrick = hand.length <= combo.count;
+    const lastTurn = hand.length <= combo.count;
     const lengthBonus = combo.count > 1 ? 0.28 * combo.count : 0;
-    const score = winChance * (2.1 + lengthBonus) - cost * 0.55 - generalTax + (lastTrick ? 1.4 : 0) + (options.jitter === false ? 0 : random() * 0.32);
+    const score = winChance * (2.1 + lengthBonus) - cost * 0.55 - generalTax + (lastTurn ? 1.4 : 0) + (options.jitter === false ? 0 : random() * 0.32);
     if (score > bestScore) { bestScore = score; best = combo; }
   }
   return best;
@@ -2242,7 +2242,7 @@ function seatProfile(seat) {
 function makeState(seed) {  return {
     phase: "dealing",
     round: 1,
-    trick: 0,
+    turnNo: 0,
     dealer: 3,
     leader: 0,
     turn: 0,
@@ -2250,8 +2250,8 @@ function makeState(seed) {  return {
     captures: [[], [], [], []],
     captureHidden: [[], [], [], []],
     captureFrom: [[], [], [], []],
-    captureTrick: [[], [], [], []],
-    trickArchive: [],
+    captureTurn: [[], [], [], []],
+    turnArchive: [],
     center: [],
     lead: null,
     best: null,
@@ -2280,7 +2280,7 @@ function makeState(seed) {  return {
     history: [],
     log: [],
     snapshot: null,
-    lastTrick: null,
+    lastTurn: null,
     lastRound: null,
     winner: null,
     startedAt: Date.now(),
@@ -2319,7 +2319,7 @@ function serializableState(source = state) {
   copy.captureHidden = [0, 1, 2, 3].map((seat) => (
     (source.captures[seat] || []).map((_, index) => Boolean(source.captureHidden?.[seat]?.[index]))
   ));
-  copy.trickArchive = (source.trickArchive || []).map((record) => ({
+  copy.turnArchive = (source.turnArchive || []).map((record) => ({
     ...record,
     combo: serializeCombo(record.combo),
     entries: (record.entries || []).map((entry) => ({
@@ -2329,9 +2329,9 @@ function serializableState(source = state) {
     }))
   }));
   copy.draftPool = source.draftPool ? source.draftPool.map((tile) => (typeof tile === "string" ? tile : tile.id)) : null;
-  copy.captureTrick = [0, 1, 2, 3].map((seat) => (
+  copy.captureTurn = [0, 1, 2, 3].map((seat) => (
     (source.captures[seat] || []).map((_, index) => (
-      Number.isInteger(source.captureTrick?.[seat]?.[index]) ? source.captureTrick[seat][index] : null
+      Number.isInteger(source.captureTurn?.[seat]?.[index]) ? source.captureTurn[seat][index] : null
     ))
   ));
   copy.captureFrom = [0, 1, 2, 3].map((seat) => (
@@ -2347,12 +2347,12 @@ function serializableState(source = state) {
   }));
   copy.lead = source.lead ? { seat: source.lead.seat, combo: serializeCombo(source.lead.combo) } : null;
   copy.best = source.best ? { seat: source.best.seat, combo: serializeCombo(source.best.combo) } : null;
-  if (source.lastTrick) {
-    copy.lastTrick = {
-      ...source.lastTrick,
-      combo: serializeCombo(source.lastTrick.combo),
-      humanCombo: serializeCombo(source.lastTrick.humanCombo),
-      entries: (source.lastTrick.entries || []).map((entry) => ({ ...entry, combo: serializeCombo(entry.combo) }))
+  if (source.lastTurn) {
+    copy.lastTurn = {
+      ...source.lastTurn,
+      combo: serializeCombo(source.lastTurn.combo),
+      humanCombo: serializeCombo(source.lastTurn.humanCombo),
+      entries: (source.lastTurn.entries || []).map((entry) => ({ ...entry, combo: serializeCombo(entry.combo) }))
     };
   }
   copy.log = (source.log || []).map((entry) => ({ ...entry, combo: serializeCombo(entry.combo) }));
@@ -2369,7 +2369,7 @@ function saveStats() {
 
 function markTurnClock(force = false) {
   if (!net || !state) return;
-  const key = `${state.round}:${state.trick}:${state.phase}:${state.turn}`;
+  const key = `${state.round}:${state.turnNo}:${state.phase}:${state.turn}`;
   if (force || net.turnKey !== key) {
     net.turnKey = key;
     net.turnSince = Date.now();
@@ -2475,6 +2475,24 @@ function loadStats() {
   } catch { stats = clone(DEFAULT_STATS); }
 }
 
+/* Saves written before the Trick→Turn rename still carry `trick`,
+   `trickArchive`, `lastTrick` and `captureTrick`. Adopt them once so an
+   in-progress local game survives the update; new writes use turn keys. */
+function adoptLegacyTurnKeys(game) {
+  if (!game || typeof game !== "object") return game;
+  const pairs = [["trick", "turnNo"], ["trickArchive", "turnArchive"], ["lastTrick", "lastTurn"], ["captureTrick", "captureTurn"]];
+  for (const [oldKey, newKey] of pairs) {
+    if (!(newKey in game) && oldKey in game) game[newKey] = game[oldKey];
+  }
+  for (const list of [game.turnArchive, game.history, game.log]) {
+    if (!Array.isArray(list)) continue;
+    for (const entry of list) {
+      if (entry && typeof entry === "object" && !("turnNo" in entry) && "trick" in entry) entry.turnNo = entry.trick;
+    }
+  }
+  return game;
+}
+
 function loadMatch() {
   try {
     const raw = localStorage.getItem(APP.storageKey);
@@ -2482,7 +2500,7 @@ function loadMatch() {
     const parsed = JSON.parse(raw);
     if (!parsed || parsed.format !== APP.format || !parsed.game) return false;
     if (parsed.network) return false; // network rooms are not restorable across reloads
-    const game = parsed.game;
+    const game = adoptLegacyTurnKeys(parsed.game);
     if (!Array.isArray(game.hands) || game.hands.length !== 4) return false;
     if (!Array.isArray(game.scores) || game.scores.length !== 4) return false;
     if (!["lead", "follow", "showdown", "roundEnd", "matchEnd"].includes(game.phase)) return false;
@@ -2502,9 +2520,9 @@ function loadMatch() {
       (state.captures[seat] || []).map((_, index) => Boolean(game.captureHidden?.[seat]?.[index]))
     ));
     state.draftPool = game.draftPool ? game.draftPool.map((id) => TILE_BY_ID[id]).filter(Boolean) : null;
-    state.captureTrick = [0, 1, 2, 3].map((seat) => (
+    state.captureTurn = [0, 1, 2, 3].map((seat) => (
       (state.captures[seat] || []).map((_, index) => (
-        Number.isInteger(game.captureTrick?.[seat]?.[index]) ? game.captureTrick[seat][index] : null
+        Number.isInteger(game.captureTurn?.[seat]?.[index]) ? game.captureTurn[seat][index] : null
       ))
     ));
     state.captureFrom = [0, 1, 2, 3].map((seat) => (
@@ -2577,7 +2595,7 @@ function handHasHigh(hand) {
 function canRedraw(seat) {
   if (!state || state.draftMode) return false;
   if (!["lead", "bid"].includes(state.phase)) return false;
-  if (state.trick !== 0 && state.phase !== "bid") return false;
+  if (state.turnNo !== 0 && state.phase !== "bid") return false;
   if (state.center.length || state.lead) return false;
   if (state.phase === "bid" && state.bidTurn > 0) return false;
   if (state.phase === "lead" && state.bids?.some((value) => Number.isInteger(value))) return false;
@@ -2589,7 +2607,7 @@ function applyRedraw(seat) {
   if (!canRedraw(seat)) return false;
   state.redraws = (state.redraws || 0) + 1;
   state.multiplier = 1 + state.redraws;
-  state.log.push({ kind: "redraw", trick: 0, seat, count: state.redraws });
+  state.log.push({ kind: "redraw", turnNo: 0, seat, count: state.redraws });
   audio?.play("shuffle", seat);
   toast(t("toast.redraw", { n: state.redraws + 1 }), "gold");
   dealRound(seat);
@@ -2610,10 +2628,10 @@ function claimChuan(seat) {
   state.hands[seat] = [];
   state.center.push({ seat, tiles: [tile], combo, revealed: true, chuan: true });
   state.best = { seat, combo };
-  state.log.push({ kind: "chuan", trick: state.trick + 1, seat });
+  state.log.push({ kind: "chuan", turnNo: state.turnNo + 1, seat });
   toast(t("toast.chuan"), "gold");
   state.snapshot = null;
-  resolveTrick();
+  resolveTurn();
   return true;
 }
 
@@ -2656,7 +2674,7 @@ function placeBid(seat, value) {
   if (state.bidTurn === 3 && bidForbidden() === value) return false;
   state.bids[seat] = value;
   state.bidTurn += 1;
-  state.log.push({ kind: "bid", trick: 0, seat, value });
+  state.log.push({ kind: "bid", turnNo: 0, seat, value });
   if (state.bidTurn >= TABLE_SEATS) {
     state.phase = "lead";
     state.leader = state.bidOrder[0];
@@ -2696,13 +2714,13 @@ function startDraft() {
   state.captures = [[], [], [], []];
   state.captureHidden = [[], [], [], []];
   state.captureFrom = [[], [], [], []];
-  state.captureTrick = [[], [], [], []];
+  state.captureTurn = [[], [], [], []];
   state.center = [];
   state.lead = null;
   state.best = null;
   state.selected = [];
-  state.lastTrick = null;
-  state.trick = 0;
+  state.lastTurn = null;
+  state.turnNo = 0;
   state.phase = "draft";
   state.handCounts = [0, 0, 0, 0];
   state.winner = null;
@@ -2737,7 +2755,7 @@ function draftPick(seat, ids) {
     if (!state.hiddenTags[seat][tile.id]) state.hiddenTags[seat][tile.id] = `${GHOST_PREFIX}${seat}-${index}`;
   });
   state.handCounts = handCounts();
-  state.log.push({ kind: "draft", trick: 0, seat, count: tiles.length });
+  state.log.push({ kind: "draft", turnNo: 0, seat, count: tiles.length });
   state.draftIndex = (state.draftIndex + 1) % TABLE_SEATS;
   if (state.draftIndex === 0) state.draftCycle += 1;
   if (state.hands.every((hand) => hand.length === 8)) { finishDraft(); return true; }
@@ -2760,7 +2778,7 @@ function finishDraft() {
   state.phase = "lead";
   state.handCounts = handCounts();
   if (scene) scene.sync(state);
-  beginTrick();
+  beginTurn();
   toast(t("toast.draftDone"), "jade");
 }
 
@@ -2781,7 +2799,7 @@ function aiDraftPick(seat) {
   draftPick(seat, picks);
 }
 
-function beginTrick() {
+function beginTurn() {
   if (!state) return;
   clearTimeout(actionTimer);
   if (state.hands.every((hand) => hand.length === 0)) {
@@ -2789,16 +2807,16 @@ function beginTrick() {
     return;
   }
   state.snapshot = { game: serializableState(state), stats: clone(stats), hiddenTags: clone(state.hiddenTags), at: Date.now() };
-  state.trick += 1;
+  state.turnNo += 1;
   state.center = [];
   state.lead = null;
   state.best = null;
   state.selected = [];
-  state.lastTrick = null;
+  state.lastTurn = null;
   state.turn = state.leader;
   state.phase = "lead";
   state.handCounts = handCounts();
-  if (queuedGuests.size) promoteQueuedGuests("trick");
+  if (queuedGuests.size) promoteQueuedGuests("turn");
   updateUndoButton();
   renderAll();
   saveMatch();
@@ -2851,14 +2869,14 @@ function dealRound(leaderHint = null) {
   state.captures = [[], [], [], []];
   state.captureHidden = [[], [], [], []];
   state.captureFrom = [[], [], [], []];
-  state.captureTrick = [[], [], [], []];
+  state.captureTurn = [[], [], [], []];
   state.center = [];
   state.lead = null;
   state.best = null;
   state.selected = [];
-  state.lastTrick = null;
+  state.lastTurn = null;
   state.lastRound = state.lastRound || null;
-  state.trick = 0;
+  state.turnNo = 0;
   state.phase = "dealing";
   state.handCounts = [8, 8, 8, 8];
   state.winner = null;
@@ -2899,7 +2917,7 @@ function dealRound(leaderHint = null) {
     setTimeout(() => {
       if (!state || state.phase !== "dealing") return;
       if (state.mode === "bid") beginBidPhase();
-      else beginTrick();
+      else beginTurn();
       toast(t(state.blindPick ? "toast.blindDeal" : "toast.dealt", { seat: seatName(state.leader) }));
     }, state.fast ? 10 : 380);
   };
@@ -2919,8 +2937,8 @@ function beginMatch(options = {}) {
   clearTimeout(actionTimer);
   actionToken += 1;
   resumeAvailable = false;
-  pendingTrickFinish = null;
-  trickResultGate = false;
+  pendingTurnFinish = null;
+  turnResultGate = false;
   lastResultKey = "";
   lastFocusKey = "";
   state = makeState(options.seed ?? bootSeed ?? Math.floor(Math.random() * 1e9));
@@ -2930,7 +2948,7 @@ function beginMatch(options = {}) {
   state.scores = [0, 0, 0, 0];
   state.history = [];
   state.log = [];
-  state.trickArchive = [];
+  state.turnArchive = [];
   state.lastRound = null;
   state.snapshot = null;
   state.target = options.target ?? prefs.target ?? 20;
@@ -2960,10 +2978,10 @@ function startNextRound() {
   }
   if (!state || state.phase === "matchEnd") return;
   clearTimeout(actionTimer);
-  pendingTrickFinish = null;
-  trickResultGate = false;
+  pendingTurnFinish = null;
+  turnResultGate = false;
   lastResultKey = "";
-  closeModal("trickResultModal");
+  closeModal("turnResultModal");
   state.round += 1;
   state.dealer = (state.dealer + 1) % 4;
   state.target = state.target || 20;
@@ -2976,14 +2994,14 @@ function startNextRound() {
   state.winner = null;
   state.log = [];
   state.snapshot = null;
-  const lastWinner = state.lastTrick?.winner ?? state.dealer;
+  const lastWinner = state.lastTurn?.winner ?? state.dealer;
   hideAllModals();
   renderAll();
   dealRound(lastWinner);
   toast(t("toast.nextRound", { n: state.round }));
 }
 
-function leadTrick(seat, tileIds, comboOverride = null) {
+function leadTurn(seat, tileIds, comboOverride = null) {
   if (!state || state.phase !== "lead" || state.turn !== seat) return false;
   const hand = state.hands[seat];
   const tiles = tileIds.map((id) => hand.find((tile) => tile.id === id)).filter(Boolean);
@@ -2999,7 +3017,7 @@ function leadTrick(seat, tileIds, comboOverride = null) {
   state.turn = nextSeat(seat);
   state.phase = "follow";
   state.handCounts = handCounts();
-  state.log.push({ kind: "lead", trick: state.trick, seat, callType: combo.type, callCount: combo.count });
+  state.log.push({ kind: "lead", turnNo: state.turnNo, seat, callType: combo.type, callCount: combo.count });
   audio?.play("clack", seat);
   renderAll();
   saveMatch();
@@ -3024,7 +3042,7 @@ function submitPlay(seat, tileIds, reveal) {
   state.selected = [];
   state.handCounts = handCounts();
   state.turn = nextSeat(seat);
-  state.log.push({ kind: shown ? "challenge" : "hidden", trick: state.trick, seat, combo: clone(combo || null), revealed: shown });
+  state.log.push({ kind: shown ? "challenge" : "hidden", turnNo: state.turnNo, seat, combo: clone(combo || null), revealed: shown });
   audio?.play(shown ? "flip" : "clack", seat);
   renderAll();
   saveMatch();
@@ -3069,14 +3087,14 @@ function beginShowdown() {
     state.showdownQueue.push(cursor);
     cursor = nextSeat(cursor);
   }
-  state.log.push({ kind: "showdown", trick: state.trick, seat: leaderEntry.seat });
+  state.log.push({ kind: "showdown", turnNo: state.turnNo, seat: leaderEntry.seat });
   advanceShowdown();
 }
 
 function advanceShowdown() {
   if (!state || state.phase !== "showdown") return;
   if (!state.showdownQueue?.length) {
-    resolveTrick();
+    resolveTurn();
     return;
   }
   state.turn = state.showdownQueue[0];
@@ -3087,7 +3105,7 @@ function advanceShowdown() {
   if (isBotSeat(state.turn)) scheduleAI(900);
 }
 
-function trickCardsMarkup(entry, showTiles, isWinner) {
+function turnCardsMarkup(entry, showTiles, isWinner) {
   const tiles = entry.tiles || [];
   if (!showTiles) {
     return tiles.map(() => (
@@ -3104,52 +3122,52 @@ function trickCardsMarkup(entry, showTiles, isWinner) {
   }).join("");
 }
 
-/* One comparison layout for the reveal result, the trick history and (in spirit) the captured pile. */
-function trickCompareMarkup(entries, winnerSeat, showFor = null) {
-  return `<div class="trick-compare">${(entries || []).map((entry) => {
+/* One comparison layout for the reveal result, the turn history and (in spirit) the captured pile. */
+function turnCompareMarkup(entries, winnerSeat, showFor = null) {
+  return `<div class="turn-compare">${(entries || []).map((entry) => {
     const isWinner = entry.seat === winnerSeat;
     const showTiles = entry.revealed || entry.seat === showFor;
     const label = showTiles && entry.combo ? comboSummaryGloss(entry.combo) : t("showdown.hidden");
-    return `<section class="trick-seat ${isWinner ? "win" : ""}" role="group" aria-label="${escapeHTML(seatName(entry.seat))}">
-      <div class="trick-seat-head">
+    return `<section class="turn-seat ${isWinner ? "win" : ""}" role="group" aria-label="${escapeHTML(seatName(entry.seat))}">
+      <div class="turn-seat-head">
         <b>${isWinner ? `<span class="seat-tick" role="img" aria-label="${escapeHTML(t("log.winner"))}">✓</span>` : ""}${escapeHTML(seatName(entry.seat))}</b>
         <span>${escapeHTML(label)}</span>
       </div>
-      <div class="trick-cards">${trickCardsMarkup(entry, showTiles, isWinner)}</div>
+      <div class="turn-cards">${turnCardsMarkup(entry, showTiles, isWinner)}</div>
     </section>`;
   }).join("")}</div>`;
 }
 
-let pendingTrickFinish = null;
-let trickResultGate = false;
+let pendingTurnFinish = null;
+let turnResultGate = false;
 let lastResultKey = "";
 
-/* The final trick summary is shown only after every seat has shown or stayed hidden. */
-function showTrickResult(record) {
+/* The final turn result is shown only after every seat has shown or stayed hidden. */
+function showTurnResult(record) {
   if (!record) return;
-  const key = `${record.round}:${record.trick}`;
+  const key = `${record.round}:${record.turnNo}`;
   if (lastResultKey === key) return;
   lastResultKey = key;
-  const body = $("#trickResultBody");
+  const body = $("#turnResultBody");
   if (body) {
-    body.innerHTML = `${trickCompareMarkup(record.entries || [], record.winner)}
+    body.innerHTML = `${turnCompareMarkup(record.entries || [], record.winner)}
       <div class="pile-why">
-        <b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummaryGloss(record.combo), n: record.captured }))}</b>
+        <b>${escapeHTML(t("lastTurn.winner", { seat: seatName(record.winner), combo: comboSummaryGloss(record.combo), n: record.captured }))}</b>
         <p>${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</p>
       </div>`;
   }
-  const modal = $("#trickResultModal");
+  const modal = $("#turnResultModal");
   if (modal) modal.hidden = false;
   armResultAutoClose();
   audio?.play(record.winner === MY_SEAT ? "win" : "lose", 0);
 }
 
-function closeTrickResult() {
+function closeTurnResult() {
   clearResultAutoClose();
-  closeModal("trickResultModal");
-  const next = pendingTrickFinish;
-  pendingTrickFinish = null;
-  trickResultGate = false;
+  closeModal("turnResultModal");
+  const next = pendingTurnFinish;
+  pendingTurnFinish = null;
+  turnResultGate = false;
   if (next) setTimeout(next, 200);
 }
 
@@ -3161,7 +3179,7 @@ function applyShowdown(seat, shown) {
   if (shown && showdownCanBeat(seat)) state.best = { seat, combo: entry.combo };
   state.log.push({
     kind: shown ? "challenge" : "hidden",
-    trick: state.trick,
+    turnNo: state.turnNo,
     seat,
     combo: entry.combo ? clone(entry.combo) : null,
     revealed: shown
@@ -3172,7 +3190,7 @@ function applyShowdown(seat, shown) {
   saveMatch();
   if (scene) scene.sync(state);
   if (state.showdownQueue.length) advanceShowdown();
-  else resolveTrick();
+  else resolveTurn();
   return true;
 }
 
@@ -3185,7 +3203,7 @@ function showdown(seat, reveal) {
   return applyShowdown(seat, shown);
 }
 
-function resolveTrick() {
+function resolveTurn() {
   if (!state || !state.best) return;
   state.phase = "resolving";
   const winner = state.best.seat;
@@ -3195,16 +3213,16 @@ function resolveTrick() {
   const allTiles = state.center.flatMap((entry) => entry.tiles);
   const captureFlags = state.center.flatMap((entry) => entry.tiles.map(() => !entry.revealed));
   const captureFrom = state.center.flatMap((entry) => entry.tiles.map(() => entry.seat));
-  const captureTrick = state.center.flatMap((entry) => entry.tiles.map(() => state.trick));
+  const captureTurn = state.center.flatMap((entry) => entry.tiles.map(() => state.turnNo));
   const localEntry = state.center.find((entry) => entry.seat === MY_SEAT);
   state.captures[winner].push(...allTiles);
   state.captureHidden[winner].push(...captureFlags);
   state.captureFrom[winner].push(...captureFrom);
-  state.captureTrick[winner].push(...captureTrick);
-  state.trickArchive = state.trickArchive || [];
+  state.captureTurn[winner].push(...captureTurn);
+  state.turnArchive = state.turnArchive || [];
   const record = {
     round: state.round,
-    trick: state.trick,
+    turnNo: state.turnNo,
     leader: state.lead?.seat ?? null,
     call: state.lead?.combo ? { type: state.lead.combo.type, count: state.lead.combo.count } : null,
     winner,
@@ -3220,9 +3238,9 @@ function resolveTrick() {
       }))
     }))
   };
-  state.trickArchive.push(record);
-  if (state.trickArchive.length > 400) state.trickArchive.splice(0, state.trickArchive.length - 400);
-  state.lastTrick = {
+  state.turnArchive.push(record);
+  if (state.turnArchive.length > 400) state.turnArchive.splice(0, state.turnArchive.length - 400);
+  state.lastTurn = {
     winner,
     combo: clone(winningCombo),
     chuan,
@@ -3238,7 +3256,7 @@ function resolveTrick() {
     humanTiles: localEntry ? localEntry.tiles.map((tile) => tile.id) : [],
     captured
   };
-  state.log.push({ kind: "win", trick: state.trick, seat: winner, combo: clone(winningCombo), count: captured, human: winner === MY_SEAT });
+  state.log.push({ kind: "win", turnNo: state.turnNo, seat: winner, combo: clone(winningCombo), count: captured, human: winner === MY_SEAT });
   state.center = [];
   state.selected = [];
   state.handCounts = handCounts();
@@ -3249,10 +3267,10 @@ function resolveTrick() {
 
   if (scene) scene.collect(state, winner, allTiles);
   audio?.play(winner === MY_SEAT ? "win" : "sweep", winner);
-  const comparison = state.lastTrick.entries.map((entry) => (
+  const comparison = state.lastTurn.entries.map((entry) => (
     `${seatName(entry.seat)}: ${entry.revealed && entry.combo ? comboSummaryGloss(entry.combo) : t("showdown.hidden")}`
   )).join(" · ");
-  showResult(t(chuan ? "toast.trickResultChuan" : "toast.trickResult", {
+  showResult(t(chuan ? "toast.turnResultChuan" : "toast.turnResult", {
     winner: seatName(winner),
     combo: comboSummary(winningCombo),
     entries: comparison
@@ -3260,13 +3278,13 @@ function resolveTrick() {
 
   /* Every local human sees the turn result, guests included: without it a
      guest's next autoplay move fires under a sheet the host is still reading.
-     Only the authority blocks the next trick on it; a guest just gets the
+     Only the authority blocks the next turn on it; a guest just gets the
      same pause and the same auto-close setting. */
-  showTrickResult(record);
+  showTurnResult(record);
   /* The authority waits for its own result sheet before dealing the next
-     trick, so the host's turn never begins under a sheet it is still reading.
+     turn, so the host's turn never begins under a sheet it is still reading.
      Guests' sheets stay local: they only hold their own autoplay. */
-  trickResultGate = true;
+  turnResultGate = true;
 
   const finish = () => {
     if (!state || state.phase !== "resolving") return;
@@ -3274,18 +3292,18 @@ function resolveTrick() {
       endRound();
     } else {
       state.leader = winner;
-      beginTrick();
+      beginTurn();
     }
   };
-  if (trickResultGate) pendingTrickFinish = finish;
+  if (turnResultGate) pendingTurnFinish = finish;
   else setTimeout(finish, state.fast ? 5 : 1250);
 }
 
 function endRound() {
   if (!state) return;
-  closeModal("trickResultModal");
-  pendingTrickFinish = null;
-  trickResultGate = false;
+  closeModal("turnResultModal");
+  pendingTurnFinish = null;
+  turnResultGate = false;
   clearTimeout(actionTimer);
   const piles = state.captures.map((pile) => scoredPilesFromTiles(pile));
   const multiplier = state.multiplier || 1;
@@ -3334,15 +3352,15 @@ function endRound() {
   showRoundSummary(false);
 }
 
-function undoLastTrick() {
+function undoLastTurn() {
   if (isClient()) {
     toast(t("net.hostOnly"));
     return false;
   }
-  pendingTrickFinish = null;
-  trickResultGate = false;
+  pendingTurnFinish = null;
+  turnResultGate = false;
   lastResultKey = "";
-  closeModal("trickResultModal");
+  closeModal("turnResultModal");
   if (!state || !state.snapshot) {
     toast(t("toast.noUndo"));
     return false;
@@ -3355,7 +3373,7 @@ function undoLastTrick() {
   state.lead = null;
   state.best = null;
   state.selected = [];
-  state.lastTrick = null;
+  state.lastTurn = null;
   state.phase = "lead";
   state.turn = state.leader;
   state.snapshot = null;
@@ -3370,7 +3388,7 @@ function undoLastTrick() {
   updateUndoButton();
   renderAll();
   if (scene) scene.sync(state);
-  beginTrick();
+  beginTurn();
   toast(t("toast.undone"), "jade");
   audio?.play("undo", 0);
   return true;
@@ -3381,7 +3399,7 @@ function aiLead(seat) {
   const hand = state.hands[seat];
   const combo = chooseLead(hand);
   if (!combo) return;
-  leadTrick(seat, combo.tiles.map((tile) => tile.id));
+  leadTurn(seat, combo.tiles.map((tile) => tile.id));
 }
 
 function aiShowdown(seat) {
@@ -3418,7 +3436,7 @@ function humanLead() {
     }
     return;
   }
-  if (leadTrick(MY_SEAT, tiles.map((tile) => tile.id))) {
+  if (leadTurn(MY_SEAT, tiles.map((tile) => tile.id))) {
     audio?.play("clack", MY_SEAT);
     coachTick();
   }
@@ -3518,7 +3536,7 @@ function applyHint(options = {}) {
 /* Autoplay must never act behind a sheet the player is still reading. The turn
    result and the round summary are decisions, not background notices: hold the
    seat until they are closed, or the table jumps ahead while the player reads. */
-const AUTOPLAY_HOLD_MODALS = ["trickResultModal", "summaryModal"];
+const AUTOPLAY_HOLD_MODALS = ["turnResultModal", "summaryModal"];
 
 function autoplayHeld() {
   return AUTOPLAY_HOLD_MODALS.some((id) => {
@@ -3543,7 +3561,7 @@ function scheduleAutoplay() {
     autoPlayKey = "";
     return;
   }
-  const key = `${state.round}:${state.trick}:${state.phase}:${state.turn}:${state.bidTurn ?? "-"}:${state.draftIndex ?? "-"}`;
+  const key = `${state.round}:${state.turnNo}:${state.phase}:${state.turn}:${state.bidTurn ?? "-"}:${state.draftIndex ?? "-"}`;
   if (key === autoPlayKey) return;
   autoPlayKey = key;
   clearTimeout(autoPlayTimer);
@@ -3667,7 +3685,7 @@ function coachMessage() {
   if (!state) return t("coach.welcome");
   if (state.phase === "dealing") return t("coach.dealing");
   if (state.phase === "resolving") {
-    return t("coach.trickWon", { combo: comboSummary(state.best?.combo), piles: scoredPilesFromTiles(state.captures[MY_SEAT]) });
+    return t("coach.turnWon", { combo: comboSummary(state.best?.combo), piles: scoredPilesFromTiles(state.captures[MY_SEAT]) });
   }
   if (state.phase === "roundEnd") {
     return t("coach.roundEnd", { points: state.roundPoints[MY_SEAT], score: state.scores[MY_SEAT] });
@@ -3725,14 +3743,14 @@ function coachMeta() {
   const left = counts[MY_SEAT];
   const pieces = [`${t("coach.tilesLeft", { n: left })}`];
   if (state.phase === "follow" && state.lead) {
-    pieces.push(`${t("hud.trick")} ${state.trick} · ${comboName(state.lead.combo.type)} ×${state.lead.combo.count}`);
+    pieces.push(`${t("hud.turnNo")} ${state.turnNo} · ${comboName(state.lead.combo.type)} ×${state.lead.combo.count}`);
     pieces.push(t("coach.allHidden"));
   } else if (state.phase === "lead" && state.turn === MY_SEAT) {
     pieces.push(t("coach.youLead"));
   } else if (state.phase === "lead") {
     pieces.push(t("coach.otherLead", { seat: seatName(state.turn) }));
   }
-  if (left <= 3 && left > 0) pieces.push(t("coach.lastTrick"));
+  if (left <= 3 && left > 0) pieces.push(t("coach.lastTurn"));
   return pieces.join(" · ");
 }
 
@@ -3776,7 +3794,7 @@ function openModal(id) {
 function closeModal(id) {
   const modal = $(`#${id}`);
   if (modal) modal.hidden = true;
-  if (id === "trickResultModal") clearResultAutoClose();
+  if (id === "turnResultModal") clearResultAutoClose();
   if (AUTOPLAY_HOLD_MODALS.includes(id)) scheduleAutoplay();
   if (id === "summaryModal") stopParty();
   if (id === "inviteModal") renderJoinRequestPopup();
@@ -3912,7 +3930,7 @@ function showRoundSummary(matchEnded) {
   /* The round summary replaces any turn-result sheet left open on this device;
      its timer must not fire later and close something else. */
   clearResultAutoClose();
-  closeModal("trickResultModal");
+  closeModal("turnResultModal");
   const modal = $("#summaryModal");
   if (!modal || !state) return;
   const isMatch = Boolean(matchEnded || state.phase === "matchEnd");
@@ -3924,7 +3942,7 @@ function showRoundSummary(matchEnded) {
       <td class="num">${state.lastRound?.points?.[seat.id] ?? 0}</td>
       <td class="num">${state.scores[seat.id]}</td>
     </tr>`).join("");
-  const chuan = state.lastRound?.chuan ? `<div class="summary-note">${escapeHTML(t("summary.chuan"))} — 16 ${escapeHTML(t("summary.points"))}.</div>` : "";
+  const chuan = state.lastRound?.chuan ? `<div class="summary-note">${escapeHTML(t("summary.chuan"))} — 24 ${escapeHTML(t("summary.points"))}.</div>` : "";
   const winnerLine = isMatch
     ? `<div class="summary-note">${escapeHTML(state.winner === MY_SEAT ? t("summary.win") : state.winner === -1 ? t("summary.draw") : t("summary.lose", { seat: seatName(state.winner) }))}</div>`
     : "";
@@ -3965,16 +3983,16 @@ function showRoundSummary(matchEnded) {
 }
 
 function buildUndoExplanation() {
-  if (!state || !state.lastTrick) return t("undo.noTrick");
-  const trick = state.lastTrick;
-  const winnerCombo = trick.combo;
-  const humanCombo = trick.humanCombo;
-  const winner = seatName(trick.winner);
+  if (!state || !state.lastTurn) return t("undo.noTurn");
+  const lastTurn = state.lastTurn;
+  const winnerCombo = lastTurn.combo;
+  const humanCombo = lastTurn.humanCombo;
+  const winner = seatName(lastTurn.winner);
   const youPlayed = humanCombo ? comboSummary(humanCombo) : t("undo.faceDown");
   const winnerPlayed = winnerCombo ? comboSummary(winnerCombo) : "—";
   let why = t("undo.whyUnknown");
-  if (trick.chuan) why = t("undo.whyChuan");
-  else if (!trick.humanRevealed) why = t("undo.whyHidden");
+  if (lastTurn.chuan) why = t("undo.whyChuan");
+  else if (!lastTurn.humanRevealed) why = t("undo.whyHidden");
   else if (humanCombo && winnerCombo) {
     if (humanCombo.type !== winnerCombo.type) why = t("undo.whyType");
     else if (["seehoo"].includes(winnerCombo.type)) why = t("undo.whyPair", { winning: winnerPlayed });
@@ -3991,7 +4009,7 @@ function buildUndoExplanation() {
   return `
     <p>${escapeHTML(t("undo.intro"))}</p>
     <div class="undo-compare">
-      <div class="undo-side"><span>${escapeHTML(t("undo.youPlayed"))}</span><b>${escapeHTML(youPlayed)}</b><span>${trick.humanSeat === MY_SEAT ? escapeHTML(t("summary.you")) : ""}</span></div>
+      <div class="undo-side"><span>${escapeHTML(t("undo.youPlayed"))}</span><b>${escapeHTML(youPlayed)}</b><span>${lastTurn.humanSeat === MY_SEAT ? escapeHTML(t("summary.you")) : ""}</span></div>
       <div class="undo-vs">VS</div>
       <div class="undo-side"><span>${escapeHTML(t("undo.winnerPlayed", { seat: winner }))}</span><b>${escapeHTML(winnerPlayed)}</b><span>${escapeHTML(winner)}</span></div>
     </div>
@@ -4002,8 +4020,8 @@ function buildUndoExplanation() {
 }
 
 function showUndoExplanation() {
-  if (!state || !state.lastTrick) {
-    toast(t("undo.noTrick"));
+  if (!state || !state.lastTurn) {
+    toast(t("undo.noTurn"));
     return;
   }
   $("#undoBody").innerHTML = buildUndoExplanation();
@@ -4048,10 +4066,10 @@ function renderAll() {
 let historyFollowLatest = true;
 
 function refreshHistoryModal() {
-  const modal = $("#lastTrickModal");
+  const modal = $("#lastTurnModal");
   if (!modal || modal.hidden) return;
   if (historyFollowLatest) renderLogBrowser();
-  else renderLogBrowser($("#logRoundSelect")?.value, $("#logTrickSelect")?.value);
+  else renderLogBrowser($("#logRoundSelect")?.value, $("#logTurnSelect")?.value);
 }
 
 let lastFocusKey = "";
@@ -4078,15 +4096,15 @@ function resetBoardView() {
 
 function focusTurnIfNeeded() {
   if (!state) return;
-  const key = `${state.round}:${state.trick}:${state.phase}:${state.turn}`;
+  const key = `${state.round}:${state.turnNo}:${state.phase}:${state.turn}`;
   const changed = key !== lastFocusKey;
   lastFocusKey = key;
   if (!changed || state.turn !== MY_SEAT) return;
   if (!["lead", "follow", "showdown", "draft"].includes(state.phase)) return;
   const closed = [];
-  const history = $("#lastTrickModal");
+  const history = $("#lastTurnModal");
   if (history && !history.hidden) {
-    closeModal("lastTrickModal");
+    closeModal("lastTurnModal");
     closed.push("history");
   }
   const pile = $("#pileModal");
@@ -4094,9 +4112,9 @@ function focusTurnIfNeeded() {
     closeModal("pileModal");
     closed.push("pile");
   }
-  const result = $("#trickResultModal");
+  const result = $("#turnResultModal");
   if (isNetworked() && result && !result.hidden) {
-    closeTrickResult();
+    closeTurnResult();
     closed.push("result");
   }
   if (closed.length) toast(t("toast.yourTurn"), "gold");
@@ -4104,7 +4122,7 @@ function focusTurnIfNeeded() {
 
 function renderHUD() {
   $("#roundChip").textContent = state.round;
-  $("#trickChip").textContent = `${state.trick}`;
+  $("#turnNoChip").textContent = `${state.turnNo}`;
   const turn = $("#turnChip");
   if (state.phase === "dealing") turn.textContent = t("phase.dealing");
   else if (state.phase === "roundEnd") turn.textContent = t("phase.roundEnd");
@@ -4119,10 +4137,10 @@ function renderHUD() {
     call.hidden = !showCall;
     if (showCall) call.textContent = `${t("hud.call")}: ${comboName(state.lead.combo.type)} ×${state.lead.combo.count}`;
   }
-  const lastTrick = $("#lastTrickBtn");
-  if (lastTrick) {
-    lastTrick.hidden = !state.lastTrick;
-    lastTrick.textContent = t("lastTrick.button");
+  const lastTurn = $("#lastTurnBtn");
+  if (lastTurn) {
+    lastTurn.hidden = !state.lastTurn;
+    lastTurn.textContent = t("lastTurn.button");
   }
 }
 
@@ -4417,13 +4435,13 @@ function clearResultAutoClose() {
   if (resultAutoTick) clearInterval(resultAutoTick);
   resultAutoTimer = null;
   resultAutoTick = null;
-  const count = $("#trickResultAutoCount");
+  const count = $("#turnResultAutoCount");
   if (count) count.textContent = "";
 }
 
 function syncResultAutoControls() {
-  const box = $("#trickResultAuto");
-  const select = $("#trickResultAutoSeconds");
+  const box = $("#turnResultAuto");
+  const select = $("#turnResultAutoSeconds");
   if (box) box.checked = prefs.resultAuto === true;
   if (select) {
     select.value = String(prefs.resultAutoSeconds || 10);
@@ -4438,14 +4456,14 @@ function armResultAutoClose() {
   syncResultAutoControls();
   if (prefs.resultAuto !== true) return;
   let left = Number(prefs.resultAutoSeconds) || 10;
-  const count = $("#trickResultAutoCount");
+  const count = $("#turnResultAutoCount");
   if (count) count.textContent = `${left}s`;
   resultAutoTick = setInterval(() => {
     left -= 1;
     if (count) count.textContent = left > 0 ? `${left}s` : "";
     /* One timer owns the close. Clearing it at zero (with a second timeout
        also due) raced, so the countdown reached 0 without closing. */
-    if (left <= 0) closeTrickResult();
+    if (left <= 0) closeTurnResult();
   }, 1000);
 }
 
@@ -4461,8 +4479,8 @@ function showResult(text) {
 }
 
 function renderLogRecord(record) {
-  const meta = $("#lastTrickMeta");
-  const list = $("#lastTrickList");
+  const meta = $("#lastTurnMeta");
+  const list = $("#lastTurnList");
   if (!record) {
     if (meta) meta.textContent = t("log.empty");
     if (list) list.innerHTML = "";
@@ -4470,25 +4488,25 @@ function renderLogRecord(record) {
   }
   const call = record.call ? `${comboName(record.call.type)} ×${record.call.count}` : "—";
   if (meta) {
-    meta.textContent = `${t("log.round")} ${record.round} · ${t("log.trick")} ${record.trick} · ${t("log.call")}: ${call} · ${t("log.winner")}: ${seatName(record.winner)} (${comboSummary(record.combo)})${record.chuan ? ` · ${t("log.chuan")}` : ""}`;
+    meta.textContent = `${t("log.round")} ${record.round} · ${t("log.turnNo")} ${record.turnNo} · ${t("log.call")}: ${call} · ${t("log.winner")}: ${seatName(record.winner)} (${comboSummary(record.combo)})${record.chuan ? ` · ${t("log.chuan")}` : ""}`;
   }
   if (list) {
-    list.innerHTML = `${trickCompareMarkup(record.entries || [], record.winner)}
+    list.innerHTML = `${turnCompareMarkup(record.entries || [], record.winner)}
       <div class="pile-why">
-        <b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummaryGloss(record.combo), n: record.captured }))}</b>
+        <b>${escapeHTML(t("lastTurn.winner", { seat: seatName(record.winner), combo: comboSummaryGloss(record.combo), n: record.captured }))}</b>
         <p>${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</p>
       </div>`;
   }
 }
 
-function renderLogBrowser(round, trick) {
-  const records = state?.trickArchive || [];
+function renderLogBrowser(round, turnNo) {
+  const records = state?.turnArchive || [];
   const roundSelect = $("#logRoundSelect");
-  const trickSelect = $("#logTrickSelect");
+  const turnNoSelect = $("#logTurnSelect");
   if (!records.length) {
     renderLogRecord(null);
     if (roundSelect) roundSelect.innerHTML = "";
-    if (trickSelect) trickSelect.innerHTML = "";
+    if (turnNoSelect) turnNoSelect.innerHTML = "";
     return;
   }
   const rounds = [...new Set(records.map((record) => record.round))].sort((a, b) => a - b);
@@ -4497,20 +4515,20 @@ function renderLogBrowser(round, trick) {
     roundSelect.innerHTML = rounds.map((value) => `<option value="${value}" ${value === currentRound ? "selected" : ""}>${t("log.round")} ${value}</option>`).join("");
   }
   const inRound = records.filter((record) => record.round === currentRound);
-  const currentTrick = inRound.some((record) => record.trick === Number(trick)) ? Number(trick) : inRound[inRound.length - 1].trick;
-  if (trickSelect) {
-    trickSelect.innerHTML = inRound.map((record) => `<option value="${record.trick}" ${record.trick === currentTrick ? "selected" : ""}>${t("log.trick")} ${record.trick}</option>`).join("");
+  const currentTurn = inRound.some((record) => record.turnNo === Number(turnNo)) ? Number(turnNo) : inRound[inRound.length - 1].turnNo;
+  if (turnNoSelect) {
+    turnNoSelect.innerHTML = inRound.map((record) => `<option value="${record.turnNo}" ${record.turnNo === currentTurn ? "selected" : ""}>${t("log.turnNo")} ${record.turnNo}</option>`).join("");
   }
-  renderLogRecord(inRound.find((record) => record.trick === currentTrick) || inRound[inRound.length - 1]);
+  renderLogRecord(inRound.find((record) => record.turnNo === currentTurn) || inRound[inRound.length - 1]);
 }
 
-function openLastTrickModal(round = null, trick = null) {
-  const records = state?.trickArchive || [];
+function openLastTurnModal(round = null, turnNo = null) {
+  const records = state?.turnArchive || [];
   if (!records.length) return;
-  historyFollowLatest = round == null && trick == null;
+  historyFollowLatest = round == null && turnNo == null;
   const latest = records[records.length - 1];
-  renderLogBrowser(round ?? latest.round, trick ?? latest.trick);
-  const modal = $("#lastTrickModal");
+  renderLogBrowser(round ?? latest.round, turnNo ?? latest.turnNo);
+  const modal = $("#lastTurnModal");
   if (modal) modal.hidden = false;
   audio?.play("click", 0);
 }
@@ -4536,15 +4554,15 @@ function openPileModal(seat, pileIndex) {
     meta.textContent = "";
   }
   if (why) {
-    const trickNumber = state.captureTrick?.[seat]?.[start];
-    const records = state.trickArchive || [];
-    const record = records.slice().reverse().find((item) => item.trick === trickNumber && item.winner === seat)
-      || records.slice().reverse().find((item) => item.trick === trickNumber);
+    const turnNumber = state.captureTurn?.[seat]?.[start];
+    const records = state.turnArchive || [];
+    const record = records.slice().reverse().find((item) => item.turnNo === turnNumber && item.winner === seat)
+      || records.slice().reverse().find((item) => item.turnNo === turnNumber);
     if (record) {
       const entries = (record.entries || []).map((entry) => (
         `${seatName(entry.seat)}: ${entry.revealed && entry.combo ? comboSummaryGloss(entry.combo) : t("showdown.hidden")}`
       )).join(" · ");
-      why.innerHTML = `<b>${escapeHTML(t("lastTrick.winner", { seat: seatName(record.winner), combo: comboSummaryGloss(record.combo), n: record.captured }))}</b>
+      why.innerHTML = `<b>${escapeHTML(t("lastTurn.winner", { seat: seatName(record.winner), combo: comboSummaryGloss(record.combo), n: record.captured }))}</b>
         <p>${escapeHTML(t(record.chuan ? "log.chuanWhy" : "log.why"))}</p>
         <small>${escapeHTML(entries)}</small>`;
       why.hidden = false;
@@ -4648,7 +4666,7 @@ function renderLog() {
   }
   const items = state.log.slice(-12);
   list.innerHTML = items.map((entry) => {
-    const time = entry.kind === "draft" ? "D" : String(entry.trick).padStart(2, "0");
+    const time = entry.kind === "draft" ? "D" : String(entry.turnNo).padStart(2, "0");
     let text = "";
     if (entry.kind === "draft") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("log.draftPick"))}`;
     else if (entry.kind === "lead") text = `<strong>${escapeHTML(seatName(entry.seat))}</strong> ${escapeHTML(t("actions.lead"))} ${escapeHTML(comboName(entry.callType))} ×${entry.callCount}`;
@@ -4911,7 +4929,7 @@ function applyLanguage(lang) {
   if (voice) renderVoiceState(voice.snapshot());
   if (lobbyState) renderLobby();
   if (scene && state && ["lead", "follow", "roundEnd", "matchEnd"].includes(state.phase)) scene.sync(state);
-  if (state?.lastTrick) $("#undoBody").innerHTML = buildUndoExplanation();
+  if (state?.lastTurn) $("#undoBody").innerHTML = buildUndoExplanation();
   savePrefs();
 }
 
@@ -5242,22 +5260,22 @@ function sanitizeForSeat(source, seat) {
     if (entry.kind === "hidden" && entry.seat !== seat) return { ...entry, combo: null };
     return entry;
   });
-  if (raw.lastTrick) {
-    const entries = (raw.lastTrick.entries || []).map((entry) => (
+  if (raw.lastTurn) {
+    const entries = (raw.lastTurn.entries || []).map((entry) => (
       entry.revealed || entry.seat === seat ? entry : { ...entry, combo: null }
     ));
     const localEntry = entries.find((entry) => entry.seat === seat) || null;
-    raw.lastTrick = {
-      ...raw.lastTrick,
+    raw.lastTurn = {
+      ...raw.lastTurn,
       entries,
       humanSeat: seat,
-      humanWon: raw.lastTrick.winner === seat,
+      humanWon: raw.lastTurn.winner === seat,
       humanRevealed: Boolean(localEntry?.revealed),
       humanCombo: localEntry?.combo || null,
       humanTiles: []
     };
   }
-  raw.trickArchive = (raw.trickArchive || []).map((record) => ({
+  raw.turnArchive = (raw.turnArchive || []).map((record) => ({
     ...record,
     entries: (record.entries || []).map((entry) => {
       if (entry.revealed || entry.seat === seat) return entry;
@@ -5282,7 +5300,7 @@ function hydrateRemoteState(raw) {
     (raw.captures?.[seat] || []).map((_, index) => Boolean(raw.captureHidden?.[seat]?.[index]))
   ));
   game.draftPool = raw.draftPool ? raw.draftPool.map((id) => TILE_BY_ID[id]).filter(Boolean) : null;
-  game.trickArchive = (raw.trickArchive || []).map((record) => ({
+  game.turnArchive = (raw.turnArchive || []).map((record) => ({
     ...record,
     combo: record.combo || null,
     entries: (record.entries || []).map((entry) => ({
@@ -5291,9 +5309,9 @@ function hydrateRemoteState(raw) {
       tiles: (entry.tiles || []).map((id) => TILE_BY_ID[id] || { id: "hidden", hanzi: "?", color: "b", rank: "soldier", power: 1 })
     }))
   }));
-  game.captureTrick = [0, 1, 2, 3].map((seat) => (
+  game.captureTurn = [0, 1, 2, 3].map((seat) => (
     (raw.captures?.[seat] || []).map((_, index) => (
-      Number.isInteger(raw.captureTrick?.[seat]?.[index]) ? raw.captureTrick[seat][index] : null
+      Number.isInteger(raw.captureTurn?.[seat]?.[index]) ? raw.captureTurn[seat][index] : null
     ))
   ));
   game.captureFrom = [0, 1, 2, 3].map((seat) => (
@@ -5335,10 +5353,10 @@ function applyRemoteState(raw) {
     scene.setSelected(state.selected);
   }
   maybePublishHandLayout();
-  const resultRecord = next.trickArchive?.[next.trickArchive.length - 1];
-  if (next.phase === "resolving" && resultRecord) showTrickResult(resultRecord);
+  const resultRecord = next.turnArchive?.[next.turnArchive.length - 1];
+  if (next.phase === "resolving" && resultRecord) showTurnResult(resultRecord);
   if (next.phase === "roundEnd" || next.phase === "matchEnd") {
-    closeModal("trickResultModal");
+    closeModal("turnResultModal");
     if (MY_SEAT >= 0) showRoundSummary(next.phase === "matchEnd");
   }
   if (next.phase === "dealing") scene?.flipHumanHand?.(state);
@@ -5864,7 +5882,7 @@ function joinBoundary() {
   if (state.phase === "matchEnd") return "match";
   if (state.phase === "roundEnd") return "round";
   if (state.phase === "lead" && (state.center?.length || 0) === 0) return "now";
-  return "trick";
+  return "turn";
 }
 
 function queuedBadge(entry) {
@@ -5976,7 +5994,7 @@ function reattachQueuedGuest(connId, entry) {
   return true;
 }
 
-function promoteQueuedGuests(reason = "trick") {
+function promoteQueuedGuests(reason = "turn") {
   if (!isHost() || !net?.started || !state || !queuedGuests.size) return false;
   let changed = false;
   for (const entry of queuedList()) {
@@ -6369,7 +6387,7 @@ function hostMessage({ connId, message }) {
       }
       const tiles = Array.isArray(message.tiles) ? message.tiles.filter((id) => typeof id === "string").slice(0, 6) : [];
       const ok = message.kind === "lead"
-        ? leadTrick(profile.seat, tiles)
+        ? leadTurn(profile.seat, tiles)
         : message.kind === "follow"
           ? submitPlay(profile.seat, tiles, false)
           : message.kind === "show"
@@ -6621,7 +6639,7 @@ function resumeHostFlow() {
   updateUndoButton();
   if (state.phase === "dealing") {
     setTimeout(() => {
-      if (state?.phase === "dealing") beginTrick();
+      if (state?.phase === "dealing") beginTurn();
     }, 500);
     return;
   }
@@ -6630,14 +6648,14 @@ function resumeHostFlow() {
       if (!state || state.phase !== "resolving") return;
       if (state.hands.every((hand) => hand.length === 0)) endRound();
       else {
-        state.leader = state.lastTrick?.winner ?? state.leader;
-        beginTrick();
+        state.leader = state.lastTurn?.winner ?? state.leader;
+        beginTurn();
       }
     }, 700);
     return;
   }
   if (state.phase === "showdown") {
-    if (!state.showdownQueue?.length) { if (state.best) resolveTrick(); return; }
+    if (!state.showdownQueue?.length) { if (state.best) resolveTurn(); return; }
     if (isBotSeat(state.turn)) scheduleAI(900);
     else coachTick();
     return;
@@ -6733,7 +6751,7 @@ async function resumeHostRoom(recovery) {
         seat: entry.seat,
         token: entry.token || makeRejoinToken(),
         at: Number(entry.at) || Date.now(),
-        joinAfter: ["trick", "round", "match"].includes(entry.joinAfter) ? entry.joinAfter : "trick"
+        joinAfter: ["turn", "round", "match"].includes(entry.joinAfter) ? entry.joinAfter : "turn"
       });
       if (SEAT_PROFILES[entry.seat]?.kind === "bot") SEAT_PROFILES[entry.seat].queuedFor = "recovered";
     });
@@ -7006,7 +7024,7 @@ function clientMessage({ message }) {
           name: lobbyState?.name || ""
         });
       }
-      const joinAfter = message.joinAfter === "round" ? "round" : message.joinAfter === "match" ? "match" : "trick";
+      const joinAfter = message.joinAfter === "round" ? "round" : message.joinAfter === "match" ? "match" : "turnNo";
       lobbyState = {
         view: "waiting",
         roomCode: message.roomCode,
@@ -7538,7 +7556,7 @@ function renderVersion() {
   const label = `v${APP.version}`;
   const chip = $("#versionChip");
   if (chip) chip.textContent = label;
-  const historyVersion = $("#lastTrickVersion");
+  const historyVersion = $("#lastTurnVersion");
   if (historyVersion) historyVersion.textContent = label;
   const brandVersion = $("#brandVersion");
   if (brandVersion) brandVersion.textContent = `(${label})`;
@@ -7831,7 +7849,7 @@ function renderLobby() {
         const meta = $("#lobbyResumeMeta");
         if (meta) meta.textContent = t("net.resumeMeta", {
           round: state.round,
-          trick: state.trick,
+          turnNo: state.turnNo,
           score: state.scores[MY_SEAT]
         });
       }
@@ -8024,7 +8042,7 @@ function renderJoinRequestPopup() {
     const bodyKey = seat < 0 ? "joinRequest.bodyFull"
       : boundary === "round" ? "joinRequest.bodyRound"
       : boundary === "match" ? "joinRequest.bodyMatch"
-      : boundary === "trick" ? "joinRequest.bodyTrick"
+      : boundary === "turn" ? "joinRequest.bodyTurn"
       : "joinRequest.bodyNow";
     $("#joinRequestBody").textContent = t(bodyKey, {
       name: request.name,
@@ -8241,7 +8259,7 @@ function openPanelSheet(id) {
   if (action) {
     const showAction = id === "logPanel";
     action.hidden = !showAction;
-    action.disabled = !showAction || !(state?.trickArchive?.length);
+    action.disabled = !showAction || !(state?.turnArchive?.length);
     action.textContent = t("summary.viewLog");
     action.title = t(action.disabled ? "log.noHistory" : "log.browserTitle");
   }
@@ -9083,7 +9101,7 @@ function selfTest() {
   check("a full simulated round conserves 32 tiles", () => {
     const sim = simulateRound(12345);
     if (sim.capturesTotal !== 32) return `captured ${sim.capturesTotal}`;
-    if (sim.tricks < 3) return `only ${sim.tricks} tricks`;
+    if (sim.turns < 3) return `only ${sim.turns} turns`;
     return true;
   });
 
@@ -9132,11 +9150,11 @@ function simulateRound(seed = 42) {
     deck.forEach((item, index) => hands[index % 4].push(item));
     let leader = hands.findIndex((hand) => hand.some((item) => item.id === "r-general-0"));
     if (leader < 0) leader = 0;
-    let tricks = 0;
+    let turns = 0;
     let capturesTotal = 0;
     const safety = 64;
-    while (hands[0].length && tricks < safety) {
-      tricks += 1;
+    while (hands[0].length && turns < safety) {
+      turns += 1;
       const leadCombo = chooseLead(hands[leader], { jitter: false });
       if (!leadCombo) throw new Error("leader had no legal lead");
       let bestCombo = leadCombo;
@@ -9156,7 +9174,7 @@ function simulateRound(seed = 42) {
     }
     const left = hands.reduce((sum, hand) => sum + hand.length, 0);
     const captures = [0, 0, 0, 0];
-    return { tricks, capturesTotal, left, captures };
+    return { turns, capturesTotal, left, captures };
   } finally {
     random = savedRandom;
   }
@@ -9563,13 +9581,13 @@ function centerPosition(seat, index, count) {
 
 function captureGroupsFor(game, seat) {
   const pile = game?.captures?.[seat] || [];
-  const tricks = game?.captureTrick?.[seat] || [];
+  const turns = game?.captureTurn?.[seat] || [];
   const groups = [];
   pile.forEach((_, index) => {
-    const trick = Number.isInteger(tricks[index]) ? tricks[index] : Math.floor(index / 4);
+    const turnNo = Number.isInteger(turns[index]) ? turns[index] : Math.floor(index / 4);
     let last = groups[groups.length - 1];
-    if (!last || last.trick !== trick) {
-      last = { trick, start: index, count: 0 };
+    if (!last || last.turnNo !== turnNo) {
+      last = { turnNo, start: index, count: 0 };
       groups.push(last);
     }
     last.count += 1;
@@ -10941,33 +10959,33 @@ function bindEvents() {
     if (isClient()) sendNetAction("chuan", [], false);
     else claimChuan(MY_SEAT);
   });
-  $("#lastTrickBtn")?.addEventListener("click", () => openLastTrickModal());
-  $("#logHistoryBtn")?.addEventListener("click", () => openLastTrickModal());
+  $("#lastTurnBtn")?.addEventListener("click", () => openLastTurnModal());
+  $("#logHistoryBtn")?.addEventListener("click", () => openLastTurnModal());
   $("#summaryBody")?.addEventListener("click", (event) => {
-    if (event.target.closest("#summaryLogBtn")) openLastTrickModal();
+    if (event.target.closest("#summaryLogBtn")) openLastTurnModal();
   });
   $("#logRoundSelect")?.addEventListener("change", (event) => {
     historyFollowLatest = false;
     renderLogBrowser(event.target.value, null);
   });
-  $("#logTrickSelect")?.addEventListener("change", (event) => {
+  $("#logTurnSelect")?.addEventListener("change", (event) => {
     historyFollowLatest = false;
     renderLogBrowser($("#logRoundSelect")?.value, event.target.value);
   });
-  $("#trickResultContinue")?.addEventListener("click", closeTrickResult);
-  $("#trickResultAuto")?.addEventListener("change", (event) => {
+  $("#turnResultContinue")?.addEventListener("click", closeTurnResult);
+  $("#turnResultAuto")?.addEventListener("change", (event) => {
     prefs.resultAuto = event.target.checked === true;
     savePrefs();
     if (prefs.resultAuto) armResultAutoClose();
     else clearResultAutoClose();
     syncResultAutoControls();
   });
-  $("#trickResultAutoSeconds")?.addEventListener("change", (event) => {
+  $("#turnResultAutoSeconds")?.addEventListener("change", (event) => {
     prefs.resultAutoSeconds = Math.min(30, Math.max(5, Number(event.target.value) || 10));
     savePrefs();
     if (prefs.resultAuto) armResultAutoClose();
   });
-  $("#trickResultModal [data-close]")?.addEventListener("click", closeTrickResult);
+  $("#turnResultModal [data-close]")?.addEventListener("click", closeTurnResult);
   $("#draftPool")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-draft-id]");
     if (!button || button.disabled || !state || state.phase !== "draft" || state.turn !== MY_SEAT) return;
@@ -11168,9 +11186,9 @@ function bindEvents() {
   $$(".panel-orb").forEach((button) => button.addEventListener("click", () => openPanelSheet(button.dataset.panel)));
   $("#panelSheetClose")?.addEventListener("click", closePanelSheet);
   $("#panelSheetAction")?.addEventListener("click", () => {
-    if (activePanelId !== "logPanel" || !state?.trickArchive?.length) return;
+    if (activePanelId !== "logPanel" || !state?.turnArchive?.length) return;
     closePanelSheet();
-    openLastTrickModal();
+    openLastTurnModal();
   });
   $("#panelSheet")?.addEventListener("pointerdown", (event) => {
     if (event.target === $("#panelSheet")) closePanelSheet();
@@ -11319,11 +11337,11 @@ function bindEvents() {
 
   $("#nextRoundBtn")?.addEventListener("click", startNextRound);
   $("#undoBtn")?.addEventListener("click", () => {
-    if (state?.lastTrick) showUndoExplanation();
-    else if (state?.snapshot) undoLastTrick();
-    else toast(t("undo.noTrick"));
+    if (state?.lastTurn) showUndoExplanation();
+    else if (state?.snapshot) undoLastTurn();
+    else toast(t("undo.noTurn"));
   });
-  $("#undoConfirm")?.addEventListener("click", () => undoLastTrick());
+  $("#undoConfirm")?.addEventListener("click", () => undoLastTurn());
   $("#undoCancel")?.addEventListener("click", () => closeModal("undoModal"));
   $("#exportBtn")?.addEventListener("click", exportGame);
 
@@ -11347,14 +11365,14 @@ function bindEvents() {
   $$(".modal").forEach((modal) => {
     modal.addEventListener("pointerdown", (event) => {
       if (event.target !== modal) return;
-      if (modal.id === "trickResultModal") { closeTrickResult(); return; }
+      if (modal.id === "turnResultModal") { closeTurnResult(); return; }
       if (modal.id !== "summaryModal" && modal.id !== "lobbyModal") modal.hidden = true;
     });
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       const open = $$(".modal").find((modal) => !modal.hidden);
-      if (open && open.id === "trickResultModal") closeTrickResult();
+      if (open && open.id === "turnResultModal") closeTurnResult();
       else if (open && open.id !== "summaryModal") open.hidden = true;
       setRankReference(false);
       setPinInfo(false);
@@ -11604,7 +11622,7 @@ window.LeabTui = {
   nextRound: startNextRound,
   lead: (ids) => {
     if (isClient()) return sendNetAction("lead", ids || [], false);
-    return leadTrick(MY_SEAT, ids || []);
+    return leadTurn(MY_SEAT, ids || []);
   },
   follow: (ids, reveal = false) => {
     if (isClient()) return sendNetAction("follow", ids || [], false);
@@ -11615,7 +11633,7 @@ window.LeabTui = {
   toggleTile,
   clearSelection,
   hint: applyHint,
-  undo: undoLastTrick,
+  undo: undoLastTurn,
   exportPayload: buildExport,
   selfTest,
   simulateRound,

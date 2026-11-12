@@ -11,7 +11,7 @@
 | Flow | CDP playthrough (below) | a complete round, 32-tile conservation |
 | Tablet | `scripts/browser-check.mjs --device ipad` | 820×1180 / 1180×820 viewport, coarse pointer, whole rim on screen, clear of the dock, 2D shadows off / 3D on |
 | Multiplayer | `node scripts/net-check.mjs` | two real browsers: host, join, bot fill, redaction, PIN/approval, probe, chat, voice mesh, mute/deafen, actions, disconnect-to-bot |
-| Invite | `node scripts/invite-check.mjs` | solo mid-trick → Invite → host room + auto audio, host popup, guest audience mode, promotion, resync, seat-card reconnect |
+| Invite | `node scripts/invite-check.mjs` | solo mid-turn → Invite → host room + auto audio, host popup, guest audience mode, promotion, resync, seat-card reconnect |
 | Visual | screenshots in `screenshots/` | desktop EN, desktop TH, rules drawer, 390×844 phone, iPad portrait/landscape, lobby |
 
 Run the static checks first:
@@ -31,7 +31,7 @@ node scripts/net-check.mjs     # real broker, needs outbound 0.peerjs.com
 node scripts/invite-check.mjs  # solo → Invite → queued guest, real broker
 ```
 
-`scripts/verify.mjs` starts its own server on port 8123 if one is not already running, launches Chrome through `scripts/browser-check.mjs`, reads `window.__selftest`, and fails on any console exception. `scripts/net-check.mjs` and `scripts/invite-check.mjs` are separate because they depend on the public broker; each launches multiple pages in one headless Chrome. `invite-check.mjs` asserts the conversion does not redeal, the guest is told to wait, and the reserved seat is promoted at the next trick.
+`scripts/verify.mjs` starts its own server on port 8123 if one is not already running, launches Chrome through `scripts/browser-check.mjs`, reads `window.__selftest`, and fails on any console exception. `scripts/net-check.mjs` and `scripts/invite-check.mjs` are separate because they depend on the public broker; each launches multiple pages in one headless Chrome. `invite-check.mjs` asserts the conversion does not redeal, the guest is told to wait, and the reserved seat is promoted at the next turn.
 
 ## The 38 self-checks
 
@@ -86,7 +86,7 @@ These were run through `window.LeabTui` with `setFast(true)` and the public acti
 
 ```text
 phase: roundEnd
-trick: 6
+turn: 6
 captures: [4, 0, 12, 16]  → 32 tiles
 hands: [0, 0, 0, 0]
 roundPoints: [-1, -2, 1, 2] → sum 0
@@ -96,10 +96,10 @@ The round ended, the table was empty, the four point values summed to zero, and 
 
 ### Undo
 
-At `roundEnd`, `LeabTui.undo()` restored the pre-trick position:
+At `roundEnd`, `LeabTui.undo()` restored the pre-turn position:
 
 ```text
-afterUndo: phase follow (AI restarted the trick), trick 4
+afterUndo: phase follow (AI restarted the turn), turn 4
 hands + captures + centre = 32
 stats.rounds: 1 → 0
 stats.currentStreak: 1 → 0
@@ -160,18 +160,18 @@ back to 2D                             → shadows false, framing refitted
 hint toast                             → below the HUD, names "Hint: …"
 inspector orb                          → selected tile, "Selected for play"
 hand controls                          → H, not 手
-L sheet                                → View trick log opens #lastTrickModal after one trick
+L sheet                                → View turn log opens #lastTurnModal after one turn
 ```
 
 `getFraming()` projects 64 points of the 6.83-radius rim through the live camera and returns NDC bounds plus the dock's top edge. This catches a fixed camera distance that crops portrait or lets an expanded dock cover the hand. The emulator matches viewport, DPR, touch and coarse pointer; it does not reproduce Safari's toolbar, safe-area insets or GPU timing, so a physical iPad pass is still listed for layout-critical releases.
 
 ### Reload resume
 
-Played to a mid-trick state, reloaded the page in the same profile:
+Played to a mid-turn state, reloaded the page in the same profile:
 
 ```text
 phase: follow
-trick: 1
+turn: 1
 turn: 0
 hands: [8,7,7,7]
 centre: 3
@@ -196,9 +196,9 @@ start                 host + guest + Bot 1 + Bot 2
 guest own hand        8 real tile ids
 other hands           24 ghost ids, no real ids on the wire
 host in-game controls leave button visible, Start hidden, "Match in progress"
-actions               9–12 moves crossed the channel, a trick resolved
+actions               9–12 moves crossed the channel, a turn resolved
 guest reload          token reused, auto-rejoined seat 1 without PIN/approval
-host reload           same room code, trick preserved, guest retried and reconnected
+host reload           same room code, turn preserved, guest retried and reconnected
 guest reconnect UI    "Reconnecting to your seat…" instead of the join form
 late guest            started join queued, approved into a bot seat (8 tiles)
 viewer                seat -1, all hands ghosted, hand dock hidden
@@ -226,33 +226,33 @@ draft with bots      4 human picks, 16 picks total, hands [8,8,8,8]
 live Turn log        16 draft entries, e.g. "East picked 2 tiles" with a D marker
 mid-draft change     current draft finishes; next deal is automatic
 seeded draft         ?seed=777 reloads to the same pool, bot draws and hands
-solo update resume   ?resume=1 restores phase/trick and hides the launch menu
+solo update resume   ?resume=1 restores phase/turn and hides the launch menu
 ```
 
 The create-room panel shows the room number and the 5-digit PIN at the same
 computed font size (28 px), the PIN digits select as one block, and no toast or
 chip overlaps the PIN card at 1280×900.
 
-### Trick result and history
+### Turn result and history
 
 Showing a set applies immediately; there is **no** intermediate reveal popup.
-The trick is judged only after every seat has chosen Show or Keep hidden, and
-then `trickResultModal` opens for the local human — whether they showed or hid.
+The turn is judged only after every seat has chosen Show or Keep hidden, and
+then `turnResultModal` opens for the local human — whether they showed or hid.
 
 ```text
 after Show            #revealModal absent; centre entry revealed; turn advanced
 result timing         result modal opens only at phase "resolving", centre 0
 result frames         4 seat frames, 1 winner frame, 1 big tick
-result cards          the trick's tiles; backs for every hidden set
+result cards          the turn's tiles; backs for every hidden set
 result note           "North won 4 tiles with Black General" + reason
 hidden human          still gets the result modal (tested by choosing Keep hidden)
-history (1 trick)     4 seat frames, 1 winner frame, 1 big tick
+history (1 turn)     4 seat frames, 1 winner frame, 1 big tick
 history note          "East won 4 tiles with Red Advisor"
 history selector      changing Round/Turn re-renders the same layout
 mobile 390×844        1 column, no horizontal overflow, card scrolls internally
 ```
 
-In solo the next trick waits for **Continue** on the result; in a network room
+In solo the next turn waits for **Continue** on the result; in a network room
 the result is informational and every human (host and guests) receives it.
 
 ### Draft deal
@@ -264,7 +264,7 @@ pool at start          32 tiles
 human picks            4 × 2 = 8 tiles
 hands after finish     [8, 8, 8, 8]
 unique ids             32
-phase / trick          lead / 1
+phase / turn          lead / 1
 leader                 seat holding r-general-0
 draft modal            hidden
 ```
@@ -292,7 +292,7 @@ host-validated, but a dedicated two-browser draft test is not part of
 - [ ] Your name is required before hosting or joining; an empty name shows a clear message.
 - [ ] Hosting uses the menu name and the roster shows it.
 - [ ] An invite link prefills the room code but asks the guest to confirm their own name.
-- [ ] Reloading a solo save shows Resume match with the round, trick and score.
+- [ ] Reloading a solo save shows Resume match with the round, turn and score.
 - [ ] Play solo starts a fresh deal; Resume match restores the saved one.
 
 ### First load
@@ -316,14 +316,14 @@ host-validated, but a dedicated two-browser draft test is not part of
 - [ ] A follower can select exactly N tiles; **Play face-down** is enabled only at N.
 - [ ] **Reveal & challenge** is enabled only for a legal set that beats the table.
 - [ ] AI tiles reveal or stay face-down; the winner sweeps all `4×N` tiles.
-- [ ] The winner leads the next trick; the active seat ring moves.
+- [ ] The winner leads the next turn; the active seat ring moves.
 - [ ] A face-down tile never wins, even when its hidden set would have.
 
 ### Learning
 
 - [ ] **Hint** selects a legal lead or the best follow/discard.
 - [ ] The inspector shows Thai name, English name, rank, copies and colour.
-- [ ] **Undo trick** opens the comparison; confirming restores the pre-trick state.
+- [ ] **Undo turn** opens the comparison; confirming restores the pre-turn state.
 - [ ] Rules modal contains the hierarchy, calls, flow and scoring table.
 - [ ] EN ⇄ ไทย translates every visible control, tile name, coach line and log entry.
 - [ ] Thai hand list and inspector use Thai rank names.
@@ -369,7 +369,7 @@ host-validated, but a dedicated two-browser draft test is not part of
 
 | Screenshot | What to look for |
 | --- | --- |
-| `screenshots/hero.jpg` | hand, centre trick, coach, inspector, scoreboard, action buttons |
+| `screenshots/hero.jpg` | hand, centre turn, coach, inspector, scoreboard, action buttons |
 | `screenshots/thai.jpg` | Thai header, labels, coach, inspector and hand list |
 | `screenshots/rules.jpg` | readable modal, hierarchy, calls grid, no overflow |
 | `screenshots/mobile.jpg` | table fits, human hand not hidden by the dock, buttons all reachable |

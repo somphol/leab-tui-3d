@@ -6,7 +6,7 @@ All screenshots are captured from the local build at 1440×900 unless noted. Reg
 
 ![English table](../screenshots/hero.jpg)
 
-A trick in progress: the human hand fanned across the south edge, the opponent hands face-down, the centre lead and a face-up challenger, the coach naming the consequence, the inspector showing a selected Red Soldier, the scoreboard and the action dock. This is the canonical release image.
+A turn in progress: the human hand fanned across the south edge, the opponent hands face-down, the centre lead and a face-up challenger, the coach naming the consequence, the inspector showing a selected Red Soldier, the scoreboard and the action dock. This is the canonical release image.
 
 ## Thai table
 
@@ -36,7 +36,7 @@ Four text sizes and five themes, with a reset. The bright themes make the modal 
 
 ![Rules](../screenshots/rules.jpg)
 
-The in-app rules: goal, equipment, hierarchy, colour/tie, the nine calls, the trick flow, the pile table and the digital-table conventions. The drawer is dark, scrollable and fully bilingual.
+The in-app rules: goal, equipment, hierarchy, colour/tie, the nine calls, the turn flow, the pile table and the digital-table conventions. The drawer is dark, scrollable and fully bilingual.
 
 ## Phone — 390×844
 
@@ -144,13 +144,13 @@ The Thai hint toast sits below the HUD and names the suggested set. The inspecto
 
 ![Invite from solo](../screenshots/ipad-invite-preview.jpg)
 
-The preview build: **Invite** in the top bar and Actions opens a room around the running solo match, with the room number, PIN, copy/share actions, seats and the approval queue. The guest is queued until the current trick ends.
+The preview build: **Invite** in the top bar and Actions opens a room around the running solo match, with the room number, PIN, copy/share actions, seats and the approval queue. The guest is queued until the current turn ends.
 
 ## iPad turn-log history — 1.9.22
 
 ![iPad turn-log history](../screenshots/ipad-log-history-1922.jpg)
 
-Pressing **L** opens the turn-log sheet; **View trick log** closes the sheet and opens the shared history browser, the same `#lastTrickModal` used by the round summary.
+Pressing **L** opens the turn-log sheet; **View turn log** closes the sheet and opens the shared history browser, the same `#lastTurnModal` used by the round summary.
 
 ## iPad landscape — panel rail
 
@@ -205,20 +205,20 @@ The host-only draft deal (off by default): the public 32-tile pool, a step count
 
 The same modal at 390×844: five tiles per row, a scrollable pool of 436 px and the confirm button still inside the card, with no horizontal overflow.
 
-## Trick result and turn history
+## Turn result and turn history
 
-![Trick result on desktop](../screenshots/trick-result.jpg)
+![Turn result on desktop](../screenshots/turn-result.jpg)
 
-After every seat has chosen Show set or Keep hidden, the trick is judged and this summary opens for everyone — host and guests, whether they revealed or hid. One frame per seat in play order, the played tiles as mini cards (backs for hidden sets), a large green ✓ with a gold frame on the winner, and the winner/reason note. Continue starts the next trick in solo; in a room the summary is informational.
+After every seat has chosen Show set or Keep hidden, the turn is judged and this summary opens for everyone — host and guests, whether they revealed or hid. One frame per seat in play order, the played tiles as mini cards (backs for hidden sets), a large green ✓ with a gold frame on the winner, and the winner/reason note. Continue starts the next turn in solo; in a room the summary is informational.
 
-![Turn history on desktop](../screenshots/trick-history.jpg)
+![Turn history on desktop](../screenshots/turn-history.jpg)
 
 Turn history after choosing a round and turn: the same seat frames and cards, the winning frame's ✓, and the winner/reason note. The Round and Turn selects re-render this detail.
 
-![Trick result on a phone](../screenshots/trick-result-mobile.jpg)
+![Turn result on a phone](../screenshots/turn-result-mobile.jpg)
 
 At 390×844 the seat frames fall to one column and the cards and note stay inside the modal without horizontal overflow.
 
-![Turn history on a phone](../screenshots/trick-history-mobile.jpg)
+![Turn history on a phone](../screenshots/turn-history-mobile.jpg)
 
 The same history detail on a phone: one column, the four seat frames, and a modal that scrolls internally to the note and Continue.

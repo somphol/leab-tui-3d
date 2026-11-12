@@ -26,7 +26,7 @@
 | **Join-request popup** | On the host table: Allow, Watch only, Deny, or Later. Later leaves the **n waiting** pill visible |
 | **Watcher chip** (`👁 n`) | Visible to everyone when someone is watching; tap to list names, including queued audience members |
 | **Refresh table** (Actions, guest) | Request the host's current snapshot; also happens automatically on an illegal play or a sequence gap |
-| **Panel rail** (touch/tablet, right edge) | **C** coach · **M** match · **A** actions · **💬** chat · **i** tile inspector · **H** your hand · **L** trick log |
+| **Panel rail** (touch/tablet, right edge) | **C** coach · **M** match · **A** actions · **💬** chat · **i** tile inspector · **H** your hand · **L** turn log |
 | **H** (collapsed hand dock) | Reopen the hand dock. The keyboard shortcut `H` is Hint. |
 | **Multiplayer** (Actions) | Open the lobby: solo / host / join; set your name here |
 | **Leave room** (Actions) | Confirmed exit from a network room; hidden in solo |
@@ -70,7 +70,7 @@ The app is usable without a mouse for the main flow:
 | **Reveal & challenge** | Your selected set matches the call and beats the table. It will be face-up and can win. |
 | **Play face-down** | Send the required number of tiles without revealing them. They cannot win. |
 | **Hint** | Select a deterministic recommendation. It does not play the tiles. |
-| **Undo trick** | Rewind the last completed trick and explain the comparison. |
+| **Undo turn** | Rewind the last completed turn and explain the comparison. |
 
 ## Rank order
 

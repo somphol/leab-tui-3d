@@ -71,7 +71,7 @@ const playthrough = `(async () => {
       return JSON.stringify({
         ok: true,
         phase: s.phase,
-        trick: s.trick,
+        turnNo: s.turnNo,
         captures,
         hands,
         points: s.roundPoints,
@@ -91,11 +91,11 @@ const playthrough = `(async () => {
       const next = LeabTui.getState();
       if (next.phase === 'showdown' && next.turn === 0) LeabTui.showdown(false);
     }
-    const trickResult = document.querySelector('#trickResultModal');
-    if (!trickResult.hidden) document.querySelector('#trickResultContinue').click();
+    const turnResult = document.querySelector('#turnResultModal');
+    if (!turnResult.hidden) document.querySelector('#turnResultContinue').click();
   }
   const s = LeabTui.getState();
-  return JSON.stringify({ ok: false, phase: s.phase, turn: s.turn, trick: s.trick, hands: s.hands.map((h) => h.length), center: s.center.length });
+  return JSON.stringify({ ok: false, phase: s.phase, turn: s.turn, turnNo: s.turnNo, hands: s.hands.map((h) => h.length), center: s.center.length });
 })()`;
 
 async function main() {
@@ -227,13 +227,13 @@ async function main() {
       before,
       after: after.hands[0].length,
       phase: after.phase,
-      trick: after.trick
+      turnNo: after.turnNo
     });
   })()`]);
   const autoplayValue = autoplay.evalValue || {};
   if (autoplayValue.enabled && autoplayValue.checkbox) pass("autoplay toggle persists and updates the panel");
   else fail("autoplay toggle persists and updates the panel", JSON.stringify(autoplayValue));
-  if (autoplayValue.played) pass("autoplay plays the local seat without a click", `hand ${autoplayValue.before} → ${autoplayValue.after}, trick ${autoplayValue.trick}`);
+  if (autoplayValue.played) pass("autoplay plays the local seat without a click", `hand ${autoplayValue.before} → ${autoplayValue.after}, turnNo ${autoplayValue.turnNo}`);
   else fail("autoplay plays the local seat without a click", JSON.stringify(autoplayValue));
 
   const dealHand = runHarness(["--url", `${soloBase}&seed=42`, "--device", "ipad", "--orientation", "landscape", "--wait", "3000", "--eval", `(async () => {
@@ -328,13 +328,13 @@ async function main() {
     if (revealed) {
       for (let i = 0; i < 220; i += 1) {
         await sleep(30);
-        if (!document.querySelector('#trickResultModal').hidden) {
-          const modal = document.querySelector('#trickResultModal');
+        if (!document.querySelector('#turnResultModal').hidden) {
+          const modal = document.querySelector('#turnResultModal');
           result = {
-            seats: modal.querySelectorAll('.trick-seat').length,
+            seats: modal.querySelectorAll('.turnNo-seat').length,
             tick: modal.querySelectorAll('.seat-tick').length,
             why: modal.querySelector('.pile-why b')?.textContent || '',
-            title: document.querySelector('#trickResultTitle').textContent,
+            title: document.querySelector('#turnResultTitle').textContent,
             phase: LeabTui.getState().phase,
             center: LeabTui.getState().center.length
           };
@@ -343,27 +343,27 @@ async function main() {
       }
     }
     if (result) {
-      document.querySelector('#trickResultContinue').click();
+      document.querySelector('#turnResultContinue').click();
       await sleep(450);
     }
     document.querySelector('#logHistoryBtn').click();
     await sleep(250);
-    const list = document.querySelector('#lastTrickList');
+    const list = document.querySelector('#lastTurnList');
     const history = {
-      open: !document.querySelector('#lastTrickModal').hidden,
-      seats: list.querySelectorAll('.trick-seat').length,
+      open: !document.querySelector('#lastTurnModal').hidden,
+      seats: list.querySelectorAll('.turnNo-seat').length,
       tick: list.querySelectorAll('.seat-tick').length,
       why: list.querySelector('.pile-why b')?.textContent || ''
     };
-    const after = { phase: LeabTui.getState().phase, trick: LeabTui.getState().trick };
+    const after = { phase: LeabTui.getState().phase, turnNo: LeabTui.getState().turnNo };
     return JSON.stringify({ noPopup, result, history, after });
   })()`;
   const compare = runHarness(["--url", soloBase, "--wait", "2500", "--eval", compareExpr]);
   const compareValue = compare.evalValue || {};
   if (compareValue.noPopup === true) pass("reveal applies without an intermediate popup");
   else fail("reveal applies without an intermediate popup", JSON.stringify(compareValue.noPopup));
-  if (compareValue.result?.seats === 4 && compareValue.result.tick === 1 && compareValue.result.phase === "resolving" && compareValue.result.center === 0) pass("trick result waits for every decision");
-  else fail("trick result waits for every decision", JSON.stringify(compareValue.result));
+  if (compareValue.result?.seats === 4 && compareValue.result.tick === 1 && compareValue.result.phase === "resolving" && compareValue.result.center === 0) pass("turnNo result waits for every decision");
+  else fail("turnNo result waits for every decision", JSON.stringify(compareValue.result));
   if (compareValue.history?.open && compareValue.history.seats === 4 && compareValue.history.tick === 1) pass("turn history uses the comparison cards");
   else fail("turn history uses the comparison cards", JSON.stringify(compareValue.history));
 
@@ -466,8 +466,8 @@ async function main() {
     let done = false;
     for (let i = 0; i < 220 && !done; i += 1) {
       const st = LeabTui.getState();
-      if (st.trickArchive && st.trickArchive.length >= 1) { done = true; break; }
-      if (!document.querySelector('#trickResultModal').hidden) document.querySelector('#trickResultContinue').click();
+      if (st.turnArchive && st.turnArchive.length >= 1) { done = true; break; }
+      if (!document.querySelector('#turnResultModal').hidden) document.querySelector('#turnResultContinue').click();
       if (st.turn === 0 && st.phase === 'lead') { LeabTui.hint(); LeabTui.lead(LeabTui.getState().selected); }
       else if (st.turn === 0 && st.phase === 'follow') { LeabTui.hint(); LeabTui.follow(LeabTui.getState().selected, false); }
       else if (st.turn === 0 && st.phase === 'showdown') {
@@ -478,7 +478,7 @@ async function main() {
       }
       await s(50);
     }
-    if (!document.querySelector('#trickResultModal').hidden) document.querySelector('#trickResultContinue').click();
+    if (!document.querySelector('#turnResultModal').hidden) document.querySelector('#turnResultContinue').click();
     await s(200);
     document.querySelector('.panel-orb[data-panel="logPanel"]')?.click();
     await s(350);
@@ -486,21 +486,21 @@ async function main() {
     const before = { disabled: Boolean(action?.disabled), text: action?.textContent.trim() || '', title: action?.title || '' };
     action?.click();
     await s(500);
-    const modal = document.querySelector('#lastTrickModal');
+    const modal = document.querySelector('#lastTurnModal');
     return JSON.stringify({
       before,
       after: {
         open: Boolean(modal && !modal.hidden),
-        title: document.querySelector('#lastTrickTitle')?.textContent || '',
+        title: document.querySelector('#lastTurnTitle')?.textContent || '',
         sheet: Boolean(document.querySelector('#panelSheet') && !document.querySelector('#panelSheet').hidden),
-        records: LeabTui.getState().trickArchive.length
+        records: LeabTui.getState().turnArchive.length
       }
     });
   })()`;
   const logSheet = runHarness(["--url", soloBase, "--device", "ipad", "--orientation", "landscape", "--wait", "8000", "--eval", logSheetExpr]);
   const logSheetValue = logSheet.evalValue || {};
-  if (logSheetValue.before?.disabled === false && logSheetValue.after?.records >= 1) pass("iPad turn-log link enables after the first completed trick");
-  else fail("iPad turn-log link enables after the first completed trick", JSON.stringify(logSheetValue));
+  if (logSheetValue.before?.disabled === false && logSheetValue.after?.records >= 1) pass("iPad turn-log link enables after the first completed turnNo");
+  else fail("iPad turn-log link enables after the first completed turnNo", JSON.stringify(logSheetValue));
   if (logSheetValue.after?.open === true && logSheetValue.after?.sheet === false && logSheetValue.after?.title === "Turn history") pass("iPad turn-log link opens the shared turn-history modal");
   else fail("iPad turn-log link opens the shared turn-history modal", JSON.stringify(logSheetValue.after));
 
