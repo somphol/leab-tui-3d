@@ -6,7 +6,7 @@
   <title>Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio</title>
   <meta name="description" content="A bilingual, offline-friendly 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with 32 Chinese chess tiles. Vanilla HTML, CSS and Three.js." />
   <meta name="theme-color" content="#e8f0f2" />
-  <meta name="app-version" content="1.10.25" />
+  <meta name="app-version" content="1.10.26" />
   <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta property="og:type" content="website" />
@@ -55,7 +55,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Leab-Tui 3D" />
-  <link rel="stylesheet" href="style.css?v=1.10.25" />
+  <link rel="stylesheet" href="style.css?v=1.10.26" />
   <script type="importmap">
     {
       "imports": {
@@ -76,7 +76,7 @@
         <span class="brand-copy">
           <span class="brand-line">
             <span class="brand-title" data-i18n="app.title">Leab-Tui 3D</span>
-            <span id="brandVersion" class="brand-version">(v1.10.25)</span>
+            <span id="brandVersion" class="brand-version">(v1.10.26)</span>
           </span>
           <span class="brand-sub" data-i18n="app.subtitle">Traditional Xiangqi Trick-Taking Studio</span>
         </span>
@@ -150,10 +150,10 @@
           </div>
           <div class="hud-chips" role="status" aria-live="polite">
             <span class="hud-chip"><span class="hud-label" data-i18n="hud.round">Round</span><strong id="roundChip">1</strong></span>
-            <span class="hud-chip"><span class="hud-label" data-i18n="hud.trick">Turn</span><strong id="trickChip">0</strong></span>
+            <span class="hud-chip"><span class="hud-label" data-i18n="hud.turnNo">Turn</span><strong id="turnNoChip">0</strong></span>
             <span class="hud-chip hud-turn"><span class="hud-label" data-i18n="hud.turn">Turn</span><strong id="turnChip">You</strong></span>
             <span class="hud-chip call-chip" id="callChip" hidden></span>
-            <button id="lastTrickBtn" class="hud-chip view-toggle" type="button" hidden data-i18n="lastTrick.button">Last turn</button>
+            <button id="lastTurnBtn" class="hud-chip view-toggle" type="button" hidden data-i18n="lastTurn.button">Last turn</button>
           </div>
         </div>
 
@@ -293,7 +293,7 @@
         <footer class="sidebar-foot">
           <span data-i18n="footer.credit">Built with OpenCode + DeepSeek V4.1 Flash</span>
           <span class="dot">·</span>
-          <span id="versionChip" class="version-chip" title="Running version">v1.10.25</span>
+          <span id="versionChip" class="version-chip" title="Running version">v1.10.26</span>
           <button id="reloadAppBtn" class="mini-btn version-reload" type="button" title="Force reload the app" data-i18n="version.reload">↻ Reload</button>
           <span class="dot">·</span>
           <button id="aboutBtnSide" class="mini-btn" type="button" data-i18n="about.short">About</button>
@@ -512,7 +512,7 @@
         <p id="lobbyStatus" class="lobby-status" data-tone="" role="status" aria-live="polite"></p>
         <p class="lobby-note lobby-privacy" data-i18n="net.localOnly">No account. WebRTC data channels are encrypted in transit (DTLS), but the host can see every hand.</p>
         <div class="lobby-version-bar">
-          <span class="version-chip version-label">v1.10.25</span>
+          <span class="version-chip version-label">v1.10.26</span>
           <button id="lobbyReload" class="btn version-reload-big" type="button">
             <span aria-hidden="true">↻</span>
             <span data-version-label>Reload version</span>
@@ -555,7 +555,7 @@
           <h3 data-i18n="invite.seats">Seats</h3>
           <div id="inviteSeats" class="lobby-roster"></div>
         </div>
-        <p class="invite-version"><span class="version-label">v1.10.25</span></p>
+        <p class="invite-version"><span class="version-label">v1.10.26</span></p>
       </div>
     </div>
 
@@ -728,19 +728,19 @@
       </div>
     </div>
 
-    <div id="lastTrickModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="lastTrickTitle">
+    <div id="lastTurnModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="lastTurnTitle">
       <div class="modal-card modal-small log-browser">
-        <button class="modal-close" type="button" data-close="lastTrickModal" aria-label="Close">×</button>
-        <h2 id="lastTrickTitle" data-i18n="log.browserTitle">Turn history</h2>
+        <button class="modal-close" type="button" data-close="lastTurnModal" aria-label="Close">×</button>
+        <h2 id="lastTurnTitle" data-i18n="log.browserTitle">Turn history</h2>
         <div class="log-filters">
           <label><span data-i18n="log.round">Round</span><select id="logRoundSelect"></select></label>
-          <label><span data-i18n="log.trick">Turn</span><select id="logTrickSelect"></select></label>
+          <label><span data-i18n="log.turnNo">Turn</span><select id="logTurnSelect"></select></label>
         </div>
-        <p id="lastTrickMeta" class="lobby-note"></p>
-        <div id="lastTrickList" class="last-trick-list"></div>
+        <p id="lastTurnMeta" class="lobby-note"></p>
+        <div id="lastTurnList" class="last-turnNo-list"></div>
         <div class="modal-actions">
-          <span id="lastTrickVersion" class="history-version">v—</span>
-          <button class="btn btn-gold" type="button" data-close="lastTrickModal" data-i18n="actions.continue">Continue</button>
+          <span id="lastTurnVersion" class="history-version">v—</span>
+          <button class="btn btn-gold" type="button" data-close="lastTurnModal" data-i18n="actions.continue">Continue</button>
         </div>
       </div>
     </div>
@@ -756,18 +756,18 @@
       </div>
     </div>
 
-    <div id="trickResultModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="trickResultTitle">
-      <div class="modal-card modal-small trick-result">
-        <button class="modal-close" type="button" data-close="trickResultModal" aria-label="Close">×</button>
-        <h2 id="trickResultTitle" data-i18n="result.title">Turn result</h2>
-        <div id="trickResultBody" class="trick-result-body"></div>
+    <div id="turnResultModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="turnResultTitle">
+      <div class="modal-card modal-small turnNo-result">
+        <button class="modal-close" type="button" data-close="turnResultModal" aria-label="Close">×</button>
+        <h2 id="turnResultTitle" data-i18n="result.title">Turn result</h2>
+        <div id="turnResultBody" class="turnNo-result-body"></div>
         <div class="result-auto">
           <label class="result-auto-toggle">
-            <input type="checkbox" id="trickResultAuto" />
+            <input type="checkbox" id="turnResultAuto" />
             <span data-i18n="result.autoClose">Close automatically</span>
           </label>
           <label class="result-auto-seconds">
-            <select id="trickResultAutoSeconds" aria-label="Auto-close delay">
+            <select id="turnResultAutoSeconds" aria-label="Auto-close delay">
               <option value="5">5</option>
               <option value="10" selected>10</option>
               <option value="15">15</option>
@@ -777,10 +777,10 @@
             </select>
             <span data-i18n="result.seconds">seconds</span>
           </label>
-          <span id="trickResultAutoCount" class="result-auto-count" aria-live="polite"></span>
+          <span id="turnResultAutoCount" class="result-auto-count" aria-live="polite"></span>
         </div>
         <div class="modal-actions">
-          <button id="trickResultContinue" class="btn btn-gold" type="button" data-i18n="actions.continue">Continue</button>
+          <button id="turnResultContinue" class="btn btn-gold" type="button" data-i18n="actions.continue">Continue</button>
         </div>
       </div>
     </div>
@@ -817,6 +817,6 @@
     <p style="padding:2rem;color:#f5e7d0">This studio needs JavaScript. Please enable it and reload.</p>
   </noscript>
 
-  <script type="module" src="script.js?v=1.10.25"></script>
+  <script type="module" src="script.js?v=1.10.26"></script>
 </body>
 </html>

@@ -83,7 +83,7 @@ A guest's export is intentionally partial: it contains that guest's own hand and
   "draftIndex": 0,
   "draftSeat": null,
   "round": 1,
-  "trick": 3,
+  "turn": 3,
   "dealer": 3,
   "leader": 0,
   "turn": 0,
@@ -107,9 +107,9 @@ A guest's export is intentionally partial: it contains that guest's own hand and
     { "round": 1, "points": [2, -2, 2, -2], "scores": [2, -2, 2, -2], "piles": [4, 0, 4, 0], "chuan": false }
   ],
   "log": [
-    { "kind": "lead", "trick": 3, "seat": 1, "combo": { "...": "Combo" } }
+    { "kind": "lead", "turn": 3, "seat": 1, "combo": { "...": "Combo" } }
   ],
-  "lastTrick": null,
+  "lastTurn": null,
   "lastRound": null,
   "winner": null,
   "startedAt": 1793781214924,
@@ -185,7 +185,7 @@ History is capped at 40 entries. A match counts only when a score reaches the ta
 
 It then rebuilds tile objects, recomputes centre combos with `detectCombo`, rebuilds `lead`/`best` from the saved seats, clears `selected`, and reopens the summary for `roundEnd`/`matchEnd`. A failure returns `false` and the app deals a new match.
 
-Undo snapshots are **not** persisted. A reload can resume the live game but cannot undo the trick before the reload.
+Undo snapshots are **not** persisted. A reload can resume the live game but cannot undo the turn before the reload.
 
 ### Draft fields
 

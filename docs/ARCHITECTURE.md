@@ -39,7 +39,7 @@ boot()
 
 A normal load does not deal behind the overlay. It asks for **Your name** and a mode first; a restored save appears as **Resume match**. This avoids a phantom game that would otherwise be saved before the player chose to play.
 
-The scene is created **after** the first render so the UI is usable during the Three.js download. `dealRound` waits for the scene's deal promise before `beginTrick`, but falls back to a timeout if `scene` is null.
+The scene is created **after** the first render so the UI is usable during the Three.js download. `dealRound` waits for the scene's deal promise before `beginTurn`, but falls back to a timeout if `scene` is null.
 
 ## The layers inside `script.js`
 
@@ -90,7 +90,7 @@ A combination is:
 ## State machine
 
 ```text
-dealing ──► lead ──► follow ──► resolving ──► lead (next trick)
+dealing ──► lead ──► follow ──► resolving ──► lead (next turn)
    │
    └──► draft (experimental) ──► lead
                  │                     │
@@ -99,14 +99,14 @@ dealing ──► lead ──► follow ──► resolving ──► lead (next
                                                      └──► matchEnd
 ```
 
-- `startDraft` (experimental, default off) builds a public pool and rotates seats; `draftPick` applies one 2-tile pick and `finishDraft` hands over to `beginTrick` with the red-General holder leading.
-- `beginTrick` stores `state.snapshot = { game: serializableState(state), stats }` before changing anything.
-- `leadTrick` removes the leader's tiles, sets `lead`/`best`, and advances the turn.
+- `startDraft` (experimental, default off) builds a public pool and rotates seats; `draftPick` applies one 2-tile pick and `finishDraft` hands over to `beginTurn` with the red-General holder leading.
+- `beginTurn` stores `state.snapshot = { game: serializableState(state), stats }` before changing anything.
+- `leadTurn` removes the leader's tiles, sets `lead`/`best`, and advances the turn.
 - `submitPlay` removes exactly `lead.count` tiles; `revealed` is true only when the set matches the call and strictly beats `best`.
-- `resolveTrick` adds all centre tiles to the winner's captures, records `lastTrick`, clears the centre, and schedules the next trick or `endRound`.
-- `undoLastTrick` restores the ID-based snapshot, maps IDs back to tiles, restores `stats`, and restarts the trick.
+- `resolveTurn` adds all centre tiles to the winner's captures, records `lastTurn`, clears the centre, and schedules the next turn or `endRound`.
+- `undoLastTurn` restores the ID-based snapshot, maps IDs back to tiles, restores `stats`, and restarts the turn.
 - `endRound` computes piles → points, updates scores/stats/history, saves, and opens the summary.
-- `startNextRound` rotates the dealer, uses the last trick winner as the next leader, and re-deals.
+- `startNextRound` rotates the dealer, uses the last turn winner as the next leader, and re-deals.
 
 ## Multiplayer architecture
 
@@ -127,7 +127,7 @@ host browser                         guest browser
 - `SEAT_PROFILES` is `null` in solo, so `isBotSeat(seat)` falls back to the historical "seat 0 is human, 1–3 are AI" rule. In a room it carries `host|human|bot` and the handle.
 - `isBotSeat` is the only scheduler predicate. `scheduleAI` returns unless the current seat is a bot. Remote humans are waited on; disconnected humans are converted to bots.
 - `saveMatch` is the publication point: it writes localStorage on the host and calls `queuePublish()`. `publishState` builds one redacted payload per connected guest. It is throttled by `NET_TICK_MS` (40 ms) and refuses to run before `net.started`.
-- `sanitizeForSeat` is the **only** privacy boundary. `serializableState` runs first, then other hands and unrevealed centre/log/last-trick entries become `ghost-<seat>-<index>` ids. The host-only `hiddenTags` map is deleted by `serializableState`.
+- `sanitizeForSeat` is the **only** privacy boundary. `serializableState` runs first, then other hands and unrevealed centre/log/last-turn entries become `ghost-<seat>-<index>` ids. The host-only `hiddenTags` map is deleted by `serializableState`.
 - Guests own the same 32 back-only ghost meshes. The tag map is stable for a round, so a face-down card moves from hand to centre as the same mesh.
 - `scene.setViewSeat(MY_SEAT)` rotates the table world group by `-SEATS[seat].angle`, putting the local seat at the bottom of the screen. Camera, lights and floor stay fixed.
 

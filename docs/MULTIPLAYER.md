@@ -143,15 +143,15 @@ approval queue. The solo game keeps playing normally while the room opens.
 A started match no longer rejects every new guest. After the PIN, the host gets
 a pending request and can:
 
-- **Take a bot seat** — between tricks the bot's hand, captures and score are
+- **Take a bot seat** — between turns the bot's hand, captures and score are
   kept; the profile becomes human and the guest receives a fresh rejoin token
-  plus the current state. Mid-trick, the host **queues** the guest: the bot
-  plays out the current trick, the seat is reserved, and the guest is promoted
-  at the next `beginTrick`. The guest immediately enters the table as an
+  plus the current state. Mid-turn, the host **queues** the guest: the bot
+  plays out the current turn, the seat is reserved, and the guest is promoted
+  at the next `beginTurn`. The guest immediately enters the table as an
   **audience viewer** (`seat: -1`, all hands ghosted, no dock/chat/voice) with
-  a **“Approved — watching until this trick ends”** banner. At the boundary the
+  a **“Approved — watching until this turn ends”** banner. At the boundary the
   host sends a normal `welcome` for the reserved seat and the dock returns. The
-  host sheet shows **“joins after this trick”**.
+  host sheet shows **“joins after this turn”**.
 - **Watch only** — approved as a viewer even if a bot remains.
 - **Deny** or **Pause 30 min** — a pause rejects new requests with
   `suppressed`; existing rejoin tokens still bypass it. Resume from the host
@@ -272,8 +272,8 @@ The host sends a **different payload per guest** via `sanitizeForSeat(state, sea
 | revealed centre entry | real IDs + combo | real IDs + combo |
 | captures | real IDs | real IDs (public) |
 | `log` hidden entry | real combo | `combo: null` |
-| `lastTrick` hidden entry | real combo | `combo: null` |
-| `lastTrick.human*` | recomputed for recipient | recomputed for recipient |
+| `lastTurn` hidden entry | real combo | `combo: null` |
+| `lastTurn.human*` | recomputed for recipient | recomputed for recipient |
 | `hiddenTags`, `snapshot`, `selected`, `fast` | stripped | stripped |
 
 Guests create back-only "ghost" meshes for `ghost-<seat>-<index>` ids, so a hand looks correct without knowing which tile it is. The tag map is stable across a round (assigned at deal and restored by Undo), so playing a face-down tile moves the same ghost mesh from hand to centre rather than reshuffling cards.
@@ -320,7 +320,7 @@ The host panel shows **Listening for guests…** until a guest's data channel ac
 
 A failed join retries once automatically and turns **Connect** into **Retry**. The status line distinguishes broker, host and ICE failures rather than showing a generic timeout.
 
-The **two-client** verification is `node scripts/net-check.mjs`. It uses the real broker and checks: host room, guest join, two-human start, bot fill, own-hand privacy, ghosted other hands, host controls, text chat, voice mesh attachment, mic mute, deafen, actions in both directions, a resolved trick, **reload → auto-rejoin to the same seat**, and disconnect-to-bot. Voice media is exercised with a synthetic oscillator stream so headless Chrome does not need a real microphone; the production path still uses `getUserMedia`. It is separate from `scripts/verify.mjs` so offline CI stays deterministic. Set `GUEST_SHOT=screenshots/guest-play.png` to capture the guest table during the run.
+The **two-client** verification is `node scripts/net-check.mjs`. It uses the real broker and checks: host room, guest join, two-human start, bot fill, own-hand privacy, ghosted other hands, host controls, text chat, voice mesh attachment, mic mute, deafen, actions in both directions, a resolved turn, **reload → auto-rejoin to the same seat**, and disconnect-to-bot. Voice media is exercised with a synthetic oscillator stream so headless Chrome does not need a real microphone; the production path still uses `getUserMedia`. It is separate from `scripts/verify.mjs` so offline CI stays deterministic. Set `GUEST_SHOT=screenshots/guest-play.png` to capture the guest table during the run.
 
 ## Troubleshooting
 

@@ -7,7 +7,7 @@
 Release **1.10.4** is built, verified and published. It turns the table into a resilient multiplayer studio:
 
 - **Invite from a solo game.** A gold **Invite** in the top bar and Actions opens a host room around the running solo match without redealing. The invite sheet shows the room number, PIN, Copy room info, Copy link, Share, seats and approvals. Host audio joins automatically.
-- **Audience queue.** A guest approved mid-trick enters the table immediately as a viewer (`seat: -1`, ghosted hands, no dock/chat/voice) with an “Approved — watching until this trick ends” banner, then takes the reserved bot seat at the next trick. The hand dock returns after promotion.
+- **Audience queue.** A guest approved mid-turn enters the table immediately as a viewer (`seat: -1`, ghosted hands, no dock/chat/voice) with an “Approved — watching until this turn ends” banner, then takes the reserved bot seat at the next turn. The hand dock returns after promotion.
 - **Watchers everywhere.** Every participant sees a top-bar `👁 n` chip and a name list; queued audience members are marked “waiting for seat”.
 - **Reliability.** Guest actions carry an `actionId`; the host ACKs and deduplicates retries. Active play re-sends a full snapshot every 4 s; summary screens use `pulse {seq}`. A lagging guest requests `resync`; Actions has **Refresh table**. A client watchdog pings every 5 s and reconnects a stalled seat after 15 s.
 - **Host keepalive.** A silent guest is marked offline after 20 s. If it is their active turn for 30 s, the host gives the bot the seat, sends `seat-timeout`, and closes the old connection; the guest reclaims it with the seven-day seat card.

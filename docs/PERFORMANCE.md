@@ -27,7 +27,7 @@ The scene is tiny by WebGL standards. In 3D the dominant costs are the two shado
 
 ## Network
 
-- State payload per guest is a JSON snapshot of ~6–12 KB, sent on each host action (throttled to 40 ms). At normal trick speed this is a few KB/s.
+- State payload per guest is a JSON snapshot of ~6–12 KB, sent on each host action (throttled to 40 ms). At normal turn speed this is a few KB/s.
 - The host serialises and sanitises once per connected guest; with four humans that is three payloads per action.
 - Guests do not run the AI or the scene deal; they hydrate and animate. Rendering cost is the same as solo.
 - PeerJS + the broker are loaded only when a room opens. A solo page never requests them.
@@ -40,7 +40,7 @@ Measurements were taken in headless Chrome on macOS (SwiftShader where GPU is un
 | --- | --- |
 | Boot to first frame | ~1.5–2.5 s including the Three.js CDN fetch |
 | Deal animation | ~1.4 s for 32 tiles (17 ms stagger + 520 ms move) |
-| Trick resolution | ~1.25 s including the capture sweep |
+| Turn resolution | ~1.25 s including the capture sweep |
 | Self-test (rules only) | < 100 ms once the page is loaded |
 | Full round, fast mode | ~10–15 s (AI timers and 260 poll steps) |
 | Screenshot run | ~16 s including the demo wait |
@@ -53,7 +53,7 @@ A desktop GPU should hold 60 fps comfortably. Headless SwiftShader is slower; no
 2. **Pause the loop when the tab is hidden.** `visibilitychange` already saves; it could also stop `setAnimationLoop`.
 3. **Dispose textures on language/theme changes.** Currently nothing is regenerated after boot, so there is no leak; if you add themes, add `texture.dispose()`.
 4. **Cache the coach string** while nothing has changed; it currently recomputes a small amount of text on every render.
-5. **Avoid `clone` on large state** in the snapshot. The state is small (32 tiles + logs), but `structuredClone` on every trick is still a measurable allocation. A shallow ID snapshot would be cheaper.
+5. **Avoid `clone` on large state** in the snapshot. The state is small (32 tiles + logs), but `structuredClone` on every turn is still a measurable allocation. A shallow ID snapshot would be cheaper.
 6. **Instanced tiles** would cut draw calls, but 32 meshes is not the bottleneck; the complexity is not justified.
 7. **Reduce texture size for the felt** to 512 on mobile; the medallion is soft anyway.
 8. **Gate the voice meter when deafened** or when the chat panel is collapsed if you need to shave a few percent of CPU.

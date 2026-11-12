@@ -1,12 +1,12 @@
 # Continuation — Leab-Tui 3D
 
-**As of 2026-11-11 · release 1.10.25**
+**As of 2026-11-12 · release 1.10.26**
 
 - Live: <https://somphol.github.io/leab-tui-3d/>
 - Repository: <https://github.com/somphol/leab-tui-3d>
 - Local master: `~/Projects/leab-tui-3d`
 - Primary branch: `main` (GitHub Pages serves the repository root)
-- Last release: **1.10.25** — result auto-close fires at zero
+- Last release: **1.10.26** — Turn terminology, guest Leave on iPad, Chuan +24 copy
 - Branch workflow: [`BRANCHING.md`](BRANCHING.md) — `main` is production, `develop` is the feature train
 - Feature train: `develop` — the 1.10.x train is merged; host-left recovery and own-hand tile sizing shipped in 1.10.17
 
@@ -82,8 +82,9 @@ Current table/network model:
 | 1.10.21 | Join hides for hosts and guests once in a room |
 | 1.10.22 | HUD result-duration selector removed |
 | 1.10.23 | Turn result is per player; autoplay waits only on the local sheet |
-| 1.10.24 | Host gates the next trick on its own result sheet |
+| 1.10.24 | Host gates the next turn on its own result sheet |
 | 1.10.25 | Result auto-close closes at zero |
+| 1.10.26 | Trick→Turn rename; guest Leave pill on iPad; Chuan +24 |
 
 Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
 [`DRAFT.md`](DRAFT.md), [`MULTIPLAYER.md`](MULTIPLAYER.md),
@@ -95,9 +96,9 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
   even if it loses. Only an illegal/wrong-type submission is limited to Keep
   hidden. Do not reintroduce “cannot beat” as the reason when the real issue is
   legality; the dock/follow text explains which case applies.
-- **Full-circle judgement.** The trick is resolved only after every seat has
+- **Full-circle judgement.** The turn is resolved only after every seat has
   chosen Show or Keep hidden. The result summary then opens for every human,
-  including those who stayed hidden. `resolveTrick` must not run earlier.
+  including those who stayed hidden. `resolveTurn` must not run earlier.
 - **Redaction.** `sanitizeForSeat` is the only privacy boundary. A viewer is
   `seat = -1`; every hand and unrevealed set must be ghosted. Captures are
   public. Never send the same state object to two seats.
@@ -122,7 +123,7 @@ Feature design records: [`ARRANGEMENT.md`](ARRANGEMENT.md) (table/reveal/piles),
   1024 px yet coarse, so a width-only check hides both the sidebar and the rail.
 - **History from the log sheet (1.9.22).** `openPanelSheet("logPanel")`
   shows `#panelSheetAction` with `summary.viewLog`; it hides the sheet and
-  calls the same `openLastTrickModal()` as `#logHistoryBtn` and the summary.
+  calls the same `openLastTurnModal()` as `#logHistoryBtn` and the summary.
   Keep one history renderer; do not fork a second modal.
 - **Hints and inspector (1.9.20).** `toast()` measures the HUD and positions
   the layer below it; never hard-code a top that a wrapped Thai HUD can cover.
@@ -174,7 +175,7 @@ and the 2D/3D shadow switch**, and no console exceptions.
 2. **Viewer limitations.** No rejoin token, no chat/voice, no promotion to a
    seat when a human later leaves. Add a viewer token/promotion if desired.
 3. **Late join inherits the bot’s current hand.** The bot may have already
-   played in the current trick. This is deliberate; do not reset the seat.
+   played in the current turn. This is deliberate; do not reset the seat.
 4. **Join pause is a fixed 30 minutes** and is global, not per-guest. The
    pending row can deny-and-pause; the host panel can resume.
 5. **Host recovery is same-tab only.** No host migration across tabs/devices;
@@ -197,7 +198,7 @@ and the 2D/3D shadow switch**, and no console exceptions.
 | --- | --- |
 | Branch / release flow | `docs/BRANCHING.md`, `CONTRIBUTING.md`, `docs/RELEASE_CHECKLIST.md` |
 | Rules / combos / scoring | `script.js` — `detectCombo`, `compareScores`, `beats`, `scorePiles` |
-| Showdown / result / history | `showdown`, `applyShowdown`, `resolveTrick`, `showTrickResult`, `trickCompareMarkup`, `renderLogRecord` |
+| Showdown / result / history | `showdown`, `applyShowdown`, `resolveTurn`, `showTurnResult`, `turnCompareMarkup`, `renderLogRecord` |
 | Draft | `startDraft`, `draftPick`, `finishDraft`, `randomDraftPair`, `renderDraft` |
 | Host room / late join / viewers | `createHostRoom`, `requestGuest`, `approvePending`, `approveBotSeat`, `approveViewer`, `publishState` |
 | Rejoin / host recovery | `saveRejoinSeat`, `reattachGuest`, `saveHostRecovery`, `resumeHostRoom`, `resumeHostFlow` |

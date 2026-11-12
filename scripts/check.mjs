@@ -247,7 +247,7 @@ ok(script.includes("function startDraft") && script.includes("function draftPick
 ok(/state\.hands\.every\(\(hand\) => hand\.length === 8\)/.test(script), "draft finishes only when every hand has 8 tiles");
 ok(/kind === "draft"[\s\S]{0,80}draftPick\(profile\.seat/.test(script), "draft picks are relayed through the host");
 ok(!index.includes('id="draftChip"'), "draft can no longer be toggled at the table");
-const aiDraftBody = script.slice(script.indexOf("function aiDraftPick"), script.indexOf("function beginTrick"));
+const aiDraftBody = script.slice(script.indexOf("function aiDraftPick"), script.indexOf("function beginTurn"));
 ok(script.includes("let bootSeed") && /makeState\(options\.seed \?\? bootSeed/.test(script), "the URL seed reaches the match and the draft");
 ok(aiDraftBody.includes("randomDraftPair") && !aiDraftBody.includes(".sort("), "bot draft picks are uniformly random");
 ok(script.includes('kind: "draft"') && script.includes('"log.draftPick"'), "bot draft picks are recorded in the log");
@@ -259,11 +259,11 @@ ok(script.includes("sessionStorage.setItem(HOST_RECOVERY_KEY") && !/localStorage
 ok(script.includes("function scheduleHostRejoin") && script.includes("net.hostRestarting"), "guest retries while the host reloads");
 ok(script.includes("prefs.draftMode = false"), "draft picker is forced off");
 ok(script.includes("copy.draftPool") && script.includes("game.draftPool"), "draft pool survives save and hydrate");
-ok(script.includes("function trickCompareMarkup"), "one comparison renderer is shared");
-ok(/showTrickResult\(record\);/.test(script) && /trickResultGate = true;/.test(script), "every local seat sees the trick result and the authority waits for it");
-ok(/next\.phase === "resolving" && resultRecord/.test(script), "guests see the trick result when the host resolves");
-ok(/function showTrickResult/.test(script) && /trickCompareMarkup\(record\.entries/.test(script), "trick result and history share the comparison renderer");
-ok(css.includes(".trick-compare") && css.includes(".seat-tick"), "comparison layout CSS exists");
+ok(script.includes("function turnCompareMarkup"), "one comparison renderer is shared");
+ok(/showTurnResult\(record\);/.test(script) && /turnResultGate = true;/.test(script), "every local seat sees the turnNo result and the authority waits for it");
+ok(/next\.phase === "resolving" && resultRecord/.test(script), "guests see the turnNo result when the host resolves");
+ok(/function showTurnResult/.test(script) && /turnCompareMarkup\(record\.entries/.test(script), "turnNo result and history share the comparison renderer");
+ok(css.includes(".turn-compare") && css.includes(".seat-tick"), "comparison layout CSS exists");
 ok(script.includes("function simulateRound"), "round simulation exists");
 ok(script.includes("function selfTest"), "self-test exists");
 
@@ -309,7 +309,7 @@ ok(script.includes("getFraming: () => scene?.framing"), "2D framing is exposed f
 ok(index.includes('data-panel="handPanel" aria-label="Your hand" title="Your hand">H</button>') && script.includes('button.textContent = collapsed ? "H" : "⌄"'), "hand controls use a readable H label");
 ok(script.includes("function isPanelRailMode") && script.includes('matchMedia("(max-width: 1024px), (pointer: coarse)")'), "panel rail follows the coarse-pointer sidebar rule");
 ok(index.includes('id="panelSheetAction"') && script.includes('t("summary.viewLog")'), "panel sheet exposes the summary play-history link");
-ok(script.includes('activePanelId !== "logPanel"') && script.includes("openLastTrickModal();"), "the sheet action opens the shared turn history");
+ok(script.includes('activePanelId !== "logPanel"') && script.includes("openLastTurnModal();"), "the sheet action opens the shared turn history");
 ok(script.includes("function positionToastLayer") && script.includes('layer.style.top'), "toasts position below the HUD strip");
 ok(script.includes("inspector.emptyTouch") && script.includes("const fallback = state?.selected?.length"), "inspector falls back to the selected tile");
 ok(index.includes('id="inviteTopBtn"') && index.includes('id="inviteBtn"') && index.includes('id="inviteModal"'), "Invite controls and modal exist");
@@ -319,7 +319,7 @@ ok(index.includes('id="watcherChip"') && index.includes('id="watcherList"') && s
 ok(script.includes("seat === MY_SEAT") && script.includes("const step = 0.98"), "the owner's hand is one straight row");
 ok(script.includes('$("#handDock")?.removeAttribute("hidden")'), "promotion restores the hand dock");
 ok(css.includes("pointer: coarse) and (min-width: 641px") && script.includes("lastTouchEnd"), "tablet menus lock the viewport and suppress double-tap zoom");
-ok(css.includes("#leaveRoomTopBtn { display: none; }") && css.includes(".brand-sub { display: none; }"), "tablet top bar compacts for the room chip");
+ok(css.includes("#leaveRoomTopBtn .leave-top-label { display: none; }") && !css.includes("#leaveRoomTopBtn { display: none; }") && css.includes(".brand-sub { display: none; }"), "tablet top bar compacts for the room chip and keeps Leave");
 ok(script.includes("function hostCurrentMatch") && script.includes("function queueBotSeat") && script.includes("function promoteQueuedGuests"), "solo-to-host invite engine exists");
 const inviteBody = script.slice(script.indexOf("async function hostCurrentMatch"), script.indexOf("function openInviteSheet"));
 ok(inviteBody && !inviteBody.includes("beginMatch(") && !inviteBody.includes("leaveRoom("), "invite conversion does not redeal or drop the solo game");
