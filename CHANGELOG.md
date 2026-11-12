@@ -2,6 +2,13 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.23] — 2026-11-11
+
+### Changed
+
+- **The turn result is per player.** Guests now see the result sheet too, and each device's auto-close (5–30 s, or off) applies only to that player. Autoplay waits while that device's sheet is open, host included.
+- **The host no longer gates the table on its own result sheet.** In a network room the next trick starts normally, so a guest is never stalled by the host reading; a seat simply does not play until its own sheet closes. The round summary closes any leftover sheet.
+
 ## [1.10.22] — 2026-11-11
 
 ### Removed

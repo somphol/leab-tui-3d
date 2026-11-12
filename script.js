@@ -18,14 +18,14 @@ import {
   createLoopbackPair,
   isProtocolMessage,
   configureNetem
-} from "./peer-manager.js?v=1.10.22";
-import { VoiceChat } from "./voice-chat.js?v=1.10.22";
-import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.22";
+} from "./peer-manager.js?v=1.10.23";
+import { VoiceChat } from "./voice-chat.js?v=1.10.23";
+import { normalisePin, validatePin, hashPin, generatePin, PIN_POLICY } from "./security.js?v=1.10.23";
 
 const APP = Object.freeze({
   name: "Leab-Tui 3D",
   fullName: "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
-  version: "1.10.22",
+  version: "1.10.23",
   format: "leab-tui-3d-save",
   storageKey: "leabtui.match.v1",
   prefsKey: "leabtui.prefs.v1",
@@ -3258,10 +3258,12 @@ function resolveTrick() {
     entries: comparison
   }));
 
-  if (!isClient()) {
-    showTrickResult(record);
-    trickResultGate = !isNetworked();
-  }
+  /* Every local human sees the turn result, guests included: without it a
+     guest's next autoplay move fires under a sheet the host is still reading.
+     Only the authority blocks the next trick on it; a guest just gets the
+     same pause and the same auto-close setting. */
+  showTrickResult(record);
+  trickResultGate = !isNetworked();
 
   const finish = () => {
     if (!state || state.phase !== "resolving") return;
@@ -3904,6 +3906,10 @@ function startSummaryCountdown() {
 
 function showRoundSummary(matchEnded) {
   if (MY_SEAT < 0) return;
+  /* The round summary replaces any turn-result sheet left open on this device;
+     its timer must not fire later and close something else. */
+  clearResultAutoClose();
+  closeModal("trickResultModal");
   const modal = $("#summaryModal");
   if (!modal || !state) return;
   const isMatch = Boolean(matchEnded || state.phase === "matchEnd");
