@@ -768,6 +768,24 @@
         <button class="modal-close" type="button" data-close="trickResultModal" aria-label="Close">×</button>
         <h2 id="trickResultTitle" data-i18n="result.title">Turn result</h2>
         <div id="trickResultBody" class="trick-result-body"></div>
+        <div class="result-auto">
+          <label class="result-auto-toggle">
+            <input type="checkbox" id="trickResultAuto" />
+            <span data-i18n="result.autoClose">Close automatically</span>
+          </label>
+          <label class="result-auto-seconds">
+            <select id="trickResultAutoSeconds" aria-label="Auto-close delay">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+              <option value="25">25</option>
+              <option value="30">30</option>
+            </select>
+            <span data-i18n="result.seconds">seconds</span>
+          </label>
+          <span id="trickResultAutoCount" class="result-auto-count" aria-live="polite"></span>
+        </div>
         <div class="modal-actions">
           <button id="trickResultContinue" class="btn btn-gold" type="button" data-i18n="actions.continue">Continue</button>
         </div>

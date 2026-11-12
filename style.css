@@ -888,6 +888,12 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
 .last-trick-row.win { border-color: var(--gold); background: var(--gold-wash); }
 .modal-card.trick-result { width: min(760px, 100%); text-align: left; }
 .trick-result-body { margin: 6px 0 4px; }
+.result-auto { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 14px; color: var(--ink-dim); font-size: calc(12px * var(--fs-scale)); }
+.result-auto label { display: inline-flex; align-items: center; gap: 7px; }
+.result-auto input { width: 18px; height: 18px; accent-color: var(--gold); }
+.result-auto select { min-height: 34px; padding: 6px 9px; border: 1px solid var(--line-soft); border-radius: 9px; background: var(--card-bg); color: var(--ink); font: inherit; }
+.result-auto select:disabled { opacity: 0.55; }
+.result-auto-count { color: var(--gold); font-variant-numeric: tabular-nums; }
 .trick-compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 9px; margin: 10px 0 10px; text-align: left; }
 .trick-seat { position: relative; padding: 9px 11px 10px; border: 1px solid var(--line-soft); border-radius: 14px; background: var(--card-bg); }
 .trick-seat.win { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-wash); }
