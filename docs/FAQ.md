@@ -16,7 +16,7 @@ No. The set must match the called type. A pair cannot beat a single, and a Sa Ho
 There is one General per colour, so a General pair cannot exist. Pairs must be two copies of the same rank and colour.
 
 **Why did an identical set lose?**  
-Equal rank and colour do not overtake. The earlier play keeps the trick. Red beats black at equal rank; if rank and colour are both equal, the first set stays best.
+Equal rank and colour do not overtake. The earlier play keeps the turn. Red beats black at equal rank; if rank and colour are both equal, the first set stays best.
 
 **What is Chuan?**  
 Capturing all eight piles (all 32 tiles) in a round. It scores 16 points instead of the normal pile table.
@@ -31,7 +31,7 @@ You selected two tiles that are not an identical pair, or you have no pair in ha
 No. It selects a legal recommendation; you still press Lead, Reveal or Play face-down.
 
 **Does Undo work after a reload?**  
-No. The live game resumes, but the pre-trick snapshot is intentionally not persisted. Undo is a one-trick teaching tool.
+No. The live game resumes, but the pre-turn snapshot is intentionally not persisted. Undo is a one-turn teaching tool.
 
 **Can I make the text bigger?**  
 Yes. Open **Aa** in the stage toolbar and choose Small, Default, Large or Extra large. The interface scales; the 3D table stays fixed. The choice persists.

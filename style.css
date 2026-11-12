@@ -668,7 +668,7 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
   pointer-events: none;
 }
 .result-banner[hidden] { display: none; }
-.view-switch, .result-chip, #lastTrickBtn { pointer-events: auto; }
+.view-switch, .result-chip, #lastTurnBtn { pointer-events: auto; }
 .view-switch { padding: 3px; gap: 2px; }
 .view-switch button {
   min-width: 40px;
@@ -886,34 +886,34 @@ button, input, select, textarea, .hud-chip, .tool-btn, .mini-btn, .btn, .board-r
 .summary-auto select { min-height: 32px; padding: 4px 8px; border: 1px solid var(--line-soft); border-radius: 9px; background: var(--card-bg); color: var(--ink); font: inherit; }
 .summary-auto select:disabled { opacity: 0.55; }
 .summary-log-row { margin-top: 10px; }
-.last-trick-list { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 6px; }
-.last-trick-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 10px; border: 1px solid var(--line-soft); border-radius: 8px; background: var(--card-bg); font-size: calc(12px * var(--fs-scale)); }
-.last-trick-row b { color: var(--ink); font-weight: 600; }
-.last-trick-row span { color: var(--ink-dim); text-align: right; }
-.last-trick-row.win { border-color: var(--gold); background: var(--gold-wash); }
-.modal-card.trick-result { width: min(760px, 100%); text-align: left; }
-.trick-result-body { margin: 6px 0 4px; }
+.last-turn-list { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 6px; }
+.last-turn-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 10px; border: 1px solid var(--line-soft); border-radius: 8px; background: var(--card-bg); font-size: calc(12px * var(--fs-scale)); }
+.last-turn-row b { color: var(--ink); font-weight: 600; }
+.last-turn-row span { color: var(--ink-dim); text-align: right; }
+.last-turn-row.win { border-color: var(--gold); background: var(--gold-wash); }
+.modal-card.turn-result { width: min(760px, 100%); text-align: left; }
+.turn-result-body { margin: 6px 0 4px; }
 .result-auto { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 14px; color: var(--ink-dim); font-size: calc(12px * var(--fs-scale)); }
 .result-auto label { display: inline-flex; align-items: center; gap: 7px; }
 .result-auto input { width: 18px; height: 18px; accent-color: var(--gold); }
 .result-auto select { min-height: 34px; padding: 6px 9px; border: 1px solid var(--line-soft); border-radius: 9px; background: var(--card-bg); color: var(--ink); font: inherit; }
 .result-auto select:disabled { opacity: 0.55; }
 .result-auto-count { color: var(--gold); font-variant-numeric: tabular-nums; }
-.trick-compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 9px; margin: 10px 0 10px; text-align: left; }
-.trick-seat { position: relative; padding: 9px 11px 10px; border: 1px solid var(--line-soft); border-radius: 14px; background: var(--card-bg); }
-.trick-seat.win { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-wash); }
-.trick-seat-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-.trick-seat-head b { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-family: var(--serif); font-size: calc(14px * var(--fs-scale)); font-weight: 500; }
-.trick-seat-head span { color: var(--ink-faint); font-size: calc(11px * var(--fs-scale)); text-align: right; }
-.trick-seat.win .trick-seat-head span { color: var(--gold); }
+.turn-compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 9px; margin: 10px 0 10px; text-align: left; }
+.turn-seat { position: relative; padding: 9px 11px 10px; border: 1px solid var(--line-soft); border-radius: 14px; background: var(--card-bg); }
+.turn-seat.win { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-wash); }
+.turn-seat-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.turn-seat-head b { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-family: var(--serif); font-size: calc(14px * var(--fs-scale)); font-weight: 500; }
+.turn-seat-head span { color: var(--ink-faint); font-size: calc(11px * var(--fs-scale)); text-align: right; }
+.turn-seat.win .turn-seat-head span { color: var(--gold); }
 .seat-tick { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #2f7b63; color: #fff; font-size: 19px; font-weight: 600; line-height: 1; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22); }
-.trick-cards { display: flex; flex-wrap: wrap; gap: 7px; }
-.trick-cards .pile-item { width: 72px; padding: 12px 5px 8px; border-radius: 12px; }
-.trick-cards .pile-item em { font-size: calc(9px * var(--fs-scale)); }
-.trick-cards .pile-item b { margin-top: 5px; font-size: calc(11.5px * var(--fs-scale)); }
-.trick-cards .mini-tile { width: 44px; height: 44px; font-size: calc(25px * var(--fs-scale)); }
-.trick-cards .mini-tile.back { color: var(--gold); font-size: calc(15px * var(--fs-scale)); background: repeating-linear-gradient(45deg, rgba(216, 178, 107, 0.16) 0 3px, transparent 3px 7px), var(--chip-tile-bg); }
-.trick-cards .pile-item.back { border-style: dashed; }
+.turn-cards { display: flex; flex-wrap: wrap; gap: 7px; }
+.turn-cards .pile-item { width: 72px; padding: 12px 5px 8px; border-radius: 12px; }
+.turn-cards .pile-item em { font-size: calc(9px * var(--fs-scale)); }
+.turn-cards .pile-item b { margin-top: 5px; font-size: calc(11.5px * var(--fs-scale)); }
+.turn-cards .mini-tile { width: 44px; height: 44px; font-size: calc(25px * var(--fs-scale)); }
+.turn-cards .mini-tile.back { color: var(--gold); font-size: calc(15px * var(--fs-scale)); background: repeating-linear-gradient(45deg, rgba(216, 178, 107, 0.16) 0 3px, transparent 3px 7px), var(--chip-tile-bg); }
+.turn-cards .pile-item.back { border-style: dashed; }
 
 .action-toggle { margin-top: 10px; }
 .draft-pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 7px; max-height: 56vh; max-height: 56dvh; overflow-y: auto; margin: 10px 0; padding: 4px; }

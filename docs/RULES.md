@@ -35,7 +35,7 @@ A Chinese chess set has 32 tiles. Each colour has:
 General > Advisor > Elephant > Chariot > Horse > Cannon > Soldier
 ```
 
-At equal rank, **red beats black**. If rank and colour are both equal, the **earlier play keeps the trick**; a later identical set cannot overtake it.
+At equal rank, **red beats black**. If rank and colour are both equal, the **earlier play keeps the turn**; a later identical set cannot overtake it.
 
 The hierarchy applies to rank-based sets. Straight sets and same-rank Soldier sets have their own comparison rules below.
 
@@ -69,7 +69,7 @@ The leader chooses one call and sends a matching set face-down.
 
 A set only competes if it matches the **called type**. A pair cannot beat a single; a Sa Hoo cannot beat a See Hoo.
 
-## How a trick runs
+## How a turn runs
 
 1. The leader calls a type and sends a legal set of that type **face-down**.
 2. Every other player, in clockwise order, sends **exactly the same number of tiles**, face-down.
@@ -77,15 +77,15 @@ A set only competes if it matches the **called type**. A pair cannot beat a sing
 4. In turn, each following player may reveal a legal set of the called type that **strictly beats** the current best. If they cannot or choose not to, their tiles stay face-down.
 5. The highest revealed set wins all `4 × N` tiles. Unrevealed tiles never compete, even if they could have won, and they stay face-down when they are swept into the winner's pile.
 6. Clicking a captured pile opens it: tiles are shown left to right, face-up tiles with their carved face and hidden tiles as backs.
-6. The winner leads the next trick.
+6. The winner leads the next turn.
 
 In this studio followers select the required number of tiles and send them with **Send face-down**. After all four have sent, the leader is revealed automatically; each follower then chooses **Show & win** or **Keep hidden** in turn. The AI follows the same rule. The leader must be able to form the called set.
 
 ### First lead and next round
 
-- The holder of the **red General** leads the opening trick.
-- The winner of a trick leads the next.
-- After a round, the tiles are reshuffled and dealt again; the winner of the last trick leads the first trick of the next round.
+- The holder of the **red General** leads the opening turn.
+- The winner of a turn leads the next.
+- After a round, the tiles are reshuffled and dealt again; the winner of the last turn leads the first turn of the next round.
 
 ## Scoring
 
@@ -99,7 +99,7 @@ Par is 8, every tile above par is +1, every tile below is −1. Two piles (eight
 
 There is **no match target and no match end**: scores accumulate for as long as the table keeps playing, and players leave when they choose (**Leave room** in a network room, or reload in solo). The studio deliberately drops the "first to 20/50/100" rule from earlier versions.
 
-Because every trick awards `4 × N` tiles, the four players' round points always sum to zero. The self-test asserts 32-tile conservation and the par-eight scoring table.
+Because every turn awards `4 × N` tiles, the four players' round points always sum to zero. The self-test asserts 32-tile conservation and the par-eight scoring table.
 
 ## Digital table conventions
 
@@ -109,7 +109,7 @@ These are deliberate interface choices, not rule changes:
 - A set must be revealed to compete. The interface never auto-reveals for you, except for the leader at the showdown, as the source requires.
 - The leader must be able to form the called set. The UI disables **Lead** for illegal selections.
 - **Hint** uses a deterministic version of the AI heuristic. It is advice, not an auto-play.
-- **Undo trick** restores the position before the last trick and restarts it. It is a learning tool, not a competitive feature.
+- **Undo turn** restores the position before the last turn and restarts it. It is a learning tool, not a competitive feature.
 - The coach and inspector use the same `detectCombo` function as the engine, so their explanations cannot drift from the rules.
 
 ## Source citations
@@ -128,7 +128,7 @@ This is an independent, open-source teaching implementation. It is not affiliate
 - **Direction:** clockwise (default) or counter-clockwise, by agreement.
 - **Scoring:** most piles, as in the source. Bid-piles was an experimental house variant and is not offered in the interface.
 - **Redraw (โละ):** before the first play, a seat with no tile from the red Elephant up may redeal. The requester leads; the round scores ×2, ×3 … per redraw.
-- **Chuan special:** with seven piles and the last Soldier, the final follower may reveal it and take the last trick, reaching eight piles for 16.
+- **Chuan special:** with seven piles and the last Soldier, the final follower may reveal it and take the last turn, reaching eight piles for 16.
 
 ## Removed house variant: bid piles (not standard)
 
@@ -164,7 +164,7 @@ winning ties. It contains **no** general Soldier-over-General exception.
 
 The only Soldier exception in the source is the **Chuan claim**: a player who
 already holds seven piles and has the **last Soldier** in hand may reveal it to
-take the final trick and complete the eighth pile. That is a final-trick
+take the final turn and complete the eighth pile. That is a final-turn
 allowance for the Chuan, not a permanent reversal of rank.
 
 The house-rule question concerns only **“จุกกินตี่”** (Soldier beats General),
@@ -176,9 +176,9 @@ order on every turn.
 
 If a table wants a house rule, state it explicitly and choose one:
 
-- **Chuan-only (source):** the Soldier can win only the final trick, and only
+- **Chuan-only (source):** the Soldier can win only the final turn, and only
   with seven piles and the last Soldier in hand. This is implemented.
-- **Final-trick only:** the Soldier beats the General on the last trick of the
+- **Final-turn only:** the Soldier beats the General on the last turn of the
   round, regardless of piles. This is a local variant, not implemented.
 - **Permanent:** the Soldier beats the General in every single comparison. This
   is a cycle variant, not recommended, not implemented.

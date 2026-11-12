@@ -39,7 +39,7 @@
 2. Tab through: header → HUD (not focusable) → camera tools → hand dock → panels → hand chips → footer.
 3. Open the rules modal, tab, press `Esc`, confirm focus returns to the trigger (currently it does not; fix before claiming WCAG conformance).
 4. Open the lobby, tab through solo/host/join, start a room, read the status line, then close with `Esc`.
-5. Turn on VoiceOver/NVDA and play one trick using only the hand list and action buttons.
+5. Turn on VoiceOver/NVDA and play one turn using only the hand list and action buttons.
 6. Enable Reduce Motion at the OS level and confirm the UI does not jump.
 7. Test at 200 % browser zoom and at 390×844.
 

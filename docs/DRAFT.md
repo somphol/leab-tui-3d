@@ -18,7 +18,7 @@ describe it as a standard Leab-Tui rule.
 3. A pick takes **2 tiles** from the pool. Then the next seat picks.
 4. After all four seats have picked, the cycle repeats. **Four cycles** give
    every seat **8 tiles**.
-5. The seat holding the **red General** leads the first trick.
+5. The seat holding the **red General** leads the first turn.
 
 The turn order for picking follows `nextSeat`, so the direction setting applies.
 
@@ -29,7 +29,7 @@ Only the host can change the mode, in three places:
 - **Before the room / match** — the host panel in the lobby has
   *"Draft mode: pick 2 tiles ×4 (experimental)"*. It is stored in preferences
   and copied into the match when it starts.
-- **At the table** — a **Draft: on/off** chip in the HUD (next to Last trick)
+- **At the table** — a **Draft: on/off** chip in the HUD (next to Last turn)
   toggles it without opening a panel. It is hidden for guests.
 - **Actions** — *"Draft next deal (experimental)"* carries the same switch.
 
@@ -66,13 +66,13 @@ a different hand.
   false whenever draft mode is on.
 - **Chuan, scoring, captures and reveal/showdown are unchanged.** The
   draft only replaces the deal.
-- **Lead** is the red-General holder rather than the previous trick's winner.
+- **Lead** is the red-General holder rather than the previous turn's winner.
   This is the same idea as the first-round lead rule, applied to each drafted
   round.
 - **Resume** works mid-draft: the pool, order, cycle, current seat and hands are
   saved, and the draft modal reopens on reload. Network rooms are still not
   resumable.
-- **Undo** is disabled during the draft (there is no resolved trick to rewind).
+- **Undo** is disabled during the draft (there is no resolved turn to rewind).
 
 ## Multiplayer
 

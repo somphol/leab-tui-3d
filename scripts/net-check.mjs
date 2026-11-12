@@ -286,8 +286,8 @@ async function main() {
   }
   const thirdJoined = JSON.parse(thirdJoinedRaw);
   if (thirdJoined.mode === "queued") {
-    if (thirdJoined.banner && thirdJoined.dock === "none") pass("approved guest watches the table until the trick ends", `reserved seat ${thirdJoined.reserved}`);
-    else fail("approved guest watches the table until the trick ends", JSON.stringify(thirdJoined));
+    if (thirdJoined.banner && thirdJoined.dock === "none") pass("approved guest watches the table until the turnNo ends", `reserved seat ${thirdJoined.reserved}`);
+    else fail("approved guest watches the table until the turnNo ends", JSON.stringify(thirdJoined));
     const rosterWithThird = JSON.parse(await host.eval("JSON.stringify(LeabTui.net.getState())"));
     if (rosterWithThird.queued?.[0]?.seat === 2 && rosterWithThird.players?.[2]?.kind === "bot") pass("host reserves the bot seat while the guest watches", rosterWithThird.queued[0].name);
     else fail("host reserves the bot seat while the guest watches", JSON.stringify({ queued: rosterWithThird.queued, seat: rosterWithThird.players?.[2] }));
@@ -302,8 +302,8 @@ async function main() {
     await host.waitFor("window.LeabTui?.net.getState?.().queued?.length === 0 ? 'ok' : ''", "queued seat cancelled", 15000);
     await host.waitFor("window.LeabTui?.net.getState?.().players?.[2]?.kind === 'bot' ? 'ok' : ''", "seat 2 back to bot", 30000);
   } else {
-    if (thirdJoined.seat === 2 && thirdJoined.hand > 0) pass("approved guest takes a bot seat between tricks", `seat ${thirdJoined.seat}, ${thirdJoined.hand} tiles`);
-    else fail("approved guest takes a bot seat between tricks", JSON.stringify(thirdJoined));
+    if (thirdJoined.seat === 2 && thirdJoined.hand > 0) pass("approved guest takes a bot seat between turns", `seat ${thirdJoined.seat}, ${thirdJoined.hand} tiles`);
+    else fail("approved guest takes a bot seat between turns", JSON.stringify(thirdJoined));
     await third.closePage();
     await host.waitFor("window.LeabTui?.net.getState?.().players?.[2]?.kind === 'bot' ? 'ok' : ''", "seat 2 back to bot", 30000);
   }
@@ -449,7 +449,7 @@ async function main() {
   else fail("deafen mutes every remote audio element", JSON.stringify(mutedRemotes));
   await guest.eval("LeabTui.voice.deafen(false); true");
 
-  // Drive whichever human seat is on turn until a trick resolves. This works
+  // Drive whichever human seat is on turn until a turnNo resolves. This works
   // regardless of who holds the red General and exercises both directions of
   // the action channel.
   const hostSeat = 0;
@@ -471,16 +471,16 @@ async function main() {
   if (clearedLayout === null) pass("tidy cleared the relayed layout");
   else fail("tidy cleared the relayed layout", JSON.stringify(clearedLayout));
 
-  // Drive whichever human seat is on turn until a trick resolves.
+  // Drive whichever human seat is on turn until a turnNo resolves.
   let acted = 0;
   let resolved = null;
   for (let step = 0; step < 40; step += 1) {
     const snapshot = JSON.parse(await guest.eval(`JSON.stringify({
       phase: LeabTui.getState().phase,
       turn: LeabTui.getState().turn,
-      trick: LeabTui.getState().trick,
+      turnNo: LeabTui.getState().turnNo,
       center: LeabTui.getState().center.length,
-      lastWinner: LeabTui.getState().lastTrick?.winner ?? null
+      lastWinner: LeabTui.getState().lastTurn?.winner ?? null
     })`));
     if (snapshot.phase === "showdown" && snapshot.turn === guestSeat) {
       await guest.eval("(LeabTui.showdown(true) || LeabTui.showdown(false)); true");
@@ -518,26 +518,26 @@ async function main() {
   }
   if (acted > 0) pass("human actions crossed the data channel", `${acted} action(s)`);
   else fail("human actions crossed the data channel", "no turn reached a human seat");
-  const after = JSON.parse(await guest.eval("JSON.stringify({trick:LeabTui.getState().trick, center:LeabTui.getState().center.length, lastWinner:LeabTui.getState().lastTrick?.winner ?? null, scores:LeabTui.getState().scores})"));
-  if (after.lastWinner !== null || after.trick >= 2 || resolved) pass("a trick resolved and state advanced", JSON.stringify(after));
-  else fail("a trick resolved and state advanced", JSON.stringify(after));
+  const after = JSON.parse(await guest.eval("JSON.stringify({turnNo:LeabTui.getState().turnNo, center:LeabTui.getState().center.length, lastWinner:LeabTui.getState().lastTurn?.winner ?? null, scores:LeabTui.getState().scores})"));
+  if (after.lastWinner !== null || after.turnNo >= 2 || resolved) pass("a turnNo resolved and state advanced", JSON.stringify(after));
+  else fail("a turnNo resolved and state advanced", JSON.stringify(after));
 
   // Rejoin after a reload (the version-update path): the guest keeps a token
   // in sessionStorage and must reclaim the same seat without PIN or approval.
   const rejoinInfo = JSON.parse(await guest.eval("JSON.stringify(JSON.parse(sessionStorage.getItem('leabtui.rejoin.v1') || 'null'))"));
   if (rejoinInfo?.token && rejoinInfo?.code) pass("guest stored a rejoin token", `seat ${rejoinInfo.seat}`);
   else fail("guest stored a rejoin token", JSON.stringify(rejoinInfo));
-  const beforeReload = JSON.parse(await guest.eval("JSON.stringify({seat:LeabTui.net.getState().mySeat,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase})"));
+  const beforeReload = JSON.parse(await guest.eval("JSON.stringify({seat:LeabTui.net.getState().mySeat,turnNo:LeabTui.getState().turnNo,phase:LeabTui.getState().phase})"));
   await guest.eval("window.__guestReloadMarker = 1; true");
   await guest.send("Page.reload");
   await sleep(2500);
   const rejoinedRaw = await guest.waitFor(
-    "window.LeabTui && !window.__guestReloadMarker && window.LeabTui.net?.getState?.()?.role === 'client' && window.LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase}) : ''",
+    "window.LeabTui && !window.__guestReloadMarker && window.LeabTui.net?.getState?.()?.role === 'client' && window.LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,turnNo:LeabTui.getState().turnNo,phase:LeabTui.getState().phase}) : ''",
     "guest auto-rejoin",
     30000
   );
   const rejoined = JSON.parse(rejoinedRaw);
-  if (rejoined.seat === beforeReload.seat && rejoined.trick >= beforeReload.trick) pass("guest auto-rejoined the same seat", `seat ${rejoined.seat}, trick ${rejoined.trick}`);
+  if (rejoined.seat === beforeReload.seat && rejoined.turnNo >= beforeReload.turnNo) pass("guest auto-rejoined the same seat", `seat ${rejoined.seat}, turnNo ${rejoined.turnNo}`);
   else fail("guest auto-rejoined the same seat", JSON.stringify({ beforeReload, rejoined }));
   const rosterAfterReload = JSON.parse(await host.eval("JSON.stringify(LeabTui.net.getState().players)"));
   const seatAfterReload = rosterAfterReload[beforeReload.seat];
@@ -546,14 +546,14 @@ async function main() {
 
   // Host reload recovery: the host tab reloads, reopens the same room from
   // sessionStorage, and the guest's automatic retry reclaims its seat.
-  const hostBefore = JSON.parse(await host.eval("JSON.stringify({code:LeabTui.net.getState().code,trick:LeabTui.getState().trick,seat:LeabTui.net.getState().mySeat})"));
+  const hostBefore = JSON.parse(await host.eval("JSON.stringify({code:LeabTui.net.getState().code,turnNo:LeabTui.getState().turnNo,seat:LeabTui.net.getState().mySeat})"));
   await host.eval("window.__hostReloadMarker = 1; true");
   await host.send("Page.reload");
   await sleep(3000);
   let hostResumedRaw = "";
   try {
     hostResumedRaw = await host.waitFor(
-      "window.LeabTui && !window.__hostReloadMarker && window.LeabTui.net?.getState?.()?.role === 'host' && window.LeabTui.net?.getState?.()?.started && window.LeabTui.getState?.() ? JSON.stringify({code:LeabTui.net.getState().code,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase}) : ''",
+      "window.LeabTui && !window.__hostReloadMarker && window.LeabTui.net?.getState?.()?.role === 'host' && window.LeabTui.net?.getState?.()?.started && window.LeabTui.getState?.() ? JSON.stringify({code:LeabTui.net.getState().code,turnNo:LeabTui.getState().turnNo,phase:LeabTui.getState().phase}) : ''",
       "host room resume",
       30000
     );
@@ -573,12 +573,12 @@ async function main() {
     throw error;
   }
   const hostResumed = JSON.parse(hostResumedRaw);
-  if (hostResumed.code === hostBefore.code && hostResumed.trick >= hostBefore.trick) pass("host reload reopens the same room", `${hostResumed.code}, trick ${hostResumed.trick}`);
+  if (hostResumed.code === hostBefore.code && hostResumed.turnNo >= hostBefore.turnNo) pass("host reload reopens the same room", `${hostResumed.code}, turnNo ${hostResumed.turnNo}`);
   else fail("host reload reopens the same room", JSON.stringify({ hostBefore, hostResumed }));
   let guestResumedRaw = "";
   try {
     guestResumedRaw = await guest.waitFor(
-      "window.LeabTui && window.LeabTui.net?.getState?.()?.role === 'client' && window.LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,phase:LeabTui.getState().phase,trick:LeabTui.getState().trick}) : ''",
+      "window.LeabTui && window.LeabTui.net?.getState?.()?.role === 'client' && window.LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,phase:LeabTui.getState().phase,turnNo:LeabTui.getState().turnNo}) : ''",
       "guest after host reload",
       30000
     );
@@ -597,7 +597,7 @@ async function main() {
     throw error;
   }
   const guestResumed = JSON.parse(guestResumedRaw);
-  if (guestResumed.seat === beforeReload.seat) pass("guest reconnected after the host reload", `seat ${guestResumed.seat}, trick ${guestResumed.trick}`);
+  if (guestResumed.seat === beforeReload.seat) pass("guest reconnected after the host reload", `seat ${guestResumed.seat}, turnNo ${guestResumed.turnNo}`);
   else fail("guest reconnected after the host reload", JSON.stringify(guestResumed));
   const hostRoster = JSON.parse(await host.eval("JSON.stringify(LeabTui.net.getState().players)"));
   if (hostRoster[guestResumed.seat]?.kind === "human" && hostRoster[guestResumed.seat]?.connected) pass("host roster keeps the guest after reload", hostRoster[guestResumed.seat].name);
@@ -633,8 +633,8 @@ async function main() {
     return true;
   })()`);
   const inviteBefore = JSON.parse(await inviteHost.waitFor(
-    "window.LeabTui.getState().center.length > 0 ? JSON.stringify({round:LeabTui.getState().round,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase,center:LeabTui.getState().center.length}) : ''",
-    "invite mid-trick",
+    "window.LeabTui.getState().center.length > 0 ? JSON.stringify({round:LeabTui.getState().round,turnNo:LeabTui.getState().turnNo,phase:LeabTui.getState().phase,center:LeabTui.getState().center.length}) : ''",
+    "invite mid-turnNo",
     20000
   ));
   const inviteOpen = await inviteHost.eval("LeabTui.net.openInvite(); true");
@@ -655,8 +655,8 @@ async function main() {
   ));
   if (inviteNet.started && inviteNet.players?.[0]?.kind === "host" && inviteNet.players?.[1]?.kind === "bot") pass("solo table became a hosted room without redealing", inviteNet.code);
   else fail("solo table became a hosted room without redealing", inviteNetRaw);
-  if (inviteBefore.trick >= 1) pass("invite conversion kept the live round and trick", `round ${inviteBefore.round}, trick ${inviteBefore.trick}`);
-  else fail("invite conversion kept the live round and trick", JSON.stringify(inviteBefore));
+  if (inviteBefore.turnNo >= 1) pass("invite conversion kept the live round and turnNo", `round ${inviteBefore.round}, turnNo ${inviteBefore.turnNo}`);
+  else fail("invite conversion kept the live round and turnNo", JSON.stringify(inviteBefore));
   await inviteHost.eval(`LeabTui.net.approve(${JSON.stringify(invitePending[0].connId)}); true`);
   const inviteSheet = JSON.parse(await inviteHost.eval(`JSON.stringify({
     pendingRows: document.querySelectorAll('#invitePending [data-conn]').length,
@@ -666,25 +666,25 @@ async function main() {
   else fail("host invite sheet clears and confirms the approval", JSON.stringify(inviteSheet));
   const queuedRaw = await inviteHost.waitFor(
     "window.LeabTui?.net.getState?.().queued?.length >= 1 ? JSON.stringify(LeabTui.net.getState().queued) : ''",
-    "guest queued until trick end",
+    "guest queued until turnNo end",
     10000
   );
   const queued = JSON.parse(queuedRaw);
-  if (queued[0]?.seat > 0 && queued[0]?.joinAfter === "trick") pass("approved guest is queued until the trick ends", `seat ${queued[0].seat}`);
-  else fail("approved guest is queued until the trick ends", queuedRaw);
+  if (queued[0]?.seat > 0 && queued[0]?.joinAfter === "turnNo") pass("approved guest is queued until the turnNo ends", `seat ${queued[0].seat}`);
+  else fail("approved guest is queued until the turnNo ends", queuedRaw);
   const queuedGuest = JSON.parse(await lateGuest.waitFor(
     "LeabTui.net?.getState?.()?.queued && LeabTui.net.getState().viewer && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,reserved:LeabTui.net.getState().queuedSeat,viewer:LeabTui.net.getState().viewer,banner:!document.querySelector('#queuedBanner')?.hidden,dock:getComputedStyle(document.querySelector('#handDock')).display}) : ''",
     "invite guest audience",
     20000
   ));
-  if (queuedGuest.viewer && queuedGuest.banner && queuedGuest.dock === "none") pass("invite guest watches until the trick ends", `reserved seat ${queuedGuest.reserved}`);
-  else fail("invite guest watches until the trick ends", JSON.stringify(queuedGuest));
-  const finishTrick = await inviteHost.eval(`(async () => {
+  if (queuedGuest.viewer && queuedGuest.banner && queuedGuest.dock === "none") pass("invite guest watches until the turnNo ends", `reserved seat ${queuedGuest.reserved}`);
+  else fail("invite guest watches until the turnNo ends", JSON.stringify(queuedGuest));
+  const finishTurn = await inviteHost.eval(`(async () => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     for (let i = 0; i < 320; i += 1) {
       const st = LeabTui.getState();
-      if (st.trick > ${inviteBefore.trick}) return JSON.stringify({ok:true,trick:st.trick,round:st.round});
-      if (!document.querySelector('#trickResultModal').hidden) document.querySelector('#trickResultContinue').click();
+      if (st.turnNo > ${inviteBefore.turnNo}) return JSON.stringify({ok:true,turnNo:st.turnNo,round:st.round});
+      if (!document.querySelector('#turnResultModal').hidden) document.querySelector('#turnResultContinue').click();
       if (st.turn === 0 && st.phase === 'lead') { LeabTui.hint(); LeabTui.lead(LeabTui.getState().selected); }
       else if (st.turn === 0 && st.phase === 'follow') { LeabTui.hint(); LeabTui.follow(LeabTui.getState().selected, false); }
       else if (st.turn === 0 && st.phase === 'showdown') {
@@ -695,21 +695,21 @@ async function main() {
       }
       await wait(60);
     }
-    return JSON.stringify({ok:false,phase:LeabTui.getState().phase,trick:LeabTui.getState().trick,turn:LeabTui.getState().turn});
+    return JSON.stringify({ok:false,phase:LeabTui.getState().phase,turnNo:LeabTui.getState().turnNo,turn:LeabTui.getState().turn});
   })()`);
-  const finished = JSON.parse(finishTrick);
-  if (finished.ok) pass("host finished the trick after the guest was queued", `trick ${finished.trick}`);
-  else fail("host finished the trick after the guest was queued", finishTrick);
+  const finished = JSON.parse(finishTurn);
+  if (finished.ok) pass("host finished the turn after the guest was queued", `turnNo ${finished.turnNo}`);
+  else fail("host finished the turn after the guest was queued", finishTurn);
   const promotedRaw = await lateGuest.waitFor(
-    "window.LeabTui?.net?.getState?.()?.role === 'client' && LeabTui.net.getState().mySeat > 0 && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,hand:LeabTui.getState().hands[LeabTui.net.getState().mySeat].length,round:LeabTui.getState().round,trick:LeabTui.getState().trick}) : ''",
+    "window.LeabTui?.net?.getState?.()?.role === 'client' && LeabTui.net.getState().mySeat > 0 && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,hand:LeabTui.getState().hands[LeabTui.net.getState().mySeat].length,round:LeabTui.getState().round,turnNo:LeabTui.getState().turnNo}) : ''",
     "queued guest promoted",
     20000
   );
   const promoted = JSON.parse(promotedRaw);
   if (promoted.seat > 0 && promoted.hand > 0) pass("queued guest joined the reserved seat with a hand", `seat ${promoted.seat}, ${promoted.hand} tiles`);
   else fail("queued guest joined the reserved seat with a hand", promotedRaw);
-  if (promoted.round === inviteBefore.round && promoted.trick >= inviteBefore.trick) pass("queued guest kept the live round and trick", `round ${promoted.round}, trick ${promoted.trick}`);
-  else fail("queued guest kept the live round and trick", JSON.stringify({inviteBefore,promoted}));
+  if (promoted.round === inviteBefore.round && promoted.turnNo >= inviteBefore.turnNo) pass("queued guest kept the live round and turnNo", `round ${promoted.round}, turnNo ${promoted.turnNo}`);
+  else fail("queued guest kept the live round and turnNo", JSON.stringify({inviteBefore,promoted}));
   const inviteRoster = JSON.parse(await inviteHost.eval("JSON.stringify(LeabTui.net.getState())"));
   if (!inviteRoster.queued?.length && inviteRoster.players?.[promoted.seat]?.kind === "human") pass("queued list clears when the guest is seated");
   else fail("queued list clears when the guest is seated", JSON.stringify({queued:inviteRoster.queued,seat:inviteRoster.players?.[promoted.seat]}));
@@ -720,7 +720,7 @@ async function main() {
   const soakRounds = Math.max(1, Number(process.env.SOAK_ROUNDS || 1));
   await lateGuest.eval("LeabTui.setFast(true); LeabTui.setAutoplay(true); true");
   await inviteHost.eval("LeabTui.setFast(true); LeabTui.setAutoplay(true); true");
-  const soakProbe = () => `JSON.stringify({now:Date.now(),round:LeabTui.getState().round,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase,turn:LeabTui.getState().turn,hands:LeabTui.getState().hands.map((h)=>h.length),center:LeabTui.getState().center.length,net:LeabTui.net?.getState?.()||null,debug:LeabTui.net?.debug?.()||null})`;
+  const soakProbe = () => `JSON.stringify({now:Date.now(),round:LeabTui.getState().round,turnNo:LeabTui.getState().turnNo,phase:LeabTui.getState().phase,turn:LeabTui.getState().turn,hands:LeabTui.getState().hands.map((h)=>h.length),center:LeabTui.getState().center.length,net:LeabTui.net?.getState?.()||null,debug:LeabTui.net?.debug?.()||null})`;
   let soakOk = false;
   let soakDetail = "";
   let soakKey = "";
@@ -730,7 +730,7 @@ async function main() {
   let maxLagMs = 0;
   let roundsDone = 0;
   let startedAt = Date.now();
-  const dismissResult = "(() => { const m = document.querySelector('#trickResultModal'); if (m && !m.hidden) document.querySelector('#trickResultContinue')?.click(); return true; })()";
+  const dismissResult = "(() => { const m = document.querySelector('#turnResultModal'); if (m && !m.hidden) document.querySelector('#turnResultContinue')?.click(); return true; })()";
   for (let step = 0; step < 60 * Math.max(1, soakRounds) + 60; step += 1) {
     await sleep(1000);
     /* The result sheet is per player and the host now waits for it, so a soak
@@ -739,9 +739,9 @@ async function main() {
     await lateGuest.eval(dismissResult);
     const hs = JSON.parse(await inviteHost.eval(soakProbe()));
     const gs = JSON.parse(await lateGuest.eval(soakProbe()));
-    const key = `${hs.round}:${hs.trick}:${hs.phase}:${hs.turn}`;
+    const key = `${hs.round}:${hs.turnNo}:${hs.phase}:${hs.turn}`;
     if (key !== soakKey) { soakKey = key; soakAt = Date.now(); soakTurns += 1; }
-    const same = hs.round === gs.round && hs.trick === gs.trick && hs.phase === gs.phase && hs.turn === gs.turn;
+    const same = hs.round === gs.round && hs.turnNo === gs.turnNo && hs.phase === gs.phase && hs.turn === gs.turn;
     divergent = same ? 0 : divergent + 1;
     maxLagMs = Math.max(maxLagMs, divergent * 1000);
     if (hs.phase === "roundEnd" || hs.phase === "matchEnd") {
@@ -814,14 +814,14 @@ async function main() {
   }
   await host4.eval("LeabTui.setFast(true); LeabTui.setAutoplay(true); true");
 
-  const fourProbe = () => `JSON.stringify({round:LeabTui.getState().round,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase,turn:LeabTui.getState().turn,hands:LeabTui.getState().hands.map((h)=>h.length),captures:LeabTui.getState().captures.reduce((n,p)=>n+p.length,0),net:LeabTui.net?.getState?.()||null,debug:LeabTui.net?.debug?.()||null})`;
+  const fourProbe = () => `JSON.stringify({round:LeabTui.getState().round,turnNo:LeabTui.getState().turnNo,phase:LeabTui.getState().phase,turn:LeabTui.getState().turn,hands:LeabTui.getState().hands.map((h)=>h.length),captures:LeabTui.getState().captures.reduce((n,p)=>n+p.length,0),net:LeabTui.net?.getState?.()||null,debug:LeabTui.net?.debug?.()||null})`;
   let fourOk = false;
   let fourDetail = "";
   let fourKey = "";
   let fourAt = Date.now();
   let fourTurns = 0;
   let fourLag = 0;
-  const dismiss4 = "(() => { const m = document.querySelector('#trickResultModal'); if (m && !m.hidden) document.querySelector('#trickResultContinue')?.click(); return true; })()";
+  const dismiss4 = "(() => { const m = document.querySelector('#turnResultModal'); if (m && !m.hidden) document.querySelector('#turnResultContinue')?.click(); return true; })()";
   for (let step = 0; step < 180; step += 1) {
     await sleep(1000);
     await host4.eval(dismiss4);
@@ -829,9 +829,9 @@ async function main() {
     const head = JSON.parse(await host4.eval(fourProbe()));
     const seats = [];
     for (const { session } of guests4) seats.push(JSON.parse(await session.eval(fourProbe())));
-    const key = `${head.round}:${head.trick}:${head.phase}:${head.turn}`;
+    const key = `${head.round}:${head.turnNo}:${head.phase}:${head.turn}`;
     if (key !== fourKey) { fourKey = key; fourAt = Date.now(); fourTurns += 1; }
-    const lagging = seats.filter((seat) => seat.round !== head.round || seat.trick !== head.trick || seat.phase !== head.phase || seat.turn !== head.turn).length;
+    const lagging = seats.filter((seat) => seat.round !== head.round || seat.turnNo !== head.turnNo || seat.phase !== head.phase || seat.turn !== head.turn).length;
     fourLag = lagging ? fourLag + 1 : 0;
     if (head.phase === "roundEnd" || head.phase === "matchEnd") {
       const total = head.hands.reduce((n, len) => n + len, 0) + head.captures;
@@ -871,9 +871,9 @@ async function main() {
       const head = JSON.parse(await host4.eval(fourProbe()));
       const seats = [];
       for (const { session } of guests4) seats.push(JSON.parse(await session.eval(fourProbe())));
-      const key = `${head.round}:${head.trick}:${head.phase}:${head.turn}`;
+      const key = `${head.round}:${head.turnNo}:${head.phase}:${head.turn}`;
       if (key !== lossyKey) { lossyKey = key; lossyAt = Date.now(); lossyTurns += 1; }
-      const lagging = seats.filter((seat) => seat.round !== head.round || seat.trick !== head.trick || seat.phase !== head.phase || seat.turn !== head.turn).length;
+      const lagging = seats.filter((seat) => seat.round !== head.round || seat.turnNo !== head.turnNo || seat.phase !== head.phase || seat.turn !== head.turn).length;
       lossyLag = lagging ? lossyLag + 1 : 0;
       if (head.phase === "roundEnd" || head.phase === "matchEnd") {
         const total = head.hands.reduce((n, len) => n + len, 0) + head.captures;

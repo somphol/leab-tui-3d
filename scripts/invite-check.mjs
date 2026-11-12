@@ -179,8 +179,8 @@ async function main() {
     return true;
   })()`);
   const before = JSON.parse(await host.waitFor(
-    "window.LeabTui.getState().center.length > 0 ? JSON.stringify({round:LeabTui.getState().round,trick:LeabTui.getState().trick,phase:LeabTui.getState().phase}) : ''",
-    "mid-trick solo",
+    "window.LeabTui.getState().center.length > 0 ? JSON.stringify({round:LeabTui.getState().round,turnNo:LeabTui.getState().turnNo,phase:LeabTui.getState().phase}) : ''",
+    "mid-turnNo solo",
     20000
   ));
   await host.eval("LeabTui.net.openInvite(); true");
@@ -199,7 +199,7 @@ async function main() {
   );
   if (JSON.parse(hostVoice).joined) pass("host joins audio automatically after Invite");
   else fail("host joins audio automatically after Invite", hostVoice);
-  if (LeabTuiVersion(before)) pass("conversion kept the live round", `round ${before.round}, trick ${before.trick}`);
+  if (LeabTuiVersion(before)) pass("conversion kept the live round", `round ${before.round}, turnNo ${before.turnNo}`);
   const code = hostNet.code.replace("-", "");
   const guestWs = await newTarget(`${BASE}?room=${code}&name=Late&pin=48213`);
   const guest = await Session.connect(guestWs);
@@ -221,7 +221,7 @@ async function main() {
     console.log("POPUP DIAG", await host.eval("JSON.stringify({pending:LeabTui.net.pending(),popHidden:document.querySelector('#joinRequestPop')?.hidden,lobbyHidden:document.querySelector('#lobbyModal')?.hidden,inviteHidden:document.querySelector('#inviteModal')?.hidden,started:LeabTui.net.getState()?.started,alertHidden:document.querySelector('#joinAlertBtn')?.hidden,alertText:document.querySelector('#joinAlertText')?.textContent})"));
     throw error;
   }
-  if (/Late/.test(popup.title) && /Allow|อนุญาต|trick|turn|ตา/i.test(`${popup.title} ${popup.body}`)) pass("host sees the join-request popup on the table", popup.title);
+  if (/Late/.test(popup.title) && /Allow|อนุญาต|turnNo|turn|ตา/i.test(`${popup.title} ${popup.body}`)) pass("host sees the join-request popup on the table", popup.title);
   else fail("host sees the join-request popup on the table", JSON.stringify(popup));
   await host.eval("document.querySelector('#joinRequestApprove').click(); true");
   const queued = JSON.parse(await host.waitFor(
@@ -229,15 +229,15 @@ async function main() {
     "queued guest",
     10000
   ));
-  if (queued[0]?.seat > 0 && queued[0]?.joinAfter === "trick") pass("guest queued until trick end", `seat ${queued[0].seat}`);
-  else fail("guest queued until trick end", JSON.stringify(queued));
+  if (queued[0]?.seat > 0 && queued[0]?.joinAfter === "turnNo") pass("guest queued until turnNo end", `seat ${queued[0].seat}`);
+  else fail("guest queued until turnNo end", JSON.stringify(queued));
   const queuedGuest = JSON.parse(await guest.waitFor(
     "LeabTui.net?.getState?.()?.queued && LeabTui.net.getState().viewer && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,reserved:LeabTui.net.getState().queuedSeat,viewer:LeabTui.net.getState().viewer,banner:!document.querySelector('#queuedBanner').hidden,dock:getComputedStyle(document.querySelector('#handDock')).display,body:document.body.classList.contains('is-viewer')}) : ''",
     "guest audience mode",
     20000
   ));
-  if (queuedGuest.viewer && queuedGuest.banner && queuedGuest.body && queuedGuest.dock === "none") pass("approved guest watches the current trick immediately", `reserved seat ${queuedGuest.reserved}`);
-  else fail("approved guest watches the current trick immediately", JSON.stringify(queuedGuest));
+  if (queuedGuest.viewer && queuedGuest.banner && queuedGuest.body && queuedGuest.dock === "none") pass("approved guest watches the current turnNo immediately", `reserved seat ${queuedGuest.reserved}`);
+  else fail("approved guest watches the current turnNo immediately", JSON.stringify(queuedGuest));
   await guest.send("Page.reload");
   await sleep(5000);
   const requeued = JSON.parse(await guest.waitFor(
@@ -251,8 +251,8 @@ async function main() {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     for (let i = 0; i < 320; i += 1) {
       const st = LeabTui.getState();
-      if (st.trick > ${before.trick}) return JSON.stringify({ ok: true, trick: st.trick, round: st.round });
-      if (!document.querySelector('#trickResultModal').hidden) document.querySelector('#trickResultContinue').click();
+      if (st.turnNo > ${before.turnNo}) return JSON.stringify({ ok: true, turnNo: st.turnNo, round: st.round });
+      if (!document.querySelector('#turnResultModal').hidden) document.querySelector('#turnResultContinue').click();
       if (st.turn === 0 && st.phase === 'lead') { LeabTui.hint(); LeabTui.lead(LeabTui.getState().selected); }
       else if (st.turn === 0 && st.phase === 'follow') { LeabTui.hint(); LeabTui.follow(LeabTui.getState().selected, false); }
       else if (st.turn === 0 && st.phase === 'showdown') {
@@ -263,10 +263,10 @@ async function main() {
       }
       await wait(60);
     }
-    return JSON.stringify({ ok: false, phase: LeabTui.getState().phase, trick: LeabTui.getState().trick });
+    return JSON.stringify({ ok: false, phase: LeabTui.getState().phase, turnNo: LeabTui.getState().turnNo });
   })()`));
-  if (finish.ok) pass("host reached the next trick", `trick ${finish.trick}`);
-  else fail("host reached the next trick", JSON.stringify(finish));
+  if (finish.ok) pass("host reached the next turnNo", `turnNo ${finish.turnNo}`);
+  else fail("host reached the next turnNo", JSON.stringify(finish));
   const promoted = JSON.parse(await guest.waitFor(
     "window.LeabTui?.net?.getState?.()?.role === 'client' && LeabTui.net.getState().mySeat > 0 && LeabTui.getState?.() ? JSON.stringify({seat:LeabTui.net.getState().mySeat,hand:LeabTui.getState().hands[LeabTui.net.getState().mySeat].length}) : ''",
     "guest promoted",
@@ -324,7 +324,7 @@ async function main() {
   }
 }
 
-function LeabTuiVersion(value) { return Boolean(value && value.trick >= 1 && value.round >= 1); }
+function LeabTuiVersion(value) { return Boolean(value && value.turnNo >= 1 && value.round >= 1); }
 
 main().catch((error) => {
   console.error("INVITE CHECK FAILED:", error.message);
