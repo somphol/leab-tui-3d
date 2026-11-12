@@ -227,7 +227,6 @@
           <div class="panel-head"><h2 data-i18n="actions.title">Actions</h2></div>
           <div class="action-grid">
             <button id="inviteBtn" class="btn btn-gold invite-action" type="button" hidden data-i18n="invite.action">Invite friends</button>
-            <button id="newMatchBtn" class="btn btn-ghost" type="button" data-i18n="actions.newMatch">New match</button>
             <button id="nextRoundBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.nextRound">Next round</button>
             <button id="undoBtn" class="btn btn-ghost" type="button" disabled data-i18n="actions.undo">Undo turn</button>
             <button id="resyncBtn" class="btn btn-ghost" type="button" hidden data-i18n="actions.resync">Refresh table</button>
@@ -819,16 +818,6 @@
       </div>
     </div>
 
-    <div id="confirmModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
-      <div class="modal-card modal-small">
-        <h2 id="confirmTitle" data-i18n="confirm.title">Start a new match?</h2>
-        <p id="confirmBody" data-i18n="confirm.body">The current scores and round history will be cleared. Saved statistics stay.</p>
-        <div class="modal-actions">
-          <button id="confirmYes" class="btn btn-gold" type="button" data-i18n="confirm.yes">Start match</button>
-          <button id="confirmNo" class="btn btn-ghost" type="button" data-i18n="confirm.no">Cancel</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <div id="remoteAudio" class="remote-audio" aria-hidden="true"></div>
