@@ -1,7 +1,7 @@
 {
   "project": "leab-tui-3d",
-  "projectVersion": "1.10.20",
-  "version": "1.10.20",
+  "projectVersion": "1.10.21",
+  "version": "1.10.21",
   "title": "Leab-Tui 3D — Traditional Xiangqi Trick-Taking Studio",
   "description": "A bilingual, interactive 3D studio for เลี๊ยบตุ่ย (Leab-Tui), the Thai trick-taking game played with the 32 tiles of a Chinese chess set. Vanilla HTML5, CSS3 and ES2022 JavaScript with Three.js r160 and serverless PeerJS/WebRTC multiplayer from pinned CDNs.",
   "repository": "https://github.com/somphol/leab-tui-3d",
@@ -461,9 +461,14 @@
       "version": "1.10.20",
       "date": "2026-11-11",
       "summary": "Top-bar Join, autoplay holds while result sheets are open, New match removed."
+    },
+    {
+      "version": "1.10.21",
+      "date": "2026-11-11",
+      "summary": "Join hides once you are in a room."
     }
   ],
-  "releaseNotes": "1.10.20 adds a Join button beside Invite in the top bar so a guest can open the room-code form from the table. Autoplay now waits while the turn-result or round-summary sheet is open for your seat, so the table cannot jump ahead while you read. The New match button is gone - play is endless, and a solo table restarts by reloading.",
+  "releaseNotes": "1.10.21 hides the top-bar Join button as soon as you are in a room, host or guest, so you cannot start a second join without leaving first. It reappears at a solo table or after Leave room.",
   "updates": [
     {
       "version": "1.4.0–1.8.0",

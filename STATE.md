@@ -12,7 +12,7 @@
 | Field | Value |
 | --- | --- |
 | Project status | ✅ Complete, verified and published |
-| App version | `1.10.20` |
+| App version | `1.10.21` |
 | Repository | <https://github.com/somphol/leab-tui-3d> |
 | Live page | <https://somphol.github.io/leab-tui-3d/> (Pages verified, 1.10.4, self-test 38/38) |
 | Primary branch | `main` |
