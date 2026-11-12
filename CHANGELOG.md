@@ -2,6 +2,16 @@
 
 All notable changes to Leab-Tui 3D are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.10.18] — 2026-11-11
+
+### Added
+
+- **Optional auto-close for the turn result.** The dialog gets a **Close automatically** checkbox (unchecked by default) and a 5/10/15/20/25/30-second dropdown, with a live countdown. The choice is remembered, and the timer is cleared whenever the dialog closes by any route.
+
+### Changed
+
+- **Thai turn results are bilingual.** Each compared set, the winner line, the result toast and the history detail now show the Chinese character and Thai meaning next to the transliterated name, e.g. `คู่แบ้ดำ (馬 · ม้า)`. Dock errors, logs and the coach stay concise.
+
 ## [1.10.17] — 2026-11-11
 
 ### Fixed
